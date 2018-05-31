@@ -1,0 +1,107 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#ifdef NVIDIA_PLATFORM
+#define WORK_SIZE_BND 1024
+#else 
+#define WORK_SIZE_BND 1024
+#endif
+
+#define ENABLE_VSTORAGE_DATA
+#define BVH_CREATION
+
+#include "../include/driver.glsl"
+#include "../include/ballotlib.glsl"
+#include "../include/structs.glsl"
+#include "../include/uniforms.glsl"
+#include "../include/vertex.glsl"
+#include "../include/mathlib.glsl"
+#include "./includes.glsl"
+
+
+layout ( std430, binding = 9, set = 0 )  buffer minmaxB {vec4 minmax[]; };
+
+bool validPrimitive(const mat3x4 triverts){
+    const vec4 tcenter = (triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f;
+    return length(abs(triverts[0] - tcenter).xyz + abs(triverts[1] - tcenter).xyz + abs(triverts[2] - tcenter).xyz) >= 1.e-5;
+}
+
+bbox getMinMaxPrimitive(in int idx) {
+    const int tri = clamp(idx, 0, GEOMETRY_BLOCK geometryUniform.triangleCount-1);
+    //const int itri = tri*9;
+    const int itri = tri*3;
+    const mat3x4 triverts = mat3x4(
+        divW(mult4(bvhBlock.creatorUniform.transform, vec4(TLOAD(lvtx, itri+0).xyz, 1.f))), 
+        divW(mult4(bvhBlock.creatorUniform.transform, vec4(TLOAD(lvtx, itri+1).xyz, 1.f))), 
+        divW(mult4(bvhBlock.creatorUniform.transform, vec4(TLOAD(lvtx, itri+2).xyz, 1.f)))
+    );
+    
+    bbox outp = bbox(100000.f.xxxx, -100000.f.xxxx);
+    if (validPrimitive(triverts)) {
+        bbox pbx = calcTriBox(triverts);
+        outp.mn = min(outp.mn, pbx.mn);
+        outp.mx = max(outp.mx, pbx.mx);
+    }
+    return outp;
+}
+
+bbox bboxunion(in bbox b1, in bbox b2) {
+    return bbox(min(b1.mn, b2.mn), max(b1.mx, b2.mx));
+}
+
+bbox bboxunion3(in bbox b1, in bbox b2, in bbox c3) {
+    return bbox(min3_wrap(b1.mn, b2.mn, c3.mn), max3_wrap(b1.mx, b2.mx, c3.mx));
+}
+
+
+layout ( local_size_x = WORK_SIZE_BND ) in;
+shared bbox sdata[ WORK_SIZE_BND ];
+
+void main() {
+    const int tid = int(gl_LocalInvocationID.x);
+    const int gridSize = int((gl_WorkGroupSize.x*2) * gl_NumWorkGroups.x);
+    const int tcount = max(GEOMETRY_BLOCK geometryUniform.triangleCount, 2);
+
+    // 
+    sdata[tid] = bbox(vec4( 100000.f), vec4(-100000.f));
+    LGROUP_BARRIER
+
+    // calculate boxes for per work
+    int i = int(gl_WorkGroupID.x * (gl_WorkGroupSize.x*2)) + tid;
+    while (i < tcount) {
+        bbox bound = sdata[tid];
+        bound = bboxunion3(bound, getMinMaxPrimitive(i), getMinMaxPrimitive(i + int(gl_WorkGroupSize.x)));
+        sdata[tid] = bound;
+        i += gridSize;
+    }
+    LGROUP_BARRIER
+
+    // shared reduction
+    [[unroll]]
+    for (int ki=(int(gl_WorkGroupSize.x)>>1);ki>=int(Wave_Size_RT);ki>>=1) {
+        if (tid < ki) { 
+            bbox bound = sdata[tid], opbound = sdata[tid + ki]; 
+            bound = bboxunion(bound, opbound); 
+            SB_BARRIER
+            sdata[tid] = bound; 
+        }
+        LGROUP_BARRIER
+    }
+
+    { // subgroup min/max
+        SB_BARRIER
+        vec4 mn = subgroupMin(sdata[tid].mn), mx = subgroupMax(sdata[tid].mx); 
+        SB_BARRIER
+        sdata[tid].mn = mn, sdata[tid].mx = mx;
+    }
+
+    LGROUP_BARRIER
+
+    // store in global memory result of work
+    if (tid == 0) {
+        minmax[gl_WorkGroupID.x*2 + 0] = sdata[tid].mn - 0.0001f;
+        minmax[gl_WorkGroupID.x*2 + 1] = sdata[tid].mx + 0.0001f;
+    }
+
+    LGROUP_BARRIER
+}

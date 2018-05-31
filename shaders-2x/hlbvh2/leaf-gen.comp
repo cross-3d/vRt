@@ -1,0 +1,99 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#define VTX_TRANSPLIT
+#define ENABLE_VSTORAGE_DATA
+#define BVH_CREATION
+#define LEAF_GEN
+
+#include "../include/driver.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+#include "../include/structs.glsl"
+#include "../include/uniforms.glsl"
+#include "../include/vertex.glsl"
+#include "../include/morton.glsl"
+#include "./includes.glsl"
+
+initAtomicSubgroupIncFunction(nCounter, atomicIncLeaf, 1, int)
+
+LOCAL_SIZE_LAYOUT;
+
+void main() {
+    const int wsize = GEOMETRY_BLOCK geometryUniform.triangleCount;
+    const int gS = int(gl_WorkGroupSize.x);
+    const int wgs = int(gl_NumWorkGroups.x);
+    const int wID = int(gl_WorkGroupID.x);
+    const int lID = int(Local_Idx);
+    const int rng = gS*wgs;
+    for (int w=0;w<wsize;w+=rng) {
+        SB_BARRIER
+        const int globalID = w + (wID * gS + lID);
+        IFALL (globalID >= wsize) break;
+
+        const int tri = clamp(globalID, 0, GEOMETRY_BLOCK geometryUniform.triangleCount-1);
+
+        const int itri = tri*3;//tri*9;
+        mat3x4 triverts = mat3x4(
+            vec4(TLOAD(lvtx, itri+0).xyz, 1.f),
+            vec4(TLOAD(lvtx, itri+1).xyz, 1.f),
+            vec4(TLOAD(lvtx, itri+2).xyz, 1.f)
+        );
+
+        triverts = mat3x4(
+            divW(mult4(bvhBlock.creatorUniform.transform, triverts[0])), 
+            divW(mult4(bvhBlock.creatorUniform.transform, triverts[1])), 
+            divW(mult4(bvhBlock.creatorUniform.transform, triverts[2]))
+        );
+        
+
+#ifdef VTX_TRANSPLIT
+        // transpose VTX
+        mat3x3 vtxL = transpose(mat3(
+            TLOAD(lvtx, itri+0).xyz,
+            TLOAD(lvtx, itri+1).xyz,
+            TLOAD(lvtx, itri+2).xyz
+        ));
+
+        { // transpose type
+            imageStore(lvtx, itri+0, vec4(vtxL[0].xyz, 1.f));
+            imageStore(lvtx, itri+1, vec4(vtxL[1].xyz, 1.f));
+            imageStore(lvtx, itri+2, vec4(vtxL[2].xyz, 1.f));
+        }
+#endif
+
+        // get bounding
+        bbox bounding = calcTriBox(triverts);
+
+        // view based 
+        vec4 bcenter = (triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f;
+
+        // gen morton code
+        uvec2 mortonCode = 
+#if defined(INTEL_PLATFORM)
+        encodeMorton3_64(clamp(uvec3(floor(fma(bcenter.xyz, 0.5f.xxx, 0.5f.xxx)*1024.0f)), uvec3(0), uvec3(0x3FF)));
+#else
+        encodeMorton3_64(clamp(uvec3(floor(fma(bcenter.xyz, 0.5f.xxx, 0.5f.xxx)*2097152.0f)), uvec3(0), uvec3(0x1FFFFF)));
+#endif
+        
+        if (globalID < wsize && globalID >= 0) {
+            // allocate index
+            //int to = atomicIncLeaf();
+            int to = globalID; atomicIncLeaf();
+
+            // gen leaf
+            HlbvhNode outLeaf = Leafs[to];
+            outLeaf.lbox[0] = bounding.mn - 1e-5f.xxxx;
+            outLeaf.lbox[1] = bounding.mx + 1e-5f.xxxx;
+            outLeaf.pdata.xy = ivec2(to);
+            outLeaf.pdata.zw = ivec2(-1, tri+1);
+
+            // store leaf data
+            Leafs[to] = outLeaf;
+            Mortoncodes[to] = mortonCode;
+            MortoncodesIndices[to] = to+1;
+        }
+    }
+
+    LGROUP_BARRIER
+}

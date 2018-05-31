@@ -1,0 +1,83 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#define VTX_TRANSPLIT
+#define ENABLE_VSTORAGE_DATA
+#define BVH_CREATION
+#define LEAF_GEN
+
+#include "../include/driver.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+#include "../include/structs.glsl"
+#include "../include/uniforms.glsl"
+#include "../include/vertex.glsl"
+#include "../include/morton.glsl"
+
+
+struct BVHCreatorUniformStruct {
+    mat4x4 transform;
+    mat4x4 transformInv;
+    mat4x4 projection;
+    mat4x4 projectionInv;
+    int leafCount, r0, r1, r2;
+};
+
+layout ( std430, binding =  9, set = 0 ) buffer minmaxB {vec4 minmax[]; };
+layout ( std430, binding = 10, set = 0 ) buffer bvhBlockB { BVHCreatorUniformStruct creatorUniform; } bvhBlock;
+
+
+LOCAL_SIZE_LAYOUT;
+
+void main() {
+
+    vec4 gmn = vec4(100000.f), gmx = vec4(-100000.f);
+    for (int I=0;I<128;I+=int(Wave_Size)) {
+        int it = I + int(Lane_Idx);
+        
+        gmn = min(gmn, subgroupMin(minmax[it*2+0]));
+        gmx = max(gmx, subgroupMax(minmax[it*2+1]));
+    }
+
+    if (electedInvoc()) {
+        vec4 scale = 1.f/(gmx-gmn), offset = -scale*gmn;
+        mat4 transform = transpose(bvhBlock.creatorUniform.transform);
+
+        mat4 translate = mat4(
+            1.f, 0.f, 0.f, 0.f,
+            0.f, 1.f, 0.f, 0.f,
+            0.f, 0.f, 1.f, 0.f,
+            offset.x, offset.y, offset.z, 1.f
+        );
+
+        mat4 scaling = mat4(
+            scale.x, 0.f, 0.f, 0.f,
+            0.f, scale.x, 0.f, 0.f,
+            0.f, 0.f, scale.z, 0.f,
+            0.f, 0.f, 0.f, 1.f
+        );
+
+        mat4 centric = mat4(
+             1.f,  0.f,  0.f, 0.f,
+             0.f,  1.f,  0.f, 0.f,
+             0.f,  0.f,  1.f, 0.f,
+            -1.f, -1.f, -1.f, 1.f
+        )*mat4(
+            2.f, 0.f, 0.f, 0.f,
+            0.f, 2.f, 0.f, 0.f,
+            0.f, 0.f, 2.f, 0.f,
+            0.f, 0.f, 0.f, 1.f
+        );
+
+        mat4 rtransform = mat4(
+            1.f, 0.f, 0.f, 0.f,
+            0.f, 1.f, 0.f, 0.f,
+            0.f, 0.f, 1.f, 0.f,
+            0.f, 0.f, 0.f, 1.f
+        ) * centric * translate * scaling * transform;
+
+        bvhBlock.creatorUniform.transform = transpose(rtransform);
+        bvhBlock.creatorUniform.transformInv = transpose(inverse(rtransform));
+    }
+
+}

@@ -1,0 +1,50 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#define BVH_PACKED_LOADER
+#define BVH_CREATION
+
+#include "../include/driver.glsl"
+#include "../include/structs.glsl"
+#include "../include/uniforms.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+#include "../include/vertex.glsl"
+#include "./includes.glsl"
+
+
+LOCAL_SIZE_LAYOUT;
+
+void main() {
+    const int wsize = bvhBlock.creatorUniform.leafCount;
+    const int gS = int(gl_WorkGroupSize.x);
+    const int wgs = int(gl_NumWorkGroups.x);
+    const int wID = int(gl_WorkGroupID.x);
+    const int lID = int(Local_Idx);
+    const int rng = gS*wgs;
+    for (int w=0;w<wsize;w+=rng) {
+        SB_BARRIER
+        const int globalID = w + (wID * gS + lID);
+        IFALL (globalID >= wsize) break;
+
+        // get leaf data
+        int lidx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
+        ivec4 bvhmeta = lidx >= 0 ? (imageLoad(bvhMeta, lidx)-1) : ivec4(-1, -1, -1, -1); 
+        vec4 rbox[2] = {100000.f.xxxx, -100000.f.xxxx}; 
+
+        // linking leafs
+        int leafID = bvhmeta.x >= 0 ? MortoncodesIndices[bvhmeta.x]-1 : -1;
+        if (leafID >= 0) {
+            rbox = Leafs[leafID].lbox;
+            bvhmeta.xy = Leafs[leafID].pdata.ww-1;
+        }
+
+        // save boxes
+        if (lidx >= 0) {
+            imageStore(bvhMeta, lidx, bvhmeta+1);
+            bvhBoxesWork[lidx] = rbox;
+        }
+    }
+
+    LGROUP_BARRIER
+}

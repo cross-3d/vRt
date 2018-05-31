@@ -1,0 +1,104 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#include "./includes.glsl"
+
+layout (local_size_x = BLOCK_SIZE) in;
+
+shared uint localHistogram[RADICES];
+
+// shared for 16 threads (with lanes)
+#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+shared uint_rdc_wave_lcm _data[64];
+#else
+shared lowp uint_rdc_wave_lcm _data[128];
+#endif
+
+#define key _data[Lane_Idx]
+
+#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+initSubgroupIncFunctionTargetDual(localHistogram[WHERE], countHistogram, 1, uint, uvec2)
+#else
+initSubgroupIncFunctionTarget(localHistogram[WHERE], countHistogram, 1, uint)
+#endif
+
+void main() {
+    Local_Idx = gl_LocalInvocationID.x;
+    Wave_Idx = gl_LocalInvocationID.x / Wave_Size_RT;
+    Lane_Idx = gl_LocalInvocationID.x % Wave_Size_RT;
+    Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
+
+    // clear histogram of block (planned distribute threads)
+    [[unroll]]
+    for (uint rk=0;rk<RADICES;rk+=WRK_SIZE_RT) {
+        localHistogram[rk + Radice_Idx] = 0;
+    }
+    LGROUP_BARRIER
+
+    // use SIMD lanes for calculate histograms
+    blocks_info blocks = get_blocks_info(NumKeys);
+
+#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+    uint bcount = min(tiled(blocks.count, 2u), 524288u);
+    WPTR2 addr = WPTR(blocks.offset).xx + WPTR2(Lane_Idx, Wave_Size_RT + Lane_Idx);
+#else
+    uint bcount = min(blocks.count, 524288u);
+    WPTR addr = WPTR(blocks.offset) + WPTR(Lane_Idx);
+#endif
+
+    for ( uint wk = 0; wk < bcount; wk++ ) {
+#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+        bvec2_wave validAddress = lessThan(addr, blocks.limit.xx);
+        IFALL(all(not(validAddress))) break;
+#else
+        bvec_wave validAddress = addr < blocks.limit;
+        IFALL(!validAddress.x) break;
+#endif
+
+        if (Wave_Idx == 0) {
+#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+            key = packUint2x16(uint_rdc_wave_2(
+                BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), Shift*BITS_PER_PASS, BITS_PER_PASS),
+                BFE(validAddress.y ? KeyIn[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), Shift*BITS_PER_PASS, BITS_PER_PASS)
+            ));
+#else
+            key.x = uint_rdc_wave(BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), Shift*BITS_PER_PASS, BITS_PER_PASS));
+#endif
+        }
+        LGROUP_BARRIER
+
+        // WARP-optimized histogram calculation
+        for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+            uvec_wave radice = uvec_wave(rk + Radice_Idx);
+#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+            bvec2 owned = and(equal(unpackUint2x16(key), radice.xx), validAddress);
+            if (any(owned)) countHistogram(uint(radice), owned);
+            IFALL (all(or((radice >= RADICES).xx, or(owned, not(validAddress))))) break;
+#else
+            bool owned = key.x == radice && validAddress.x;
+            if (owned) countHistogram(uint(radice));
+            IFALL (radice >= RADICES || owned || !validAddress.x) break;
+#endif
+        }
+
+#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+        addr += Wave_Size_RT*2;
+#else
+        addr += Wave_Size_RT;
+#endif
+    }
+
+    // resolve histograms (planned distribute threads) 
+    LGROUP_BARRIER
+
+    [[unroll]]
+    for (uint rk=0;rk<RADICES;rk+=WRK_SIZE_RT) {
+        uvec_wave radice = uvec_wave(rk + Radice_Idx);
+        if (radice < RADICES) {
+            PrefixSum[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
+            Histogram[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
+        }
+    }
+
+    LGROUP_BARRIER
+}

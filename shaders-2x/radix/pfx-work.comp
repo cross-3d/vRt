@@ -1,0 +1,71 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#include "./includes.glsl"
+
+// current work group size
+#define WG_COUNT 64
+
+// shared memory of...
+shared uint localHistogram[RADICES];
+layout (local_size_x = RADICES) in;
+
+// reductive prefix scan of work groups
+uint prefixScan(const uint limit) {
+    uvec_wave ldx = Local_Idx;
+    LGROUP_BARRIER
+    {
+        uint prv = ldx >= 1 ? ldx-1 : 0;
+        uint tmp = ldx >= 1 && ldx < limit ? localHistogram[prv] : 0;
+        LGROUP_BARRIER
+        if (ldx < limit) localHistogram[ldx] = tmp;
+        LGROUP_BARRIER
+    }
+
+    // reduction prefix-scan
+    [[unroll]]
+    for (int i=1;i<limit;i<<=1) {
+        uint prv = ldx >= i ? ldx-i : 0;
+        uint off = ldx >= i && ldx < limit ? localHistogram[prv] : 0, 
+             hst =             ldx < limit ? localHistogram[ldx] : 0;
+        LGROUP_BARRIER
+        if (ldx < limit) localHistogram[ldx] = off + hst;
+        LGROUP_BARRIER
+    }
+
+    uint res = localHistogram[ldx];
+    LGROUP_BARRIER
+    return res;
+}
+
+void main() {
+      Wave_Idx = gl_LocalInvocationID.x / Wave_Size_RT;
+      Lane_Idx = gl_LocalInvocationID.x % Wave_Size_RT;
+     Local_Idx = gl_LocalInvocationID.x;
+    Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
+
+    IFALL (gl_WorkGroupID.y < 1) {
+        
+        // calculate prefix-sums of all work groups
+        localHistogram[Local_Idx] = 0;
+        LGROUP_BARRIER
+
+        // calculate local prefix-sum in each work of each radice
+        uint awHistogram = 0; // sum of work-group histograms (globalized histograms)
+        for (uint wk=0;wk<WG_COUNT;wk++) {
+            uint widx = Local_Idx + RADICES * wk;
+            if (Local_Idx < RADICES) PrefixSum[widx] = add(awHistogram, Histogram[widx]);
+        }
+
+        // calculate prefix-sum of all work-groups for each radice
+        if (Local_Idx < RADICES) localHistogram[Local_Idx] = awHistogram;
+        uint rdcAwPrefixOffset = prefixScan(RADICES);
+        
+        // add work-group prefix-sum of radice to in-group prefix-sum
+        for (uint wk=0;wk<WG_COUNT;wk++) {
+            if (Local_Idx < RADICES) PrefixSum[Local_Idx + RADICES * wk] += rdcAwPrefixOffset;
+        }
+    }
+
+    LGROUP_BARRIER
+}
