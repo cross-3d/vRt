@@ -1,5 +1,5 @@
-# xDK
-Cross-platform SDK for computer graphics and compute
+# vRt
+Vulkan API ray tracing cross-platform layer 
 
 ## Plans 
 
