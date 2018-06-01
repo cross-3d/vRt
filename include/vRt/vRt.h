@@ -125,6 +125,16 @@ namespace _vt { // store in undercover namespace
         //operator VkPipeline() const {} // no correct conversion
         std::shared_ptr<Device> _parent() const { return _device; };
     };
+
+
+    class Accelerator: public std::enable_shared_from_this<Accelerator> {
+    protected:
+        friend Device;
+        std::shared_ptr<Device> _device;
+    public:
+        //operator VkAccelerator() const {} // no correct conversion
+        std::shared_ptr<Device> _parent() const { return _device; };
+    };
 };
 
 
