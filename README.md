@@ -2,4 +2,4 @@
 
 > Vulkan API ray tracing cross-platform layer 
 
-<img src="poster/chase.jpg" alt="Chase" width="640">
+<img src="poster/chase2.png" alt="Chase" width="640">
