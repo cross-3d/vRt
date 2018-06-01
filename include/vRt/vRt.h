@@ -28,9 +28,10 @@ typedef enum VtStructureType {
     VT_STRUCTURE_TYPE_RAY_TRACING_CREATE_INFO = 0x11F00004,
     VT_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO = 0x11F00005,
     VT_STRUCTURE_TYPE_VERTEX_INPUT_CREATE_INFO = 0x11F00006,
-    VT_STRUCTURE_TYPE_VERTEX_ACCESSOR = 0x11F00007,
-    VT_STRUCTURE_TYPE_VERTEX_ATTRIBUTE_BINDING = 0x11F00008,
-    VT_STRUCTURE_TYPE_VERTEX_REGION_BINDING = 0x11F00009
+    //VT_STRUCTURE_TYPE_VERTEX_ACCESSOR = 0x11F00007,
+    //VT_STRUCTURE_TYPE_VERTEX_ATTRIBUTE_BINDING = 0x11F00008,
+    //VT_STRUCTURE_TYPE_VERTEX_REGION_BINDING = 0x11F00009,
+    VT_STRUCTURE_TYPE_MATERIALS_INPUT_CREATE_SET_INFO = 0x11F0000A,
 };
 
 // it is bitfield-based value
@@ -55,6 +56,9 @@ namespace _vt {
     // acceleration and vertex input
     class VertexInput;
     class Accelerator;
+
+    // materials (with textures) inputs
+    class MaterialsInput;
 
 
     class Instance : public std::enable_shared_from_this<Instance> {
@@ -102,14 +106,14 @@ namespace _vt {
         }
     };
 
-
+    /*
     class RayTracing: public std::enable_shared_from_this<RayTracing> {
     protected:
         friend Device;
         std::shared_ptr<Device> _device;
     public:
         //operator VkRayTracing() {} // no correct conversion
-    };
+    };*/
 
 
     class Pipeline: public std::enable_shared_from_this<RayTracing> {
@@ -128,6 +132,7 @@ typedef std::shared_ptr<_vt::PhysicalDevice> VtPhysicalDevice;
 typedef std::shared_ptr<_vt::Device> VtDevice;
 typedef std::shared_ptr<_vt::RayTracing> VtRayTracing;
 typedef std::shared_ptr<_vt::Pipeline> VtPipeline;
+
 
 // Description structs for make vRt objects
 // Note: structures already have default headers for identifying
@@ -171,10 +176,10 @@ struct VtRayTracingPipelineCreateInfo {
 
 // any other vertex accessors can be used by attributes
 struct VtVertexAccessor {
-    VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ACCESSOR;
-    const void* pNext = nullptr;
+    //VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ACCESSOR;
+    //const void* pNext = nullptr;
     uint32_t binding = 0;
-    int32_t byteOffset = 0;
+    uint32_t byteOffset = 0;
     union {
         uint32_t components : 2, type : 4, normalized : 1;
         VtFormat format;
@@ -184,8 +189,8 @@ struct VtVertexAccessor {
 
 // any other vertex bindings can be used by attributes
 struct VtVertexRegionBinding {
-    VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_REGION_BINDING;
-    const void* pNext = nullptr;
+    //VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_REGION_BINDING;
+    //const void* pNext = nullptr;
     uint32_t binding = 0;
     uint32_t byteStride = 0;
     VkBufferCopy bufferRegion; // import from Vulkan
@@ -194,8 +199,8 @@ struct VtVertexRegionBinding {
 
 // attribute binding
 struct VtVertexAttributeBinding {
-    VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ATTRIBUTE_BINDING;
-    const void* pNext = nullptr;
+    //VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ATTRIBUTE_BINDING;
+    //const void* pNext = nullptr;
     uint32_t attributeBinding = 0;
     uint32_t accessorID = 0;
 };
@@ -205,8 +210,12 @@ struct VtVertexInputCreateInfo {
     VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_INPUT_CREATE_INFO;
     const void* pNext = nullptr;
 
-    // all vertex sources buffer
+    // all sources buffer
     VkBuffer sourceBuffer;
+
+    // use buffers for shorter access
+    //VkBuffer regionsBuffer;
+    //VkBuffer accessorsBuffer;
 
     // bindings regions
     VtVertexRegionBinding * pBufferRegionBindings = nullptr;
@@ -226,6 +235,65 @@ struct VtVertexInputCreateInfo {
 
     // supported vertex topology
     VtTopologyType topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
+    uint32_t materialID = 0; // material ID for identify in hit shader
+};
+
+
+
+struct VtMaterialsInputCreateInfo {
+    VtStructureType sType = VT_STRUCTURE_TYPE_MATERIALS_INPUT_CREATE_SET_INFO;
+    const void* pNext = nullptr;
+
+    // immutable images (textures)
+    const VkDescriptorImageInfo* pImages;
+    uint32_t imageCount;
+
+    // immutable samplers
+    const VkSampler* pSamplers;
+    uint32_t samplerCount;
+
+    // virtual combined textures with samplers
+    const uint64_t* pImageSamplerCombinations; // uint32 for images and next uint32 for sampler ID's
+    uint32_t imageSamplerCount;
+
+    // user defined materials 
+    VkBuffer materialDescriptionsBuffer; // buffer for user material descriptions
+    const uint32_t* pMaterialDescriptionIDs;
+    uint32_t materialCount;
+};
+
+
+
+// system vectors of ray tracers
+struct VtVec4 { float x, y, z, w; };
+struct VtVec3 { float x, y, z; };
+struct VtVec2 { float x, y; };
+struct VtUVec2 { uint32_t x, y; };
+
+
+// in future planned custom ray structures support
+// in current moment we will using 32-byte standard structuring
+struct VtRay {
+    VtVec3 origin; // position state (in 3D)
+    int32_t hitID; // id of intersection hit (-1 is missing)
+    VtVec2 cdirect; // polar direction
+    uint32_t _indice; // reserved for indice in another ray system
+    uint16_t hf_r, hf_g, hf_b, bitfield;
+};
+
+
+struct VtNamedCombinedImagePair {
+    uint32_t textureID, samplerID;
+};
+
+struct VtVirtualCombinedImage {
+    union {
+        VtNamedCombinedImagePair pair;
+        uint64_t combined;
+    };
+
+    operator VtNamedCombinedImagePair&() { return pair; }; // return editable
+    operator uint64_t() const { return combined; }; // return paired
 };
 
 
@@ -251,6 +319,8 @@ VtResult vtCreateAccelerator(const VtAcceleratorCreateInfo * vtAcceleratorCreate
 // make vertex input instance
 VtResult vtCreateVertexInputSource(const VtVertexInputCreateInfo * vtVertexInputCreateInfo, VtVertexInput * vtVertexInput);
 
+// make descriptor input 
+VtResult vtCreateMaterialsInput(const VtMaterialsCreateInfo * vtMaterialsCreateInfo, VtMaterialsInput * materialsInput);
 
 
 // make command buffer capable with ray tracing factory (VtCommandBuffer)
@@ -266,6 +336,7 @@ VtResult vtCmdDispatchRayTracing(VtCommandBuffer cmdBuffer, uint32_t x = 1, uint
 VtResult vtCmdCopyBuffer(VtCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy* pRegions);
 
 
+
 // bind vertex input for accelerator builders (accelerators itself also will store these data)
 VtResult vtCmdBindVertexInput(VtCommandBuffer commandBuffer, uint32_t vertexInputCount, const VtVertexInput * vertexInput);
 //VtResult vtCmdBindVertexInput(VtCommandBuffer commandBuffer, VtVertexInput vertexInput);
@@ -273,8 +344,17 @@ VtResult vtCmdBindVertexInput(VtCommandBuffer commandBuffer, uint32_t vertexInpu
 // bind accelerator structure for building/ray tracing
 VtResult vtCmdBindAccelerator(VtCommandBuffer commandBuffer, VtAccelerator accelerator);
 
+// pre-build vertex input in accelerator structure
+VtResult vtCmdBuildVertexInput(VtCommandBuffer commandBuffer /*,  */);
+
+// pre-build material sets
+VtResult vtCmdMaterialsInput(VtCommandBuffer commandBuffer /*,  */);
+
 // build accelerator structure command
 VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer /*,  */);
 
 // descriptorSet = "0" will blocked by ray tracing system
 VtResult vtCmdBindDescriptorSets(VtCommandBuffer commandBuffer, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t firstSet, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets, uint32_t dynamicOffsetCount = 0, const uint32_t* pDynamicOffsets = nullptr);
+
+// bind materials input (for closest hit shaders)
+VtResult vtCmdBindMaterialsInput(VtCommandBuffer commandBuffer, VtMaterialsInput materials);
