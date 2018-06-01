@@ -10,21 +10,20 @@
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
-#include "../include/uniforms.glsl"
-#include "../include/vertex.glsl"
+//#include "../include/vertex.glsl"
 #include "../include/morton.glsl"
 
 
-struct BVHCreatorUniformStruct {
+// bvh uniform unified
+layout ( std430, binding = 10, set = 0 ) buffer bvhBlockB { 
     mat4x4 transform;
     mat4x4 transformInv;
     mat4x4 projection;
     mat4x4 projectionInv;
-    int leafCount, r0, r1, r2;
-};
+    int leafCount, primitiveCount, r1, r2;
+} bvhBlock;
 
 layout ( std430, binding =  9, set = 0 ) buffer minmaxB {vec4 minmax[]; };
-layout ( std430, binding = 10, set = 0 ) buffer bvhBlockB { BVHCreatorUniformStruct creatorUniform; } bvhBlock;
 
 
 LOCAL_SIZE_LAYOUT;
@@ -41,7 +40,7 @@ void main() {
 
     if (electedInvoc()) {
         vec4 scale = 1.f/(gmx-gmn), offset = -scale*gmn;
-        mat4 transform = transpose(bvhBlock.creatorUniform.transform);
+        mat4 transform = transpose(bvhBlock.transform);
 
         mat4 translate = mat4(
             1.f, 0.f, 0.f, 0.f,
@@ -76,8 +75,8 @@ void main() {
             0.f, 0.f, 0.f, 1.f
         ) * centric * translate * scaling * transform;
 
-        bvhBlock.creatorUniform.transform = transpose(rtransform);
-        bvhBlock.creatorUniform.transformInv = transpose(inverse(rtransform));
+        bvhBlock.transform = transpose(rtransform);
+        bvhBlock.transformInv = transpose(inverse(rtransform));
     }
 
 }

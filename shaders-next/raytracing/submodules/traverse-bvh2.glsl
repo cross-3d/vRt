@@ -6,7 +6,7 @@
 #endif
 
 #ifndef _RAY_TYPE
-#define _RAY_TYPE ElectedRay
+#define _RAY_TYPE VtRay
 #endif
 
 
@@ -129,8 +129,8 @@ void traverseBvh2(in bool_ valid, inout _RAY_TYPE rayIn) {
 
     // test constants
     vec3 
-        torig = -divW(mult4(GEOMETRY_BLOCK geometryUniform.transform, vec4(origin, 1.0f))).xyz,
-        torigTo = divW(mult4(GEOMETRY_BLOCK geometryUniform.transform, vec4(origin+direct, 1.0f))).xyz,
+        torig = -divW(mult4( bvhBlock.transform, vec4(origin, 1.0f))).xyz,
+        torigTo = divW(mult4( bvhBlock.transform, vec4(origin+direct, 1.0f))).xyz,
         dirproj = torigTo+torig;
 
     // get vector length and normalize

@@ -54,16 +54,6 @@ layout ( std430, binding = 12, set = 0 )  writeonly buffer bvhBoxesResultingB { 
 //layout ( std430, binding = 11, set = 0 )  buffer bvhMetaB { ivec4 bvhMeta[]; };
 layout ( binding = 11, set = 0, rgba32i ) uniform iimageBuffer bvhMeta;
 
-struct BVHCreatorUniformStruct {
-    mat4x4 transform;
-    mat4x4 transformInv;
-    mat4x4 projection;
-    mat4x4 projectionInv;
-    int leafCount, r0, r1, r2;
-};
-
-layout ( std430, binding = 10, set = 0 )  readonly buffer bvhBlockB { BVHCreatorUniformStruct creatorUniform; } bvhBlock;
-
 bbox calcTriBox(in mat3x4 triverts) {
     bbox result;
     result.mn = min3_wrap(triverts[0], triverts[1], triverts[2]);

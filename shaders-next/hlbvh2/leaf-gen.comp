@@ -10,7 +10,6 @@
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
-#include "../include/uniforms.glsl"
 #include "../include/vertex.glsl"
 #include "../include/morton.glsl"
 #include "./includes.glsl"
@@ -20,7 +19,7 @@ initAtomicSubgroupIncFunction(nCounter, atomicIncLeaf, 1, int)
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    const int wsize = GEOMETRY_BLOCK geometryUniform.triangleCount;
+    const int wsize =  bvhBlock.primitiveCount;
     const int gS = int(gl_WorkGroupSize.x);
     const int wgs = int(gl_NumWorkGroups.x);
     const int wID = int(gl_WorkGroupID.x);
@@ -31,7 +30,7 @@ void main() {
         const int globalID = w + (wID * gS + lID);
         IFALL (globalID >= wsize) break;
 
-        const int tri = clamp(globalID, 0, GEOMETRY_BLOCK geometryUniform.triangleCount-1);
+        const int tri = clamp(globalID, 0,  bvhBlock.primitiveCount-1);
 
         const int itri = tri*3;//tri*9;
         mat3x4 triverts = mat3x4(
@@ -41,9 +40,9 @@ void main() {
         );
 
         triverts = mat3x4(
-            divW(mult4(bvhBlock.creatorUniform.transform, triverts[0])), 
-            divW(mult4(bvhBlock.creatorUniform.transform, triverts[1])), 
-            divW(mult4(bvhBlock.creatorUniform.transform, triverts[2]))
+            divW(mult4(bvhBlock.transform, triverts[0])), 
+            divW(mult4(bvhBlock.transform, triverts[1])), 
+            divW(mult4(bvhBlock.transform, triverts[2]))
         );
         
 

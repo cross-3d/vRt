@@ -60,25 +60,23 @@ uint BFE(in uvec2 ua, in uint o, in uint n) {
 }
 
 
+struct RadicePropStruct { uint Descending; uint IsSigned; };
 
 #define KEYTYPE uvec2
 //#define KEYTYPE uvec_wave
-layout (std430, binding = 20, set = 0 )  readonly buffer KeyInB {KEYTYPE KeyIn[]; };
-layout (std430, binding = 21, set = 0 )  readonly buffer ValueInB {uint ValueIn[]; };
-layout (std430, binding = 24, set = 0 )  readonly buffer VarsB {
-    uint NumKeys;
-    uint Shift;
-    uint Descending;
-    uint IsSigned;
-};
-layout (std430, binding = 25, set = 0 )  writeonly buffer KeyTmpB {KEYTYPE KeyTmp[]; };
-layout (std430, binding = 26, set = 0 )  writeonly buffer ValueTmpB {uint ValueTmp[]; };
-layout (std430, binding = 27, set = 0 )  buffer HistogramB {uint Histogram[]; };
-layout (std430, binding = 28, set = 0 )  buffer PrefixSumB {uint PrefixSum[]; };
+layout (std430, binding = 0, set = 0 )  readonly buffer KeyInB {KEYTYPE KeyIn[]; };
+layout (std430, binding = 1, set = 0 )  readonly buffer ValueInB {uint ValueIn[]; };
+layout (std430, binding = 2, set = 0 )  readonly buffer VarsB { RadicePropStruct radProps[]; };
+layout (std430, binding = 3, set = 0 )  writeonly buffer KeyTmpB {KEYTYPE KeyTmp[]; };
+layout (std430, binding = 4, set = 0 )  writeonly buffer ValueTmpB {uint ValueTmp[]; };
+layout (std430, binding = 5, set = 0 )  buffer HistogramB {uint Histogram[]; };
+layout (std430, binding = 6, set = 0 )  buffer PrefixSumB {uint PrefixSum[]; };
 
+// push constant in radix sort
+layout(push_constant) uniform PushBlock {uint NumKeys, Shift;} push_block;
 
+// division of radix sort
 struct blocks_info { uint count; uint offset; uint limit; uint r0; };
-
 blocks_info get_blocks_info(in uint n) {
     uint block_tile = Wave_Size_RT;
     uint block_size = tiled(n, gl_NumWorkGroups.x);

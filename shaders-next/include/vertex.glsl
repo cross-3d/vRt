@@ -23,6 +23,17 @@
 #else
     layout ( std430, binding = 1, set = 1 ) readonly buffer materialsB { int materials[]; };
 
+
+    // bvh uniform unified
+    layout ( std430, binding = 10, set = 0 ) readonly buffer bvhBlockB { 
+        mat4x4 transform;
+        mat4x4 transformInv;
+        mat4x4 projection;
+        mat4x4 projectionInv;
+        int leafCount, primitiveCount, r1, r2;
+    } bvhBlock;
+
+
     #ifdef ENABLE_VERTEX_INTERPOLATOR
         layout ( binding = 10, set = 1 ) uniform usampler2D attrib_texture;
         layout ( std430, binding = 2, set = 1 ) readonly buffer vordersB { int vorders[]; };
@@ -42,7 +53,7 @@
         #endif
         #endif
         
-        layout ( std430, binding = 3, set = 1 ) readonly buffer geometryUniformB { GeometryUniformStruct geometryUniform;} geometryBlock;
+        //layout ( std430, binding = 3, set = 1 ) readonly buffer geometryUniformB { GeometryUniformStruct geometryUniform;} geometryBlock;
         #ifdef VTX_TRANSPLIT // for leaf gens
             layout ( binding = 7, set = 1, rgba32f ) uniform imageBuffer lvtx;
             #define TLOAD(img,t) imageLoad(img,t)
@@ -186,22 +197,11 @@ void interpolateMeshData(inout HitData ht) {
     const bool_ validInterpolant = greaterEqualF(ht.uvt.z, 0.0f) & lessF(ht.uvt.z, INFINITY) & bool_(tri >= 0) & bool_(materials[tri] == ht.materialID);
 
     IF (validInterpolant) {
-        vec2 trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+ TEXCOORD_TID))), sz, szt));
-        vec2 txcd = vs * mat2x3(SGATHER(attrib_texture, trig, 0)._SWIZV, SGATHER(attrib_texture, trig, 1)._SWIZV);
-
-        trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+   NORMAL_TID))), sz, szt));
-        vec3 nrml = normalize(vs * mat3x3(SGATHER(attrib_texture, trig, 0)._SWIZV, SGATHER(attrib_texture, trig, 1)._SWIZV, SGATHER(attrib_texture, trig, 2)._SWIZV));
-
-        trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+  TANGENT_TID))), sz, szt));
-        vec3 tngt = normalize(vs * mat3x3(SGATHER(attrib_texture, trig, 0)._SWIZV, SGATHER(attrib_texture, trig, 1)._SWIZV, SGATHER(attrib_texture, trig, 2)._SWIZV));
-
-        trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+BITANGENT_TID))), sz, szt));
-        vec3 btng = normalize(vs * mat3x3(SGATHER(attrib_texture, trig, 0)._SWIZV, SGATHER(attrib_texture, trig, 1)._SWIZV, SGATHER(attrib_texture, trig, 2)._SWIZV));
-
-        ht.texcoord.xy = txcd;
-        ht.normal.xyz  = nrml;
-        ht.tangent.xyz = tngt;
-        ht.bitangent.xyz = btng;
+        [[unroll]]
+        for (int i=0;i<4;i++) {
+            vec2 trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+   NORMAL_TID))), sz, szt));
+            ht.attributes[i] = vs * mat3x4(SGATHER(attrib_texture, trig, 0)._SWIZV, SGATHER(attrib_texture, trig, 1)._SWIZV, SGATHER(attrib_texture, trig, 2)._SWIZV, SGATHER(attrib_texture, trig, 3)._SWIZV);
+        }
     }
 }
 #endif

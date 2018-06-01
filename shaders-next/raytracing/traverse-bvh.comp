@@ -10,21 +10,20 @@
 #define ENABLE_TRAVERSE_DATA
 #define ENABLE_VSTORAGE_DATA
 
+#include "../include/rayslib.glsl"
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
-#include "../include/uniforms.glsl"
 #include "../include/morton.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/vertex.glsl"
 
 //#define USE_STACKLESS_BVH
-#include "./submodules/shared-data.glsl"
 #include "./submodules/traverse-bvh2.glsl"
 
 LOCAL_SIZE_LAYOUT;
 
-#define cray unorderedRays[hit.rayID-1]
+#define cray rays[hit.rayID-1]
 
 void main() {
     int wsize = PREPARED_COUNT;
@@ -40,7 +39,7 @@ void main() {
         IFALL(overflow) break;
 
         // do BVH traversing 
-        traverseBvh2(not(overflow), unorderedRays[it]);
+        traverseBvh2(not(overflow), rays[it]);
 
         { // verify intersection
             const int triID = floatBitsToInt(geometrySpace.lastIntersection.w)-1;
@@ -49,46 +48,38 @@ void main() {
                 TLOAD(lvtx, itri+0).xyz,
                 TLOAD(lvtx, itri+1).xyz,
                 TLOAD(lvtx, itri+2).xyz
-                //vec3(lvtx[itri+0], lvtx[itri+1], lvtx[itri+2]),
-                //vec3(lvtx[itri+3], lvtx[itri+4], lvtx[itri+5]),
-                //vec3(lvtx[itri+6], lvtx[itri+7], lvtx[itri+8])
             ));
 
             const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
+            
+            // make hit
+            bool_ vintersect = lessF(geometrySpace.lastIntersection.z, INFINITY-0.001f) & bool_(triID >= 0) & bool_(hid < 0).x | lessF(geometrySpace.lastIntersection.z, hits[hid].uvt.z);
+            int hid = atomicIncHitCount();
 
-            bool_ vintersect = lessF(geometrySpace.lastIntersection.z, INFINITY-0.001f) & bool_(triID >= 0);
-            IFANY (vintersect) {
-                int hid = floatBitsToInt(currentRayTmp.origin.w)-1;
-
-                vintersect &= bool_(hid < 0).x | lessF(geometrySpace.lastIntersection.z, hits[hid].uvt.z);
-                IF (vintersect) {
-                    hid = hid >= 0 ? hid : atomicIncHT();
-
-                    // save hit
-                    HitData hit = hits[hid];
-                    hit.uvt = geometrySpace.lastIntersection;
-                    hit.rayID = it+1;
-                    hit.payloadID = 0;
-                    hit.materialID = materials[triID];
-                    hit.next = 0;
-                    hit.normal.xyz = normalize(cross(e1, e2));
-                    hit.tangent = vec4(0.f);
-                    hit.bitangent = vec4(0.f);
-                    hit.texcoord = vec4(0.f);
+            // save hit
+            HitData hit = hits[hid];
+            hit.rayID = it+1;
+            hit.uvt = geometrySpace.lastIntersection;
+            hit.payloadID = 0;
+            hit.materialID = materials[triID];
+            hit.next = 0;
+            hit.attributes[NORMAL_TID] = vec4(normalize(cross(e1, e2)), 1.f);
+            currentRayTmp.origin.w = intBitsToFloat(hid+1);
+            
+            IF (vintersect) {
 #ifdef ENABLE_VERTEX_INTERPOLATOR
-                    hit.rayID = cray.uindex.x;
-                    interpolateMeshData(hit);
+                interpolateMeshData(hit);
 #endif
-                    hits[hid] = hit;
-
-                    // link hit
-                    currentRayTmp.origin.w = intBitsToFloat(hid+1);
-                }
+                vtVerifyClosestHit(hid);
+            } else {
+                vtVerifyMissedHit(hid);
             }
+
+            hits[hid] = hit;
         }
 
-        // save for some-next operations (for example, hit chaining)
-        unorderedRays[it] = currentRayTmp;
+        // save ray state
+        rays[it] = currentRayTmp;
     }
 
     LGROUP_BARRIER;

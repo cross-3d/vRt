@@ -9,12 +9,11 @@
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
-#include "../include/uniforms.glsl"
 #include "../include/rayslib.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/random.glsl"
 
-
+/*
 vec3 lightCenter(in int i) {
     return fma(normalize(lightUniform.lightNode[i].lightVector.xyz), lightUniform.lightNode[i].lightVector.www, lightUniform.lightNode[i].lightOffset.xyz);
 }
@@ -22,8 +21,10 @@ vec3 lightCenter(in int i) {
 vec3 sphereLightPoint(in int i) {
     return fma(randomDirectionInSphere(), vec3(lightUniform.lightNode[i].lightColor.w - 0.0001f), lightCenter(i));
 }
+*/
 
-struct Material {
+
+struct VtAppMaterial {
      vec4 diffuse;
      vec4 specular;
      vec4 transmission;
@@ -54,8 +55,13 @@ layout ( binding = 0, set = SETS_DESC_SET_ID ) uniform texture2D textures[MAX_TE
 layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[MAX_SAMPLERS];
 
 // material set (in main descriptor set)
-layout ( std430, binding = 2, set = SETS_DESC_SET_ID ) readonly buffer submatsB { Material submats[]; };
-layout ( std430, binding = 3, set = SETS_DESC_SET_ID ) readonly buffer vtexuresB { uvec2 vtexures[]; };
+layout ( std430, binding = 2, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
+layout ( std430, binding = 3, set = SETS_DESC_SET_ID ) readonly buffer VT_COMBINED { uvec2 vtexures[]; };
+
+layout ( std430, binding = 4, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_INFO {
+    uint materialCount;
+    uint materialOffset;
+};
 
 
 int matID = -1;
@@ -170,7 +176,7 @@ struct Textured {
     vec4 emissive;
 } textured;
 
-#define cray rayBlockNodes[rayID / R_BLOCK_SIZE][rayID % R_BLOCK_SIZE].data
+#define cray rays[rayID]//rayBlockNodes[rayID / R_BLOCK_SIZE][rayID % R_BLOCK_SIZE].data
 
 LOCAL_SIZE_LAYOUT;
 
@@ -187,23 +193,23 @@ void main() {
     const vec3 max_fresnel_color = toLinear(vec3(1.f));
     const vec3 min_fresnel_color = toLinear(vec3(1.f));
 
-    int wsize = int(arcounter.hT);
+    int wsize = int(closestHitCounter);
     int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
     bool overflow = false;
     int wgs = int(gl_NumWorkGroups);
     int rayID = -1;
+    
     for (int w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
         bool overflow = overflow || globalID >= wsize || globalID < 0;
-        
-        matID = -1;
+        int hitID = overflow ? -1 : vtClosestId(globalID);
         IFALL(overflow) break;
         {
 #ifdef DMA_HIT
-            #define hit hits[globalID]
+            #define hit hits[hitID]
 #else
-            HitData hit = hits[globalID];
+            HitData hit = hits[hitID];
 #endif
             rayID = hit.rayID-1;
 
@@ -218,8 +224,8 @@ void main() {
             vec3 rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;
 
-            matID = hit.materialID - RAY_BLOCK materialUniform.materialOffset;
-            bool overflow = overflow || rayID < 0 || (matID >= RAY_BLOCK materialUniform.materialCount || matID < 0);
+            matID = hit.materialID;// - materialOffset;
+            bool overflow = overflow || rayID < 0 || (matID >= materialCount || matID < 0);
 
             // static colors
             textured.diffuse = material.diffuse;
@@ -228,10 +234,10 @@ void main() {
             textured.emissive = material.emissive;
 
             // AMD not supported per-lane texture data loading, if texture index is not constant
-            vec2 texcoord = hit.texcoord.xy;
-            vec3 normal = hit.normal.xyz;
-            vec3 bitang = hit.bitangent.xyz;
-            vec3 tangent = hit.tangent.xyz;
+            vec2 texcoord = hit.attributes[TEXCOORD_TID].xy; //hit.texcoord.xy;
+            vec3 normal = hit.attributes[NORMAL_TID].xyz;
+            vec3 bitang = hit.attributes[BITANGENT_TID].xyz;
+            vec3 tangent = hit.attributes[TANGENT_TID].xyz;
 
             mat3 tbn = transpose(mat3(tangent.xyz, bitang.xyz, normal.xyz));
             vec3 pV = normalize(tbn * (-viewVec * hit.uvt.z));
@@ -295,6 +301,7 @@ void main() {
             hitp.albedo = diffuse.xyzw;
             hitp.specularGlossiness = specularGlossiness;
 
+
 #ifdef SIMPLE_RT_MODE
             // simple mode (alternate)
             float spwr = clamp01(max3_vec(specularColor.xyz));
@@ -308,16 +315,17 @@ void main() {
 #endif
 
             // additional validation of hit (hit point interpolated offset test)
-            if (!overflow && globalID >= 0) {
-                int pid = hit.payloadID-1; if (pid < 0) pid = atomicIncIT();
+            if (!overflow && hitID >= 0) {
+                int pid = hit.payloadID-1; 
+                if (pid < 0) pid = atomicIncIT();
                 hitPayload[pid] = hitp;
-                cray.origin.w = intBitsToFloat(globalID+1); // save hit index to ray
+                cray.origin.w = intBitsToFloat(hitID+1); // save hit index to ray
 
                 // make payload ID
                 if (hit.payloadID <= 0) {
                     hit.payloadID = pid+1;
 #ifndef DMA_HIT
-                    hits[globalID] = hit;
+                    hits[hitID] = hit;
 #endif
                 }
             }

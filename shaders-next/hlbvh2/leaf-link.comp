@@ -6,7 +6,6 @@
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
-#include "../include/uniforms.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/vertex.glsl"
@@ -16,7 +15,7 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    const int wsize = bvhBlock.creatorUniform.leafCount;
+    const int wsize = bvhBlock.leafCount;
     const int gS = int(gl_WorkGroupSize.x);
     const int wgs = int(gl_NumWorkGroups.x);
     const int wID = int(gl_WorkGroupID.x);

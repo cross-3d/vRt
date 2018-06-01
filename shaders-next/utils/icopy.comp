@@ -1,0 +1,13 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#include "../include/driver.glsl"
+
+//
+//LOCAL_SIZE_LAYOUT;
+layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT);
+
+// planned copy image shader
+void main(){
+
+}

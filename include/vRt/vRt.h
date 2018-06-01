@@ -188,7 +188,7 @@ namespace vt { // store in official namespace
     struct VtVertexAccessor {
         //VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ACCESSOR;
         //const void* pNext = nullptr;
-        uint32_t binding = 0;
+        uint32_t bufferViewID = 0;
         uint32_t byteOffset = 0;
         union {
             uint32_t components : 2, type : 4, normalized : 1;
@@ -201,9 +201,18 @@ namespace vt { // store in official namespace
     struct VtVertexRegionBinding {
         //VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_REGION_BINDING;
         //const void* pNext = nullptr;
-        uint32_t binding = 0;
+        //uint32_t byteStride = 0;
+        uint32_t byteOffset = 0;
+        uint32_t byteSize = 0;
+        //VkBufferCopy bufferRegion; // import from Vulkan
+    };
+
+
+    // buffer view
+    struct VtVertexBufferView {
+        uint32_t regionID = 0;
+        uint32_t byteOffset = 0;
         uint32_t byteStride = 0;
-        VkBufferCopy bufferRegion; // import from Vulkan
     };
 
 
@@ -238,6 +247,9 @@ namespace vt { // store in official namespace
         // attribute bindings (will stored in special patterned image buffer)
         VtVertexAttributeBinding * pBufferAttributeBindings = nullptr;
         uint32_t attributeBindingCount = 0;
+
+        VtVertexBufferView * pBufferViews = nullptr;
+        uint32_t bufferViewCount = 0;
 
         // where from must got vertex and indices
         uint32_t verticeAccessor = 0;

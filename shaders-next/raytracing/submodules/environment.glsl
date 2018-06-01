@@ -7,7 +7,7 @@ vec4 readEnv(in vec2 ds) {
     return texture(skybox[0], tx2);
 }
 
-void env(inout vec4 color, in RayRework ray) {
+void env(inout vec4 color, in VtRay ray) {
     color = readEnv(ray.cdirect.xy);
     color = clamp(color, vec4(0.f.xxxx), vec4(maxHdrExposure.xxx,1.f));
 }

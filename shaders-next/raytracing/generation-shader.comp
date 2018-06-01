@@ -2,19 +2,21 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #include "../include/driver.glsl"
-
-#define USE_SINGLE_THREAD_RAY_MANAGMENT
-#define SIMPLIFIED_RAY_MANAGMENT
-
 #include "../include/structs.glsl"
-#include "../include/uniforms.glsl"
 #include "../include/rayslib.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/random.glsl"
 
-LOCAL_SIZE_LAYOUT;
+// use partition by 8x8
+layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT);
 
+// planned ray generation shader example
 void main() {
+    VtRay ray;
+    
+    vtEmitRays(ray);
+
+    /*
     int wsize = RAY_BLOCK samplerUniform.blockCount;
     int wcsize = int(gl_WorkGroupSize.x) / int(Wave_Size_RT);
     int wcount = min(tiled(wsize, wcsize), 1000000);
@@ -64,7 +66,7 @@ void main() {
             }
 
         }
-    }
+    }*/
 
     LGROUP_BARRIER;
 }

@@ -5,7 +5,6 @@
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
-#include "../include/uniforms.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/vertex.glsl"
@@ -58,7 +57,7 @@ void main() {
     const int wID = int(gl_WorkGroupID.x);
     const int lID = int(Local_Idx);
     const int rng = gS*wgs;
-    const int wsize = bvhBlock.creatorUniform.leafCount;
+    const int wsize = bvhBlock.leafCount;
 
     for (int w=0;w<wsize;w+=rng) {
         SB_BARRIER

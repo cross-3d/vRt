@@ -1,0 +1,209 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#define VERTEX_FILLING
+
+#include "../include/driver.glsl"
+#include "../include/structs.glsl"
+#include "../include/vertex.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+
+LOCAL_SIZE_LAYOUT;
+
+
+layout(push_constant) uniform PushBlock {
+    uint primitiveCount;
+    uint verticeAccessor;
+    uint indiceAccessor;
+    uint materialID;
+} push_block;
+
+
+// buffer region
+struct VtBufferRegion {
+    uint byteOffset;
+    uint byteSize;
+};
+
+// subdata structuring in buffer region
+struct VtBufferView {
+    int regionID;
+    int byteOffset; // in structure offset
+    int byteStride;
+};
+
+// accessor
+struct VtAccessor {
+    int bufferView; // buffer-view structure
+    int byteOffset; // accessor byteOffset
+    uint bitfield; // VtFormat decodable
+};
+
+// attribute binding
+struct VtAttributeBinding {
+    int attributeID;
+    int accessorID;
+    //int indexOffset;
+};
+
+
+
+const ivec2 COMPONENTS = ivec2(0, 2);
+const ivec2 ATYPE = ivec2(2, 4);
+const ivec2 NORMALIZED = ivec2(6, 1);
+
+int aComponents(in VirtualDataAccess vac) {
+    return parameteri(COMPONENTS, vac.bitfield);
+}
+
+int aType(in VirtualDataAccess vac) {
+    return parameteri(ATYPE, vac.bitfield);
+}
+
+int aNormalized(in VirtualDataAccess vac) {
+    return parameteri(NORMALIZED, vac.bitfield);
+}
+
+
+
+// input data of vertex instance
+//layout ( std430, binding = 0, set = 1 ) readonly buffer bufferSpaceB {INDEX16 bufferSpace[]; };
+layout ( binding = 0, set = 1 ) highp uniform usamplerBuffer bufferSpace;
+layout ( std430, binding = 1, set = 1 ) readonly buffer VT_BUFFER_REGION {VtBufferRegion bufferRegions[]; };
+layout ( std430, binding = 2, set = 1 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
+layout ( std430, binding = 3, set = 1 ) readonly buffer VT_ACCESSOR {VtAccessor accessors[]; };
+layout ( std430, binding = 4, set = 1 ) readonly buffer VT_ATTRIB {VtAttributeBinding attributes[]; };
+
+
+
+uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect){
+    int bufferView = accessors[accessorID].bufferView, bufferID = bufferViews[bufferView].regionID;
+
+    // based on regions byte offset
+    uint offseT = bufferRegions[bufferID].byteOffset;
+
+    // calculate byte offset 
+    offseT += bufferViews[bufferView].byteOffset + accessors[accessorID].byteOffset;
+
+    // get true stride 
+    uint stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID])+1) << bytecorrect);
+
+    // calculate structure indexed offset
+    offseT += index * stride;
+
+    // 
+    return offseT >> bytecorrect;
+}
+
+
+// vec4 getter
+void readByAccessor(in int accessor, in uint index, inout vec4 outp) {
+    if (accessor >= 0) {
+        uint T = calculateByteOffset(accessor, index, 2);
+        uint C = aComponents(accessors[accessor])+1;
+        if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace,T+0));
+        if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace,T+1));
+        if (C >= 3) outp.z = uintBitsToFloat(M32(bufferSpace,T+2));
+        if (C >= 4) outp.w = uintBitsToFloat(M32(bufferSpace,T+3));
+    }
+}
+
+// vec3 getter
+void readByAccessor(in int accessor, in uint index, inout vec3 outp) {
+    if (accessor >= 0) {
+        uint T = calculateByteOffset(accessor, index, 2);
+        uint C = aComponents(accessors[accessor])+1;
+        if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace,T+0));
+        if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace,T+1));
+        if (C >= 3) outp.z = uintBitsToFloat(M32(bufferSpace,T+2));
+    }
+}
+
+// vec2 getter
+void readByAccessor(in int accessor, in uint index, inout vec2 outp) {
+    if (accessor >= 0) {
+        uint T = calculateByteOffset(accessor, index, 2);
+        uint C = aComponents(accessors[accessor])+1;
+        if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace,T+0));
+        if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace,T+1));
+    }
+}
+
+// float getter
+void readByAccessor(in int accessor, in uint index, inout float outp) {
+    if (accessor >= 0) {
+        uint T = calculateByteOffset(accessor, index, 2);
+        outp = uintBitsToFloat(M32(bufferSpace,T+0));
+    }
+}
+
+// int getter
+void readByAccessor(in int accessor, in uint index, inout int outp) {
+    if (accessor >= 0) {
+        uint T = calculateByteOffset(accessor, index, 2);
+        outp = int(M32(bufferSpace,T+0));
+    }
+}
+
+// planned read type directly from accessor
+void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
+    if (accessor >= 0) {
+        const bool U16 = aType(accessors[accessor]) == 2; // uint16
+        uint T = calculateByteOffset(binding, index, U16 ? 1 : 2);
+        if (U16) { outp = M16(bufferSpace,T+0); } else { outp = M32(bufferSpace,T+0); }
+    }
+}
+
+
+//const int m[3] = {0, 1, 2}, mq[3] = {3, 0, 2}, ms[3] = {2, 1, 3};
+initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
+// 
+
+void main(){
+    const int wsize = push_block.primitiveCount;
+    const int gS = int(gl_WorkGroupSize.x);
+    const int wgs = int(gl_NumWorkGroups.x);
+    const int wID = int(gl_WorkGroupID.x);
+    const int lID = int(Local_Idx);
+    const int rng = gS*wgs;
+    
+    for (int w=0;w<wsize;w+=rng) {
+        int globalID = w + wID * gS + lID;
+        IFALL (globalID >= wsize) break;
+        if (globalID < wsize && globalID >= 0) {
+
+            // constant material ID from vertex instance 
+            int matID = int(push_block.materialID);
+            int ordr = tcounter[1] + int(globalID), tidc = tcounterInc(1);
+
+            // planned to support quad based geometry
+            vorders[tidc] = ordr;
+            materials[tidc] = matID;
+            
+            // planned to add support of vertex and geometry shaders
+            [[unroll]]
+            for (int i=0;i<3;i++) {
+                // aggregated indices
+                uint indiceID = globalID * trp + i;
+                readByAccessorIndice(push_block.indiceAccessor, indiceID, indiceID);
+
+                // load attrib data
+                [[unroll]]
+                for (uint a=0;a<min(4,attributes.length());a++) {{
+                    uint a = attributes[a].attributeID;
+                    ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(tidc*ATTRIB_EXTENT+a));
+                    vec4 attribValue = vec4(0.f); readByAccessor(attributes[a].accessorID, indiceID, attribValue);
+                    ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_, i), floatBitsToUint(attribValue));
+                }}
+
+                // load vertex data
+                {
+                    vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); readByAccessor(push_block.verticeAccessor, indiceID, vertice);
+                    imageStore(lvtx, tidc*3+i, vec4(vertice.xyz, 1.f));
+                }
+            }
+            
+        }
+    }
+}

@@ -74,12 +74,8 @@ struct bbox {
 // possible extra solutions: 
 // 1. add extra array of ray metadata/offload (but we very limited in binding registers)
 
-struct RayRework {
-     vec4 origin; vec2 cdirect; uvec2 dcolor;
-};
-
-struct ElectedRay {
-     vec4 origin; vec2 cdirect; ivec2 uindex;
+struct VtRay {
+     vec4 origin; vec2 cdirect; uvec2 uindex;
 };
 
 
@@ -100,11 +96,7 @@ struct HitData {
     int materialID; // may not necessary 
     int next; // next chainged hit
 
-    // attribute block (planned to move to another buffer)
-     vec4 normal; // normal 
-     vec4 tangent; // 
-     vec4 bitangent; // 
-     vec4 texcoord; // critical texcoords 
+    vec4 attributes[4];
 };
 
 struct HitPayload {
@@ -165,61 +157,61 @@ void parameterb(const ivec2 parameter, inout float bitfield, in bool_ value) {
 #define RAY_BITFIELD_ ray.dcolor.y
 
 
-bool_ RayActived(inout RayRework ray) {
+bool_ RayActived(inout VtRay ray) {
     return parameterb(ACTIVED, RAY_BITFIELD_);
 }
 
-void RayActived(inout RayRework ray, in bool_ actived) {
+void RayActived(inout VtRay ray, in bool_ actived) {
     parameterb(ACTIVED, RAY_BITFIELD_, actived);
 }
 
 
 
 
-int RayType(inout RayRework ray) {
+int RayType(inout VtRay ray) {
     return parameteri(TYPE, RAY_BITFIELD_);
 }
 
-void RayType(inout RayRework ray, in int type) {
+void RayType(inout VtRay ray, in int type) {
     parameteri(TYPE, RAY_BITFIELD_, type);
 }
 
 
 
 // restore law about direct light and caustics
-bool_ RayDL(inout RayRework ray) {
+bool_ RayDL(inout VtRay ray) {
     return parameterb(RAY_DL, RAY_BITFIELD_);
 }
 
-void RayDL(inout RayRework ray, in bool_ dl) {
+void RayDL(inout VtRay ray, in bool_ dl) {
     parameterb(RAY_DL, RAY_BITFIELD_, dl);
 }
 
 
 
-int RayTargetLight(inout RayRework ray) {
+int RayTargetLight(inout VtRay ray) {
     return parameteri(TARGET_LIGHT, RAY_BITFIELD_);
 }
 
-void RayTargetLight(inout RayRework ray, in int tl) {
+void RayTargetLight(inout VtRay ray, in int tl) {
     parameteri(TARGET_LIGHT, RAY_BITFIELD_, tl);
 }
 
 
-int RayBounce(inout RayRework ray) {
+int RayBounce(inout VtRay ray) {
     return int(uint(parameteri(BOUNCE, RAY_BITFIELD_)));
 }
 
-void RayBounce(inout RayRework ray, in int bn) {
+void RayBounce(inout VtRay ray, in int bn) {
     parameteri(BOUNCE, RAY_BITFIELD_, int(uint(bn)));
 }
 
 
-int RayDiffBounce(inout RayRework ray) {
+int RayDiffBounce(inout VtRay ray) {
     return int(uint(parameteri(DBOUNCE, RAY_BITFIELD_)));
 }
 
-void RayDiffBounce(inout RayRework ray, in int bn) {
+void RayDiffBounce(inout VtRay ray, in int bn) {
     parameteri(DBOUNCE, RAY_BITFIELD_, int(uint(bn)));
 }
 

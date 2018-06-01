@@ -12,7 +12,6 @@
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
-#include "../include/uniforms.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/vertex.glsl"
@@ -53,9 +52,9 @@ void main() {
     // create initial (root) node
     if (threadID == 0) {
         int hid = lCounterInc();
-        imageStore(bvhMeta, hid+0, ivec4(1, bvhBlock.creatorUniform.leafCount, 0, 0));
+        imageStore(bvhMeta, hid+0, ivec4(1, bvhBlock.leafCount, 0, 0));
         imageStore(bvhMeta, hid+1, ivec4(0, 0, 0, 0));
-        //bvhMeta[hid+0] = ivec4(1, bvhBlock.creatorUniform.leafCount, 0, 0);
+        //bvhMeta[hid+0] = ivec4(1, bvhBlock.leafCount, 0, 0);
         //bvhMeta[hid+1] = ivec4(0, 0, 0, 0);
         Actives[aCounterInc()][cBuffer] = hid+1;
     }
