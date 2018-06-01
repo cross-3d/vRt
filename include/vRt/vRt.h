@@ -49,11 +49,12 @@ namespace vt { // store in official namespace
 };
 
 
+// C++ hard interfaces
 namespace _vt { // store in undercover namespace
     class Instance;
     class PhysicalDevice;
     class Device;
-    class RayTracing;
+    //class RayTracing;
     class CommandBuffer;
     class Pipeline;
 
@@ -69,9 +70,7 @@ namespace _vt { // store in undercover namespace
     protected:
         VkInstance _instance;
     public:
-        operator VkInstance(){
-            return _instance;
-        }
+        operator VkInstance() const { return _instance; }
     };
 
 
@@ -81,9 +80,8 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Instance> _instance;
         VkPhysicalDevice _physicalDevice;
     public:
-        operator VkPhysicalDevice(){
-            return _physicalDevice;
-        }
+        operator VkPhysicalDevice() const { return _physicalDevice; }
+        std::shared_ptr<Instance> _parent() const { return _instance; };
     };
 
 
@@ -93,9 +91,8 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<PhysicalDevice> _physicalDevice;
         VkDevice _device;
     public:
-        operator VkDevice(){
-            return _device;
-        }
+        operator VkDevice() const { return _device; }
+        std::shared_ptr<PhysicalDevice> _parent() const { return _physicalDevice; };
     };
 
 
@@ -105,9 +102,8 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _device;
         VkCommandBuffer _cmd;
     public:
-        operator VkCommandBuffer(){
-            return _cmd;
-        }
+        operator VkCommandBuffer() const { return _cmd; }
+        std::shared_ptr<Device> _parent() const { return _device; };
     };
 
     /*
@@ -116,7 +112,8 @@ namespace _vt { // store in undercover namespace
         friend Device;
         std::shared_ptr<Device> _device;
     public:
-        //operator VkRayTracing() {} // no correct conversion
+        //operator VkRayTracing() const {} // no correct conversion
+        std::shared_ptr<Device> _parent() const { return _device; };
     };*/
 
 
@@ -125,20 +122,41 @@ namespace _vt { // store in undercover namespace
         friend Device;
         std::shared_ptr<Device> _device;
     public:
-        //operator VkPipeline() {} // no correct conversion
+        //operator VkPipeline() const {} // no correct conversion
+        std::shared_ptr<Device> _parent() const { return _device; };
     };
 };
 
 
-// handle aliases
+// class aliases for vRt from C++ hard implementators (incomplete)
+// use shared pointers for C++
+// (planned use plain pointers in C)
 namespace vt { // store in official namespace
 
-    // class aliases for vRt from C++ hard implementators (incomplete)
-    typedef std::shared_ptr<_vt::Instance> VtInstance;
-    typedef std::shared_ptr<_vt::PhysicalDevice> VtPhysicalDevice;
-    typedef std::shared_ptr<_vt::Device> VtDevice;
-    typedef std::shared_ptr<_vt::RayTracing> VtRayTracing;
-    typedef std::shared_ptr<_vt::Pipeline> VtPipeline;
+    struct VtInstance {
+        std::shared_ptr<_vt::Instance> _vtInstance;
+        operator VkInstance() const { return *_vtInstance; }
+    };
+
+    struct VtPhysicalDevice {
+        std::shared_ptr<_vt::PhysicalDevice> _vtPhysicalDevice;
+        operator VkPhysicalDevice() const { return *_vtPhysicalDevice; }
+    };
+
+    struct VtDevice {
+        std::shared_ptr<_vt::Device> _vtDevice;
+        operator VkDevice() const { return *_vtDevice; }
+    };
+
+    struct VtCommandBuffer {
+        std::shared_ptr<_vt::CommandBuffer> _vtCommandBuffer;
+        operator VkCommandBuffer() const { return *_vtCommandBuffer; }
+    };
+
+    struct VtPipeline {
+        std::shared_ptr<_vt::Pipeline> _vtPipeline;
+        
+    };
 
 };
 
