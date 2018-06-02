@@ -28,10 +28,10 @@ set(SOURCES_LIST
     "./include/imgui/*.cpp"
     "./include/imgui/*/*.c"
     "./include/imgui/*/*.cpp"
-    "./include/vulkan/*.c"
-    "./include/vulkan/*.cpp"
-    "./include/vulkan/*/*.c"
-    "./include/vulkan/*/*.cpp"
+    #"./include/vulkan/*.c"
+    #"./include/vulkan/*.cpp"
+    #"./include/vulkan/*/*.c"
+    #"./include/vulkan/*/*.cpp"
     #"./include/tinyrender/*.c"
     #"./include/tinyrender/*.cpp"
     #"./include/tinyrender/*/*.c"
@@ -60,6 +60,7 @@ set (DEFINES
     -DUSE_CIMG
     -DEXPERIMENTAL_GLTF
     -DNSM=vt
+    -DTINY_RENDERER_VK
 )
 
 if(MSVC OR MSVS OR MSYS OR MINGW)
@@ -94,19 +95,11 @@ set (DEFINES ${DEFINES} -DOPTIX_DENOISER_HACK)
 endif()
 endif()
 
-
-#set (CMAKE_C_EXTENSIONS ON)
-#set (CMAKE_CXX_EXTENSIONS ON)
-#set (CMAKE_C_STANDARD 11)
-#set (CMAKE_CXX_STANDARD 20)
-#set (CMAKE_CXX_EXTENSIONS ON)
-#set (CMAKE_CXX_STANDARD 17)
-
 if (MSVC)
-    set (CMAKE_CXX_FLAGS "/W1 /EHa /openmp /std:c++latest /Zc:rvalueCast /arch:AVX2 /Oi /Ot /Oy /GT /GL /Gy /GR")
+    set (CMAKE_CXX_FLAGS "/std:c++latest")
 else()
-    set (CMAKE_CXX_FLAGS "-W1 -std=c++2a -march=skylake -mtune=skylake -Ox")
-    set (CMAKE_C_FLAGS "-W1 -std=c1x")
+    set (CMAKE_CXX_FLAGS "-std=c++2a")
+    set (CMAKE_C_FLAGS "-std=c1x")
 endif()
 
 
