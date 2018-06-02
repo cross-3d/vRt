@@ -32,6 +32,10 @@ set(SOURCES_LIST
     "./include/vulkan/*.cpp"
     "./include/vulkan/*/*.c"
     "./include/vulkan/*/*.cpp"
+    #"./include/tinyrender/*.c"
+    #"./include/tinyrender/*.cpp"
+    #"./include/tinyrender/*/*.c"
+    #"./include/tinyrender/*/*.cpp"
     "./include/*/*.h"
     "./include/*/*.hpp"
     "./include/*/*.inl"
@@ -72,13 +76,13 @@ set (CMAKE_MODULE_PATH
     "${CMAKE_MODULE_PATH}/modules" 
     "${PROJECT_SOURCE_DIR}/modules/" )
 
+find_package(Vulkan QUIET)
+get_filename_component(VULKAN_DIR ${Vulkan_LIBRARY} DIRECTORY )
 
 set (DEP_DIR "${PROJECT_SOURCE_DIR}")
-set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/testapps/lib")
+set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/testapps/lib" "${VULKAN_DIR}")
 set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/testapps/include" "${DEP_DIR}/testapps/" "${DEP_DIR}/testapps/imgui" "${PROJECT_SOURCE_DIR}")
-
-find_package(Vulkan QUIET)
-set (LIBS glfw3 )
+set (LIBS glfw3)
 
 # if OptiX was has
 if (OptiX_INSTALL_DIR AND ENABLE_OPTIX_DENOISER) 
