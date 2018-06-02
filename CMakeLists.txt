@@ -24,8 +24,14 @@ set(SOURCES_LIST
     "./src/imgui/imgui.cpp"
     "./src/examples/*.hpp"
     
+    "./include/imgui/*.c"
+    "./include/imgui/*.cpp"
+    "./include/imgui/*/*.c"
+    "./include/imgui/*/*.cpp"
     "./include/vulkan/*.c"
     "./include/vulkan/*.cpp"
+    "./include/vulkan/*/*.c"
+    "./include/vulkan/*/*.cpp"
     "./include/*/*.h"
     "./include/*/*.hpp"
     "./include/*/*.inl"
@@ -85,10 +91,10 @@ endif()
 endif()
 
 
-set (CMAKE_C_EXTENSIONS ON)
-set (CMAKE_CXX_EXTENSIONS ON)
-set (CMAKE_C_STANDARD 11)
-set (CMAKE_CXX_STANDARD 20)
+#set (CMAKE_C_EXTENSIONS ON)
+#set (CMAKE_CXX_EXTENSIONS ON)
+#set (CMAKE_C_STANDARD 11)
+#set (CMAKE_CXX_STANDARD 20)
 #set (CMAKE_CXX_EXTENSIONS ON)
 #set (CMAKE_CXX_STANDARD 17)
 

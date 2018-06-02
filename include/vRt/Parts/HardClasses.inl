@@ -70,6 +70,18 @@ namespace _vt { // store in undercover namespace
     };*/
 
 
+
+    class PipelineLayout : public std::enable_shared_from_this<PipelineLayout> {
+    public:
+        friend Device;
+        std::shared_ptr<Device> _device;
+        VkPipelineLayout _pipelineLayout; // has blocked set 0 and 1
+        //public:
+        operator VkPipelineLayout() const { return _pipelineLayout; }; // no correct conversion
+        std::shared_ptr<Device> _parent() const { return _device; };
+    };
+
+
     class Pipeline: public std::enable_shared_from_this<Pipeline> {
     public:
         friend Device;

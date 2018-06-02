@@ -26,9 +26,29 @@ namespace vt { // store in official namespace
         operator VkCommandBuffer() const { return *_vtCommandBuffer; }
     };
 
+    struct VtPipelineLayout {
+        std::shared_ptr<_vt::PipelineLayout> _vtPipelineLayout;
+        operator VkPipelineLayout() const { return *_vtPipelineLayout; }
+    };
+
     struct VtPipeline {
         std::shared_ptr<_vt::Pipeline> _vtPipeline;
         
+    };
+
+    struct VtAccelerator {
+        std::shared_ptr<_vt::Accelerator> _vtPipeline;
+
+    };
+
+    struct VtMaterialsInput {
+        std::shared_ptr<_vt::MaterialsInput> _vtMaterialsInput;
+
+    };
+
+    struct VtVertexInput {
+        std::shared_ptr<_vt::MaterialsInput> _vtVertexInput;
+
     };
 
 };

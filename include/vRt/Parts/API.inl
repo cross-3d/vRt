@@ -99,7 +99,7 @@ namespace vt { // store in official namespace
         uint32_t bufferRegionCount = 0;
 
         // accessor regions
-        VtVertexAccessors * pBufferAccessors = nullptr;
+        VtVertexAccessor * pBufferAccessors = nullptr;
         uint32_t bufferAccessorCount = 0;
 
         // attribute bindings (will stored in special patterned image buffer)
@@ -121,7 +121,7 @@ namespace vt { // store in official namespace
 
 
     struct VtMaterialsInputCreateInfo {
-        VtStructureType sType = VT_STRUCTURE_TYPE_MATERIALS_INPUT_CREATE_SET_INFO;
+        VtStructureType sType = VT_STRUCTURE_TYPE_MATERIALS_INPUT_CREATE_INFO;
         const void* pNext = nullptr;
 
         // immutable images (textures)
@@ -140,6 +140,13 @@ namespace vt { // store in official namespace
         VkBuffer materialDescriptionsBuffer; // buffer for user material descriptions
         const uint32_t* pMaterialDescriptionIDs;
         uint32_t materialCount;
+    };
+
+
+
+    struct VtAcceleratorCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_ACCELERATOR_CREATE_INFO;
+        const void* pNext = nullptr;
     };
 
 
@@ -200,7 +207,7 @@ namespace vt { // store in official namespace
     VtResult vtCreateVertexInputSource(const VtVertexInputCreateInfo * vtVertexInputCreateInfo, VtVertexInput * vtVertexInput);
 
     // make descriptor input 
-    VtResult vtCreateMaterialsInput(const VtMaterialsCreateInfo * vtMaterialsCreateInfo, VtMaterialsInput * materialsInput);
+    VtResult vtCreateMaterialsInput(const VtMaterialsInputCreateInfo * vtMaterialsCreateInfo, VtMaterialsInput * materialsInput);
 
 
     // make command buffer capable with ray tracing factory (VtCommandBuffer)
