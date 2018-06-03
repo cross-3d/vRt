@@ -4,6 +4,8 @@
 
 // C++ hard interfaces (which will storing)
 namespace _vt { // store in undercover namespace
+    using namespace vt;
+
     class Instance;
     class PhysicalDevice;
     class Device;
@@ -32,7 +34,7 @@ namespace _vt { // store in undercover namespace
         VkPhysicalDevice _physicalDevice;
 
         operator VkPhysicalDevice() const { return _physicalDevice; }
-        std::shared_ptr<Instance> _parent() const { return _instance; };
+        std::shared_ptr<Instance> _parent() const { return _instance.lock(); };
     };
 
 
@@ -46,7 +48,7 @@ namespace _vt { // store in undercover namespace
         VkDevice _device;
 
         operator VkDevice() const { return _device; }
-        std::shared_ptr<PhysicalDevice> _parent() const { return _physicalDevice; };
+        std::shared_ptr<PhysicalDevice> _parent() const { return _physicalDevice.lock(); };
     };
 
 
@@ -57,7 +59,7 @@ namespace _vt { // store in undercover namespace
         VkCommandBuffer _cmd;
 
         operator VkCommandBuffer() const { return _cmd; }
-        std::shared_ptr<Device> _parent() const { return _device; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
 
@@ -68,7 +70,7 @@ namespace _vt { // store in undercover namespace
         VkPipelineLayout _pipelineLayout; // has blocked set 0 and 1
         
         operator VkPipelineLayout() const { return _pipelineLayout; }; // no correct conversion
-        std::shared_ptr<Device> _parent() const { return _device; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
 
@@ -77,7 +79,7 @@ namespace _vt { // store in undercover namespace
         friend Device;
         std::weak_ptr<Device> _device;
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
 
@@ -86,7 +88,7 @@ namespace _vt { // store in undercover namespace
         friend Device;
         std::weak_ptr<Device> _device;
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
     // this is wrapped buffer class
@@ -99,7 +101,7 @@ namespace _vt { // store in undercover namespace
         VmaAllocation _allocation;
         VmaAllocationInfo _allocationInfo;
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
         VkDescriptorBufferInfo _descriptorInfo(); //generated structure
     };
 
@@ -118,7 +120,7 @@ namespace _vt { // store in undercover namespace
         VkImageLayout _initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
         VkDescriptorImageInfo _descriptorInfo(); //generated structure
     };
 
@@ -129,7 +131,7 @@ namespace _vt { // store in undercover namespace
         friend Device;
         std::weak_ptr<Device> _device;
         
-        std::shared_ptr<Device> _parent() const { return _device; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
     // this class does not using in ray tracing API
@@ -139,7 +141,7 @@ namespace _vt { // store in undercover namespace
         friend Device;
         std::weak_ptr<Device> _device;
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
 

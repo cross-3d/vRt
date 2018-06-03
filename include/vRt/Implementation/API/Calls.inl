@@ -5,7 +5,7 @@
 #include "./RayTracing.inl"
 
 namespace _vt {
-
+    using namespace vt;
 
 
 };

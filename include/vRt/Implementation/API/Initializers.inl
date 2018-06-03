@@ -4,6 +4,8 @@
 
 // C++ internal initializers for hard classes
 namespace _vt { // store in undercover namespace
+    using namespace vt;
+
 
     inline std::shared_ptr<PhysicalDevice> makePhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical){
         auto vtPhysical = std::make_shared<PhysicalDevice>();
@@ -24,10 +26,10 @@ namespace _vt { // store in undercover namespace
         dvi.enabledExtensionCount = vdvi.enabledExtensionCount;
         dvi.ppEnabledExtensionNames = vdvi.ppEnabledExtensionNames;
         dvi.pEnabledFeatures = vdvi.pEnabledFeatures;
-        vkCreateDevice(*vtDevice->_physicalDevice, &dvi, nullptr, &vtDevice->_device);
+        vkCreateDevice(*(vtDevice->_physicalDevice.lock()), &dvi, nullptr, &vtDevice->_device);
 
         VmaAllocatorCreateInfo allocatorInfo;
-        allocatorInfo.physicalDevice = *vtDevice->_physicalDevice;
+        allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice.lock());
         allocatorInfo.device = vtDevice->_device;
         allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb
         allocatorInfo.flags = VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_MAPPED_BIT;
@@ -38,10 +40,10 @@ namespace _vt { // store in undercover namespace
     
     inline std::shared_ptr<DeviceBuffer> createDeviceBuffer(std::shared_ptr<Device> device, VkBufferUsageFlagBits usageFlag, uint32_t familyIndex, VkDeviceSize bufferSize){
         auto vtDeviceBuffer = std::make_shared<DeviceBuffer>();
-        
+
         VmaAllocationCreateInfo allocCreateInfo = {};
         allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        auto binfo = VkBufferCreateInfo(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, bufferSize, usageBits, VkSharingMode::eExclusive, 1, &familyIndex);
+        auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, bufferSize, usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &familyIndex };
         vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo);
 
         return vtDeviceBuffer;

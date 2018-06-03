@@ -6,16 +6,27 @@ namespace vt { // store in official namespace
     // Description structs for make vRt objects
     // Note: structures already have default headers for identifying
 
+
+    // in general that is conversion
     struct VtInstanceCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         const void* pNext = nullptr;
         VkInstance vkInstance;
     };
 
+    // full ray tracing device create info + ray tracing system (vRt) additions
+    // planned in future to embed into "pNext" of state version "VkDeviceCreateInfo"
     struct VtDeviceCreateInfo {
-        VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        const void* pNext = nullptr;
-        VtDevice vtDevice;
+        VtStructureType                 sType = VT_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        const void*                     pNext = nullptr;
+        VkDeviceCreateFlags             flags;
+        uint32_t                        queueCreateInfoCount;
+        const VkDeviceQueueCreateInfo*  pQueueCreateInfos;
+        uint32_t                        enabledLayerCount;
+        const char* const*              ppEnabledLayerNames;
+        uint32_t                        enabledExtensionCount;
+        const char* const*              ppEnabledExtensionNames;
+        const VkPhysicalDeviceFeatures* pEnabledFeatures;
     };
 
     struct VtRayTracingCreateInfo {
@@ -27,13 +38,15 @@ namespace vt { // store in official namespace
     struct VtDeviceConvertInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_CONVERT_INFO;
         const void* pNext = nullptr;
-        VtPhysicalDevice vtPhysicalDevice;
+        VtPhysicalDevice physicalDevice;
+        VkDevice vkDevice;
     };
 
     struct VtPhysicalDeviceConvertInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONVERT_INFO;
         const void* pNext = nullptr;
-        VtInstance vtInstance;
+        VtInstance instance;
+        VkPhysicalDevice vkPhysicalDevice;
     };
 
     struct VtRayTracingPipelineCreateInfo {

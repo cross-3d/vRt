@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Parts/Headers.inl"
+//#include "../Parts/Headers.inl"
 
 #include <vulkan/vulkan.hpp> // only for inner usage
 #include <chrono>
@@ -18,6 +18,8 @@
 #include <execution>
 #include <iterator>
 #include <cstddef>
+
+#define DEFAULT_FENCE_TIMEOUT 100000000000
 
 namespace _vt {
 
@@ -101,20 +103,25 @@ namespace _vt {
     // create shader module
     auto loadAndCreateShaderModule(VkDevice device, std::string path) {
         auto code = readBinary(path);
-        VkShaderModuleCreateInfo smi(VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, 0, code.size(), (uint32_t *)code.data());
-        VkShaderModule sm; vkCreateShaderModule(device, &smi, nullptr, &sm)
+        VkShaderModuleCreateInfo smi{ VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr , 0, code.size(), (uint32_t *)code.data() };
+        VkShaderModule sm; vkCreateShaderModule(device, &smi, nullptr, &sm);
         return sm;
     }
 
     // create compute pipelines
     auto createCompute(VkDevice device, std::string path, VkPipelineLayout layout, VkPipelineCache cache){
         auto module = loadAndCreateShaderModule(device, path);
+
+        VkPipelineShaderStageCreateInfo spi;
+        spi.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        spi.module = module;
+        spi.pName = "main";
+        spi.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+
         VkComputePipelineCreateInfo cmpi;
         cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-        cmpi.module = module;
-        cmpi.pName = "main";
-        cmpi.stage = VK_SHADER_STAGE_COMPUTE_BIT;
         cmpi.layout = layout;
+        cmpi.stage = spi;
 
         VkPipeline pipeline;
         vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);
@@ -140,8 +147,8 @@ namespace _vt {
         smbi.commandBufferCount = cmds.size();
         smbi.pCommandBuffers = cmds.data();
 
-        VkFence fence; VkFenceCreateInfo fin(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO);
-        VkCreateFence(device, &fin, nullptr, &fence);
+        VkFence fence; VkFenceCreateInfo fin{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr };
+        vkCreateFence(device, &fin, nullptr, &fence);
         vkQueueSubmit(queue, 1, &smbi, fence);
         std::async(std::launch::async | std::launch::deferred, [=]() {
             vkWaitForFences(device, 1, &fence, true, DEFAULT_FENCE_TIMEOUT);
