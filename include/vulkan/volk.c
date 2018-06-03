@@ -1,5 +1,5 @@
-/* This file is part of volk library; see volk.h for version/license details */
-#include "volk.h"
+/* This file is part of volk library; see vulkan.h for version/license details */
+#include "vulkan.h"
 
 #ifdef _WIN32
 #	include <windows.h>

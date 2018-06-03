@@ -1,8 +1,42 @@
 #pragma once
-#include <vulkan/volk.h>
+#include <vulkan/vulkan.h>
 
+#include <chrono>
+#include <fstream>
+#include <functional>
+#include <future>
+#include <iostream>
+#include <stdexcept>
+#include <memory>
+#include <array>
+#include <map>
+#include <random>
+#include <vector>
+#include <algorithm>
+#include <execution>
+#include <iterator>
+#include <cstddef>
 
 namespace _vt {
+
+    // read binary (for SPIR-V)
+    std::vector<char> readBinary(std::string filePath) {
+        std::ifstream file(filePath, std::ios::in | std::ios::binary | std::ios::ate);
+        std::vector<char> data;
+        if (file.is_open())
+        {
+            std::streampos size = file.tellg();
+            data.resize(size);
+            file.seekg(0, std::ios::beg);
+            file.read(&data[0], size);
+            file.close();
+        }
+        else
+        {
+            std::cerr << "Failure to open " + filePath << std::endl;
+        }
+        return data;
+    };
 
     // shader pipeline barrier
     void shaderBarrier(const VkCommandBuffer& cmdBuffer) {
@@ -53,6 +87,7 @@ namespace _vt {
 
         VkCommandBufferBeginInfo bgi;
         bgi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        //bgi.flags = 0;
         //bgi.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
         bgi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         bgi.pInheritanceInfo = &inhi;
@@ -60,4 +95,59 @@ namespace _vt {
 
         return cmdBuffer;
     };
+
+    // create shader module
+    auto loadAndCreateShaderModule(VkDevice device, std::string path) {
+        auto code = readBinary(path);
+        VkShaderModuleCreateInfo smi(VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, 0, code.size(), (uint32_t *)code.data());
+        VkShaderModule sm; vkCreateShaderModule(device, &smi, nullptr, &sm)
+        return sm;
+    }
+
+    // create compute pipelines
+    auto createCompute(VkDevice device, std::string path, VkPipelineLayout layout, VkPipelineCache cache){
+        auto module = loadAndCreateShaderModule(device, path);
+        VkComputePipelineCreateInfo cmpi;
+        cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+        cmpi.module = module;
+        cmpi.pName = "main";
+        cmpi.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+        cmpi.layout = layout;
+
+        VkPipeline pipeline;
+        vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);
+        return pipeline;
+    }
+
+    // add dispatch in command buffer (with default pipeline barrier)
+    void cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1){
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+        vkCmdDispatch(cmd, x, y, z);
+        shaderBarrier(cmd); // put shader barrier
+    }
+
+    // submit command (with async wait)
+    void submitCmdAsync(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, std::function<void()> asyncCallback = {}){
+        // no commands 
+        if (cmds.size() <= 0) return;
+
+        VkSubmitInfo smbi;
+        smbi.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        smbi.waitSemaphoreCount = 0;
+        smbi.signalSemaphoreCount = 0;
+        smbi.commandBufferCount = cmds.size();
+        smbi.pCommandBuffers = cmds.data();
+
+        VkFence fence; VkFenceCreateInfo fin(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO);
+        VkCreateFence(device, &fin, nullptr, &fence);
+        vkQueueSubmit(queue, 1, &smbi, fence);
+        std::async(std::launch::async | std::launch::deferred, [=]() {
+            vkWaitForFences(device, 1, &fence, true, DEFAULT_FENCE_TIMEOUT);
+            std::async(std::launch::async | std::launch::deferred, [=]() {
+                vkDestroyFence(device, fence, nullptr);
+                asyncCallback();
+            });
+        });
+    }
+
 };
