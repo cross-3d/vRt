@@ -160,18 +160,15 @@ namespace vt { // store in official namespace
         uint16_t hf_r, hf_g, hf_b, bitfield;
     };
 
-    struct VtNamedCombinedImagePair {
-        uint32_t textureID, samplerID;
-    };
 
     struct VtVirtualCombinedImage {
         union {
-            VtNamedCombinedImagePair pair;
+            uint64_t textureID : 32, samplerID : 32;
             uint64_t combined;
         };
 
-        operator VtNamedCombinedImagePair&() { return pair; }; // return editable
-        operator uint64_t() const { return combined; }; // return paired
+        operator uint64_t() const { return combined; };
+        operator uint64_t&() { return combined; };
     };
 
 
