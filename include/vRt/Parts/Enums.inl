@@ -7,20 +7,20 @@ namespace vt { // store in official namespace
     // use 0x11E for VtResult
     // use 0x11F for VtStructureType
 
-     enum VtResult: uint32_t {
+    typedef enum VtResult: uint32_t {
         VT_SUCCESS = 0x11E00000, // default status
         VT_NOT_READY = 0x11E00001, 
         VT_TIMEOUT = 0x11E00002, 
         VT_INCOMPLETE = 0x11E00003, 
         VT_ERROR_INITIALIZATION_FAILED = 0x11E00004, // if error occurs from ray tracer itself
-    };
+    } VtResult;
 
-     enum VtPipelineBindPoint: uint32_t {
+    typedef enum VtPipelineBindPoint: uint32_t {
         VT_PIPELINE_BIND_POINT_RAY_TRACING = 0x11F00000,
         VT_PIPELINE_BIND_POINT_ACCELERATOR = 0x11F00001 // unknown
-    };
+    } VtPipelineBindPoint;
 
-     enum VtStructureType: uint32_t {
+    typedef enum VtStructureType: uint32_t {
         VT_STRUCTURE_TYPE_INSTANCE_CREATE_INFO = 0x11F00000,
         VT_STRUCTURE_TYPE_DEVICE_CREATE_INFO = 0x11F00001,
         VT_STRUCTURE_TYPE_DEVICE_CONVERT_INFO = 0x11F00002, 
@@ -33,16 +33,16 @@ namespace vt { // store in official namespace
         // empty
         VT_STRUCTURE_TYPE_MATERIALS_INPUT_CREATE_INFO = 0x11F0000A,
         VT_STRUCTURE_TYPE_ACCELERATOR_CREATE_INFO = 0x11F0000B
-    };
+    } VtStructureType;
 
     // it is bitfield-based value
-     enum VtFormat: uint32_t {
+    typedef enum VtFormat: uint32_t {
 
-    };
+    } VtFormat;
 
     // all supported topologies
-     enum VtTopologyType: uint32_t {
+    typedef enum VtTopologyType: uint32_t {
         VT_TOPOLOGY_TYPE_TRIANGLES_LIST = 0x11F00000
-    };
+    } VtTopologyType;
 
 };
