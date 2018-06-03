@@ -13,7 +13,7 @@ namespace _vt { // store in undercover namespace
         return vtPhysical;
     };
 
-    inline std::shared_ptr<Device> createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VtDeviceCreateInfo vdvi){
+    inline std::shared_ptr<Device> createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, const VtDeviceCreateInfo& vdvi){
         auto vtDevice = std::make_shared<Device>();
         vtDevice->_physicalDevice = physicalDevice;
 
