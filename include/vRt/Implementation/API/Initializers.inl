@@ -14,10 +14,8 @@ namespace _vt { // store in undercover namespace
     };
 
     inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, const VtDeviceCreateInfo& vdvi, VtDevice& _vtDevice){
-        _vtDevice._vtDevice = std::make_shared<Device>();
-
-        auto& vtDevice = _vtDevice._vtDevice; vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
-        
+        auto& vtDevice = (_vtDevice._vtDevice = std::make_shared<Device>());
+        vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
 
         VtResult result = VT_ERROR_INITIALIZATION_FAILED;
 
@@ -42,25 +40,51 @@ namespace _vt { // store in undercover namespace
         return result;
     };
 
-    inline auto createDeviceBuffer(std::shared_ptr<Device> device, VkBufferUsageFlagBits usageFlag, VkDeviceSize bufferSize = sizeof(uint32_t), uint32_t familyIndex = 0){
-        auto vtDeviceBuffer = std::make_shared<DeviceBuffer>();
+    // planned acceptance by VtCreateDeviceBufferInfo 
+    inline VtResult createDeviceBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, VtDeviceBuffer &_vtBuffer){
+        VtResult result = VT_ERROR_INITIALIZATION_FAILED;
+
+        auto& vtDeviceBuffer = (_vtBuffer._deviceBuffer = std::make_shared<DeviceBuffer>());
+        vtDeviceBuffer->_device = device; // delegate device by weak_ptr
 
         VmaAllocationCreateInfo allocCreateInfo = {};
         allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, bufferSize, usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &familyIndex };
-        vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo);
-        vtDeviceBuffer->_size = bufferSize;
+        auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, cinfo.bufferSize, cinfo.usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &cinfo.familyIndex };
+        if (vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo) == VK_SUCCESS) { result = VT_SUCCESS; };
+        vtDeviceBuffer->_size = cinfo.bufferSize;
 
-        return vtDeviceBuffer;
+        // if format is known, make bufferView
+        if (result == VT_SUCCESS && cinfo.format) {
+            vtDeviceBuffer->_bufferView;
+            VkBufferViewCreateInfo bvi;
+            bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+            bvi.buffer = vtDeviceBuffer->_buffer;
+            bvi.format = cinfo.format;
+            bvi.offset = 0;
+            bvi.range = cinfo.bufferSize;
+            if (vkCreateBufferView(device->_device, &bvi, nullptr, &vtDeviceBuffer->_bufferView) == VK_SUCCESS) {
+                result = VT_SUCCESS;
+            }
+            else {
+                result = VT_INCOMPLETE;
+            };
+        }
+
+        return result;
     };
 
-    inline auto createDeviceImage(std::shared_ptr<Device> device, vk::ImageViewType imageViewType, vk::ImageLayout layout, vk::Extent3D size, vk::ImageUsageFlags usage, vk::Format format = vk::Format::eR32G32B32A32Sfloat, uint32_t mipLevels = 1, uint32_t familyIndex = 0) {
-        auto texture = std::make_shared<DeviceImage>();
-        texture->_layout = (VkImageLayout)layout;
+    // planned acceptance by VtCreateDeviceImageInfo 
+    inline VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, VtDeviceImage &_vtImage) {
+        // result will no fully handled
+        VtResult result = VT_ERROR_INITIALIZATION_FAILED;
+
+        auto& texture = (_vtImage._deviceImage = std::make_shared<DeviceImage>());
+        texture->_device = device; // delegate device by weak_ptr
+        texture->_layout = (VkImageLayout)cinfo.layout;
 
         // init image dimensional type
         vk::ImageType imageType = vk::ImageType::e2D; bool isCubemap = false;
-        switch (imageViewType) {
+        switch (vk::ImageViewType(cinfo.imageViewType)) {
             case vk::ImageViewType::e1D:
                 imageType = vk::ImageType::e1D;
                 break;
@@ -88,23 +112,23 @@ namespace _vt { // store in undercover namespace
 
         // image memory descriptor
         auto imageInfo = vk::ImageCreateInfo();
-        imageInfo.initialLayout = (vk::ImageLayout)texture->_initialLayout;
+        imageInfo.initialLayout = vk::ImageLayout(texture->_initialLayout);
         imageInfo.imageType = imageType;
         imageInfo.sharingMode = vk::SharingMode::eExclusive;
         imageInfo.arrayLayers = 1; // unsupported
         imageInfo.tiling = vk::ImageTiling::eOptimal;
-        imageInfo.extent = { size.width, size.height, size.depth * (isCubemap ? 6 : 1) };
-        imageInfo.format = format;
-        imageInfo.mipLevels = mipLevels;
-        imageInfo.pQueueFamilyIndices = &familyIndex;
+        imageInfo.extent = { cinfo.size.width, cinfo.size.height, cinfo.size.depth * (isCubemap ? 6 : 1) };
+        imageInfo.format = vk::Format(cinfo.format);
+        imageInfo.mipLevels = cinfo.mipLevels;
+        imageInfo.pQueueFamilyIndices = &cinfo.familyIndex;
         imageInfo.queueFamilyIndexCount = 1;
         imageInfo.samples = vk::SampleCountFlagBits::e1; // at now not supported MSAA
-        imageInfo.usage = usage;
+        imageInfo.usage = vk::ImageUsageFlags(cinfo.usage);
 
         // create image with allocation
         VmaAllocationCreateInfo allocCreateInfo = {};
         allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        vmaCreateImage(device->_allocator, &(VkImageCreateInfo)imageInfo, &allocCreateInfo, (VkImage *)&texture->_image, &texture->_allocation, &texture->_allocationInfo);
+        if (vmaCreateImage(device->_allocator, &(VkImageCreateInfo)imageInfo, &allocCreateInfo, (VkImage *)&texture->_image, &texture->_allocation, &texture->_allocationInfo) == VK_SUCCESS) { result = VT_SUCCESS; };
 
         // subresource range
         texture->_subresourceRange.levelCount = 1;
@@ -119,20 +143,21 @@ namespace _vt { // store in undercover namespace
         texture->_subresourceLayers.aspectMask = texture->_subresourceRange.aspectMask;
         texture->_subresourceLayers.mipLevel = texture->_subresourceRange.baseMipLevel;
 
-        // descriptor for usage
+        // descriptor for usage 
+        // (unhandled by vtResult)
         texture->_imageView = vk::Device(device->_device).createImageView(vk::ImageViewCreateInfo()
             .setSubresourceRange(texture->_subresourceRange)
-            .setViewType(imageViewType)
+            .setViewType(vk::ImageViewType(cinfo.imageViewType))
             .setComponents(vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA))
             .setImage(texture->_image)
-            .setFormat(format));
+            .setFormat(vk::Format(cinfo.format)));
 
-        return texture;
+        return result;
     };
 
     // transition texture layout
-    inline VkResult imageBarrier(VkCommandBuffer &cmd, std::shared_ptr<DeviceImage> &image) {
-        VkResult result = VK_SUCCESS; // planned to complete
+    inline VtResult imageBarrier(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> image) {
+        VtResult result = VT_SUCCESS; // planned to complete
 
         vk::ImageMemoryBarrier imageMemoryBarriers = {};
         imageMemoryBarriers.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -179,6 +204,7 @@ namespace _vt { // store in undercover namespace
             case il::ePresentSrcKHR: dstMask = afb::eMemoryRead; break;
         }
 
+        // assign access masks
         imageMemoryBarriers.srcAccessMask = srcMask;
         imageMemoryBarriers.dstAccessMask = dstMask;
 

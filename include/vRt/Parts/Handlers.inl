@@ -52,4 +52,18 @@ namespace vt { // store in official namespace
 
     };
 
+    // advanced class (buffer)
+    struct VtDeviceBuffer {
+        std::shared_ptr<_vt::DeviceBuffer> _deviceBuffer;
+        operator VkBuffer() const { return *_deviceBuffer; }
+        operator VkBufferView() const { return *_deviceBuffer; }
+    };
+
+    // advanced class (image)
+    struct VtDeviceImage {
+        std::shared_ptr<_vt::DeviceImage> _deviceImage;
+        operator VkImage() const { return *_deviceImage; }
+        operator VkImageView() const { return *_deviceImage; }
+    };
+
 };

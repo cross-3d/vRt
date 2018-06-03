@@ -11,4 +11,8 @@ namespace _vt {
     inline VtResult vtCreateDevice(VtPhysicalDevice vtPhysicalDevice, const VtDeviceCreateInfo * vtDeviceCreateInfo, VtDevice * vtDevice) {
         return createDevice(vtPhysicalDevice._vtPhysicalDevice, *vtDeviceCreateInfo, *vtDevice);
     };
+
+    inline VtResult vtCmdImageBarrier(VkCommandBuffer cmd, VtDeviceImage image) {
+        return imageBarrier(cmd, image._deviceImage);
+    }
 };

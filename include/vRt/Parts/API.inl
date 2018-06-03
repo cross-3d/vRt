@@ -67,4 +67,7 @@ namespace vt { // store in official namespace
     // bind materials input (for closest hit shaders)
     inline VtResult vtCmdBindMaterialsInput(VtCommandBuffer commandBuffer, VtMaterialsInput materials);
 
+
+    // image barrier (with state Vulkan API command buffer)
+    inline VtResult vtCmdImageBarrier(VkCommandBuffer cmd, VtDeviceImage image);
 };

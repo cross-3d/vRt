@@ -174,4 +174,33 @@ namespace vt { // store in official namespace
         operator uint64_t() const { return combined; }; // return paired
     };
 
+
+
+    // custom (unified) object create info, exclusive for vRt ray tracing system, and based on classic Satellite objects
+    // bound in device space
+    // planned to add support of HostToGpu and GpuToHost objects 
+
+    struct VtDeviceBufferCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_BUFFER_CREATE_INFO;
+        const void* pNext = nullptr;
+
+        VkBufferUsageFlags usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        VkDeviceSize bufferSize = sizeof(uint32_t);
+        VkFormat format = VK_FORMAT_UNDEFINED;
+        uint32_t familyIndex = 0;
+    };
+
+    struct VtDeviceImageCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_IMAGE_CREATE_INFO;
+        const void* pNext = nullptr;
+
+        VkImageViewType imageViewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
+        VkImageLayout layout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
+        VkExtent3D size = {1, 1, 1};
+        VkImageUsageFlags usage = VkImageUsageFlagBits::VK_IMAGE_USAGE_STORAGE_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        VkFormat format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        uint32_t mipLevels = 1;
+        uint32_t familyIndex = 0;
+    };
+
 };

@@ -18,7 +18,7 @@ namespace _vt { // store in undercover namespace
     class MaterialsInput;
     
 
-
+    // ray tracing instance aggregation
     class Instance : public std::enable_shared_from_this<Instance> {
     public:
         VkInstance _instance;
@@ -26,7 +26,7 @@ namespace _vt { // store in undercover namespace
         operator VkInstance() const { return _instance; }
     };
 
-
+    // ray tracing physical device handle
     class PhysicalDevice : public std::enable_shared_from_this<PhysicalDevice> {
     public:
         friend Instance;
@@ -37,7 +37,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Instance> _parent() const { return _instance.lock(); };
     };
 
-
+    // ray tracing device with aggregation
     class Device : public std::enable_shared_from_this<Device> {
     public:
         friend PhysicalDevice;
@@ -51,7 +51,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<PhysicalDevice> _parent() const { return _physicalDevice.lock(); };
     };
 
-
+    // ray tracing command buffer interface aggregator
     class CommandBuffer : public std::enable_shared_from_this<CommandBuffer> {
     public:
         friend Device;
@@ -62,7 +62,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
-
+    // ray tracing advanced pipeline layout (unfinished)
     class PipelineLayout : public std::enable_shared_from_this<PipelineLayout> {
     public:
         friend Device;
@@ -73,7 +73,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
-
+    // ray tracing advanced pipeline (unfinished)
     class Pipeline: public std::enable_shared_from_this<Pipeline> {
     public:
         friend Device;
@@ -82,7 +82,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
-
+    // ray tracing accelerator structure object (unfinished)
     class Accelerator: public std::enable_shared_from_this<Accelerator> {
     public:
         friend Device;
@@ -91,7 +91,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
-    // this is wrapped buffer class
+    // this is wrapped advanced buffer class
     class DeviceBuffer: public std::enable_shared_from_this<DeviceBuffer> {
     public:
         friend Device;
@@ -103,10 +103,12 @@ namespace _vt { // store in undercover namespace
         VkDeviceSize _size;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        operator VkBuffer() const { return _buffer; } // cast operator
+        operator VkBufferView() const { return _bufferView; } // cast operator
         VkDescriptorBufferInfo _descriptorInfo(); //generated structure
     };
 
-    // this is wrapped image class
+    // this is wrapped advanced image class
     class DeviceImage: public std::enable_shared_from_this<DeviceImage> {
     public:
         friend Device;
@@ -122,6 +124,8 @@ namespace _vt { // store in undercover namespace
         VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        operator VkImage() const { return _image; } // cast operator
+        operator VkImageView() const { return _imageView; } // cast operator
         VkDescriptorImageInfo _descriptorInfo(); //generated structure
     };
 
