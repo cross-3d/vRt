@@ -100,6 +100,7 @@ namespace _vt { // store in undercover namespace
         VmaAllocationInfo _allocationInfo;
 
         std::shared_ptr<Device> _parent() const { return _device; };
+        VkDescriptorBufferInfo _descriptorInfo(); //generated structure
     };
 
     // this is wrapped image class
@@ -118,6 +119,7 @@ namespace _vt { // store in undercover namespace
         VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
 
         std::shared_ptr<Device> _parent() const { return _device; };
+        VkDescriptorImageInfo _descriptorInfo(); //generated structure
     };
 
     // this class does not using in ray tracing API
