@@ -2,6 +2,7 @@
 
 #include "../Parts/Headers.inl"
 
+#include <vulkan/vulkan.hpp> // only for inner usage
 #include <chrono>
 #include <fstream>
 #include <functional>
