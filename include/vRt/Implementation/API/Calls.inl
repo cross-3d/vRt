@@ -1,7 +1,9 @@
 #pragma once
 
-#include "../../Utils/Utils.hpp"
 #include "../../vRt.h"
+
+#include "./BuildAccelerator.inl"
+#include "./CopyProgram.inl"
 
 namespace _vt {
 

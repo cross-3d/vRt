@@ -61,6 +61,13 @@
         "xxatomic": "cpp",
         "fstream": "cpp",
         "sstream": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "condition_variable": "cpp",
+        "deque": "cpp",
+        "execution": "cpp",
+        "future": "cpp",
+        "map": "cpp",
+        "queue": "cpp",
+        "xtree": "cpp"
     }
 }

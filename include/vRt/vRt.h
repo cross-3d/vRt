@@ -1,7 +1,10 @@
 #pragma once
-#include "parts/Vulkan.inl"
-#include "parts/Enums.inl"
-#include "parts/HardClasses.inl"
-#include "parts/Handlers.inl"
-#include "parts/API.inl"
+#include "Parts/Vulkan.inl"
+#include "Utilities/VkUtils.hpp"
+#include "Parts/Enums.inl"
+#include "Parts/HardClasses.inl"
+#include "Parts/Initializers.inl"
+#include "Parts/Handlers.inl"
+#include "Parts/Structures.inl"
+#include "Parts/API.inl"
 
