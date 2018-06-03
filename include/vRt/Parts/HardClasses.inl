@@ -100,6 +100,7 @@ namespace _vt { // store in undercover namespace
         VkBufferView _bufferView;
         VmaAllocation _allocation;
         VmaAllocationInfo _allocationInfo;
+        VkDeviceSize _size;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
         VkDescriptorBufferInfo _descriptorInfo(); //generated structure
