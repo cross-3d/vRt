@@ -19,9 +19,11 @@
 #include <iterator>
 #include <cstddef>
 
-#define DEFAULT_FENCE_TIMEOUT 100000000000
+// don't be so stupid in C++20 area
+//#define DEFAULT_FENCE_TIMEOUT 100000000000
 
 namespace _vt {
+    const int64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
     // read binary (for SPIR-V)
     std::vector<char> readBinary(std::string filePath) {
