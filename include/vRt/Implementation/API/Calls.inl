@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../../vRt.h"
-
+#include "../../vRt_subimpl.inl"
 #include "./BuildAccelerator.inl"
-#include "./CopyProgram.inl"
+#include "./RayTracing.inl"
 
 namespace _vt {
 

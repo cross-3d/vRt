@@ -2,6 +2,8 @@
 #include "Vulkan.inl"
 #include "Enums.inl"
 #include "Structures.inl"
+#include "Handlers.inl"
+//#include "Initializers.inl"
 
 namespace vt { // store in official namespace
 

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../../vRt.h"
-
+#include "../../vRt_subimpl.inl"
 
 namespace _vt {
 
