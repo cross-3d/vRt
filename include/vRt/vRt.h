@@ -1,5 +1,5 @@
 #pragma once
-#include "Parts/Vulkan.inl"
+#include "Parts/Headers.inl"
 #include "Parts/Enums.inl"
 #include "Parts/HardClasses.inl"
 #include "Parts/Handlers.inl"

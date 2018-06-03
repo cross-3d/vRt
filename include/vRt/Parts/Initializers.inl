@@ -1,5 +1,5 @@
 #pragma once
-#include "Vulkan.inl"
+#include "Headers.inl"
 #include "HardClasses.inl"
 
 // C++ internal initializers for hard classes (interface)
