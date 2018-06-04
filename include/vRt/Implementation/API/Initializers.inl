@@ -7,6 +7,54 @@ namespace _vt { // store in undercover namespace
     using namespace vt;
 
 
+
+    uint32_t VtIdentifier = 0x1FFu;
+    struct VkShortHead {
+        uint32_t sublevel : 23, identifier : 9;
+        const void * pNext;
+    };
+
+    struct VkFullHead {
+        uint32_t sType;
+        const void * pNext;
+    };
+
+    template <class VtS>
+    const VkFullHead* vtSearchStructure(VtS& structure, VtStructureType sType) {
+        VkFullHead* head = (VkFullHead*)&structure;
+        VkFullHead* found = nullptr;
+        for (int i = 0; i < 255; i++) {
+            if (!head) break;
+            if (head->sType == sType) {
+                found = head; break;
+            }
+            head = (VkFullHead*)head->pNext;
+        }
+        return found;
+    };
+
+    template <class VtS>
+    const VkShortHead* vtExplodeArtificals(VtS& structure) {
+        VkShortHead* head = (VkShortHead*)&structure;
+        VkShortHead* lastVkStructure = nullptr;
+        VkShortHead* firstVkStructure = nullptr;
+        for (int i = 0; i < 255; i++) {
+            if (!head) break;
+            if (head->identifier != VtIdentifier) {
+                if (lastVkStructure) {
+                    lastVkStructure->pNext = head;
+                }
+                else {
+                    firstVkStructure = head;
+                }
+                lastVkStructure = head;
+            }
+            head = (VkShortHead*)head->pNext;
+        }
+        return firstVkStructure;
+    };
+
+
     inline VtResult makePhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, VtPhysicalDevice& _vtPhysicalDevice){
         _vtPhysicalDevice._vtPhysicalDevice = std::make_shared<PhysicalDevice>();
         _vtPhysicalDevice._vtPhysicalDevice->_physicalDevice = physical; // assign a Vulkan physical device

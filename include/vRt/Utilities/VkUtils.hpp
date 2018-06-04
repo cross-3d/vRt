@@ -26,7 +26,7 @@ namespace _vt {
     const int64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
     // read binary (for SPIR-V)
-    std::vector<char> readBinary(std::string filePath) {
+    inline std::vector<char> readBinary(std::string filePath) {
         std::ifstream file(filePath, std::ios::in | std::ios::binary | std::ios::ate);
         std::vector<char> data;
         if (file.is_open())
@@ -45,7 +45,7 @@ namespace _vt {
     };
 
     // shader pipeline barrier
-    void shaderBarrier(const VkCommandBuffer& cmdBuffer) {
+    inline void shaderBarrier(const VkCommandBuffer& cmdBuffer) {
         VkMemoryBarrier memoryBarrier;
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT, 
@@ -61,7 +61,7 @@ namespace _vt {
     };
 
     // general command buffer barrier
-    void commandBarrier(const VkCommandBuffer& cmdBuffer) {
+    inline void commandBarrier(const VkCommandBuffer& cmdBuffer) {
         VkMemoryBarrier memoryBarrier;
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, 
@@ -77,7 +77,7 @@ namespace _vt {
     };
 
     // create secondary command buffers for batching compute invocations
-    auto createCommandBuffer(const VkDevice device, const VkCommandPool cmdPool) {
+    inline auto createCommandBuffer(const VkDevice device, const VkCommandPool cmdPool) {
         VkCommandBuffer cmdBuffer;
 
         VkCommandBufferAllocateInfo cmdi;
@@ -103,7 +103,7 @@ namespace _vt {
     };
 
     // create shader module
-    auto loadAndCreateShaderModule(VkDevice device, std::string path) {
+    inline auto loadAndCreateShaderModule(VkDevice device, std::string path) {
         auto code = readBinary(path);
         VkShaderModuleCreateInfo smi{ VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr , 0, code.size(), (uint32_t *)code.data() };
         VkShaderModule sm; vkCreateShaderModule(device, &smi, nullptr, &sm);
@@ -111,7 +111,7 @@ namespace _vt {
     }
 
     // create compute pipelines
-    auto createCompute(VkDevice device, std::string path, VkPipelineLayout layout, VkPipelineCache cache){
+    inline auto createCompute(VkDevice device, std::string path, VkPipelineLayout layout, VkPipelineCache cache){
         auto module = loadAndCreateShaderModule(device, path);
 
         VkPipelineShaderStageCreateInfo spi;
@@ -131,14 +131,14 @@ namespace _vt {
     }
 
     // add dispatch in command buffer (with default pipeline barrier)
-    void cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1){
+    inline void cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1){
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
         vkCmdDispatch(cmd, x, y, z);
         shaderBarrier(cmd); // put shader barrier
     }
 
     // submit command (with async wait)
-    void submitCmdAsync(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, std::function<void()> asyncCallback = {}){
+    inline void submitCmdAsync(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, std::function<void()> asyncCallback = {}){
         // no commands 
         if (cmds.size() <= 0) return;
 
@@ -160,52 +160,5 @@ namespace _vt {
             });
         });
     }
-
-
-    uint32_t VtIdentifier = 0x1FFu;
-    struct VkShortHead {
-        uint32_t sublevel : 23, identifier : 9;
-        const void * pNext;
-    };
-
-    struct VkFullHead {
-        uint32_t sType;
-        const void * pNext;
-    };
-
-
-    template <class VtS>
-    const VkFullHead* vtSearchStructure(VtS& structure, VtStructureType sType) {
-        VkFullHead* head = (VkFullHead*)&structure;
-        VkFullHead* found = nullptr;
-        for (int i = 0; i < 255; i++) {
-            if (!head) break;
-            if (head->sType == sType) {
-                found = head; break;
-            }
-            head = (VkFullHead*)head->pNext;
-        }
-        return found;
-    };
-
-    template <class VtS>
-    const VkShortHead* vtExplodeArtificals(VtS& structure) {
-        VkShortHead* head = (VkShortHead*)&structure;
-        VkShortHead* lastVkStructure = nullptr;
-        VkShortHead* firstVkStructure = nullptr;
-        for (int i = 0; i < 255;i++) {
-            if (!head) break;
-            if (head->identifier != VtIdentifier) {
-                if (lastVkStructure) {
-                    lastVkStructure->pNext = head;
-                } else {
-                    firstVkStructure = head;
-                }
-                lastVkStructure = head;
-            }
-            head = (VkShortHead*)head->pNext;
-        }
-        return firstVkStructure;
-    };
 
 };
