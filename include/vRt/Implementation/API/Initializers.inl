@@ -10,7 +10,7 @@ namespace _vt { // store in undercover namespace
 
     uint32_t VtIdentifier = 0x1FFu;
     struct VkShortHead {
-        uint32_t sublevel : 23, identifier : 9;
+        uint32_t sublevel : 24, identifier : 12;
         uintptr_t pNext; // pull of C++20 raw pointers
     };
 
