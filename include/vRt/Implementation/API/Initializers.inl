@@ -10,39 +10,36 @@ namespace _vt { // store in undercover namespace
     inline VtResult makePhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, VtPhysicalDevice& _vtPhysicalDevice){
         _vtPhysicalDevice._vtPhysicalDevice = std::make_shared<PhysicalDevice>();
         _vtPhysicalDevice._vtPhysicalDevice->_physicalDevice = physical; // assign a Vulkan physical device
-        return VT_SUCCESS;
+        return VK_SUCCESS;
     };
 
-    inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, const VtDeviceCreateInfo& vdvi, VtDevice& _vtDevice){
+    inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo& vdvi, VtDevice& _vtDevice){
         auto& vtDevice = (_vtDevice._vtDevice = std::make_shared<Device>());
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
 
-        VtResult result = VT_ERROR_INITIALIZATION_FAILED;
+        VtResult result = VK_ERROR_INITIALIZATION_FAILED;
+        VtArtificalDeviceExtension vtExtension; // default structure values
+        VtArtificalDeviceExtension * vtExtensionPtr = (VtArtificalDeviceExtension *)vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);
+        if (vtExtensionPtr) { // if found, getting some info
+            vtExtension = *vtExtensionPtr;
+        }
 
-        VkDeviceCreateInfo dvi;
-        dvi.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        dvi.queueCreateInfoCount = vdvi.queueCreateInfoCount;
-        dvi.pQueueCreateInfos = vdvi.pQueueCreateInfos;
-        dvi.enabledLayerCount = vdvi.enabledLayerCount;
-        dvi.ppEnabledLayerNames = vdvi.ppEnabledLayerNames;
-        dvi.enabledExtensionCount = vdvi.enabledExtensionCount;
-        dvi.ppEnabledExtensionNames = vdvi.ppEnabledExtensionNames;
-        dvi.pEnabledFeatures = vdvi.pEnabledFeatures;
-        if (vkCreateDevice(*(vtDevice->_physicalDevice.lock()), &dvi, nullptr, &vtDevice->_device) == VK_SUCCESS) { result = VT_SUCCESS; };
+        // be occurate with "VkDeviceCreateInfo", because after creation device, all "vt" extended structures will destoyed
+        if (vkCreateDevice(*(vtDevice->_physicalDevice.lock()), (const VkDeviceCreateInfo*)vtExplodeArtificals(vdvi), nullptr, &vtDevice->_device) == VK_SUCCESS) { result = VK_SUCCESS; };
 
         VmaAllocatorCreateInfo allocatorInfo;
         allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice.lock());
         allocatorInfo.device = vtDevice->_device;
         allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb
         allocatorInfo.flags = VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_MAPPED_BIT;
-        if (vmaCreateAllocator(&allocatorInfo, &vtDevice->_allocator) == VK_SUCCESS) { result = VT_SUCCESS; };
+        if (vmaCreateAllocator(&allocatorInfo, &vtDevice->_allocator) == VK_SUCCESS) { result = VK_SUCCESS; };
 
         return result;
     };
 
     // planned acceptance by VtCreateDeviceBufferInfo 
     inline VtResult createDeviceBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, VtDeviceBuffer &_vtBuffer){
-        VtResult result = VT_ERROR_INITIALIZATION_FAILED;
+        VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
         auto& vtDeviceBuffer = (_vtBuffer._deviceBuffer = std::make_shared<DeviceBuffer>());
         vtDeviceBuffer->_device = device; // delegate device by weak_ptr
@@ -50,11 +47,11 @@ namespace _vt { // store in undercover namespace
         VmaAllocationCreateInfo allocCreateInfo = {};
         allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
         auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, cinfo.bufferSize, cinfo.usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &cinfo.familyIndex };
-        if (vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo) == VK_SUCCESS) { result = VT_SUCCESS; };
+        if (vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo) == VK_SUCCESS) { result = VK_SUCCESS; };
         vtDeviceBuffer->_size = cinfo.bufferSize;
 
         // if format is known, make bufferView
-        if (result == VT_SUCCESS && cinfo.format) {
+        if (result == VK_SUCCESS && cinfo.format) {
             vtDeviceBuffer->_bufferView;
             VkBufferViewCreateInfo bvi;
             bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
@@ -63,10 +60,10 @@ namespace _vt { // store in undercover namespace
             bvi.offset = 0;
             bvi.range = cinfo.bufferSize;
             if (vkCreateBufferView(device->_device, &bvi, nullptr, &vtDeviceBuffer->_bufferView) == VK_SUCCESS) {
-                result = VT_SUCCESS;
+                result = VK_SUCCESS;
             }
             else {
-                result = VT_INCOMPLETE;
+                result = VK_INCOMPLETE;
             };
         }
 
@@ -76,7 +73,7 @@ namespace _vt { // store in undercover namespace
     // planned acceptance by VtCreateDeviceImageInfo 
     inline VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, VtDeviceImage &_vtImage) {
         // result will no fully handled
-        VtResult result = VT_ERROR_INITIALIZATION_FAILED;
+        VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
         auto& texture = (_vtImage._deviceImage = std::make_shared<DeviceImage>());
         texture->_device = device; // delegate device by weak_ptr
@@ -128,7 +125,7 @@ namespace _vt { // store in undercover namespace
         // create image with allocation
         VmaAllocationCreateInfo allocCreateInfo = {};
         allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        if (vmaCreateImage(device->_allocator, &(VkImageCreateInfo)imageInfo, &allocCreateInfo, (VkImage *)&texture->_image, &texture->_allocation, &texture->_allocationInfo) == VK_SUCCESS) { result = VT_SUCCESS; };
+        if (vmaCreateImage(device->_allocator, &(VkImageCreateInfo)imageInfo, &allocCreateInfo, (VkImage *)&texture->_image, &texture->_allocation, &texture->_allocationInfo) == VK_SUCCESS) { result = VK_SUCCESS; };
 
         // subresource range
         texture->_subresourceRange.levelCount = 1;
@@ -157,7 +154,7 @@ namespace _vt { // store in undercover namespace
 
     // transition texture layout
     inline VtResult imageBarrier(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> image) {
-        VtResult result = VT_SUCCESS; // planned to complete
+        VtResult result = VK_SUCCESS; // planned to complete
 
         vk::ImageMemoryBarrier imageMemoryBarriers = {};
         imageMemoryBarriers.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;

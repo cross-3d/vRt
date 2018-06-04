@@ -16,6 +16,7 @@
 #include "tinyrender/tinydx.h"
 #elif defined(TINY_RENDERER_VK)
 #include "tinyrender/tinyvk.h"
+#include "vRt/vRt.h"
 #endif
 
 const char*         k_app_name = "01_Color";
