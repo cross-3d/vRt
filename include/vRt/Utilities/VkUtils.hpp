@@ -18,6 +18,7 @@
 #include <execution>
 #include <iterator>
 #include <cstddef>
+#include <optional>
 
 // don't be so stupid in C++20 area
 //#define DEFAULT_FENCE_TIMEOUT 100000000000

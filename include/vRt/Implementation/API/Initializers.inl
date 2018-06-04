@@ -20,7 +20,7 @@ namespace _vt { // store in undercover namespace
     };
 
     template <class VtS>
-    const VkFullHead* vtSearchStructure(VtS& structure, VtStructureType sType) {
+    auto vtSearchStructure(VtS& structure, VtStructureType sType) {
         VkFullHead* head = (VkFullHead*)&structure;
         VkFullHead* found = nullptr;
         for (int i = 0; i < 255; i++) {
@@ -34,7 +34,7 @@ namespace _vt { // store in undercover namespace
     };
 
     template <class VtS>
-    const VkShortHead* vtExplodeArtificals(VtS& structure) {
+    auto vtExplodeArtificals(VtS& structure) {
         VkShortHead* head = (VkShortHead*)&structure;
         VkShortHead* lastVkStructure = nullptr;
         VkShortHead* firstVkStructure = nullptr;
@@ -67,9 +67,9 @@ namespace _vt { // store in undercover namespace
 
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
         VtArtificalDeviceExtension vtExtension; // default structure values
-        VtArtificalDeviceExtension * vtExtensionPtr = (VtArtificalDeviceExtension *)vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);
+        auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);
         if (vtExtensionPtr) { // if found, getting some info
-            vtExtension = *vtExtensionPtr;
+            vtExtension = (VtArtificalDeviceExtension&)*vtExtensionPtr;
         }
 
         // be occurate with "VkDeviceCreateInfo", because after creation device, all "vt" extended structures will destoyed
