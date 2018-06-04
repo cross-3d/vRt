@@ -11,13 +11,14 @@ namespace _vt { // store in undercover namespace
     uint32_t VtIdentifier = 0x1FFu;
     struct VkShortHead {
         uint32_t sublevel : 23, identifier : 9;
-        const void * pNext;
+        uintptr_t pNext; // pull of C++20 raw pointers
     };
 
     struct VkFullHead {
         uint32_t sType;
-        const void * pNext;
+        uintptr_t pNext; // pull of C++20 raw pointers
     };
+
 
     template <class VtS>
     auto vtSearchStructure(VtS& structure, VtStructureType sType) {
@@ -42,7 +43,7 @@ namespace _vt { // store in undercover namespace
             if (!head) break;
             if (head->identifier != VtIdentifier) {
                 if (lastVkStructure) {
-                    lastVkStructure->pNext = head;
+                    lastVkStructure->pNext = (uintptr_t)head;
                 }
                 else {
                     firstVkStructure = head;
