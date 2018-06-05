@@ -11,40 +11,28 @@ namespace vt { // store in official namespace
     struct VtInstanceConversionInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_INSTANCE_CONVERSION_INFO;
         const void* pNext = nullptr;
-        //VkInstance vkInstance;
     };
 
     struct VtArtificalDeviceExtension {
         VtStructureType sType = VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION;
         const void* pNext = nullptr;
-        // TODO to complete
     };
-
-    /*
-    struct VtRayTracingCreateInfo {
-        VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_CREATE_INFO;
-        const void* pNext = nullptr;
-        VtDevice vtDevice;
-    };*/
 
     struct VtDeviceConversionInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_CONVERSION_INFO;
         const void* pNext = nullptr;
         VtPhysicalDevice physicalDevice;
-        //VkDevice vkDevice;
     };
 
     struct VtPhysicalDeviceConversionInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONVERSION_INFO;
         const void* pNext = nullptr;
         VtInstance instance;
-        //VkPhysicalDevice vkPhysicalDevice;
     };
 
     struct VtRayTracingPipelineCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO;
         const void* pNext = nullptr;
-        //VtDevice vtDevice;
     };
 
     // any other vertex accessors can be used by attributes

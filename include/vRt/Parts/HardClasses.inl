@@ -81,7 +81,8 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         std::weak_ptr<Device> _device;
-        std::shared_ptr<PipelineLayout> _pipelineLayout;
+        std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout
+        VkPipeline _closestHitPipeline, _missHitPipeline, _generationPipeline;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
@@ -91,7 +92,18 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         std::weak_ptr<Device> _device;
-        
+
+        // traverse
+        VkPipeline _intersectionPipeline;
+
+        // vertex input stage
+        VkPipeline _vertexAssemblyPipeline;
+
+        // build BVH stages (few stages, in sequences)
+        VkPipeline _boundingPipeline, _shorthandPipeline, _leafPipeline, /*...radix sort between*/ _buildPipeline, _fitPipeline;
+
+        // static pipeline layout for stages
+        VkPipelineLayout _vertexAssemblyPipelineLayout, _buildPipelineLayout, _traversePipelineLayout;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
@@ -124,8 +136,7 @@ namespace _vt { // store in undercover namespace
         VmaAllocationInfo _allocationInfo;
         VkImageSubresourceRange _subresourceRange;
         VkImageSubresourceLayers _subresourceLayers;
-        VkImageLayout _layout = VK_IMAGE_LAYOUT_GENERAL;
-        VkImageLayout _initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        VkImageLayout _initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, _layout = VK_IMAGE_LAYOUT_GENERAL;
         VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
@@ -140,6 +151,11 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         std::weak_ptr<Device> _device;
+        std::shared_ptr<DeviceBuffer> _stepsBuffer; // constant buffer
+        std::shared_ptr<DeviceBuffer> _tmpKeysBuffer; // cache keys between stages (avoid write conflict)
+        std::shared_ptr<DeviceBuffer> _tmpValuesBuffer; // cache values between stages (avoid write conflict)
+        VkPipeline _histogramPipeline, _workPrefixPipeline, _permutePipeline; // radix sort pipelines
+        VkPipelineLayout _pipelineLayout; // use unified pipeline layout
         
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
@@ -150,6 +166,8 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         std::weak_ptr<Device> _device;
+        VkPipeline _bufferCopyPipeline, _bufferCopyIndirectPipeline, _imageCopyPipeline, _imageCopyIndirectPipeline;
+        VkPipelineLayout _bufferCopyPipelineLayout, _imageCopyPipelineLayout;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
