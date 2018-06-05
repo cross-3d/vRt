@@ -49,6 +49,7 @@ namespace _vt {
     inline void shaderBarrier(const VkCommandBuffer& cmdBuffer) {
         VkMemoryBarrier memoryBarrier;
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        memoryBarrier.pNext = nullptr;
         memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT, 
         memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT;
 
@@ -65,6 +66,7 @@ namespace _vt {
     inline void commandBarrier(const VkCommandBuffer& cmdBuffer) {
         VkMemoryBarrier memoryBarrier;
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        memoryBarrier.pNext = nullptr;
         memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, 
         memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT;
         
@@ -83,12 +85,14 @@ namespace _vt {
 
         VkCommandBufferAllocateInfo cmdi;
         cmdi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        cmdi.pNext = nullptr;
         cmdi.commandPool = cmdPool;
         cmdi.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
         cmdi.commandBufferCount = 1;
         vkAllocateCommandBuffers(device, &cmdi, &cmdBuffer);
 
         VkCommandBufferInheritanceInfo inhi;
+        inhi.pNext = nullptr;
         inhi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
         inhi.pipelineStatistics = VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
 
