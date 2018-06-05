@@ -55,18 +55,18 @@ namespace vt { // store in official namespace
 
     // advanced class (buffer)
     struct VtDeviceBuffer {
-        std::shared_ptr<_vt::DeviceBuffer> _vkDeviceBuffer;
-        operator VkBuffer() const { return *_vkDeviceBuffer; }
-        operator VkBufferView() const { return *_vkDeviceBuffer; }
-        operator bool() const { return !!_vkDeviceBuffer; }
+        std::shared_ptr<_vt::DeviceBuffer> _vtDeviceBuffer;
+        operator VkBuffer() const { return *_vtDeviceBuffer; }
+        operator VkBufferView() const { return *_vtDeviceBuffer; }
+        operator bool() const { return !!_vtDeviceBuffer; }
     };
 
     // advanced class (image)
     struct VtDeviceImage {
-        std::shared_ptr<_vt::DeviceImage> _vkDeviceImage;
-        operator VkImage() const { return *_vkDeviceImage; }
-        operator VkImageView() const { return *_vkDeviceImage; }
-        operator bool() const { return !!_vkDeviceImage; }
+        std::shared_ptr<_vt::DeviceImage> _vtDeviceImage;
+        operator VkImage() const { return *_vtDeviceImage; }
+        operator VkImageView() const { return *_vtDeviceImage; }
+        operator bool() const { return !!_vtDeviceImage; }
     };
 
 };

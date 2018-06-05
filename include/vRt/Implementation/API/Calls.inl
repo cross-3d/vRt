@@ -13,6 +13,6 @@ namespace _vt {
     };
 
     inline VtResult vtCmdImageBarrier(VkCommandBuffer cmd, VtDeviceImage image) {
-        return imageBarrier(cmd, image._deviceImage);
+        return imageBarrier(cmd, image._vtDeviceImage);
     };
 };

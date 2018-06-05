@@ -91,7 +91,7 @@ namespace _vt { // store in undercover namespace
     inline VtResult createDeviceBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, VtDeviceBuffer &_vtBuffer){
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
-        auto& vtDeviceBuffer = (_vtBuffer._vkDeviceBuffer = std::make_shared<DeviceBuffer>());
+        auto& vtDeviceBuffer = (_vtBuffer._vtDeviceBuffer = std::make_shared<DeviceBuffer>());
         vtDeviceBuffer->_device = device; // delegate device by weak_ptr
 
         VmaAllocationCreateInfo allocCreateInfo = {};
@@ -125,7 +125,7 @@ namespace _vt { // store in undercover namespace
         // result will no fully handled
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
-        auto& texture = (_vtImage._vkDeviceImage = std::make_shared<DeviceImage>());
+        auto& texture = (_vtImage._vtDeviceImage = std::make_shared<DeviceImage>());
         texture->_device = device; // delegate device by weak_ptr
         texture->_layout = (VkImageLayout)cinfo.layout;
 
