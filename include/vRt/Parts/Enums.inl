@@ -7,16 +7,7 @@ namespace vt { // store in official namespace
     // use 0x11E for VtResult
     // use 0x11F for VtStructureType
 
-    /*
-    typedef enum VtResult: uint32_t {
-        VT_SUCCESS = 0x11E00000, // default status
-        VT_NOT_READY = 0x11E00001, 
-        VT_TIMEOUT = 0x11E00002, 
-        VT_INCOMPLETE = 0x11E00003, 
-        VT_ERROR_INITIALIZATION_FAILED = 0x11E00004, // if error occurs from ray tracer itself
-    } VtResult;
-    */
-
+    // planned merge ray tracing exclusive errors
     typedef VkResult VtResult;
 
     typedef enum VtPipelineBindPoint: uint32_t {
@@ -38,12 +29,12 @@ namespace vt { // store in official namespace
         VT_STRUCTURE_TYPE_HOST_TO_DEVICE_BUFFER_CREATE_INFO = 0x11F0000A,
         VT_STRUCTURE_TYPE_HOST_TO_DEVICE_IMAGE_CREATE_INFO = 0x11F0000B,
         // empty
-        VT_STRUCTURE_TYPE_MATERIALS_INPUT_CREATE_INFO = 0x11F0000C,
+        VT_STRUCTURE_TYPE_MATERIAL_SET_CREATE_INFO = 0x11F0000C,
         VT_STRUCTURE_TYPE_ACCELERATOR_CREATE_INFO = 0x11F0000D,
         VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION = 0x11F0000E
     } VtStructureType;
 
-    // it is bitfield-based value
+    // it is bitfield-based value (TODO)
     typedef enum VtFormat: uint32_t {
 
     } VtFormat;
@@ -52,5 +43,11 @@ namespace vt { // store in official namespace
     typedef enum VtTopologyType: uint32_t {
         VT_TOPOLOGY_TYPE_TRIANGLES_LIST = 0x11F00000
     } VtTopologyType;
+
+    // ray tracing pipeline usages
+    typedef enum VtEntryUsageFlags : uint32_t {
+        VT_ENTRY_USAGE_CLOSEST = 0x00000001,
+        VT_ENTRY_USAGE_MISS = 0x00000002,
+    } VtEntryUsageFlags;
 
 };

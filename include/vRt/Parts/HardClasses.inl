@@ -15,7 +15,7 @@ namespace _vt { // store in undercover namespace
     class CopyProgram;
     class VertexInput;
     class Accelerator;
-    class MaterialsInput;
+    class MaterialSet;
     
 
     // ray tracing instance aggregation
@@ -58,6 +58,9 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<Device> _device;
         VkCommandBuffer _cmd;
 
+        std::shared_ptr<MaterialSet> _materialSetTmp; // will bound in "cmdDispatch" 
+        // TODO: temporary store vertex data buffers
+
         operator VkCommandBuffer() const { return _cmd; }
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
@@ -78,6 +81,7 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         std::weak_ptr<Device> _device;
+        std::shared_ptr<PipelineLayout> _pipelineLayout;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
@@ -87,6 +91,7 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         std::weak_ptr<Device> _device;
+        
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
@@ -149,5 +154,15 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
+
+    class MaterialSet : public std::enable_shared_from_this<MaterialSet> {
+    public:
+        friend Device;
+        std::weak_ptr<Device> _device;
+        VkDescriptorSet _descriptorSet;
+
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        operator VkDescriptorSet() const { return _descriptorSet; };
+    };
 
 };

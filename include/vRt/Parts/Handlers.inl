@@ -42,13 +42,8 @@ namespace vt { // store in official namespace
 
     };
 
-    struct VtMaterialsInput {
-        std::shared_ptr<_vt::MaterialsInput> _vtMaterialsInput;
-
-    };
-
-    struct VtVertexInput {
-        std::shared_ptr<_vt::MaterialsInput> _vtVertexInput;
+    struct VtMaterialSet {
+        std::shared_ptr<_vt::MaterialSet> _vtMaterialSet;
 
     };
 

@@ -11,7 +11,7 @@ namespace vt { // store in official namespace
     struct VtInstanceConversionInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_INSTANCE_CONVERSION_INFO;
         const void* pNext = nullptr;
-        VkInstance vkInstance;
+        //VkInstance vkInstance;
     };
 
     struct VtArtificalDeviceExtension {
@@ -20,30 +20,31 @@ namespace vt { // store in official namespace
         // TODO to complete
     };
 
+    /*
     struct VtRayTracingCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_CREATE_INFO;
         const void* pNext = nullptr;
         VtDevice vtDevice;
-    };
+    };*/
 
     struct VtDeviceConversionInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_CONVERSION_INFO;
         const void* pNext = nullptr;
         VtPhysicalDevice physicalDevice;
-        VkDevice vkDevice;
+        //VkDevice vkDevice;
     };
 
     struct VtPhysicalDeviceConversionInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONVERSION_INFO;
         const void* pNext = nullptr;
         VtInstance instance;
-        VkPhysicalDevice vkPhysicalDevice;
+        //VkPhysicalDevice vkPhysicalDevice;
     };
 
     struct VtRayTracingPipelineCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO;
         const void* pNext = nullptr;
-        VtDevice vtDevice;
+        //VtDevice vtDevice;
     };
 
     // any other vertex accessors can be used by attributes
@@ -75,12 +76,14 @@ namespace vt { // store in official namespace
         uint32_t accessorID = 0;
     };
 
+    // use immutables in accelerator inputs
     struct VtVertexInputCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_INPUT_CREATE_INFO;
         const void* pNext = nullptr;
 
         // all sources buffer
-        VkBuffer sourceBuffer;
+        //VkBuffer sourceBuffer;
+        uint32_t sourceBufferBinding;
 
         // bindings regions
         VtVertexRegionBinding * pBufferRegionBindings = nullptr;
@@ -106,31 +109,36 @@ namespace vt { // store in official namespace
         uint32_t materialID = 0; // material ID for identify in hit shader
     };
 
-    struct VtMaterialsInputCreateInfo {
-        VtStructureType sType = VT_STRUCTURE_TYPE_MATERIALS_INPUT_CREATE_INFO;
+    // use as low level typed descriptor set
+    struct VtMaterialSetCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_MATERIAL_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
         // immutable images (textures)
-        const VkDescriptorImageInfo* pImages;
+        const VkDescriptorImageInfo* pImages = nullptr;
         uint32_t imageCount;
 
         // immutable samplers
-        const VkSampler* pSamplers;
+        const VkSampler* pSamplers = nullptr;
         uint32_t samplerCount;
 
-        // virtual combined textures with samplers
-        const uint64_t* pImageSamplerCombinations; // uint32 for images and next uint32 for sampler ID's
+        // virtual combined textures with samplers (better use in buffers)
+        const uint64_t* pImageSamplerCombinations = nullptr; // uint32 for images and next uint32 for sampler ID's
         uint32_t imageSamplerCount;
 
         // user defined materials 
-        VkBuffer materialDescriptionsBuffer; // buffer for user material descriptions
-        const uint32_t* pMaterialDescriptionIDs;
+        VkBuffer materialDescriptionsBuffer;
+        //const uint32_t* pMaterialDescriptionIDs = nullptr; // I don't remember why it need
         uint32_t materialCount;
     };
 
     struct VtAcceleratorCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_ACCELERATOR_CREATE_INFO;
         const void* pNext = nullptr;
+
+        // prefer to describe vertex input in accelerator for creation (and just more safer)
+        const VtVertexInputCreateInfo * pVertexInputs = nullptr;
+        uint32_t vertexInputCount = 0;
     };
 
 
