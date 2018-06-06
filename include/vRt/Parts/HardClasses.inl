@@ -3,7 +3,7 @@
 #include "Enums.inl"
 #include "StructuresLow.inl"
 #include "HardClassesDef.inl"
-//#include "HandlersDef.inl" // unusable without definitions
+#include "HandlersDef.inl" // unusable without definitions
 
 // C++ hard interfaces (which will storing)
 namespace _vt { // store in undercover namespace
