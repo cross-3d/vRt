@@ -12,4 +12,10 @@ namespace _vt {
         return bufferDescriptorInfo(_buffer);
     };
 
+    // destructor of advanced buffer
+    template<VmaMemoryUsage U>
+    inline RoledBuffer<U>::~RoledBuffer() {
+        vmaDestroyBuffer(_device.lock()->_allocator, _buffer, _allocation);
+    };
+
 };

@@ -10,4 +10,9 @@ namespace _vt {
         return VkDescriptorImageInfo(vk::DescriptorImageInfo(nullptr, _imageView, vk::ImageLayout(_layout)));
     };
 
+    // destructor of DeviceImage
+    inline DeviceImage::~DeviceImage() {
+        vmaDestroyImage(_device.lock()->_allocator, _image, _allocation);
+    };
+
 };

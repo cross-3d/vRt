@@ -151,6 +151,8 @@ namespace _vt { // store in undercover namespace
     template<VmaMemoryUsage U>
     class RoledBuffer: public std::enable_shared_from_this<RoledBuffer<U>> {
     public:
+        ~RoledBuffer();
+
         friend Device;
         VkBuffer _buffer = nullptr;
         std::weak_ptr<Device> _device;
@@ -172,6 +174,8 @@ namespace _vt { // store in undercover namespace
     // this is wrapped advanced image class
     class DeviceImage: public std::enable_shared_from_this<DeviceImage> {
     public:
+        ~DeviceImage();
+
         friend Device;
         VkImage _image = nullptr;
         std::weak_ptr<Device> _device;
