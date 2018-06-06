@@ -1,4 +1,7 @@
 #pragma once
 #include "vRt_subimpl.inl"
 
-// not yet finished inclusions
+// implement these
+#include "Implementation/HardClasses/DeviceBuffer.inl"
+#include "Implementation/HardClasses/DeviceImage.inl"
+#include "Implementation/API/Calls.inl"

@@ -5,4 +5,3 @@
 #include "vRt.h"
 #include "Implementation/API/Initializers.inl"
 
-
