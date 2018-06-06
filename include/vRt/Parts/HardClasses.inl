@@ -42,7 +42,7 @@ namespace _vt { // store in undercover namespace
         VmaAllocator _allocator;
         VkPipelineCache _pipelineCache; // store native pipeline cache
         std::shared_ptr<RadixSort> _radixSort; // create native radix sort
-        std::shared_ptr<CopyProgram> _copyProgram; // create native pipelines for copying
+        std::shared_ptr<CopyProgram> _copyProgram; // create native pipelines for (indirect) copying
         std::shared_ptr<HostToDeviceBuffer> _uploadBuffer; // from host
         std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap; // descriptor layout map in ray tracing system
