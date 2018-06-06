@@ -267,6 +267,7 @@ namespace _vt { // store in undercover namespace
 
         // buffer pointers for storing vertexInput
         uint32_t _primitiveCount = 0; // for simplify of measuring when building hierarchies
+        uint32_t _constPageID = 0; // if uniform store in one buffer (unused at now)
         std::shared_ptr<DeviceBuffer> _bBufferRegionBindings;
         std::shared_ptr<DeviceBuffer> _bBufferAccessors;
         std::shared_ptr<DeviceBuffer> _bBufferAttributeBindings;
