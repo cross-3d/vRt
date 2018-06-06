@@ -112,7 +112,7 @@ namespace _vt { // store in undercover namespace
             bvi.buffer = vtDeviceBuffer->_buffer;
             bvi.format = cinfo.format;
             bvi.offset = 0;
-            bvi.range = cinfo.bufferSize;
+            bvi.range = VK_WHOLE_SIZE;
             if (vkCreateBufferView(device->_device, &bvi, nullptr, &vtDeviceBuffer->_bufferView) == VK_SUCCESS) {
                 result = VK_SUCCESS;
             }

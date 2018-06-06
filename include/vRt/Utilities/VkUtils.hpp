@@ -182,14 +182,16 @@ namespace _vt {
     // template function for fill buffer by constant value
     // use for create repeat variant
     template<uint32_t Rv>
-    inline void cmdFillBuffer(VkCommandBuffer cmd, vk::Buffer dstBuffer, VkDeviceSize size, intptr_t offset = 0) {
+    inline void cmdFillBuffer(VkCommandBuffer cmd, vk::Buffer dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
         vk::CommandBuffer(cmd).fillBuffer(dstBuffer, offset, size, Rv);
         //commandBarrier(cmd);
         fromHostCommandBarrier(cmd);
     }
 
-
-
+    // make whole size buffer descriptor info
+    inline auto bufferDescriptorInfo(VkBuffer buffer, intptr_t offset = 0, VkDeviceSize size = VK_WHOLE_SIZE) {
+        return VkDescriptorBufferInfo(vk::DescriptorBufferInfo(buffer, offset, size));
+    }
 
 
     // submit command (with async wait)
