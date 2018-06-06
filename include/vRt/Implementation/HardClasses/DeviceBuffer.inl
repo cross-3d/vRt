@@ -6,7 +6,8 @@ namespace _vt {
     using namespace vt;
 
     // make default descriptor info for buffers
-    inline VkDescriptorBufferInfo DeviceBuffer::_descriptorInfo() {
+    template<VmaMemoryUsage U>
+    inline VkDescriptorBufferInfo RoledBuffer<U>::_descriptorInfo() {
         return VkDescriptorBufferInfo(vk::DescriptorBufferInfo(_buffer, 0u, _size));
     };
 

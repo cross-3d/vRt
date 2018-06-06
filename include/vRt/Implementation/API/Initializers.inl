@@ -87,15 +87,19 @@ namespace _vt { // store in undercover namespace
         return result;
     };
 
-    // planned acceptance by VtCreateDeviceBufferInfo 
-    inline VtResult createDeviceBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, VtDeviceBuffer &_vtBuffer){
+
+    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    inline VtResult createBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, VtRoledBuffer<U> &_vtBuffer){
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
-        auto& vtDeviceBuffer = (_vtBuffer._vtDeviceBuffer = std::make_shared<DeviceBuffer>());
+        auto& vtDeviceBuffer = (_vtBuffer._vtBuffer = std::make_shared<RoledBuffer<U>>());
         vtDeviceBuffer->_device = device; // delegate device by weak_ptr
 
         VmaAllocationCreateInfo allocCreateInfo = {};
-        allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        allocCreateInfo.usage = U;
+        if constexpr (U != VMA_MEMORY_USAGE_GPU_ONLY) {
+            allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        }
         auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, cinfo.bufferSize, cinfo.usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &cinfo.familyIndex };
         if (vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo) == VK_SUCCESS) { result = VK_SUCCESS; };
         vtDeviceBuffer->_size = cinfo.bufferSize;
@@ -119,6 +123,18 @@ namespace _vt { // store in undercover namespace
 
         return result;
     };
+
+    // artifical function type
+    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    using _createBuffer_T = VtResult(*)(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, VtRoledBuffer<U> &_vtBuffer);
+
+    // aliased calls
+    constexpr _createBuffer_T<VMA_MEMORY_USAGE_GPU_ONLY> createDeviceBuffer = &createBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
+    constexpr _createBuffer_T<VMA_MEMORY_USAGE_CPU_TO_GPU> createHostToDeviceBuffer = &createBuffer<VMA_MEMORY_USAGE_CPU_TO_GPU>;
+    constexpr _createBuffer_T<VMA_MEMORY_USAGE_GPU_TO_CPU> createDeviceToHostBuffer = &createBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
+
+
+
 
     // planned acceptance by VtCreateDeviceImageInfo 
     inline VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, VtDeviceImage &_vtImage) {

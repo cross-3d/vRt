@@ -16,7 +16,17 @@ namespace _vt { // store in undercover namespace
     class VertexInput;
     class Accelerator;
     class MaterialSet;
-    
+
+    // use roled buffers
+    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY> class RoledBuffer;
+    using DeviceBuffer = RoledBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
+    using DeviceToHostBuffer = RoledBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
+    using HostToDeviceBuffer = RoledBuffer<VMA_MEMORY_USAGE_CPU_TO_GPU>;
+
+    // have no roles at now
+    class DeviceImage;
+
+
 
     // ray tracing instance aggregation
     class Instance : public std::enable_shared_from_this<Instance> {
@@ -44,6 +54,10 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<PhysicalDevice> _physicalDevice;
         std::shared_ptr<RadixSort> _radixSort; // create native radix sort
         std::shared_ptr<CopyProgram> _copyProgram; // create native pipelines for copying
+        std::shared_ptr<HostToDeviceBuffer> _uploadBuffer; // from host
+        std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
+        std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap; // descriptor layout map in ray tracing system
+
         VmaAllocator _allocator;
         VkDevice _device;
 
@@ -108,8 +122,11 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
+
+
     // this is wrapped advanced buffer class
-    class DeviceBuffer: public std::enable_shared_from_this<DeviceBuffer> {
+    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    class RoledBuffer: public std::enable_shared_from_this<RoledBuffer<U>> {
     public:
         friend Device;
         std::weak_ptr<Device> _device;
@@ -118,12 +135,14 @@ namespace _vt { // store in undercover namespace
         VmaAllocation _allocation;
         VmaAllocationInfo _allocationInfo;
         VkDeviceSize _size;
+        auto _hostMapped() const { return _allocationInfo.pMappedData; }
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
         operator VkBuffer() const { return _buffer; } // cast operator
         operator VkBufferView() const { return _bufferView; } // cast operator
         VkDescriptorBufferInfo _descriptorInfo(); //generated structure
     };
+
 
     // this is wrapped advanced image class
     class DeviceImage: public std::enable_shared_from_this<DeviceImage> {
@@ -144,6 +163,11 @@ namespace _vt { // store in undercover namespace
         operator VkImageView() const { return _imageView; } // cast operator
         VkDescriptorImageInfo _descriptorInfo(); //generated structure
     };
+
+
+
+
+
 
     // this class does not using in ray tracing API
     // can be pinned with device

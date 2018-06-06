@@ -54,11 +54,12 @@ namespace vt { // store in official namespace
     };
 
     // advanced class (buffer)
-    struct VtDeviceBuffer {
-        std::shared_ptr<_vt::DeviceBuffer> _vtDeviceBuffer;
-        operator VkBuffer() const { return *_vtDeviceBuffer; }
-        operator VkBufferView() const { return *_vtDeviceBuffer; }
-        operator bool() const { return !!_vtDeviceBuffer; }
+    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    struct VtRoledBuffer {
+        std::shared_ptr<_vt::RoledBuffer<U>> _vtBuffer;
+        operator VkBuffer() const { return *_vtBuffer; }
+        operator VkBufferView() const { return *_vtBuffer; }
+        operator bool() const { return !!_vtBuffer; }
     };
 
     // advanced class (image)
@@ -68,5 +69,10 @@ namespace vt { // store in official namespace
         operator VkImageView() const { return *_vtDeviceImage; }
         operator bool() const { return !!_vtDeviceImage; }
     };
+
+    // aliases
+    using VtDeviceBuffer = VtRoledBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
+    using VtHostToDeviceBuffer = VtRoledBuffer<VMA_MEMORY_USAGE_CPU_TO_GPU>;
+    using VtDeviceToHostBuffer = VtRoledBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
 
 };
