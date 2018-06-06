@@ -15,6 +15,7 @@ namespace vt { // store in official namespace
     struct VtPipeline;
     struct VtAccelerator;
     struct VtMaterialSet;
+    struct VtVertexInputSet;
 
     // advanced class (buffer)
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>

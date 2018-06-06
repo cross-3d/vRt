@@ -12,6 +12,8 @@
 LOCAL_SIZE_LAYOUT;
 
 
+// in current moment we have no priority for shaders
+// planned to replace by readonly buffer (because will working through sets)
 layout(push_constant) uniform PushBlock {
     uint primitiveCount;
     uint verticeAccessor;

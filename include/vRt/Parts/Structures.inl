@@ -42,8 +42,9 @@ namespace vt { // store in official namespace
         const void* pNext = nullptr;
 
         // all sources buffer
-        //VkBuffer sourceBuffer;
-        uint32_t sourceBufferBinding;
+        VkBuffer sourceBuffer = nullptr;
+        uint32_t primitiveCount = 0;
+        //uint32_t sourceBufferBinding;
 
         // bindings regions
         VtVertexRegionBinding * pBufferRegionBindings = nullptr;
@@ -97,7 +98,8 @@ namespace vt { // store in official namespace
         const void* pNext = nullptr;
 
         // prefer to describe vertex input in accelerator for creation (and just more safer)
-        const VtVertexInputCreateInfo * pVertexInputs = nullptr;
+        //const VtVertexInputCreateInfo * pVertexInputs = nullptr;
+        const VtVertexInputSet * pVertexInputSets = nullptr;
         uint32_t vertexInputCount = 0;
     };
 

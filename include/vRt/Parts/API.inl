@@ -20,10 +20,13 @@ namespace vt { // store in official namespace
     inline VtResult vtCreateRayTracingPipeline(VtDevice device, const VtRayTracingPipelineCreateInfo * vtRayTracingPipelineCreateInfo, VtPipeline * vtPipeline);
 
     // create ray tracing accelerator structure
-    inline VtResult vtCreateAccelerator(VtDevice device, const VtAcceleratorCreateInfo * vtAcceleratorCreateInfo, VtAccelerator * vtAccelerator);
+    inline VtResult vtCreateAccelerator(VtDevice device, const VtAcceleratorCreateInfo * vtAcceleratorCreateInfo, VtAccelerator * accelerator);
 
     // make descriptor input 
     inline VtResult vtCreateMaterialSet(VtDevice vtDevice, const VtMaterialSetCreateInfo * vtMaterialsCreateInfo, VtMaterialSet * materialsInput);
+
+    // make vertex input set
+    inline VtResult vtCreateVertexInputSet(VtDevice vtDevice, const VtVertexInputCreateInfo * vtVertexInputCreateInfo, VtVertexInputSet * vertexInputSet);
 
 
     // make command buffer capable with ray tracing factory (VtCommandBuffer)
@@ -39,17 +42,11 @@ namespace vt { // store in official namespace
     inline VtResult vtCmdCopyBuffer(VtCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy* pRegions);
 
 
-    // bind vertex input for accelerator builders (accelerators itself also will store these data)
-    //inline VtResult vtCmdBindVertexInput(VtCommandBuffer commandBuffer, uint32_t vertexInputCount, const VtVertexInput * vertexInput);
-    //inline VtResult vtCmdBindVertexInput(VtCommandBuffer commandBuffer, VtVertexInput vertexInput);
-
-    inline VtResult vtCmdBindVertexDataBuffer(VtCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets);
-
     // bind accelerator structure for building/ray tracing
     inline VtResult vtCmdBindAccelerator(VtCommandBuffer commandBuffer, VtAccelerator accelerator);
 
     // pre-build vertex input in accelerator structure
-    inline VtResult vtCmdBuildVertexInput(VtCommandBuffer commandBuffer /*,  */);
+    inline VtResult vtCmdBuildVertexInputs(VtCommandBuffer commandBuffer /*,  */);
 
     // build accelerator structure command
     inline VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer /*,  */);
