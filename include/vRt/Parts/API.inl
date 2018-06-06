@@ -1,8 +1,8 @@
 #pragma once
 #include "Headers.inl"
 #include "Enums.inl"
-#include "Structures.inl"
-#include "Handlers.inl"
+#include "HandlersDef.inl"
+#include "StructuresDef.inl"
 
 namespace vt { // store in official namespace
 

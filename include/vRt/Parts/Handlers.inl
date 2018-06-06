@@ -1,5 +1,6 @@
 #pragma once
 #include "Headers.inl"
+#include "HandlersDef.inl"
 #include "HardClasses.inl"
 
 // class aliases for vRt from C++ hard implementators (incomplete)
@@ -22,6 +23,8 @@ namespace vt { // store in official namespace
     struct VtDevice {
         std::shared_ptr<_vt::Device> _vtDevice;
         operator VkDevice() const { return *_vtDevice; }
+        operator VkPipelineCache() const { return *_vtDevice; };
+        operator VmaAllocator() const { return *_vtDevice; }
         operator bool() const { return !!_vtDevice; };
     };
 
@@ -54,7 +57,7 @@ namespace vt { // store in official namespace
     };
 
     // advanced class (buffer)
-    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    template<VmaMemoryUsage U>
     struct VtRoledBuffer {
         std::shared_ptr<_vt::RoledBuffer<U>> _vtBuffer;
         operator VkBuffer() const { return *_vtBuffer; }
@@ -69,10 +72,5 @@ namespace vt { // store in official namespace
         operator VkImageView() const { return *_vtDeviceImage; }
         operator bool() const { return !!_vtDeviceImage; }
     };
-
-    // aliases
-    using VtDeviceBuffer = VtRoledBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
-    using VtHostToDeviceBuffer = VtRoledBuffer<VMA_MEMORY_USAGE_CPU_TO_GPU>;
-    using VtDeviceToHostBuffer = VtRoledBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
 
 };

@@ -1,136 +1,158 @@
 #pragma once
 #include "Headers.inl"
 #include "Enums.inl"
+#include "StructuresLow.inl"
+#include "HardClassesDef.inl"
+//#include "HandlersDef.inl" // unusable without definitions
 
 // C++ hard interfaces (which will storing)
 namespace _vt { // store in undercover namespace
     using namespace vt;
 
-    class Instance;
-    class PhysicalDevice;
-    class Device;
-    class RadixSort;
-    class CommandBuffer;
-    class Pipeline;
-    class CopyProgram;
-    class VertexInput;
-    class Accelerator;
-    class MaterialSet;
-
-    // use roled buffers
-    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY> class RoledBuffer;
-    using DeviceBuffer = RoledBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
-    using DeviceToHostBuffer = RoledBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
-    using HostToDeviceBuffer = RoledBuffer<VMA_MEMORY_USAGE_CPU_TO_GPU>;
-
-    // have no roles at now
-    class DeviceImage;
-
-
-
     // ray tracing instance aggregation
     class Instance : public std::enable_shared_from_this<Instance> {
     public:
-        VkInstance _instance;
+        VkInstance _instance = nullptr;
 
         operator VkInstance() const { return _instance; }
     };
+
+
 
     // ray tracing physical device handle
     class PhysicalDevice : public std::enable_shared_from_this<PhysicalDevice> {
     public:
         friend Instance;
+        VkPhysicalDevice _physicalDevice = nullptr;
         std::weak_ptr<Instance> _instance;
-        VkPhysicalDevice _physicalDevice;
 
         operator VkPhysicalDevice() const { return _physicalDevice; }
         std::shared_ptr<Instance> _parent() const { return _instance.lock(); };
     };
 
+
+
     // ray tracing device with aggregation
     class Device : public std::enable_shared_from_this<Device> {
     public:
         friend PhysicalDevice;
+        VkDevice _device = nullptr;
         std::weak_ptr<PhysicalDevice> _physicalDevice;
+
+        VmaAllocator _allocator;
+        VkPipelineCache _pipelineCache; // store native pipeline cache
         std::shared_ptr<RadixSort> _radixSort; // create native radix sort
         std::shared_ptr<CopyProgram> _copyProgram; // create native pipelines for copying
         std::shared_ptr<HostToDeviceBuffer> _uploadBuffer; // from host
         std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap; // descriptor layout map in ray tracing system
 
-        VmaAllocator _allocator;
-        VkDevice _device;
-
         operator VkDevice() const { return _device; }
+        operator VkPipelineCache() const { return _pipelineCache; }
+        operator VmaAllocator() const { return _allocator; }
         std::shared_ptr<PhysicalDevice> _parent() const { return _physicalDevice.lock(); };
     };
+
+
 
     // ray tracing command buffer interface aggregator
     class CommandBuffer : public std::enable_shared_from_this<CommandBuffer> {
     public:
         friend Device;
+        VkCommandBuffer _commandBuffer = nullptr;
         std::weak_ptr<Device> _device;
-        VkCommandBuffer _cmd;
 
-        std::shared_ptr<MaterialSet> _materialSetTmp; // will bound in "cmdDispatch" 
-        // TODO: temporary store vertex data buffers
+        std::shared_ptr<MaterialSet> _currentMaterialSet; // will bound in "cmdDispatch" 
+        std::shared_ptr<Accelerator> _currentAccelerator;
+        std::shared_ptr<Pipeline> _currentPipeline;
+        std::map<uint32_t, VtVertexDataBufferBinding> _vertexDataBufferBindingMap; // for accelerator vertex building command cache
+        std::vector<VkDescriptorSet> _tmpCopyInstanceDescriptorSets; // when command buffer will submitted, prefer clean up
 
-        operator VkCommandBuffer() const { return _cmd; }
+        operator VkCommandBuffer() const { return _commandBuffer; }
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
+
+
 
     // ray tracing advanced pipeline layout (unfinished)
     class PipelineLayout : public std::enable_shared_from_this<PipelineLayout> {
     public:
         friend Device;
+        VkPipelineLayout _pipelineLayout = nullptr; // replaced set 0 and 1
         std::weak_ptr<Device> _device;
-        VkPipelineLayout _pipelineLayout; // has blocked set 0 and 1
-        
+
         operator VkPipelineLayout() const { return _pipelineLayout; }; // no correct conversion
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
+
+
 
     // ray tracing advanced pipeline (unfinished)
     class Pipeline: public std::enable_shared_from_this<Pipeline> {
     public:
         friend Device;
+        const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
+
         std::weak_ptr<Device> _device;
-        std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout
+        std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout, when pipeline was created
         VkPipeline _closestHitPipeline, _missHitPipeline, _generationPipeline;
 
+        // native descriptor set
+        VkDescriptorSet _rayTracingDescriptorSet;
+        std::map<uint32_t, VkDescriptorSet> _userDefinedDescriptorSets; // beyond than 1 only
+        // material and accelerator descriptor sets, that sets to "1" is dedicated by another natives
+
+        operator VkPipeline() const { return _dullPipeline; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
+
+
 
     // ray tracing accelerator structure object (unfinished)
     class Accelerator: public std::enable_shared_from_this<Accelerator> {
     public:
         friend Device;
+        const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
+
         std::weak_ptr<Device> _device;
 
-        // traverse
+        // traverse pipeline
         VkPipeline _intersectionPipeline;
 
-        // vertex input stage
+        // vertex input assembly stage
         VkPipeline _vertexAssemblyPipeline;
 
         // build BVH stages (few stages, in sequences)
         VkPipeline _boundingPipeline, _shorthandPipeline, _leafPipeline, /*...radix sort between*/ _buildPipeline, _fitPipeline;
 
-        // static pipeline layout for stages
+        // static pipeline layout for stages 
         VkPipelineLayout _vertexAssemblyPipelineLayout, _buildPipelineLayout, _traversePipelineLayout;
 
+        // descritor sets for traversing, building, and vertex assembly
+        VkDescriptorSet _vertexAssemblyDescriptorSet, _buildDescriptorSet, _traverseDescriptorSet;
+
+
+        // internal buffers
+        std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _boundaryResultBuffer;
+
+        // vertex and bvh export 
+        std::shared_ptr<DeviceImage> _attributeTexelBuffer;
+        std::shared_ptr<DeviceBuffer> _verticeBuffer, _materialBuffer, _orderBuffer, _bvhMetaBuffer, bvhBoxBuffer, _bvhBlockUniform;
+
+        operator VkPipeline() const { return _dullPipeline; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
 
 
     // this is wrapped advanced buffer class
-    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    template<VmaMemoryUsage U>
     class RoledBuffer: public std::enable_shared_from_this<RoledBuffer<U>> {
     public:
         friend Device;
+        VkBuffer _buffer = nullptr;
         std::weak_ptr<Device> _device;
-        VkBuffer _buffer;
+
         VkBufferView _bufferView;
         VmaAllocation _allocation;
         VmaAllocationInfo _allocationInfo;
@@ -140,16 +162,18 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
         operator VkBuffer() const { return _buffer; } // cast operator
         operator VkBufferView() const { return _bufferView; } // cast operator
-        VkDescriptorBufferInfo _descriptorInfo(); //generated structure
+        VkDescriptorBufferInfo _descriptorInfo() const; //generated structure
     };
+
 
 
     // this is wrapped advanced image class
     class DeviceImage: public std::enable_shared_from_this<DeviceImage> {
     public:
         friend Device;
+        VkImage _image = nullptr;
         std::weak_ptr<Device> _device;
-        VkImage _image;
+
         VkImageView _imageView;
         VmaAllocation _allocation;
         VmaAllocationInfo _allocationInfo;
@@ -161,11 +185,8 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
         operator VkImage() const { return _image; } // cast operator
         operator VkImageView() const { return _imageView; } // cast operator
-        VkDescriptorImageInfo _descriptorInfo(); //generated structure
+        VkDescriptorImageInfo _descriptorInfo() const; //generated structure
     };
-
-
-
 
 
 
@@ -174,7 +195,9 @@ namespace _vt { // store in undercover namespace
     class RadixSort: public std::enable_shared_from_this<RadixSort> {
     public:
         friend Device;
+        const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
         std::weak_ptr<Device> _device;
+        
         std::shared_ptr<DeviceBuffer> _stepsBuffer; // constant buffer
         std::shared_ptr<DeviceBuffer> _tmpKeysBuffer; // cache keys between stages (avoid write conflict)
         std::shared_ptr<DeviceBuffer> _tmpValuesBuffer; // cache values between stages (avoid write conflict)
@@ -182,26 +205,33 @@ namespace _vt { // store in undercover namespace
         VkPipelineLayout _pipelineLayout; // use unified pipeline layout
         
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        operator VkPipeline() const { return _dullPipeline; };
     };
 
     // this class does not using in ray tracing API
-    // can be pinned with device
+    // can be pinned with device 
+    // in every copy procedure prefer create own descriptor sets
+    // or use push descriptors 
     class CopyProgram: public std::enable_shared_from_this<CopyProgram> {
     public:
         friend Device;
+        const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
         std::weak_ptr<Device> _device;
+
         VkPipeline _bufferCopyPipeline, _bufferCopyIndirectPipeline, _imageCopyPipeline, _imageCopyIndirectPipeline;
         VkPipelineLayout _bufferCopyPipelineLayout, _imageCopyPipelineLayout;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        operator VkPipeline() const { return _dullPipeline; };
     };
+
 
 
     class MaterialSet : public std::enable_shared_from_this<MaterialSet> {
     public:
         friend Device;
+        VkDescriptorSet _descriptorSet = nullptr;
         std::weak_ptr<Device> _device;
-        VkDescriptorSet _descriptorSet;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
         operator VkDescriptorSet() const { return _descriptorSet; };
