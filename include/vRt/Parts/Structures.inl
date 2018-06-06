@@ -48,17 +48,21 @@ namespace vt { // store in official namespace
 
         // bindings regions
         VtVertexRegionBinding * pBufferRegionBindings = nullptr;
+        VkBuffer bBufferRegionBindings = nullptr; // direct descriptor set bind
         uint32_t bufferRegionCount = 0;
 
         // accessor regions
         VtVertexAccessor * pBufferAccessors = nullptr;
+        VkBuffer bBufferAccessors = nullptr; // direct descriptor set bind
         uint32_t bufferAccessorCount = 0;
 
         // attribute bindings (will stored in special patterned image buffer)
         VtVertexAttributeBinding * pBufferAttributeBindings = nullptr;
+        VkBuffer bBufferAttributeBindings = nullptr; // direct descriptor set bind
         uint32_t attributeBindingCount = 0;
 
         VtVertexBufferView * pBufferViews = nullptr;
+        VkBuffer bBufferViews = nullptr; // direct descriptor set bind
         uint32_t bufferViewCount = 0;
 
         // where from must got vertex and indices

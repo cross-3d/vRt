@@ -73,7 +73,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Accelerator> _currentAccelerator;
         std::shared_ptr<Pipeline> _currentPipeline;
         //std::map<uint32_t, VtVertexDataBufferBinding> _vertexDataBufferBindingMap; // for accelerator vertex building command cache
-        std::vector<VkDescriptorSet> _tmpCopyInstanceDescriptorSets; // when command buffer will submitted, prefer clean up
+        //std::vector<VkDescriptorSet> _tmpCopyInstanceDescriptorSets; // when command buffer will submitted, prefer clean up
 
         operator VkCommandBuffer() const { return _commandBuffer; }
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
@@ -267,10 +267,10 @@ namespace _vt { // store in undercover namespace
 
         // buffer pointers for storing vertexInput
         uint32_t _primitiveCount = 0; // for simplify of measuring when building hierarchies
-        std::shared_ptr<DeviceBuffer> _bufferRegionBindings_buffer;
-        std::shared_ptr<DeviceBuffer> _bufferAccessors_buffer;
-        std::shared_ptr<DeviceBuffer> _bufferAttributeBindings_buffer;
-        std::shared_ptr<DeviceBuffer> _bufferViews_buffer;
+        std::shared_ptr<DeviceBuffer> _bBufferRegionBindings;
+        std::shared_ptr<DeviceBuffer> _bBufferAccessors;
+        std::shared_ptr<DeviceBuffer> _bBufferAttributeBindings;
+        std::shared_ptr<DeviceBuffer> _bBufferViews;
         std::shared_ptr<DeviceBuffer> _constBufferUniform; // replacement for push constant (contains primitiveCount, verticeAccessorID, indiceAccessorID, materialID)
         std::shared_ptr<DeviceBuffer> _dataSourceBuffer; // universe buffer for vertex input
 
