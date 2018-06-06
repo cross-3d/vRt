@@ -47,6 +47,13 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap; // descriptor layout map in ray tracing system
 
+        // weak pointers with in-device bind allocatable objects
+        // make sure that these buffers stil may destoyed
+        std::vector<std::weak_ptr<DeviceToHostBuffer>> _deviceToHostBuffersPtrs;
+        std::vector<std::weak_ptr<HostToDeviceBuffer>> _hostToDeviceBuffersPtrs;
+        std::vector<std::weak_ptr<DeviceBuffer>> _deviceBuffersPtrs;
+        std::vector<std::weak_ptr<DeviceImage>> _deviceImagesPtrs;
+
         operator VkDevice() const { return _device; }
         operator VkPipelineCache() const { return _pipelineCache; }
         operator VmaAllocator() const { return _allocator; }
