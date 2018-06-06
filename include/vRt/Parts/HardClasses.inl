@@ -1,9 +1,9 @@
 #pragma once
 #include "Headers.inl"
-#include "Enums.inl"
 #include "StructuresLow.inl"
 #include "HardClassesDef.inl"
 #include "HandlersDef.inl" // unusable without definitions
+#include "Enums.inl"
 
 // C++ hard interfaces (which will storing)
 namespace _vt { // store in undercover namespace

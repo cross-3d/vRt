@@ -1,6 +1,7 @@
 #pragma once
 #include "Headers.inl"
 #include "HandlersDef.inl"
+#include "HardClassesDef.inl"
 #include "HardClasses.inl"
 
 // class aliases for vRt from C++ hard implementators (incomplete)

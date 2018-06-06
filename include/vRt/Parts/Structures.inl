@@ -1,8 +1,8 @@
 #pragma once
 #include "Headers.inl"
+#include "StructuresDef.inl"
 #include "Enums.inl"
 #include "Handlers.inl"
-#include "StructuresDef.inl"
 
 namespace vt { // store in official namespace
     // Description structs for make vRt objects
