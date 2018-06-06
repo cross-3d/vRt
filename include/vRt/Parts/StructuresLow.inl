@@ -54,7 +54,7 @@ namespace vt { // store in official namespace
     struct VtVirtualCombinedImage {
         union {
             uint64_t textureID : 32, samplerID : 32;
-            uint64_t combined;
+            uint64_t combined = 0ull;
         };
 
         operator uint64_t() const { return combined; };
