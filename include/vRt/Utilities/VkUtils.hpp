@@ -45,22 +45,7 @@ namespace _vt {
         return data;
     };
 
-    // shader pipeline barrier
-    inline void shaderBarrier(const VkCommandBuffer& cmdBuffer) {
-        VkMemoryBarrier memoryBarrier;
-        memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-        memoryBarrier.pNext = nullptr;
-        memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT, 
-        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT;
 
-        vkCmdPipelineBarrier(
-            cmdBuffer,
-            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 
-            1, &memoryBarrier,
-            0, nullptr, 
-            0, nullptr);
-    };
 
     // general command buffer barrier
     inline void commandBarrier(const VkCommandBuffer& cmdBuffer) {
@@ -78,6 +63,44 @@ namespace _vt {
             0, nullptr, 
             0, nullptr);
     };
+
+
+    // from host command buffer barrier
+    inline void fromHostCommandBarrier(const VkCommandBuffer& cmdBuffer) {
+        VkMemoryBarrier memoryBarrier;
+        memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        memoryBarrier.pNext = nullptr;
+        memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_HOST_WRITE_BIT,
+        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+
+        vkCmdPipelineBarrier(
+            cmdBuffer,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_HOST_BIT,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT,
+            1, &memoryBarrier,
+            0, nullptr,
+            0, nullptr);
+    };
+
+
+    // to host command buffer barrier
+    inline void toHostCommandBarrier(const VkCommandBuffer& cmdBuffer) {
+        VkMemoryBarrier memoryBarrier;
+        memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        memoryBarrier.pNext = nullptr;
+        memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
+        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_HOST_READ_BIT;
+
+        vkCmdPipelineBarrier(
+            cmdBuffer,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT | VK_PIPELINE_STAGE_HOST_BIT,
+            1, &memoryBarrier,
+            0, nullptr,
+            0, nullptr);
+    };
+
+
 
     // create secondary command buffers for batching compute invocations
     inline auto createCommandBuffer(const VkDevice device, const VkCommandPool cmdPool) {
@@ -139,8 +162,35 @@ namespace _vt {
     inline void cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1){
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
         vkCmdDispatch(cmd, x, y, z);
-        shaderBarrier(cmd); // put shader barrier
+        commandBarrier(cmd); // put shader barrier
     }
+
+    // low level copy command between (prefer for host and device)
+    inline void cmdCopyBufferL(VkCommandBuffer cmd, vk::Buffer srcBuffer, vk::Buffer dstBuffer, const std::vector<vk::BufferCopy>& regions, const std::function<void(const VkCommandBuffer&)>& barrierFn = commandBarrier) {
+        vk::CommandBuffer(cmd).copyBuffer(srcBuffer, dstBuffer, regions);
+        barrierFn(cmd); // put copy barrier
+    }
+
+    // short data set with command buffer (alike push constant)
+    template<class T>
+    inline void cmdUpdateBuffer(VkCommandBuffer cmd, const std::vector<T>& data, vk::Buffer dstBuffer, VkDeviceSize offset = 0) {
+        vk::CommandBuffer(cmd).updateBuffer(dstBuffer, offset, data);
+        //commandBarrier(cmd);
+        fromHostCommandBarrier(cmd);
+    }
+
+    // template function for fill buffer by constant value
+    // use for create repeat variant
+    template<uint32_t Rv>
+    inline void cmdFillBuffer(VkCommandBuffer cmd, vk::Buffer dstBuffer, VkDeviceSize size, intptr_t offset = 0) {
+        vk::CommandBuffer(cmd).fillBuffer(dstBuffer, offset, size, Rv);
+        //commandBarrier(cmd);
+        fromHostCommandBarrier(cmd);
+    }
+
+
+
+
 
     // submit command (with async wait)
     inline void submitCmdAsync(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, std::function<void()> asyncCallback = {}){
