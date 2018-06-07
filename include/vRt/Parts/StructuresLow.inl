@@ -67,8 +67,8 @@ namespace vt { // store in official namespace
         VT_UINT16 = 2,
         VT_HALF = 3
     } VtType;
-
     
+    // constexpr format compositor
     struct VtFormatDecomp {
         union {
             uint32_t components : 2, type : 4, normalized : 1;
@@ -78,6 +78,10 @@ namespace vt { // store in official namespace
         constexpr VtFormatDecomp(uint32_t _components, uint32_t _type, uint32_t _normalized = 0) : components(_components), type(_type), normalized(_normalized) {};
         constexpr VtFormatDecomp(uint32_t _format) : format(_format) {};
         operator uint32_t() const { return format; }
+
+        constexpr VtFormatDecomp& setComponents(uint32_t _components) { components = _components; return *this; }
+        constexpr VtFormatDecomp& setType(uint32_t _type) { type = _type; return *this; }
+        constexpr VtFormatDecomp& setNormalized(bool _normalized) { normalized = _normalized; return *this; }
     };
 
     // any other vertex accessors can be used by attributes
