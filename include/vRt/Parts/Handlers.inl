@@ -25,6 +25,7 @@ namespace vt { // store in official namespace
         std::shared_ptr<_vt::Device> _vtDevice;
         operator VkDevice() const { return *_vtDevice; }
         operator VkPipelineCache() const { return *_vtDevice; };
+        operator VkDescriptorPool() const { return *_vtDevice; };
         operator VmaAllocator() const { return *_vtDevice; }
         operator bool() const { return !!_vtDevice; };
     };
