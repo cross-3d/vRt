@@ -71,7 +71,8 @@ void main() {
         LGROUP_BARRIER
 
         asize = asize_;
-        IFALL (asize >= (gS*largeStageThreshold) || asize <= 0) { break; }
+        //IFALL (asize >= (gS*largeStageThreshold) || asize <= 0) { break; }
+        IFALL (asize <= 0) { break; } // remove count limiter
 
         // split nodes
         for (int fT=0;fT<asize;fT+=gS) {
