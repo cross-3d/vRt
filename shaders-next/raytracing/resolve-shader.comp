@@ -7,14 +7,31 @@
 #include "../include/mathlib.glsl"
 #include "../include/random.glsl"
 
-// use partition by 8x8
-layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT);
+layout ( rgba32ui, binding = 0, set = 2 ) uniform image2D ColorOutput;
 
-// planned ray generation shader example
+// use partition by 8x8
+//layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT);
+LOCAL_SIZE_LAYOUT;
+
+// 
 void main() {
-    VtRay ray;
-    ray.origin.w = uintBitsToFloat(bitfieldInsert(bitfieldInsert(0u, GlobalIdx.x, 0, 16), GlobalIdx.y, 16, 16); // save hashed2D (max to 65535x65535)
-    vtEmitRays(ray);
+    const int wsize = rayCounter;
+    const int wcsize = int(gl_WorkGroupSize.x) / int(Wave_Size_RT);
+    const int wcount = min(tiled(wsize, wcsize), 1000000);
+
+    // save image color information from ray tracing
+    for (int w=0;w<wcount;w+=wgs) 
+    {
+        SB_BARRIER
+        int globalID = (w + int(gl_WorkGroupID.x)) * wcsize + int(Wave_Idx);
+        VtRay ray = vtFetchRay(globalID);
+
+        // get output image 2D coord
+        ivec2 icoord = ivec2(bitfieldExtract(floatBitsToUint(ray.origin.w), 0, 16), bitfieldExtract(floatBitsToUint(ray.origin.w), 16, 16));
+
+        // save result of ray tracing by ray saved indice
+        imageStore(ColorOutput, icoord, vec4(f16_f32(ray.dcolor).xyz, 1.f));
+    }
 
     /*
     int wsize = RAY_BLOCK samplerUniform.blockCount;

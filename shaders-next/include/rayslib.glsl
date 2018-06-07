@@ -47,6 +47,10 @@ int vtEmitRays(in VtRay ray) {
     return rayID;
 }
 
+VtRay vtFetchRay(in int lidx){
+    return rays[lidx];
+}
+
 int vtVerifyClosestHit(in int closestId){
     int id = atomicIncClosestHitCount();
     closestHits[id] = closestId+1;
