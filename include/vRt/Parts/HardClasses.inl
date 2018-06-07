@@ -9,12 +9,14 @@
 namespace _vt { // store in undercover namespace
     using namespace vt;
 
+
+
     // ray tracing instance aggregation
     class Instance : public std::enable_shared_from_this<Instance> {
     public:
         VkInstance _instance = nullptr;
 
-        operator VkInstance() const { return _instance; }
+        operator VkInstance() const { return _instance; };
     };
 
 
@@ -26,7 +28,7 @@ namespace _vt { // store in undercover namespace
         VkPhysicalDevice _physicalDevice = nullptr;
         std::weak_ptr<Instance> _instance;
 
-        operator VkPhysicalDevice() const { return _physicalDevice; }
+        operator VkPhysicalDevice() const { return _physicalDevice; };
         std::shared_ptr<Instance> _parent() const { return _instance.lock(); };
     };
 
@@ -41,6 +43,7 @@ namespace _vt { // store in undercover namespace
 
         VmaAllocator _allocator;
         VkPipelineCache _pipelineCache; // store native pipeline cache
+        VkDescriptorPool _descriptorPool;
         std::shared_ptr<RadixSort> _radixSort; // create native radix sort
         //std::shared_ptr<CopyProgram> _copyProgram; // create native pipelines for (indirect) copying
         std::shared_ptr<HostToDeviceBuffer> _uploadBuffer; // from host
@@ -54,9 +57,10 @@ namespace _vt { // store in undercover namespace
         std::vector<std::weak_ptr<DeviceBuffer>> _deviceBuffersPtrs;
         std::vector<std::weak_ptr<DeviceImage>> _deviceImagesPtrs;
 
-        operator VkDevice() const { return _device; }
-        operator VkPipelineCache() const { return _pipelineCache; }
-        operator VmaAllocator() const { return _allocator; }
+        operator VkDevice() const { return _device; };
+        operator VkPipelineCache() const { return _pipelineCache; };
+        operator VkDescriptorPool() const { return _descriptorPool; };
+        operator VmaAllocator() const { return _allocator; };
         std::shared_ptr<PhysicalDevice> _parent() const { return _physicalDevice.lock(); };
     };
 
@@ -75,7 +79,7 @@ namespace _vt { // store in undercover namespace
         //std::map<uint32_t, VtVertexDataBufferBinding> _vertexDataBufferBindingMap; // for accelerator vertex building command cache
         //std::vector<VkDescriptorSet> _tmpCopyInstanceDescriptorSets; // when command buffer will submitted, prefer clean up
 
-        operator VkCommandBuffer() const { return _commandBuffer; }
+        operator VkCommandBuffer() const { return _commandBuffer; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
@@ -168,11 +172,11 @@ namespace _vt { // store in undercover namespace
         VmaAllocation _allocation;
         VmaAllocationInfo _allocationInfo;
         VkDeviceSize _size;
-        auto _hostMapped() const { return _allocationInfo.pMappedData; }
+        auto _hostMapped() const { return _allocationInfo.pMappedData; };
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
-        operator VkBuffer() const { return _buffer; } // cast operator
-        operator VkBufferView() const { return _bufferView; } // cast operator
+        operator VkBuffer() const { return _buffer; }; // cast operator
+        operator VkBufferView() const { return _bufferView; }; // cast operator
         VkDescriptorBufferInfo _descriptorInfo() const; //generated structure
     };
 
@@ -196,8 +200,8 @@ namespace _vt { // store in undercover namespace
         VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
-        operator VkImage() const { return _image; } // cast operator
-        operator VkImageView() const { return _imageView; } // cast operator
+        operator VkImage() const { return _image; }; // cast operator
+        operator VkImageView() const { return _imageView; }; // cast operator
         VkDescriptorImageInfo _descriptorInfo() const; //generated structure
     };
 
