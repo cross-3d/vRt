@@ -2,6 +2,10 @@
 
 > Vulkan API ray tracing cross-platform layer 
 
+## Repositories
+- https://github.com/world8th/vRt (GitHub, owned by Microsoft)
+- https://gitlab.com/world8th/vRt (GitLab, merging)
+
 ## Planned
 
 ### June 2018 ("Lava Rains")
