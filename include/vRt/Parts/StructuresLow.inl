@@ -75,7 +75,8 @@ namespace vt { // store in official namespace
         constexpr VtFormatDecomp() : _components(0), _type(0), _normalized(0) {};
         constexpr VtFormatDecomp(uint8_t components, uint8_t type, uint8_t normalized = 0) : _components(components-1u), _type(type), _normalized(normalized) {};
         constexpr VtFormatDecomp(uint32_t format) : _format(format) {};
-        operator uint32_t() const { return _format; };
+        constexpr operator uint32_t() const { return _format; };
+        //operator uint32_t() const { return _format; };
 
         constexpr VtFormatDecomp& setComponents(uint8_t components) { _components = components - 1u; return *this; };
         constexpr VtFormatDecomp& setType(uint8_t type) { _type = type; return *this; };

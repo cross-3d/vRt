@@ -47,7 +47,6 @@ namespace vt { // store in official namespace
         VT_R32_UINT = VtFormatDecomp(1u, VT_UINT32),
         VT_R16_UINT = VtFormatDecomp(1u, VT_UINT16);
 
-
     // all supported topologies
     typedef enum VtTopologyType: uint32_t {
         VT_TOPOLOGY_TYPE_TRIANGLES_LIST = 0x11F00000
