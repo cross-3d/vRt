@@ -2,8 +2,6 @@
 
 > Vulkan API ray tracing cross-platform layer 
 
-<img src="poster/chase2.png" alt="Chase" width="640">
-
 ## Planned
 
 ### June 2018 ("Lava Rains")
