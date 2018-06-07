@@ -2,9 +2,7 @@
 #include "Headers.inl"
 #include "HardClassesDef.inl"
 
-// class aliases for vRt from C++ hard implementators (incomplete)
-// use shared pointers for C++
-// (planned use plain pointers in C)
+
 namespace vt { // store in official namespace
 
     struct VtInstance;

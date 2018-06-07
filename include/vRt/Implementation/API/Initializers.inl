@@ -6,6 +6,7 @@
 namespace _vt { // store in undercover namespace
     using namespace vt;
 
+    // TODO merge some extra functions to another headers
 
 
     uint32_t VtIdentifier = 0x1FFu;
@@ -134,9 +135,6 @@ namespace _vt { // store in undercover namespace
     constexpr _createBuffer_T<VMA_MEMORY_USAGE_GPU_TO_CPU> createDeviceToHostBuffer = &createBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
 
 
-
-
-    // planned acceptance by VtCreateDeviceImageInfo 
     inline VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, VtDeviceImage &_vtImage) {
         // result will no fully handled
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;

@@ -23,7 +23,6 @@ namespace vt { // store in official namespace
 
     // custom (unified) object create info, exclusive for vRt ray tracing system, and based on classic Satellite objects
     // bound in device space
-    // planned to add support of HostToGpu and GpuToHost objects 
 
     struct VtDeviceBufferCreateInfo;
     struct VtDeviceImageCreateInfo;
