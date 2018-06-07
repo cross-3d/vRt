@@ -1,5 +1,7 @@
 # vRt
 
+[![Join the chat at https://gitter.im/world8th/vRt](https://badges.gitter.im/world8th/vRt.svg)](https://gitter.im/world8th/vRt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 > Vulkan API ray tracing cross-platform layer 
 
 ## Repositories
