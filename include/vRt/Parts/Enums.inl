@@ -1,5 +1,6 @@
 #pragma once
 #include "Headers.inl"
+#include "StructuresLow.inl"
 
 namespace vt { // store in official namespace
 
@@ -28,16 +29,24 @@ namespace vt { // store in official namespace
         VT_STRUCTURE_TYPE_DEVICE_TO_HOST_IMAGE_CREATE_INFO = 0x11F00009,
         VT_STRUCTURE_TYPE_HOST_TO_DEVICE_BUFFER_CREATE_INFO = 0x11F0000A,
         VT_STRUCTURE_TYPE_HOST_TO_DEVICE_IMAGE_CREATE_INFO = 0x11F0000B,
-        // empty
         VT_STRUCTURE_TYPE_MATERIAL_SET_CREATE_INFO = 0x11F0000C,
         VT_STRUCTURE_TYPE_ACCELERATOR_CREATE_INFO = 0x11F0000D,
         VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION = 0x11F0000E
     } VtStructureType;
 
-    // it is bitfield-based value (TODO)
-    typedef enum VtFormat: uint32_t {
 
-    } VtFormat;
+    // retype VtFormatDecomp
+    using VtFormat = VtFormatDecomp;
+
+    // use constexpr VtFormat constants
+    constexpr auto  
+        VT_R32G32B32A32_SFLOAT = VtFormatDecomp(3u, VT_FLOAT),
+        VT_R32G32B32_SFLOAT = VtFormatDecomp(2u, VT_FLOAT),
+        VT_R32G32_SFLOAT = VtFormatDecomp(1u, VT_FLOAT),
+        VT_R32_SFLOAT = VtFormatDecomp(0u, VT_FLOAT),
+        VT_R32_UINT = VtFormatDecomp(0u, VT_UINT32),
+        VT_R16_UINT = VtFormatDecomp(0u, VT_UINT16);
+
 
     // all supported topologies
     typedef enum VtTopologyType: uint32_t {

@@ -1,20 +1,12 @@
 #pragma once
 #include "Headers.inl"
-#include "HardClassesDef.inl"
-#include "HandlersDef.inl"
-#include "Enums.inl"
+//#include "HardClassesDef.inl"
+//#include "HandlersDef.inl"
+//#include "Enums.inl"
 
 namespace vt { // store in official namespace
 
-    // any other vertex accessors can be used by attributes
-    struct VtVertexAccessor {
-        uint32_t bufferViewID = 0;
-        uint32_t byteOffset = 0;
-        union {
-            uint32_t components : 2, type : 4, normalized : 1;
-            VtFormat format;
-        };
-    };
+
 
     // any other vertex bindings can be used by attributes
     struct VtVertexRegionBinding {
@@ -66,5 +58,34 @@ namespace vt { // store in official namespace
         VkBuffer pBuffer = nullptr;
         VkDeviceSize offset = 0;
     };
+
+
+
+    typedef enum VtType : uint32_t {
+        VT_FLOAT = 0,
+        VT_UINT32 = 1,
+        VT_UINT16 = 2,
+        VT_HALF = 3
+    } VtType;
+
+    
+    struct VtFormatDecomp {
+        union {
+            uint32_t components : 2, type : 4, normalized : 1;
+            uint32_t format = 0;
+        };
+        constexpr VtFormatDecomp() : components(0), type(0), normalized(0) {};
+        constexpr VtFormatDecomp(uint32_t _components, uint32_t _type, uint32_t _normalized = 0) : components(_components), type(_type), normalized(_normalized) {};
+        constexpr VtFormatDecomp(uint32_t _format) : format(_format) {};
+        operator uint32_t() const { return format; }
+    };
+
+    // any other vertex accessors can be used by attributes
+    struct VtVertexAccessor {
+        uint32_t bufferViewID = 0;
+        uint32_t byteOffset = 0;
+        VtFormatDecomp format;
+    };
+
 
 };

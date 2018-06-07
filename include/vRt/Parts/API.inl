@@ -1,5 +1,6 @@
 #pragma once
 #include "Headers.inl"
+#include "StructuresLow.inl"
 #include "HandlersDef.inl"
 #include "StructuresDef.inl"
 #include "Enums.inl"

@@ -71,7 +71,7 @@ namespace _vt { // store in undercover namespace
 
         std::shared_ptr<MaterialSet> _currentMaterialSet; // will bound in "cmdDispatch" 
         std::shared_ptr<Accelerator> _currentAccelerator;
-        std::shared_ptr<Pipeline> _currentPipeline;
+        std::shared_ptr<Pipeline> _currentRTPipeline;
         //std::map<uint32_t, VtVertexDataBufferBinding> _vertexDataBufferBindingMap; // for accelerator vertex building command cache
         //std::vector<VkDescriptorSet> _tmpCopyInstanceDescriptorSets; // when command buffer will submitted, prefer clean up
 
@@ -81,7 +81,7 @@ namespace _vt { // store in undercover namespace
 
 
 
-    // ray tracing advanced pipeline layout (unfinished)
+    // ray tracing advanced pipeline layout
     class PipelineLayout : public std::enable_shared_from_this<PipelineLayout> {
     public:
         friend Device;
@@ -94,7 +94,7 @@ namespace _vt { // store in undercover namespace
 
 
 
-    // ray tracing advanced pipeline (unfinished)
+    // ray tracing advanced pipeline
     class Pipeline: public std::enable_shared_from_this<Pipeline> {
     public:
         friend Device;
@@ -106,15 +106,15 @@ namespace _vt { // store in undercover namespace
 
         // native descriptor set
         VkDescriptorSet _rayTracingDescriptorSet;
-        std::map<uint32_t, VkDescriptorSet> _userDefinedDescriptorSets; // beyond than 1 only
         // material and accelerator descriptor sets, that sets to "1" is dedicated by another natives
+        std::vector<VkDescriptorSet> _userDefinedDescriptorSets; // beyond than 1 only
 
         operator VkPipeline() const { return _dullPipeline; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
 
-    // ray tracing accelerator structure object (unfinished)
+    // ray tracing accelerator structure object
     // planned to merge pipeline programs to device
     class Accelerator: public std::enable_shared_from_this<Accelerator> {
     public:
