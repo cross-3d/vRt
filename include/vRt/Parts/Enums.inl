@@ -40,12 +40,12 @@ namespace vt { // store in official namespace
 
     // use constexpr VtFormat constants
     constexpr auto  
-        VT_R32G32B32A32_SFLOAT = VtFormatDecomp(3u, VT_FLOAT),
-        VT_R32G32B32_SFLOAT = VtFormatDecomp(2u, VT_FLOAT),
-        VT_R32G32_SFLOAT = VtFormatDecomp(1u, VT_FLOAT),
-        VT_R32_SFLOAT = VtFormatDecomp(0u, VT_FLOAT),
-        VT_R32_UINT = VtFormatDecomp(0u, VT_UINT32),
-        VT_R16_UINT = VtFormatDecomp(0u, VT_UINT16);
+        VT_R32G32B32A32_SFLOAT = VtFormatDecomp(4u, VT_FLOAT),
+        VT_R32G32B32_SFLOAT = VtFormatDecomp(3u, VT_FLOAT),
+        VT_R32G32_SFLOAT = VtFormatDecomp(2u, VT_FLOAT),
+        VT_R32_SFLOAT = VtFormatDecomp(1u, VT_FLOAT),
+        VT_R32_UINT = VtFormatDecomp(1u, VT_UINT32),
+        VT_R16_UINT = VtFormatDecomp(1u, VT_UINT16);
 
 
     // all supported topologies

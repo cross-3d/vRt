@@ -70,18 +70,20 @@ namespace vt { // store in official namespace
     
     // constexpr format compositor
     struct VtFormatDecomp {
-        union {
-            uint32_t components : 2, type : 4, normalized : 1;
-            uint32_t format = 0;
-        };
-        constexpr VtFormatDecomp() : components(0), type(0), normalized(0) {};
-        constexpr VtFormatDecomp(uint32_t _components, uint32_t _type, uint32_t _normalized = 0) : components(_components), type(_type), normalized(_normalized) {};
-        constexpr VtFormatDecomp(uint32_t _format) : format(_format) {};
-        operator uint32_t() const { return format; }
+        union { uint32_t _components : 2, _type : 4, _normalized : 1; uint32_t _format = 0; };
 
-        constexpr VtFormatDecomp& setComponents(uint32_t _components) { components = _components; return *this; }
-        constexpr VtFormatDecomp& setType(uint32_t _type) { type = _type; return *this; }
-        constexpr VtFormatDecomp& setNormalized(bool _normalized) { normalized = _normalized; return *this; }
+        constexpr VtFormatDecomp() : _components(0), _type(0), _normalized(0) {};
+        constexpr VtFormatDecomp(uint8_t components, uint8_t type, uint8_t normalized = 0) : _components(components-1u), _type(type), _normalized(normalized) {};
+        constexpr VtFormatDecomp(uint32_t format) : _format(format) {};
+        operator uint32_t() const { return _format; };
+
+        constexpr VtFormatDecomp& setComponents(uint8_t components) { _components = components - 1u; return *this; };
+        constexpr VtFormatDecomp& setType(uint8_t type) { _type = type; return *this; };
+        constexpr VtFormatDecomp& setNormalized(bool normalized) { _normalized = normalized; return *this; };
+
+        constexpr uint8_t getComponents() const { return _components+1u; };
+        constexpr uint8_t getType() const { return _type; };
+        constexpr bool getNormalized() const { return _normalized; };
     };
 
     // any other vertex accessors can be used by attributes
