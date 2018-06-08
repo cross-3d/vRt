@@ -30,8 +30,21 @@ layout ( std430, binding = 7, set = 0 ) buffer arcounterB {
     int missHitCounter;
 
     int payloadHitCounter;
-    int r0, r1, r2;
+    int blockSpaceCounter; // 9th line counter
+    int r0, r1;
 };
+
+// imported from satellite (blocky indicing)
+#ifdef USE_16BIT_ADDRESS_SPACE
+layout ( std430, binding = 8, set = 0 ) buffer VT_9_LINE { uint16_t ispace[][R_BLOCK_SIZE]; };
+#define m16i(b,i) (int(ispace[b][i])-1)
+#define m16s(a,b,i) (ispace[b][i] = uint16_t(a+1))
+#else
+layout ( std430, binding = 8, set = 0 ) buffer VT_9_LINE { highp uint ispace[][R_BLOCK_SIZE]; };
+#define m16i(b,i) (int(ispace[b][i])-1)
+#define m16s(a,b,i) (ispace[b][i] = uint(a+1))
+#endif
+
 
 // atomic counters with subgroups
 initAtomicSubgroupIncFunction(rayCounter, atomicIncRayCount, 1, int)
@@ -39,6 +52,7 @@ initAtomicSubgroupIncFunction(hitCounter, atomicIncHitCount, 1, int)
 initAtomicSubgroupIncFunction(closestHitCounter, atomicIncClosestHitCount, 1, int)
 initAtomicSubgroupIncFunction(missHitCounter, atomicIncMissHitCount, 1, int)
 initAtomicSubgroupIncFunction(payloadHitCounter, atomicIncPayloadHitCount, 1, int)
+initAtomicSubgroupIncFunction(blockSpaceCounter, atomicIncblockSpaceCount, 1, int)
 
 // alpha version of low level ray emitter
 int vtEmitRays(in VtRay ray) {
