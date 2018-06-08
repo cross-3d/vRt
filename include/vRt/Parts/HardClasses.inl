@@ -106,7 +106,7 @@ namespace _vt { // store in undercover namespace
 
         std::weak_ptr<Device> _device;
         std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout, when pipeline was created
-        VkPipeline _closestHitPipeline, _missHitPipeline, _generationPipeline;
+        VkPipeline _generationPipeline, _closestHitPipeline, _missHitPipeline, _resolvePipeline;
 
         // native descriptor set
         VkDescriptorSet _rayTracingDescriptorSet;
