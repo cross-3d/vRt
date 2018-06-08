@@ -70,12 +70,12 @@ int aNormalized(in VirtualDataAccess vac) {
 
 
 // input data of vertex instance
-//layout ( std430, binding = 0, set = 1 ) readonly buffer bufferSpaceB {INDEX16 bufferSpace[]; };
+//layout ( binding = 0, set = 1, std430 ) readonly buffer bufferSpaceB {INDEX16 bufferSpace[]; };
 layout ( binding = 0, set = 1 ) highp uniform usamplerBuffer bufferSpace;
-layout ( std430, binding = 1, set = 1 ) readonly buffer VT_BUFFER_REGION {VtBufferRegion bufferRegions[]; };
-layout ( std430, binding = 2, set = 1 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
-layout ( std430, binding = 3, set = 1 ) readonly buffer VT_ACCESSOR {VtAccessor accessors[]; };
-layout ( std430, binding = 4, set = 1 ) readonly buffer VT_ATTRIB {VtAttributeBinding attributes[]; };
+layout ( binding = 1, set = 1, std430 ) readonly buffer VT_BUFFER_REGION {VtBufferRegion bufferRegions[]; };
+layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
+layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR {VtAccessor accessors[]; };
+layout ( binding = 4, set = 1, std430 ) readonly buffer VT_ATTRIB {VtAttributeBinding attributes[]; };
 
 
 
@@ -170,6 +170,10 @@ void main(){
     const int lID = int(Local_Idx);
     const int rng = gS*wgs;
     
+    // for faster geometry loading, just add counter in single thread
+    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(tcounter[0], wsize); }
+    
+    // process vertex assembly
     for (int w=0;w<wsize;w+=rng) {
         int globalID = w + wID * gS + lID;
         IFALL (globalID >= wsize) break;
@@ -177,7 +181,7 @@ void main(){
 
             // constant material ID from vertex instance 
             int matID = int(push_block.materialID);
-            int ordr = tcounter[1] + int(globalID), tidc = tcounterInc(1);
+            int ordr = tcounter[1] + int(globalID), tidc = ordr;//, tidc = tcounterInc(1);
 
             // planned to support quad based geometry
             vorders[tidc] = ordr;

@@ -1,31 +1,49 @@
 #ifndef _VERTEX_H
 #define _VERTEX_H
 
-//#define BACKFACE_CULLING
-
 #include "../include/mathlib.glsl"
 
-// enable this data for interpolation meshes
+
 #ifdef ENABLE_VERTEX_INTERPOLATOR
 #ifndef ENABLE_VSTORAGE_DATA
 #define ENABLE_VSTORAGE_DATA
 #endif
 #endif
 
-// for geometry accumulators
-#ifdef VERTEX_FILLING
-    layout ( std430, binding = 0, set = 0 ) buffer tcounterB { int tcounter[2]; };
-    layout ( std430, binding = 1, set = 0 ) buffer materialsB { int materials[]; };
-    layout ( std430, binding = 2, set = 0 ) buffer vordersB { int vorders[]; };
-    //layout ( std430, binding = 3, set = 0 ) buffer lvtxB { float lvtx[]; };
-    layout ( binding = 3, set = 0, rgba32f ) uniform imageBuffer lvtx;
-    layout ( rgba32ui, binding = 4, set = 0 ) uniform uimage2D attrib_texture_out;
-#else
-    layout ( std430, binding = 1, set = 1 ) readonly buffer materialsB { int materials[]; };
+
+// Geometry Zone
+#if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION) || defined(VERTEX_FILLING))
+    #ifdef VERTEX_FILLING
+    #define VTX_SET 0
+    #else
+    #define VTX_SET 2
+    #endif
+
+    #ifdef VERTEX_FILLING
+    layout ( binding = 0, set = VTX_SET, std430   ) buffer tcounterB { int tcounter[2]; };
+    layout ( binding = 1, set = VTX_SET, std430   ) buffer materialsB { int materials[]; };
+    layout ( binding = 2, set = VTX_SET, std430   ) buffer vordersB { int vorders[]; };
+    #else
+    //layout ( binding = 0, set = VTX_SET, std430   ) readonly buffer tcounterB { int tcounter[2]; };
+    layout ( binding = 1, set = VTX_SET, std430   ) readonly buffer materialsB { int materials[]; };
+    layout ( binding = 2, set = VTX_SET, std430   ) readonly buffer vordersB { int vorders[]; };
+    #endif
+
+    #if (defined(VERTEX_FILLING) || defined(VTX_TRANSPLIT))
+    layout ( binding = 3, set = VTX_SET, rgba32f  ) uniform imageBuffer lvtx;
+    #endif
+
+    layout ( binding = 4, set = VTX_SET, rgba32ui ) uniform uimage2D attrib_texture_out;
+    layout ( binding = 5, set = VTX_SET           ) uniform samplerBuffer lvtx;
+    layout ( binding = 6, set = VTX_SET           ) uniform usampler2D attrib_texture;
+    #define TLOAD(img,t) texelFetch(img,t)
+#endif
 
 
+// BVH Zone in ray tracing system
+#if (defined(ENABLE_VSTORAGE_DATA) && !defined(BVH_CREATION) && !defined(VERTEX_FILLING))
     // bvh uniform unified
-    layout ( std430, binding = 10, set = 0 ) readonly buffer bvhBlockB { 
+    layout ( binding = 10, set = 1, std430 ) readonly buffer bvhBlockB { 
         mat4x4 transform;
         mat4x4 transformInv;
         mat4x4 projection;
@@ -33,39 +51,17 @@
         int leafCount, primitiveCount, r1, r2;
     } bvhBlock;
 
+    layout ( binding = 13, set = 1 ) uniform isamplerBuffer bvhMeta;
 
-    #ifdef ENABLE_VERTEX_INTERPOLATOR
-        layout ( binding = 10, set = 1 ) uniform usampler2D attrib_texture;
-        layout ( std430, binding = 2, set = 1 ) readonly buffer vordersB { int vorders[]; };
-    #endif
-
-    #ifdef ENABLE_VSTORAGE_DATA
-        #ifdef ENABLE_TRAVERSE_DATA
-        #ifndef BVH_CREATION
-            #ifdef USE_F32_BVH
-            layout ( std430, binding = 0, set = 1 ) readonly buffer bvhBoxesB { highp vec4 bvhBoxes[][4]; };
-            #else
-            layout ( std430, binding = 0, set = 1 ) readonly buffer bvhBoxesB { uvec2 bvhBoxes[][4]; }; 
-            #endif
-            //layout ( std430, binding = 5, set = 1 ) readonly buffer bvhMetaB { ivec4 bvhMeta[]; };
-            layout ( binding = 5, set = 1 ) uniform isamplerBuffer bvhMeta;
-            //#define TLOAD(img,t) texelFetch(img,t)
-        #endif
-        #endif
-        
-        //layout ( std430, binding = 3, set = 1 ) readonly buffer geometryUniformB { GeometryUniformStruct geometryUniform;} geometryBlock;
-        #ifdef VTX_TRANSPLIT // for leaf gens
-            layout ( binding = 7, set = 1, rgba32f ) uniform imageBuffer lvtx;
-            #define TLOAD(img,t) imageLoad(img,t)
-            //layout ( std430, binding = 7, set = 1 )  buffer lvtxB { float lvtx[]; };
-        #else
-            layout ( binding = 8, set = 1 ) uniform samplerBuffer lvtx;
-            #define TLOAD(img,t) texelFetch(img,t)
-            //layout ( std430, binding = 7, set = 1 )  readonly buffer lvtxB { float lvtx[]; };
-        #endif
+    #ifdef USE_F32_BVH
+    layout ( binding = 12, set = 1, std430 ) readonly buffer bvhBoxesB { highp vec4 bvhBoxes[][4]; };
+    #else
+    layout ( binding = 12, set = 1, std430 ) readonly buffer bvhBoxesB { uvec2 bvhBoxes[][4]; }; 
     #endif
 #endif
 
+
+// max attribute packing count
 const int ATTRIB_EXTENT = 4;
 
 // attribute formating

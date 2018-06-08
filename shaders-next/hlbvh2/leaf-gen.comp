@@ -78,7 +78,7 @@ void main() {
         if (globalID < wsize && globalID >= 0) {
             // allocate index
             //int to = atomicIncLeaf();
-            int to = globalID; atomicIncLeaf();
+            int to = globalID; //atomicIncLeaf();
 
             // gen leaf
             HlbvhNode outLeaf = Leafs[to];

@@ -2,7 +2,7 @@
 // default definitions
 
 #ifndef _CACHE_BINDING
-#define _CACHE_BINDING 4
+#define _CACHE_BINDING 5
 #endif
 
 #ifndef _RAY_TYPE
