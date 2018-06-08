@@ -11,7 +11,7 @@ namespace _vt {
 
     // experimental implementation of "vtCreateDevice"
     inline VtResult vtCreateDevice(VtPhysicalDevice vtPhysicalDevice, VkDeviceCreateInfo * deviceCreateInfo, VtDevice * vtDevice) {
-        return createDevice(vtPhysicalDevice._vtPhysicalDevice, *deviceCreateInfo, *vtDevice);
+        return createDevice(vtPhysicalDevice._vtPhysicalDevice, *deviceCreateInfo, vtDevice->_vtDevice);
     };
 
     inline VtResult vtCmdImageBarrier(VkCommandBuffer cmd, VtDeviceImage image) {

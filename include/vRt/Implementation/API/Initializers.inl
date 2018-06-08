@@ -58,76 +58,59 @@ namespace _vt { // store in undercover namespace
     };
 
 
-    inline VtResult makePhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, VtPhysicalDevice& _vtPhysicalDevice){
-        _vtPhysicalDevice._vtPhysicalDevice = std::make_shared<PhysicalDevice>();
-        _vtPhysicalDevice._vtPhysicalDevice->_physicalDevice = physical; // assign a Vulkan physical device
+    inline VtResult makePhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, std::shared_ptr<PhysicalDevice>& _vtPhysicalDevice){
+        _vtPhysicalDevice = std::make_shared<PhysicalDevice>();
+        _vtPhysicalDevice->_physicalDevice = physical; // assign a Vulkan physical device
         return VK_SUCCESS;
     };
 
-    inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo& vdvi, VtDevice& _vtDevice){
-        auto& vtDevice = (_vtDevice._vtDevice = std::make_shared<Device>());
-        vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
-
-        VtResult result = VK_ERROR_INITIALIZATION_FAILED;
-        VtArtificalDeviceExtension vtExtension; // default structure values
-        auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);
-        if (vtExtensionPtr) { // if found, getting some info
-            vtExtension = (VtArtificalDeviceExtension&)*vtExtensionPtr;
-        }
-
-        // be occurate with "VkDeviceCreateInfo", because after creation device, all "vt" extended structures will destoyed
-        if (vkCreateDevice(*(vtDevice->_physicalDevice.lock()), (const VkDeviceCreateInfo*)vtExplodeArtificals(vdvi), nullptr, &vtDevice->_device) == VK_SUCCESS) { result = VK_SUCCESS; };
-
-        VmaAllocatorCreateInfo allocatorInfo;
-        allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice.lock());
-        allocatorInfo.device = vtDevice->_device;
-        allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb
-        allocatorInfo.flags = VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_MAPPED_BIT;
-        if (vmaCreateAllocator(&allocatorInfo, &vtDevice->_allocator) == VK_SUCCESS) { result = VK_SUCCESS; };
-
-        return result;
-    };
-
-
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
-    inline VtResult createBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, VtRoledBuffer<U> &_vtBuffer){
+    inline VtResult createBuffer(std::shared_ptr<Device> device, const VtDeviceBufferCreateInfo& cinfo, std::shared_ptr<RoledBuffer<U>>& _vtBuffer) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
-        auto& vtDeviceBuffer = (_vtBuffer._vtBuffer = std::make_shared<RoledBuffer<U>>());
+        auto& vtDeviceBuffer = (_vtBuffer = std::make_shared<RoledBuffer<U>>());
         vtDeviceBuffer->_device = device; // delegate device by weak_ptr
 
         VmaAllocationCreateInfo allocCreateInfo = {};
         allocCreateInfo.usage = U;
-        if constexpr (U != VMA_MEMORY_USAGE_GPU_ONLY) {
-            allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-        }
-        auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, cinfo.bufferSize, cinfo.usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &cinfo.familyIndex };
+
+        // make memory usages 
+        auto usageFlag = cinfo.usageFlag;
+        if constexpr (U != VMA_MEMORY_USAGE_GPU_ONLY) { allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT; }
+        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { usageFlag |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT; } else // from src only
+        if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { usageFlag |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT; } else // to dst only
+        { usageFlag |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT | VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT; } // bidirectional
+
+        auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, cinfo.bufferSize, usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &cinfo.familyIndex };
         if (vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo) == VK_SUCCESS) { result = VK_SUCCESS; };
         vtDeviceBuffer->_size = cinfo.bufferSize;
 
         // if format is known, make bufferView
-        if (result == VK_SUCCESS && cinfo.format) {
-            vtDeviceBuffer->_bufferView;
-            VkBufferViewCreateInfo bvi;
-            bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
-            bvi.buffer = vtDeviceBuffer->_buffer;
-            bvi.format = cinfo.format;
-            bvi.offset = 0;
-            bvi.range = VK_WHOLE_SIZE;
-            if (vkCreateBufferView(device->_device, &bvi, nullptr, &vtDeviceBuffer->_bufferView) == VK_SUCCESS) {
-                result = VK_SUCCESS;
+        if constexpr (U == VMA_MEMORY_USAGE_GPU_ONLY) { // spaghetti code, because had different qualifiers
+            if (result == VK_SUCCESS && cinfo.format) {
+                vtDeviceBuffer->_bufferView;
+                VkBufferViewCreateInfo bvi;
+                bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+                bvi.buffer = vtDeviceBuffer->_buffer;
+                bvi.format = cinfo.format;
+                bvi.offset = 0;
+                bvi.range = VK_WHOLE_SIZE;
+                if (vkCreateBufferView(device->_device, &bvi, nullptr, &vtDeviceBuffer->_bufferView) == VK_SUCCESS) {
+                    result = VK_SUCCESS;
+                }
+                else {
+                    result = VK_INCOMPLETE;
+                };
             }
-            else {
-                result = VK_INCOMPLETE;
-            };
         }
 
         return result;
     };
 
+
     // artifical function type
     template<VmaMemoryUsage U>
-    using _createBuffer_T = VtResult(*)(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, VtRoledBuffer<U> &_vtBuffer);
+    using _createBuffer_T = VtResult(*)(std::shared_ptr<Device> device, const VtDeviceBufferCreateInfo& cinfo, std::shared_ptr<RoledBuffer<U>> &_vtBuffer);
 
     // aliased calls
     constexpr _createBuffer_T<VMA_MEMORY_USAGE_GPU_ONLY> createDeviceBuffer = &createBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
@@ -135,40 +118,43 @@ namespace _vt { // store in undercover namespace
     constexpr _createBuffer_T<VMA_MEMORY_USAGE_GPU_TO_CPU> createDeviceToHostBuffer = &createBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
 
 
-    inline VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, VtDeviceImage &_vtImage) {
+
+
+
+    inline VtResult createDeviceImage(std::shared_ptr<Device> device, const VtDeviceImageCreateInfo& cinfo, std::shared_ptr<DeviceImage>& _vtImage) {
         // result will no fully handled
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
-        auto& texture = (_vtImage._vtDeviceImage = std::make_shared<DeviceImage>());
+        auto& texture = (_vtImage = std::make_shared<DeviceImage>());
         texture->_device = device; // delegate device by weak_ptr
         texture->_layout = (VkImageLayout)cinfo.layout;
 
         // init image dimensional type
         vk::ImageType imageType = vk::ImageType::e2D; bool isCubemap = false;
         switch (vk::ImageViewType(cinfo.imageViewType)) {
-            case vk::ImageViewType::e1D:
-                imageType = vk::ImageType::e1D;
-                break;
-            case vk::ImageViewType::e1DArray:
-                imageType = vk::ImageType::e2D;
-                break;
-            case vk::ImageViewType::e2D:
-                imageType = vk::ImageType::e2D;
-                break;
-            case vk::ImageViewType::e2DArray:
-                imageType = vk::ImageType::e3D;
-                break;
-            case vk::ImageViewType::e3D:
-                imageType = vk::ImageType::e3D;
-                break;
-            case vk::ImageViewType::eCube:
-                imageType = vk::ImageType::e3D;
-                isCubemap = true;
-                break;
-            case vk::ImageViewType::eCubeArray:
-                imageType = vk::ImageType::e3D;
-                isCubemap = true;
-                break;
+        case vk::ImageViewType::e1D:
+            imageType = vk::ImageType::e1D;
+            break;
+        case vk::ImageViewType::e1DArray:
+            imageType = vk::ImageType::e2D;
+            break;
+        case vk::ImageViewType::e2D:
+            imageType = vk::ImageType::e2D;
+            break;
+        case vk::ImageViewType::e2DArray:
+            imageType = vk::ImageType::e3D;
+            break;
+        case vk::ImageViewType::e3D:
+            imageType = vk::ImageType::e3D;
+            break;
+        case vk::ImageViewType::eCube:
+            imageType = vk::ImageType::e3D;
+            isCubemap = true;
+            break;
+        case vk::ImageViewType::eCubeArray:
+            imageType = vk::ImageType::e3D;
+            isCubemap = true;
+            break;
         };
 
         // image memory descriptor
@@ -215,6 +201,63 @@ namespace _vt { // store in undercover namespace
 
         return result;
     };
+
+
+
+
+    inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo& vdvi, std::shared_ptr<Device>& _vtDevice){
+        auto& vtDevice = (_vtDevice = std::make_shared<Device>());
+        vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
+
+        VtResult result = VK_ERROR_INITIALIZATION_FAILED;
+        VtArtificalDeviceExtension vtExtension; // default structure values
+        auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);
+        if (vtExtensionPtr) { // if found, getting some info
+            vtExtension = (VtArtificalDeviceExtension&)*vtExtensionPtr;
+        }
+
+        // be occurate with "VkDeviceCreateInfo", because after creation device, all "vt" extended structures will destoyed
+        if (vkCreateDevice(*(vtDevice->_physicalDevice.lock()), (const VkDeviceCreateInfo*)vtExplodeArtificals(vdvi), nullptr, &vtDevice->_device) == VK_SUCCESS) { result = VK_SUCCESS; };
+
+        VmaAllocatorCreateInfo allocatorInfo;
+        allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice.lock());
+        allocatorInfo.device = vtDevice->_device;
+        allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb
+        allocatorInfo.flags = VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        if (vmaCreateAllocator(&allocatorInfo, &vtDevice->_allocator) == VK_SUCCESS) { result = VK_SUCCESS; };
+
+        // link device with vulkan.hpp
+        auto& _device = vk::Device(vtDevice->_device);
+
+        // create default pipeline cache
+        vtDevice->_pipelineCache = VkPipelineCache(_device.createPipelineCache(vk::PipelineCacheCreateInfo()));
+        
+        // make descriptor pool
+        std::vector<vk::DescriptorPoolSize> dps = {
+            vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 32),
+            vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 32),
+            vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 256),
+            vk::DescriptorPoolSize(vk::DescriptorType::eSampler, 32),
+            vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 256),
+            vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 4),
+            vk::DescriptorPoolSize(vk::DescriptorType::eUniformTexelBuffer, 8),
+        };
+        vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(128).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size())));
+
+        // make traffic buffers 
+        VtDeviceBufferCreateInfo dbfi;
+        dbfi.bufferSize = 16 * 1024 * 1024 * sizeof(uint32_t);
+        dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
+        dbfi.familyIndex = vtExtension.mainQueueFamily;
+        createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_uploadBuffer);
+        createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_downloadBuffer);
+
+        return result;
+    };
+
+
+
+
 
     // transition texture layout
     inline VtResult imageBarrier(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> image) {
@@ -276,17 +319,11 @@ namespace _vt { // store in undercover namespace
         return result;
     };
 
-
+    /*
     // copy buffer command with "VtDeviceBuffer"
     inline void cmdCopyBuffer(VkCommandBuffer cmd, VtDeviceBuffer srcBuffer, VtDeviceBuffer dstBuffer, const std::vector<vk::BufferCopy>& regions) {
         cmdCopyBufferL(cmd, VkBuffer(srcBuffer), VkBuffer(dstBuffer), regions);
     };
-
-    // copy buffer command with inner "DeviceBuffer"
-    inline void cmdCopyBuffer(VkCommandBuffer cmd, std::shared_ptr<DeviceBuffer> srcBuffer, std::shared_ptr<DeviceBuffer> dstBuffer, const std::vector<vk::BufferCopy>& regions) {
-        cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions);
-    };
-
 
     // copy to host buffer
     // you can't use it for form long command buffer to host
@@ -299,7 +336,13 @@ namespace _vt { // store in undercover namespace
     inline void cmdCopyBufferFromHost(VkCommandBuffer cmd, VtDeviceToHostBuffer srcBuffer, VtDeviceBuffer dstBuffer, const std::vector<vk::BufferCopy>& regions) {
         cmdCopyBufferL(cmd, VkBuffer(srcBuffer), VkBuffer(dstBuffer), regions, fromHostCommandBarrier);
     };
+    */
 
+
+    // copy buffer command with inner "DeviceBuffer"
+    inline void cmdCopyBuffer(VkCommandBuffer cmd, std::shared_ptr<DeviceBuffer> srcBuffer, std::shared_ptr<DeviceBuffer> dstBuffer, const std::vector<vk::BufferCopy>& regions) {
+        cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions);
+    };
 
     // copy to host buffer
     // you can't use it for form long command buffer to host

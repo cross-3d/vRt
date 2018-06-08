@@ -18,6 +18,7 @@ namespace vt { // store in official namespace
     struct VtArtificalDeviceExtension {
         VtStructureType sType = VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION;
         const void* pNext = nullptr;
+        uint32_t mainQueueFamily = 0;
     };
 
     struct VtDeviceConversionInfo {
