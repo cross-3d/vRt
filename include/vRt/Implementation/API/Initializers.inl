@@ -405,24 +405,7 @@ namespace _vt { // store in undercover namespace
         return result;
     };
 
-    /*
-    // copy buffer command with "VtDeviceBuffer"
-    inline void cmdCopyBuffer(VkCommandBuffer cmd, VtDeviceBuffer srcBuffer, VtDeviceBuffer dstBuffer, const std::vector<vk::BufferCopy>& regions) {
-        cmdCopyBufferL(cmd, VkBuffer(srcBuffer), VkBuffer(dstBuffer), regions);
-    };
 
-    // copy to host buffer
-    // you can't use it for form long command buffer to host
-    inline void cmdCopyBufferToHost(VkCommandBuffer cmd, VtDeviceBuffer srcBuffer, VtDeviceToHostBuffer dstBuffer, const std::vector<vk::BufferCopy>& regions) {
-        cmdCopyBufferL(cmd, VkBuffer(srcBuffer), VkBuffer(dstBuffer), regions, toHostCommandBarrier);
-    };
-
-    // copy from host buffer
-    // you can't use it for form long command buffer from host
-    inline void cmdCopyBufferFromHost(VkCommandBuffer cmd, VtDeviceToHostBuffer srcBuffer, VtDeviceBuffer dstBuffer, const std::vector<vk::BufferCopy>& regions) {
-        cmdCopyBufferL(cmd, VkBuffer(srcBuffer), VkBuffer(dstBuffer), regions, fromHostCommandBarrier);
-    };
-    */
 
 
     // copy buffer command with inner "DeviceBuffer"
