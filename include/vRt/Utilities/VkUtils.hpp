@@ -25,6 +25,36 @@
 
 namespace _vt {
     const int64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
+    const int32_t zero[1] = { 0 };
+
+
+
+    template <typename T>
+    inline auto sgn(T val) { return (T(0) < val) - (val < T(0)); }
+
+    static inline int32_t tiled(int32_t sz, int32_t gmaxtile)
+    {
+        // return (int32_t)ceil((double)sz / (double)gmaxtile);
+        return sz <= 0 ? 0 : (sz / gmaxtile + sgn(sz % gmaxtile));
+    }
+
+    static inline double milliseconds()
+    {
+        auto duration = std::chrono::high_resolution_clock::now();
+        double millis = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            duration.time_since_epoch())
+            .count() /
+            1000000.0;
+        return millis;
+    }
+
+    template <class T>
+    inline size_t strided(size_t sizeo) { return sizeof(T) * sizeo; }
+
+    
+
+
+
 
     // read binary (for SPIR-V)
     inline std::vector<char> readBinary(std::string filePath) {

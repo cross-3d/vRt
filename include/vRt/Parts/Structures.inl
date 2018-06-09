@@ -19,6 +19,7 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION;
         const void* pNext = nullptr;
         uint32_t mainQueueFamily = 0;
+        VkDeviceSize sharedCacheSize = 16 * 1024 * 1024;
     };
 
     struct VtDeviceConversionInfo {
