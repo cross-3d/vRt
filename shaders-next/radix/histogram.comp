@@ -36,7 +36,7 @@ void main() {
     LGROUP_BARRIER
 
     // use SIMD lanes for calculate histograms
-    blocks_info blocks = get_blocks_info(NumKeys);
+    blocks_info blocks = get_blocks_info(push_block.NumKeys);
 
 #if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
     uint bcount = min(tiled(blocks.count, 2u), 524288u);
@@ -58,11 +58,11 @@ void main() {
         if (Wave_Idx == 0) {
 #if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
             key = packUint2x16(uint_rdc_wave_2(
-                BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), Shift*BITS_PER_PASS, BITS_PER_PASS),
-                BFE(validAddress.y ? KeyIn[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), Shift*BITS_PER_PASS, BITS_PER_PASS)
+                BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
+                BFE(validAddress.y ? KeyIn[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
             ));
 #else
-            key.x = uint_rdc_wave(BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), Shift*BITS_PER_PASS, BITS_PER_PASS));
+            key.x = uint_rdc_wave(BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS));
 #endif
         }
         LGROUP_BARRIER

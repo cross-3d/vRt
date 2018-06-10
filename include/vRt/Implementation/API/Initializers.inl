@@ -205,6 +205,45 @@ namespace _vt { // store in undercover namespace
 
 
 
+    inline VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, std::shared_ptr<RadixSort>& _vtRadix) {
+        auto& vtRadix = (_vtRadix = std::make_shared<RadixSort>());
+        vtRadix->_device = _vtDevice;
+
+        VtDeviceBufferCreateInfo bfi;
+        bfi.familyIndex = _vtDevice->_mainFamilyIndex;
+        bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
+
+        bfi.bufferSize = 1024 * 1024 * 32;
+        createDeviceBuffer(_vtDevice, bfi, vtRadix->_tmpValuesBuffer);
+
+        bfi.bufferSize = 1024 * 1024 * 64;
+        createDeviceBuffer(_vtDevice, bfi, vtRadix->_tmpKeysBuffer);
+
+        bfi.bufferSize = 1024;
+        createDeviceBuffer(_vtDevice, bfi, vtRadix->_stepsBuffer); // unused
+        
+        bfi.bufferSize = 1024 * 1024;
+        createDeviceBuffer(_vtDevice, bfi, vtRadix->_histogramBuffer);
+        createDeviceBuffer(_vtDevice, bfi, vtRadix->_prefixSumBuffer);
+
+        std::vector<vk::PushConstantRange> constRanges = {
+            vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2))
+        };
+
+        std::vector<vk::DescriptorSetLayout> dsLayouts = {
+            vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["radixSort"]),
+            vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["radixSortBind"])
+        };
+
+        vtRadix->_pipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
+        vtRadix->_histogramPipeline = createCompute(*_vtDevice, _vtDevice->_shadersPath + "radix/histogram.comp.spv", vtRadix->_pipelineLayout, *_vtDevice);
+        vtRadix->_workPrefixPipeline = createCompute(*_vtDevice, _vtDevice->_shadersPath + "radix/pfx-work.comp.spv", vtRadix->_pipelineLayout, *_vtDevice);
+        vtRadix->_permutePipeline = createCompute(*_vtDevice, _vtDevice->_shadersPath + "radix/permute.comp.spv", vtRadix->_pipelineLayout, *_vtDevice);
+
+        auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+        vtRadix->_descriptorSet = dsc[0];
+    };
+
     inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo& vdvi, std::shared_ptr<Device>& _vtDevice){
         auto& vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
@@ -244,6 +283,7 @@ namespace _vt { // store in undercover namespace
             vk::DescriptorPoolSize(vk::DescriptorType::eUniformTexelBuffer, 8),
         };
         vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(128).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size())));
+        vtDevice->_mainFamilyIndex = vtExtension.mainQueueFamily;
 
         // make traffic buffers 
         VtDeviceBufferCreateInfo dbfi;
@@ -306,6 +346,12 @@ namespace _vt { // store in undercover namespace
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
                 vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // keys in
                 vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // values in
+            };
+            vtDevice->_descriptorLayoutMap["radixSortBind"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
+        }
+
+        {
+            const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
                 vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // radice step properties
                 vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // keys cache
                 vk::DescriptorSetLayoutBinding(4 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // values cache

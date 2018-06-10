@@ -41,6 +41,8 @@ namespace _vt { // store in undercover namespace
         VkDevice _device = nullptr;
         std::weak_ptr<PhysicalDevice> _physicalDevice;
 
+        uint32_t _mainFamilyIndex = 0;
+        std::string _shadersPath = "./";
         VmaAllocator _allocator;
         VkPipelineCache _pipelineCache; // store native pipeline cache
         VkDescriptorPool _descriptorPool;
@@ -141,6 +143,9 @@ namespace _vt { // store in undercover namespace
         // descritor sets for traversing, building, and vertex assembly
         VkDescriptorSet _vertexAssemblyDescriptorSet, _buildDescriptorSet, _traverseDescriptorSet;
 
+        // descritor set for sorting
+        VkDescriptorSet _sortDescriptorSet;
+
 
         // internal buffers
         std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _boundaryResultBuffer;
@@ -215,12 +220,15 @@ namespace _vt { // store in undercover namespace
         const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
         std::weak_ptr<Device> _device;
         
+        std::shared_ptr<DeviceBuffer> _histogramBuffer;
+        std::shared_ptr<DeviceBuffer> _prefixSumBuffer;
         std::shared_ptr<DeviceBuffer> _stepsBuffer; // constant buffer
         std::shared_ptr<DeviceBuffer> _tmpKeysBuffer; // cache keys between stages (avoid write conflict)
         std::shared_ptr<DeviceBuffer> _tmpValuesBuffer; // cache values between stages (avoid write conflict)
         VkPipeline _histogramPipeline, _workPrefixPipeline, _permutePipeline; // radix sort pipelines
         VkPipelineLayout _pipelineLayout; // use unified pipeline layout
-        
+        VkDescriptorSet _descriptorSet;
+
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
         operator VkPipeline() const { return _dullPipeline; };
     };
