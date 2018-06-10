@@ -106,8 +106,8 @@ namespace vt { // store in official namespace
 
         // prefer to describe vertex input in accelerator for creation (and just more safer)
         //const VtVertexInputCreateInfo * pVertexInputs = nullptr;
-        const VtVertexInputSet * pVertexInputSets = nullptr;
-        uint32_t vertexInputCount = 0;
+        //const VtVertexInputSet * pVertexInputSets = nullptr;
+        //uint32_t vertexInputCount = 0;
     };
 
 

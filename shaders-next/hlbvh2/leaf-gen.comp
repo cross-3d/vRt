@@ -12,7 +12,7 @@
 #include "../include/structs.glsl"
 #include "../include/vertex.glsl"
 #include "../include/morton.glsl"
-#include "./includes.glsl"
+#include "./submodules/includes.glsl"
 
 initAtomicSubgroupIncFunction(nCounter, atomicIncLeaf, 1, int)
 

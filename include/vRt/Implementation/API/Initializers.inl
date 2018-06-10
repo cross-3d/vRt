@@ -154,6 +154,9 @@ namespace _vt { // store in undercover namespace
             break;
         };
 
+        // additional usage
+        auto usage = vk::ImageUsageFlags(cinfo.usage) | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
+
         // image memory descriptor
         auto imageInfo = vk::ImageCreateInfo();
         imageInfo.initialLayout = vk::ImageLayout(texture->_initialLayout);
@@ -167,7 +170,7 @@ namespace _vt { // store in undercover namespace
         imageInfo.pQueueFamilyIndices = &cinfo.familyIndex;
         imageInfo.queueFamilyIndexCount = 1;
         imageInfo.samples = vk::SampleCountFlagBits::e1; // at now not supported MSAA
-        imageInfo.usage = vk::ImageUsageFlags(cinfo.usage);
+        imageInfo.usage = usage;
 
         // create image with allocation
         VmaAllocationCreateInfo allocCreateInfo = {};
@@ -231,9 +234,9 @@ namespace _vt { // store in undercover namespace
         };
 
         vtRadix->_pipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
-        vtRadix->_histogramPipeline = createCompute(*_vtDevice, _vtDevice->_shadersPath + "radix/histogram.comp.spv", vtRadix->_pipelineLayout, *_vtDevice);
-        vtRadix->_workPrefixPipeline = createCompute(*_vtDevice, _vtDevice->_shadersPath + "radix/pfx-work.comp.spv", vtRadix->_pipelineLayout, *_vtDevice);
-        vtRadix->_permutePipeline = createCompute(*_vtDevice, _vtDevice->_shadersPath + "radix/permute.comp.spv", vtRadix->_pipelineLayout, *_vtDevice);
+        vtRadix->_histogramPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "radix/histogram.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtRadix->_workPrefixPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "radix/pfx-work.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtRadix->_permutePipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "radix/permute.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
 
         auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
         vtRadix->_descriptorSet = dsc[0];
@@ -247,6 +250,7 @@ namespace _vt { // store in undercover namespace
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setPBufferInfo(&vk::DescriptorBufferInfo(vtRadix->_histogramBuffer->_descriptorInfo())),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(6).setPBufferInfo(&vk::DescriptorBufferInfo(vtRadix->_prefixSumBuffer->_descriptorInfo())),
         };
+        vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
     };
 
 
@@ -390,6 +394,172 @@ namespace _vt { // store in undercover namespace
             };
             vtDevice->_descriptorLayoutMap["vertexInputSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         }
+        
+        // create radix sort tool
+        createRadixSort(vtDevice, vtDevice->_radixSort);
+
+        return result;
+    };
+
+
+
+
+    inline VtResult createAccelerator(std::shared_ptr<Device> _vtDevice, const VtAcceleratorCreateInfo &info, std::shared_ptr<Accelerator>& _vtAccelerator) {
+        VtResult result = VK_SUCCESS;
+        auto& vtAccelerator = (_vtAccelerator = std::make_shared<Accelerator>());
+        vtAccelerator->_device = _vtDevice;
+
+        constexpr auto maxPrimitives = 1024u * 1024u; // planned import from descriptor
+
+
+        // build BVH builder program
+        {
+            {
+                std::vector<vk::PushConstantRange> constRanges = {
+                    vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2))
+                };
+                std::vector<vk::DescriptorSetLayout> dsLayouts = {
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"]),
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"])
+                };
+                vtAccelerator->_buildPipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
+                auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                vtAccelerator->_buildDescriptorSet = dsc[0];
+            };
+
+            {
+                std::vector<vk::PushConstantRange> constRanges = {
+                    //vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2))
+                };
+                std::vector<vk::DescriptorSetLayout> dsLayouts = {
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]),
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"]),
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
+                };
+                vtAccelerator->_traversePipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
+                vtAccelerator->_traverseDescriptorSet = vtAccelerator->_buildDescriptorSet;
+            };
+
+            
+            {
+                VtDeviceBufferCreateInfo bfi;
+                bfi.familyIndex = _vtDevice->_mainFamilyIndex;
+                bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
+
+                bfi.bufferSize = maxPrimitives * sizeof(uint64_t);
+                bfi.format = VK_FORMAT_UNDEFINED;
+                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_mortonCodesBuffer);
+
+                bfi.bufferSize = maxPrimitives * sizeof(uint32_t);
+                bfi.format = VK_FORMAT_UNDEFINED;
+                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_mortonIndicesBuffer);
+
+                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 4 * 2;
+                bfi.format = VK_FORMAT_R32G32B32A32_SINT;
+                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhMetaBuffer);
+
+                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16 * 2;
+                bfi.format = VK_FORMAT_UNDEFINED;
+                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBoxBuffer);
+
+                bfi.bufferSize = sizeof(uint32_t) * 8;
+                bfi.format = VK_FORMAT_UNDEFINED;
+                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBlockUniform);
+
+
+                auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_buildDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+                std::vector<vk::WriteDescriptorSet> writes = {
+                    // TODO write
+                    //vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonCodesBuffer->_descriptorInfo())), //unused
+                    //vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonIndicesBuffer->_descriptorInfo()))
+                };
+                vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});
+
+
+                vtAccelerator->_boundingPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlbvh2/bound-calc.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_buildPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlbvh2/bvh-build.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_fitPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlbvh2/bvh-fit.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_leafPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlbvh2/leaf-gen.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_intersectionPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlbvh2/traverse-bvh.comp.spv", vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
+            };
+        };
+
+
+        // write radix sort descriptor sets
+        {
+            std::vector<vk::DescriptorSetLayout> dsLayouts = {
+                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["radixSortBind"]),
+            };
+            auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+            vtAccelerator->_sortDescriptorSet = dsc[0];
+
+            auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_sortDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+            std::vector<vk::WriteDescriptorSet> writes = {
+                vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonCodesBuffer->_descriptorInfo())), //unused
+                vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonIndicesBuffer->_descriptorInfo()))
+            };
+            vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});
+        };
+
+
+        { // build vertex input assembly program
+            {
+                constexpr auto ATTRIB_EXTENT = 4u; // no way to set more than it now
+
+                VtDeviceBufferCreateInfo bfi;
+                bfi.familyIndex = _vtDevice->_mainFamilyIndex;
+                bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
+
+                // vertex data buffers
+                bfi.bufferSize = maxPrimitives * sizeof(uint32_t);
+                bfi.format = VK_FORMAT_UNDEFINED;
+                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_orderBuffer);
+
+                bfi.bufferSize = maxPrimitives * sizeof(uint32_t);
+                bfi.format = VK_FORMAT_UNDEFINED;
+                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_materialBuffer);
+
+                bfi.bufferSize = maxPrimitives * sizeof(float) * 4;
+                bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_verticeBuffer);
+
+                // create vertex attribute buffer
+                VtDeviceImageCreateInfo tfi;
+                tfi.familyIndex = _vtDevice->_mainFamilyIndex;
+                tfi.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+                tfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                tfi.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+                tfi.layout = VK_IMAGE_LAYOUT_GENERAL;
+                tfi.mipLevels = 1;
+                tfi.size = { 6144u, tiled(maxPrimitives * 3u * ATTRIB_EXTENT, 6144u) };
+                createDeviceImage(_vtDevice, tfi, vtAccelerator->_attributeTexelBuffer);
+            };
+
+            {
+                std::vector<vk::PushConstantRange> constRanges = {
+                    vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(4))
+                };
+                std::vector<vk::DescriptorSetLayout> dsLayouts = {
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
+                };
+                auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                vtAccelerator->_vertexAssemblyDescriptorSet = dsc[0];
+
+                auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_vertexAssemblyDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+                std::vector<vk::WriteDescriptorSet> writes = {
+                    // TODO write
+                    //vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonCodesBuffer->_descriptorInfo())), //unused
+                    //vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonIndicesBuffer->_descriptorInfo()))
+                };
+                vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});
+
+
+                vtAccelerator->_vertexAssemblyPipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
+                vtAccelerator->_vertexAssemblyPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "utils/vinput.comp.spv", vtAccelerator->_vertexAssemblyPipelineLayout, VkPipelineCache(*_vtDevice));
+            };
+        };
+
 
         return result;
     };

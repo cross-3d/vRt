@@ -2,7 +2,7 @@
 
 //#include "../Parts/Headers.inl"
 
-#include <vulkan/vulkan.hpp> // only for inner usage
+//#include <vulkan/vulkan.hpp> // only for inner usage
 #include <chrono>
 #include <fstream>
 #include <functional>
@@ -32,11 +32,13 @@ namespace _vt {
     template <typename T>
     inline auto sgn(T val) { return (T(0) < val) - (val < T(0)); }
 
-    static inline int32_t tiled(int32_t sz, int32_t gmaxtile)
+    template<class T = uint32_t>
+    static inline T tiled(T sz, T gmaxtile)
     {
         // return (int32_t)ceil((double)sz / (double)gmaxtile);
         return sz <= 0 ? 0 : (sz / gmaxtile + sgn(sz % gmaxtile));
     }
+
 
     static inline double milliseconds()
     {

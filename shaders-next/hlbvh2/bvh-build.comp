@@ -15,7 +15,7 @@
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/vertex.glsl"
-#include "./includes.glsl"
+#include "./submodules/includes.glsl"
 
 // shared memory counters
 shared int _counters[8];
@@ -31,7 +31,7 @@ int aCounterInc() { return _aCounterInc(cBuffer*4); }
 #define asize_ _counters[(1-cBuffer)*4]
 #define asize_inv_ _counters[cBuffer*4]
 
-#include "./bvh-build-general.glsl" // unified functions
+#include "./submodules/bvh-build-general.glsl" // unified functions
 const int largeStageThreshold = 1;
 
 layout ( local_size_x = WORK_SIZE_BND ) in;
