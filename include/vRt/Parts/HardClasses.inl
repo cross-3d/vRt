@@ -120,6 +120,27 @@ namespace _vt { // store in undercover namespace
     };
 
 
+
+    class VertexAssembly : public std::enable_shared_from_this<VertexAssembly> {
+    public:
+        friend Device;
+        const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
+        std::weak_ptr<Device> _device;
+
+        VkPipeline _vertexAssemblyPipeline;
+        VkPipelineLayout _vertexAssemblyPipelineLayout;
+        VkDescriptorSet _vertexAssemblyDescriptorSet;
+
+        // vertex and bvh export 
+        std::shared_ptr<DeviceImage> _attributeTexelBuffer;
+        std::shared_ptr<DeviceBuffer> _verticeBuffer, _materialBuffer, _orderBuffer;
+
+        // input of vertex source data
+        std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs;
+    };
+
+
+
     // ray tracing accelerator structure object
     // planned to merge pipeline programs to device
     class Accelerator: public std::enable_shared_from_this<Accelerator> {
@@ -131,31 +152,26 @@ namespace _vt { // store in undercover namespace
         // traverse pipeline
         VkPipeline _intersectionPipeline;
 
-        // vertex input assembly stage
-        VkPipeline _vertexAssemblyPipeline;
-
         // build BVH stages (few stages, in sequences)
         VkPipeline _boundingPipeline, _shorthandPipeline, _leafPipeline, /*...radix sort between*/ _buildPipeline, _fitPipeline;
 
         // static pipeline layout for stages 
-        VkPipelineLayout _vertexAssemblyPipelineLayout, _buildPipelineLayout, _traversePipelineLayout;
+        VkPipelineLayout _buildPipelineLayout, _traversePipelineLayout;
 
         // descritor sets for traversing, building, and vertex assembly
-        VkDescriptorSet _vertexAssemblyDescriptorSet, _buildDescriptorSet, _traverseDescriptorSet;
+        VkDescriptorSet _buildDescriptorSet, _traverseDescriptorSet;
 
         // descritor set for sorting
         VkDescriptorSet _sortDescriptorSet;
 
+        
+        std::shared_ptr<VertexAssembly> _vertexAssembly;
 
         // internal buffers
-        std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _boundaryResultBuffer;
+        std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _boundaryResultBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer;
 
         // vertex and bvh export 
-        std::shared_ptr<DeviceImage> _attributeTexelBuffer;
-        std::shared_ptr<DeviceBuffer> _verticeBuffer, _materialBuffer, _orderBuffer, _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
-
-        // input of vertex source data
-        std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs;
+        std::shared_ptr<DeviceBuffer> _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
 
         operator VkPipeline() const { return _dullPipeline; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
@@ -271,20 +287,27 @@ namespace _vt { // store in undercover namespace
 
 
 
+    struct VtUniformBlock {
+        uint32_t primitiveCount = 0;
+        uint32_t verticeAccessor = 0;
+        uint32_t indiceAccessor = 0xFFFFFFFF;
+        uint32_t materialID = 0;
+    };
+
     class VertexInputSet : public std::enable_shared_from_this<VertexInputSet> {
     public:
         friend Device;
         VkDescriptorSet _descriptorSet = nullptr;
         std::weak_ptr<Device> _device;
+        VtUniformBlock _uniformBlock;
 
         // buffer pointers for storing vertexInput
-        uint32_t _primitiveCount = 0; // for simplify of measuring when building hierarchies
-        uint32_t _constPageID = 0; // if uniform store in one buffer (unused at now)
+        
         std::shared_ptr<DeviceBuffer> _bBufferRegionBindings;
         std::shared_ptr<DeviceBuffer> _bBufferAccessors;
         std::shared_ptr<DeviceBuffer> _bBufferAttributeBindings;
         std::shared_ptr<DeviceBuffer> _bBufferViews;
-        std::shared_ptr<DeviceBuffer> _constBufferUniform; // replacement for push constant (contains primitiveCount, verticeAccessorID, indiceAccessorID, materialID)
+        std::shared_ptr<DeviceBuffer> _uniformBlockBuffer; // replacement for push constant (contains primitiveCount, verticeAccessorID, indiceAccessorID, materialID)
         std::shared_ptr<DeviceBuffer> _dataSourceBuffer; // universe buffer for vertex input
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };

@@ -14,13 +14,22 @@ LOCAL_SIZE_LAYOUT;
 
 // in current moment we have no priority for shaders
 // planned to replace by readonly buffer (because will working through sets)
+/*
 layout(push_constant) uniform PushBlock {
     uint primitiveCount;
     uint verticeAccessor;
     uint indiceAccessor;
     uint materialID;
 } push_block;
+*/
 
+
+struct VtUniformBlock {
+    uint primitiveCount;
+    uint verticeAccessor;
+    uint indiceAccessor;
+    uint materialID;
+};
 
 // buffer region
 struct VtBufferRegion {
@@ -76,7 +85,7 @@ layout ( binding = 1, set = 1, std430 ) readonly buffer VT_BUFFER_REGION {VtBuff
 layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
 layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR {VtAccessor accessors[]; };
 layout ( binding = 4, set = 1, std430 ) readonly buffer VT_ATTRIB {VtAttributeBinding attributes[]; };
-
+layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM {VtUniformBlock vertexBlock; };
 
 
 uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect){
