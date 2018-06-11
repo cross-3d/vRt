@@ -46,7 +46,11 @@ namespace _vt { // store in undercover namespace
         VmaAllocator _allocator;
         VkPipelineCache _pipelineCache; // store native pipeline cache
         VkDescriptorPool _descriptorPool;
+
         std::shared_ptr<RadixSort> _radixSort; // create native radix sort
+        std::shared_ptr<Accelerator> _acceleratorBuilder; 
+        std::shared_ptr<VertexAssembly> _vertexAssembler; 
+
         //std::shared_ptr<CopyProgram> _copyProgram; // create native pipelines for (indirect) copying
         std::shared_ptr<HostToDeviceBuffer> _uploadBuffer; // from host
         std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
@@ -79,8 +83,6 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Accelerator> _currentAccelerator;
         std::shared_ptr<Pipeline> _currentRTPipeline;
         std::vector<VertexInputSet> _vertexInputs; // bound vertex input sets 
-        //std::map<uint32_t, VtVertexDataBufferBinding> _vertexDataBufferBindingMap; // for accelerator vertex building command cache
-        //std::vector<VkDescriptorSet> _tmpCopyInstanceDescriptorSets; // when command buffer will submitted, prefer clean up
 
         operator VkCommandBuffer() const { return _commandBuffer; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
@@ -101,6 +103,21 @@ namespace _vt { // store in undercover namespace
 
 
 
+    class RayTracingSet : public std::enable_shared_from_this<RayTracingSet> {
+    public:
+        friend Device;
+        VkDescriptorSet _descriptorSet = nullptr;
+        std::weak_ptr<Device> _device;
+
+        // in-set buffers
+        std::shared_ptr<VtDeviceBuffer> _rayBuffer, _rayIndiceBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache;
+
+        
+        operator VkDescriptorSet() const { return _descriptorSet; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+    };
+
+
     // ray tracing advanced pipeline
     class Pipeline: public std::enable_shared_from_this<Pipeline> {
     public:
@@ -109,10 +126,13 @@ namespace _vt { // store in undercover namespace
 
         std::weak_ptr<Device> _device;
         std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout, when pipeline was created
+
+        // 
         VkPipeline _generationPipeline, _closestHitPipeline, _missHitPipeline, _resolvePipeline;
 
-        // native descriptor set
-        VkDescriptorSet _rayTracingDescriptorSet;
+        // ray tracing set
+        std::shared_ptr<RayTracingSet> _rayTracingSet;
+
         // material and accelerator descriptor sets, that sets to "1" is dedicated by another natives
         std::vector<VkDescriptorSet> _userDefinedDescriptorSets; // beyond than 1 only
 
@@ -121,7 +141,29 @@ namespace _vt { // store in undercover namespace
     };
 
 
+    // vertex assembly cache 
+    class VertexAssemblySet : public std::enable_shared_from_this<VertexAssemblySet> {
+    public:
+        friend Device;
+        VkDescriptorSet _descriptorSet = nullptr;
+        std::weak_ptr<Device> _device;
 
+        // vertex and bvh export 
+        std::shared_ptr<DeviceImage> _attributeTexelBuffer;
+        std::shared_ptr<DeviceBuffer> _verticeBuffer, _materialBuffer, _orderBuffer, _countersBuffer;
+
+        // input of vertex source data
+        std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs;
+
+        // primitive count 
+        uint32_t _calculatedPrimitiveCount = 0;
+
+        operator VkDescriptorSet() const { return _descriptorSet; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+    };
+
+
+    // vertex assembly program
     class VertexAssembly : public std::enable_shared_from_this<VertexAssembly> {
     public:
         friend Device;
@@ -130,16 +172,25 @@ namespace _vt { // store in undercover namespace
 
         VkPipeline _vertexAssemblyPipeline;
         VkPipelineLayout _vertexAssemblyPipelineLayout;
-        VkDescriptorSet _vertexAssemblyDescriptorSet;
 
-        // vertex and bvh export 
-        std::shared_ptr<DeviceImage> _attributeTexelBuffer;
-        std::shared_ptr<DeviceBuffer> _verticeBuffer, _materialBuffer, _orderBuffer, _countersBuffer;
-
-        // input of vertex source data
-        std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs;
+        // binding vertex assembly set
+        std::shared_ptr<VertexAssemblySet> _vertexAssemblySet;
     };
 
+
+    // accelerator store set
+    class AcceleratorSet : public std::enable_shared_from_this<AcceleratorSet> {
+    public:
+        friend Device;
+        VkDescriptorSet _descriptorSet; // protect from stupid casting
+        std::weak_ptr<Device> _device;
+
+        // vertex and bvh export 
+        std::shared_ptr<DeviceBuffer> _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
+
+        operator VkDescriptorSet() const { return _descriptorSet; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+    };
 
 
     // ray tracing accelerator structure object
@@ -159,20 +210,16 @@ namespace _vt { // store in undercover namespace
         // static pipeline layout for stages 
         VkPipelineLayout _buildPipelineLayout, _traversePipelineLayout;
 
-        // descritor sets for traversing, building, and vertex assembly
-        VkDescriptorSet _buildDescriptorSet, _traverseDescriptorSet;
-
-        // descritor set for sorting
+        // build descriptor set 
+        VkDescriptorSet _buildDescriptorSet;
         VkDescriptorSet _sortDescriptorSet;
 
-        
-        std::shared_ptr<VertexAssembly> _vertexAssembly;
+        // vertex assembly set
+        std::shared_ptr<VertexAssemblySet> _vertexAssemblySet;
+        std::shared_ptr<AcceleratorSet> _acceleratorSet;
 
         // internal buffers
         std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _boundaryResultBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer;
-
-        // vertex and bvh export 
-        std::shared_ptr<DeviceBuffer> _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
 
         operator VkPipeline() const { return _dullPipeline; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };

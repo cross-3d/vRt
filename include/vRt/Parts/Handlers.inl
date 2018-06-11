@@ -52,11 +52,33 @@ namespace vt { // store in official namespace
         operator bool() const { return !!_vtPipelineLayout; };
     };
 
+
+
+    // ray tracing state set 
+    struct VtRayTracingSet {
+        std::shared_ptr<_vt::RayTracingSet> _vtRTSet;
+        operator std::shared_ptr<_vt::RayTracingSet>() const { return _vtRTSet; };
+        operator std::shared_ptr<_vt::RayTracingSet>&() { return _vtRTSet; };
+        operator VkDescriptorSet() const { return *_vtRTSet; };
+        operator bool() const { return !!_vtRTSet; };
+    };
+
     struct VtPipeline {
         std::shared_ptr<_vt::Pipeline> _vtPipeline;
         operator std::shared_ptr<_vt::Pipeline>() const { return _vtPipeline; };
         operator std::shared_ptr<_vt::Pipeline>&() { return _vtPipeline; };
         operator bool() const { return !!_vtPipeline; };
+    };
+
+
+
+    // accelerator structure state set
+    struct VtAcceleratorSet {
+        std::shared_ptr<_vt::AcceleratorSet> _vtAcceleratorSet;
+        operator std::shared_ptr<_vt::AcceleratorSet>() const { return _vtAcceleratorSet; };
+        operator std::shared_ptr<_vt::AcceleratorSet>&() { return _vtAcceleratorSet; };
+        operator VkDescriptorSet() const { return *_vtAcceleratorSet; };
+        operator bool() const { return !!_vtAcceleratorSet; };
     };
 
     struct VtAccelerator {
@@ -65,6 +87,24 @@ namespace vt { // store in official namespace
         operator std::shared_ptr<_vt::Accelerator>&() { return _vtAccelerator; };
         operator bool() const { return !!_vtAccelerator; };
     };
+
+
+    // vertex input state set
+    struct VtVertexAssemblySet {
+        std::shared_ptr<_vt::VertexAssemblySet> _vtVertexAssemblySet;
+        operator std::shared_ptr<_vt::VertexAssemblySet>() const { return _vtVertexAssemblySet; };
+        operator std::shared_ptr<_vt::VertexAssemblySet>&() { return _vtVertexAssemblySet; };
+        operator VkDescriptorSet() const { return *_vtVertexAssemblySet; };
+        operator bool() const { return !!_vtVertexAssemblySet; };
+    };
+
+    struct VtVertexAssembly {
+        std::shared_ptr<_vt::VertexAssembly> _vtVertexAssembly;
+        operator std::shared_ptr<_vt::VertexAssembly>() const { return _vtVertexAssembly; };
+        operator std::shared_ptr<_vt::VertexAssembly>&() { return _vtVertexAssembly; };
+        operator bool() const { return !!_vtVertexAssembly; };
+    };
+
 
     struct VtMaterialSet {
         std::shared_ptr<_vt::MaterialSet> _vtMaterialSet;

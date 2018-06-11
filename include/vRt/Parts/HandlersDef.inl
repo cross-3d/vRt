@@ -2,7 +2,6 @@
 #include "Headers.inl"
 #include "HardClassesDef.inl"
 
-
 namespace vt { // store in official namespace
 
     struct VtInstance;

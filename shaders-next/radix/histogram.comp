@@ -56,11 +56,13 @@ void main() {
 #endif
 
         if (Wave_Idx == 0) {
+            if (validAddress.x) KeyIn[addr.x] = KeyTmp[addr.x], ValueIn[addr.x] = ValueTmp[addr.x]; // copy from tmp to input
 #if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
             key = packUint2x16(uint_rdc_wave_2(
-                BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
-                BFE(validAddress.y ? KeyIn[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
+                BFE(validAddress.x ? KeyTmp[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
+                BFE(validAddress.y ? KeyTmp[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
             ));
+            if (validAddress.y) KeyIn[addr.y] = KeyTmp[addr.y], ValueIn[addr.y] = ValueTmp[addr.y]; // copy from tmp to input
 #else
             key.x = uint_rdc_wave(BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS));
 #endif

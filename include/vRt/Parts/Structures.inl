@@ -34,10 +34,28 @@ namespace vt { // store in official namespace
         VtInstance instance;
     };
 
+
+    struct VtRayTracingSetCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_SET_CREATE_INFO;
+        const void* pNext = nullptr;
+    };
+
     struct VtRayTracingPipelineCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO;
         const void* pNext = nullptr;
+
+        // ray tracing based pipeline layout
+        VtPipelineLayout pipelineLayout;
+
+        // TODO: entry points support (default = "main")
+        // shader paths to ray tracing stages shaders 
+        std::string generationShader = "raytracing/generation-shader.comp.spv";
+        std::string closestShader = "raytracing/closest-hit-shader.comp.spv";
+        std::string missShader = "raytracing/miss-hit-shader.comp.spv";
+        std::string resolveShader = "raytracing/resolve-shader.comp.spv";
     };
+
+
 
     // use immutables in accelerator inputs
     struct VtVertexInputCreateInfo {
@@ -84,30 +102,38 @@ namespace vt { // store in official namespace
 
         // immutable images (textures)
         const VkDescriptorImageInfo* pImages = nullptr;
-        uint32_t imageCount;
+        uint32_t imageCount = 0;
 
         // immutable samplers
         const VkSampler* pSamplers = nullptr;
-        uint32_t samplerCount;
+        uint32_t samplerCount = 0;
 
         // virtual combined textures with samplers (better use in buffers)
-        const uint64_t* pImageSamplerCombinations = nullptr; // uint32 for images and next uint32 for sampler ID's
-        uint32_t imageSamplerCount;
+        const uint64_t* pImageSamplerCombinations = nullptr; // uint32 for images and next uint32 for sampler ID's 
+        VkBuffer bImageSamplerCombinations = nullptr;
+        uint32_t imageSamplerCount = 0;
 
         // user defined materials 
-        VkBuffer materialDescriptionsBuffer;
+        VkBuffer bMaterialDescriptionsBuffer = nullptr;
         //const uint32_t* pMaterialDescriptionIDs = nullptr; // I don't remember why it need
-        uint32_t materialCount;
+        uint32_t materialCount = 0;
     };
 
-    struct VtAcceleratorCreateInfo {
-        VtStructureType sType = VT_STRUCTURE_TYPE_ACCELERATOR_CREATE_INFO;
+
+    // 
+    struct VtVertexAssemblySetCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
-        // prefer to describe vertex input in accelerator for creation (and just more safer)
-        //const VtVertexInputCreateInfo * pVertexInputs = nullptr;
-        //const VtVertexInputSet * pVertexInputSets = nullptr;
-        //uint32_t vertexInputCount = 0;
+    };
+
+
+    // 
+    struct VtAcceleratorSetCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_ACCELERATOR_SET_CREATE_INFO;
+        const void* pNext = nullptr;
+
+        VtVertexAssemblySet vertexAssembly;
     };
 
 

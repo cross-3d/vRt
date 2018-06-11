@@ -17,11 +17,21 @@ namespace vt { // store in official namespace
     inline VtResult vtConvertPhysicalDevice(VkPhysicalDevice vkPhysicalDevice, const VtPhysicalDeviceConversionInfo * vtPhysicalDeviceConvertInfo, VtPhysicalDevice * vtPhysicalDevice);
     inline VtResult vtConvertDevice(VkDevice vkDevice, const VtDeviceConversionInfo * vtDeviceConvertInfo, VtDevice * vtDevice);
 
+    // create ray tracing pipelineLayout 
+    inline VtResult vtCreateRayTracingPipelineLayout(VtDevice device, const VkPipelineLayoutCreateInfo * vtRayTracingPipelineLayoutCreateInfo, VtPipelineLayout * vtPipelineLayout);
+
+
+    // create ray tracing storage
+    inline VtResult vtCreateRayTracingSet(VtDevice device, const VtRayTracingSetCreateInfo * vtRayTracingPipelineCreateInfo, VtRayTracingSet * vtSet);
+
     // create ray tracing pipeline
     inline VtResult vtCreateRayTracingPipeline(VtDevice device, const VtRayTracingPipelineCreateInfo * vtRayTracingPipelineCreateInfo, VtPipeline * vtPipeline);
 
     // create ray tracing accelerator structure
-    inline VtResult vtCreateAccelerator(VtDevice device, const VtAcceleratorCreateInfo * vtAcceleratorCreateInfo, VtAccelerator * accelerator);
+    inline VtResult vtCreateAccelerator(VtDevice device, const VtAcceleratorCreateInfo * vtAcceleratorCreateInfo, VtAcceleratorSet * accelerator);
+
+    // create ray tracing accelerator structure
+    inline VtResult vtCreateVertexAssembly(VtDevice device, const VtAcceleratorCreateInfo * vtAcceleratorCreateInfo, VtVertexAssemblySet * vertexAssembly);
 
     // make descriptor input 
     inline VtResult vtCreateMaterialSet(VtDevice vtDevice, const VtMaterialSetCreateInfo * vtMaterialsCreateInfo, VtMaterialSet * materialsInput);
@@ -44,13 +54,19 @@ namespace vt { // store in official namespace
 
 
     // bind accelerator structure for building/ray tracing
-    inline VtResult vtCmdBindAccelerator(VtCommandBuffer commandBuffer, VtAccelerator accelerator);
+    inline VtResult vtCmdBindAccelerator(VtCommandBuffer commandBuffer, VtAcceleratorSet accelerator);
+
+    // bind accelerator structure for building/ray tracing
+    inline VtResult vtCmdBindVertexAssembly(VtCommandBuffer commandBuffer, VtVertexAssemblySet accelerator);
+
 
     // pre-build vertex input in accelerator structure
-    inline VtResult vtCmdBuildVertexInputs(VtCommandBuffer commandBuffer /*,  */);
+    inline VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer /*,  */);
 
     // build accelerator structure command
     inline VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer /*,  */);
+
+
 
     // descriptorSet = "0" and "1" will blocked by ray tracing system
     inline VtResult vtCmdBindDescriptorSets(VtCommandBuffer commandBuffer, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t firstSet, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets, uint32_t dynamicOffsetCount = 0, const uint32_t* pDynamicOffsets = nullptr);
@@ -59,7 +75,9 @@ namespace vt { // store in official namespace
     inline VtResult vtCmdBindMaterialSet(VtCommandBuffer commandBuffer, VtEntryUsageFlags usageIn, VtMaterialSet materials);
 
     // bind vertex inputs 
-    inline VtResult vtCmdBindVertexInputs(VtCommandBuffer commandBuffer, uint32_t setCount, const VtVertexInputSet * sets);
+    inline VtResult vtCmdBindVertexInputSets(VtCommandBuffer commandBuffer, uint32_t setCount, const VtVertexInputSet * sets);
+
+
 
     // image barrier (with state Vulkan API command buffer)
     inline VtResult vtCmdImageBarrier(VkCommandBuffer commandBuffer, VtDeviceImage image);

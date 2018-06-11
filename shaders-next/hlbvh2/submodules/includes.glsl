@@ -1,35 +1,35 @@
 
 // Morton codes and geometry counters
 
-layout ( std430, binding = 0, set = 0 )  buffer MortoncodesB {
+layout ( binding = 0, set = 0, std430 )  buffer MortoncodesB {
     uvec2 Mortoncodes[];
 };
 
-layout ( std430, binding = 1, set = 0 )  buffer MortoncodesIndicesB {
+layout ( binding = 1, set = 0, std430 )  buffer MortoncodesIndicesB {
     int MortoncodesIndices[];
 };
 
-layout ( std430, binding = 3, set = 0 )  buffer LeafsB {
+layout ( binding = 3, set = 0, std430 )  buffer LeafsB {
     HlbvhNode Leafs[];
 };
 
-layout ( std430, binding = 4, set = 0 )  buffer bvhBoxesWorkB { 
+layout ( binding = 4, set = 0, std430 )  buffer bvhBoxesWorkB { 
     vec4 bvhBoxesWork[][2];
 };
 
-layout ( std430, binding = 5, set = 0 )  buffer FlagsB {
+layout ( binding = 5, set = 0, std430 )  buffer FlagsB {
     int Flags[];
 };
 
-layout ( std430, binding = 6, set = 0 )  buffer ActivesB {
+layout ( binding = 6, set = 0, std430 )  buffer ActivesB {
     int Actives[][2];
 };
 
-layout ( std430, binding = 7, set = 0 )  buffer LeafIndicesB {
+layout ( binding = 7, set = 0, std430 )  buffer LeafIndicesB {
     int LeafIndices[];
 };
 
-layout ( std430, binding = 8, set = 0 )  buffer CountersB {
+layout ( binding = 8, set = 0, std430 )  buffer CountersB {
     int aCounter;
     int lCounter;
     int cCounter;
@@ -46,13 +46,12 @@ layout ( std430, binding = 8, set = 0 )  buffer CountersB {
 
 
 #ifdef USE_F32_BVH
-layout ( std430, binding = 12, set = 0 )  writeonly buffer bvhBoxesResultingB { vec4 bvhBoxesResulting[][4]; };
+layout ( binding = 2, set = 1, std430 ) buffer bvhBoxesResultingB { vec4 bvhBoxesResulting[][4]; };
 #else
-layout ( std430, binding = 12, set = 0 )  writeonly buffer bvhBoxesResultingB { uvec2 bvhBoxesResulting[][4]; }; 
+layout ( binding = 2, set = 1, std430 ) buffer bvhBoxesResultingB { uvec2 bvhBoxesResulting[][4]; }; 
 #endif
 
-//layout ( std430, binding = 11, set = 0 )  buffer bvhMetaB { ivec4 bvhMeta[]; };
-layout ( binding = 11, set = 0, rgba32i ) uniform iimageBuffer bvhMeta;
+layout ( binding = 3, set = 1, rgba32i ) uniform iimageBuffer bvhMeta;
 
 bbox calcTriBox(in mat3x4 triverts) {
     bbox result;

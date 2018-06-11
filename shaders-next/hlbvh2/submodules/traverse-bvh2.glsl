@@ -2,7 +2,7 @@
 // default definitions
 
 #ifndef _CACHE_BINDING
-#define _CACHE_BINDING 5
+#define _CACHE_BINDING 4
 #endif
 
 #ifndef _RAY_TYPE
@@ -20,7 +20,7 @@ const int localStackSize = 8;
 //struct NodeCache { ivec4 stackPages[stackPageCount]; };
 //layout ( std430, binding = _CACHE_BINDING, set = 0 ) buffer nodeCache { NodeCache nodeCache[]; };
 
-layout ( rgba32i, binding = _CACHE_BINDING, set = 0 )  uniform iimageBuffer texelPages;
+layout ( rgba32i, binding = _CACHE_BINDING, set = 1 )  uniform iimageBuffer texelPages;
 
 
 // 128-bit payload

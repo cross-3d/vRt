@@ -14,9 +14,12 @@ namespace _vt { // store in undercover namespace
     class CommandBuffer;
     class Pipeline;
     class CopyProgram;
-    class Accelerator;
     class MaterialSet;
     class VertexInputSet;
+    class Accelerator;
+    class AcceleratorSet;
+    class VertexAssembly;
+    class VertexAssemblySet;
 
     // use roled buffers
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY> class RoledBuffer;
