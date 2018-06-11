@@ -78,6 +78,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<MaterialSet> _currentMaterialSet; // will bound in "cmdDispatch" 
         std::shared_ptr<Accelerator> _currentAccelerator;
         std::shared_ptr<Pipeline> _currentRTPipeline;
+        std::vector<VertexInputSet> _vertexInputs; // bound vertex input sets 
         //std::map<uint32_t, VtVertexDataBufferBinding> _vertexDataBufferBindingMap; // for accelerator vertex building command cache
         //std::vector<VkDescriptorSet> _tmpCopyInstanceDescriptorSets; // when command buffer will submitted, prefer clean up
 

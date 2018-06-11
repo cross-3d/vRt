@@ -58,6 +58,9 @@ namespace vt { // store in official namespace
     // bind materials set 
     inline VtResult vtCmdBindMaterialSet(VtCommandBuffer commandBuffer, VtEntryUsageFlags usageIn, VtMaterialSet materials);
 
+    // bind vertex inputs 
+    inline VtResult vtCmdBindVertexInputs(VtCommandBuffer commandBuffer, uint32_t setCount, const VtVertexInputSet * sets);
+
     // image barrier (with state Vulkan API command buffer)
     inline VtResult vtCmdImageBarrier(VkCommandBuffer commandBuffer, VtDeviceImage image);
 };

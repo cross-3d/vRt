@@ -3,6 +3,7 @@
 #include "../../vRt_subimpl.inl"
 #include "./BuildAccelerator.inl"
 #include "./RayTracing.inl"
+#include "./RadixSort.inl"
 
 namespace _vt {
     using namespace vt;
