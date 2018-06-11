@@ -1,0 +1,10 @@
+#pragma once
+#include "HardClasses/DeviceBuffer.inl"
+#include "HardClasses/DeviceImage.inl"
+#include "HardClasses/PipelineLayout.inl"
+#include "HardClasses/Pipeline.inl"
+#include "HardClasses/RadixSort.inl"
+#include "HardClasses/Accelerator.inl"
+#include "HardClasses/PhysicalDevice.inl"
+#include "HardClasses/Device.inl"
+#include "HardClasses/Instance.inl"

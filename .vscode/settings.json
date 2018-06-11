@@ -68,6 +68,7 @@
         "future": "cpp",
         "map": "cpp",
         "queue": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "optional": "cpp"
     }
 }
