@@ -135,14 +135,14 @@ namespace _vt {
 
 
     // create secondary command buffers for batching compute invocations
-    inline auto createCommandBuffer(const VkDevice device, const VkCommandPool cmdPool) {
+    inline auto createCommandBuffer(const VkDevice device, const VkCommandPool cmdPool, bool secondary = true) {
         VkCommandBuffer cmdBuffer;
 
         VkCommandBufferAllocateInfo cmdi;
         cmdi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         cmdi.pNext = nullptr;
         cmdi.commandPool = cmdPool;
-        cmdi.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+        cmdi.level = secondary ? VK_COMMAND_BUFFER_LEVEL_SECONDARY : VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         cmdi.commandBufferCount = 1;
         vkAllocateCommandBuffers(device, &cmdi, &cmdBuffer);
 
@@ -156,7 +156,7 @@ namespace _vt {
         //bgi.flags = 0;
         //bgi.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
         bgi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        bgi.pInheritanceInfo = &inhi;
+        bgi.pInheritanceInfo = secondary ? &inhi : nullptr;
         vkBeginCommandBuffer(cmdBuffer, &bgi);
 
         return cmdBuffer;
@@ -249,5 +249,15 @@ namespace _vt {
             });
         });
     }
+
+
+    // once submit command buffer
+    inline void submitOnce(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> asyncCallback = {}) {
+        auto cmdBuf = createCommandBuffer(device, cmdPool, false);
+        submitCmdAsync(device, queue, { cmdBuf }, [=]() {
+            asyncCallback(cmdBuf); // call async callback
+            vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer
+        });
+    };
 
 };

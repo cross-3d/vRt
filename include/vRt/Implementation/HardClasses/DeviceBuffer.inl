@@ -18,7 +18,7 @@ namespace _vt {
         vmaDestroyBuffer(_device.lock()->_allocator, _buffer, _allocation);
     };
 
-    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    template<VmaMemoryUsage U>
     inline VtResult createBuffer(std::shared_ptr<Device> device, const VtDeviceBufferCreateInfo& cinfo, std::shared_ptr<RoledBuffer<U>>& _vtBuffer) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
