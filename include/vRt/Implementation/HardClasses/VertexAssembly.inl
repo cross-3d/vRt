@@ -31,7 +31,7 @@ namespace _vt {
 
             // create pipeline
             vtVertexAssembly->_vertexAssemblyPipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
-            vtVertexAssembly->_vertexAssemblyPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "utils/vinput.comp.spv", vtVertexAssembly->_vertexAssemblyPipelineLayout, VkPipelineCache(*_vtDevice));
+            vtVertexAssembly->_vertexAssemblyPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "vertex/vinput.comp.spv", vtVertexAssembly->_vertexAssemblyPipelineLayout, VkPipelineCache(*_vtDevice));
         };
 
         return result;

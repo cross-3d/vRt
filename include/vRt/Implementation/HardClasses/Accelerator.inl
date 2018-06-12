@@ -99,11 +99,11 @@ namespace _vt {
 
             // create pipelines (planned to unify between accelerator instances)
             {
-                vtAccelerator->_boundingPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlbvh2/bound-calc.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_buildPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlbvh2/bvh-build.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_fitPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlbvh2/bvh-fit.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_leafPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlbvh2/leaf-gen.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_intersectionPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlbvh2/traverse-bvh.comp.spv", vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_boundingPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/bound-calc.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_buildPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/bvh-build.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_fitPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/bvh-fit.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_leafPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/leaf-gen.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_intersectionPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/traverse-bvh.comp.spv", vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
             };
         };
 

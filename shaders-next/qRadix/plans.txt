@@ -1,0 +1,3 @@
+Planned: 
+- more compact packing (up to 8 elements per every 32-bit, and get up to 8x hyperthreaded (and 512-wide), now we have only 2) 
+- wider ballot when possible (up to 512x?)

@@ -37,9 +37,9 @@ namespace _vt {
         };
 
         vtRadix->_pipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
-        vtRadix->_histogramPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "radix/histogram.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        vtRadix->_workPrefixPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "radix/pfx-work.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        vtRadix->_permutePipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "radix/permute.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtRadix->_histogramPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "qRadix/histogram.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtRadix->_workPrefixPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "qRadix/pfx-work.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtRadix->_permutePipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "qRadix/permute.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
 
         auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
         vtRadix->_descriptorSet = dsc[0];
