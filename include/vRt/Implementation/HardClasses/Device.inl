@@ -158,6 +158,8 @@ namespace _vt {
 
         // create radix sort tool
         createRadixSort(vtDevice, vtExtension, vtDevice->_radixSort);
+        createVertexAssembly(vtDevice, vtExtension, vtDevice->_vertexAssembler);
+        createAccelerator(vtDevice, vtExtension, vtDevice->_acceleratorBuilder);
 
         return result;
     };

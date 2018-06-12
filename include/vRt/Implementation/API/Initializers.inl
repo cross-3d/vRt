@@ -30,5 +30,8 @@ namespace _vt { // store in undercover namespace
     inline VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<VertexAssemblySet>& _vtVertexAssembly);
     inline VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo& info, std::shared_ptr<VertexInputSet>& _vtVertexInput);
     inline VtResult createRayTracingPipelineLayout(std::shared_ptr<Device> _vtDevice, VkPipelineLayoutCreateInfo vtRayTracingPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& _vtPipelineLayout);
+    inline VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice, const VtMaterialSetCreateInfo& info, std::shared_ptr<MaterialSet>& _vtMaterialSet);
+    inline VtResult createRayTracingPipeline(std::shared_ptr<Device> _vtDevice, const VtRayTracingPipelineCreateInfo& info, std::shared_ptr<Pipeline>& _vtPipeline);
+    inline VtResult createRayTracingSet(std::shared_ptr<Device> _vtDevice, const VtRayTracingSetCreateInfo& info, std::shared_ptr<RayTracingSet>& _vtRTSet);
 
 };

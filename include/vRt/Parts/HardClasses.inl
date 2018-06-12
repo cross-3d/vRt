@@ -110,7 +110,7 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<Device> _device;
 
         // in-set buffers
-        std::shared_ptr<VtDeviceBuffer> _rayBuffer, _rayIndiceBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache;
+        std::shared_ptr<DeviceBuffer> _rayBuffer, _rayIndiceBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer;
 
         
         operator VkDescriptorSet() const { return _descriptorSet; };
@@ -326,8 +326,12 @@ namespace _vt { // store in undercover namespace
         // textures and samplers bound in descriptor set directly
 
         // material data buffers
-        std::shared_ptr<DeviceBuffer> _virtualSamplerCombined;
+        std::shared_ptr<DeviceBuffer> _virtualSamplerCombinedBuffer;
         std::shared_ptr<DeviceBuffer> _materialDataBuffer;
+        std::shared_ptr<DeviceBuffer> _constBuffer;
+
+        uint32_t _materialCount = 0;
+        uint32_t _materialOffset = 0;
 
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
         operator VkDescriptorSet() const { return _descriptorSet; };

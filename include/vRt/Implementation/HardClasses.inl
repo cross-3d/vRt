@@ -1,8 +1,10 @@
 #pragma once
+#include "API/Initializers.inl"
 #include "HardClasses/DeviceBuffer.inl"
 #include "HardClasses/DeviceImage.inl"
 #include "HardClasses/PipelineLayout.inl"
 #include "HardClasses/Pipeline.inl"
+#include "HardClasses/MaterialSet.inl"
 #include "HardClasses/RadixSort.inl"
 #include "HardClasses/Accelerator.inl"
 #include "HardClasses/PhysicalDevice.inl"
