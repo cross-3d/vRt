@@ -72,7 +72,6 @@ namespace _vt {
             vtDevice->_descriptorLayoutMap["rayTracing"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         }
 
-
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
                 vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // bvh uniform block
@@ -82,7 +81,6 @@ namespace _vt {
             };
             vtDevice->_descriptorLayoutMap["hlbvh2"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         }
-
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
@@ -99,7 +97,6 @@ namespace _vt {
             };
             vtDevice->_descriptorLayoutMap["hlbvh2work"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         }
-
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
