@@ -22,26 +22,26 @@ namespace vt { // store in official namespace
 
 
     // create ray tracing storage
-    inline VtResult vtCreateRayTracingSet(VtDevice device, const VtRayTracingSetCreateInfo * vtRayTracingPipelineCreateInfo, VtRayTracingSet * vtSet);
+    inline VtResult vtCreateRayTracingSet(VtDevice device, const VtRayTracingSetCreateInfo * vtSetCreateInfo, VtRayTracingSet * vtSet);
 
     // create ray tracing pipeline
     inline VtResult vtCreateRayTracingPipeline(VtDevice device, const VtRayTracingPipelineCreateInfo * vtRayTracingPipelineCreateInfo, VtPipeline * vtPipeline);
 
     // create ray tracing accelerator structure
-    inline VtResult vtCreateAccelerator(VtDevice device, const VtAcceleratorCreateInfo * vtAcceleratorCreateInfo, VtAcceleratorSet * accelerator);
+    inline VtResult vtCreateAccelerator(VtDevice device, const VtAcceleratorSetCreateInfo * vtAcceleratorCreateInfo, VtAcceleratorSet * accelerator);
 
     // create ray tracing accelerator structure
-    inline VtResult vtCreateVertexAssembly(VtDevice device, const VtAcceleratorCreateInfo * vtAcceleratorCreateInfo, VtVertexAssemblySet * vertexAssembly);
+    inline VtResult vtCreateVertexAssembly(VtDevice device, const VtVertexAssemblySetCreateInfo * vtVertexAssemblyCreateInfo, VtVertexAssemblySet * vertexAssembly);
 
     // make descriptor input 
-    inline VtResult vtCreateMaterialSet(VtDevice vtDevice, const VtMaterialSetCreateInfo * vtMaterialsCreateInfo, VtMaterialSet * materialsInput);
+    inline VtResult vtCreateMaterialSet(VtDevice device, const VtMaterialSetCreateInfo * vtMaterialsCreateInfo, VtMaterialSet * materialsInput);
 
     // make vertex input set
-    inline VtResult vtCreateVertexInputSet(VtDevice vtDevice, const VtVertexInputCreateInfo * vtVertexInputCreateInfo, VtVertexInputSet * vertexInputSet);
+    inline VtResult vtCreateVertexInputSet(VtDevice device, const VtVertexInputCreateInfo * vtVertexInputCreateInfo, VtVertexInputSet * vertexInputSet);
 
 
     // make command buffer capable with ray tracing factory (VtCommandBuffer)
-    inline VtResult vtQueryCommandInterface(VkCommandBuffer commandBuffer, VtDevice device, VtCommandBuffer * vtCommandBuffer);
+    inline VtResult vtQueryCommandInterface(VtDevice device, VkCommandBuffer commandBuffer, VtCommandBuffer * vtCommandBuffer);
 
     // bind ray tracing pipeline
     inline VtResult vtCmdBindPipeline(VtCommandBuffer commandBuffer, VtPipelineBindPoint pipelineBindPoint, VtPipeline vtPipeline);
@@ -57,7 +57,7 @@ namespace vt { // store in official namespace
     inline VtResult vtCmdBindAccelerator(VtCommandBuffer commandBuffer, VtAcceleratorSet accelerator);
 
     // bind accelerator structure for building/ray tracing
-    inline VtResult vtCmdBindVertexAssembly(VtCommandBuffer commandBuffer, VtVertexAssemblySet accelerator);
+    inline VtResult vtCmdBindVertexAssembly(VtCommandBuffer commandBuffer, VtVertexAssemblySet vertexAssembly);
 
 
     // pre-build vertex input in accelerator structure

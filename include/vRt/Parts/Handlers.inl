@@ -54,6 +54,15 @@ namespace vt { // store in official namespace
 
 
 
+    struct VtVertexInputSet {
+        std::shared_ptr<_vt::VertexInputSet> _vtVertexInputSet;
+        operator std::shared_ptr<_vt::VertexInputSet>() const { return _vtVertexInputSet; };
+        operator std::shared_ptr<_vt::VertexInputSet>&() { return _vtVertexInputSet; };
+        operator VkDescriptorSet() const { return *_vtVertexInputSet; };
+        operator bool() const { return !!_vtVertexInputSet; };
+    };
+
+
     // ray tracing state set 
     struct VtRayTracingSet {
         std::shared_ptr<_vt::RayTracingSet> _vtRTSet;

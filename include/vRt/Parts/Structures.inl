@@ -158,7 +158,7 @@ namespace vt { // store in official namespace
         VkImageViewType imageViewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
         VkImageLayout layout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
         VkExtent3D size = {1, 1, 1};
-        VkImageUsageFlags usage = VkImageUsageFlagBits::VK_IMAGE_USAGE_STORAGE_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        VkImageUsageFlags usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
         VkFormat format = VK_FORMAT_R32G32B32A32_SFLOAT;
         uint32_t mipLevels = 1;
         uint32_t familyIndex = 0;

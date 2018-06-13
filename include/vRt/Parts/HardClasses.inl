@@ -79,10 +79,13 @@ namespace _vt { // store in undercover namespace
         VkCommandBuffer _commandBuffer = nullptr;
         std::weak_ptr<Device> _device;
 
-        std::shared_ptr<MaterialSet> _currentMaterialSet; // will bound in "cmdDispatch" 
-        std::shared_ptr<Accelerator> _currentAccelerator;
-        std::shared_ptr<Pipeline> _currentRTPipeline;
-        std::vector<VertexInputSet> _vertexInputs; // bound vertex input sets 
+        std::shared_ptr<RayTracingSet> _rayTracingSet;
+        std::shared_ptr<MaterialSet> _materialSet; // will bound in "cmdDispatch" 
+        std::shared_ptr<AcceleratorSet> _acceleratorSet;
+        std::shared_ptr<VertexAssemblySet> _vertexSet;
+        std::shared_ptr<Pipeline> _rayTracingPipeline;
+        std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs; // bound vertex input sets 
+        std::vector<VkDescriptorSet> _boundDescriptorSets;
 
         operator VkCommandBuffer() const { return _commandBuffer; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
@@ -205,7 +208,7 @@ namespace _vt { // store in undercover namespace
         VkPipeline _intersectionPipeline;
 
         // build BVH stages (few stages, in sequences)
-        VkPipeline _boundingPipeline, _shorthandPipeline, _leafPipeline, /*...radix sort between*/ _buildPipeline, _fitPipeline;
+        VkPipeline _boundingPipeline, _shorthandPipeline, _leafPipeline, /*...radix sort between*/ _buildPipeline, _fitPipeline, _leafLinkPipeline;
 
         // static pipeline layout for stages 
         VkPipelineLayout _buildPipelineLayout, _traversePipelineLayout;

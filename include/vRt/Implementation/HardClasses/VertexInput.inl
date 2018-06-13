@@ -7,7 +7,7 @@ namespace _vt {
 
     // TODO - add support for auto-creation of buffers in "VtVertexInputCreateInfo" from pointers and counts
     // also, planned to add support of offsets in buffers 
-    inline VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo& info, std::shared_ptr<VertexInputSet>& _vtVertexInput) {
+    inline VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& _vtVertexInput) {
         VtResult result = VK_SUCCESS;
         auto& vtVertexInput = (_vtVertexInput = std::make_shared<VertexInputSet>());
         vtVertexInput->_device = _vtDevice;
@@ -32,7 +32,7 @@ namespace _vt {
         createDeviceBuffer(_vtDevice, bfi, vtVertexInput->_uniformBlockBuffer);
         _vtDevice->_deviceBuffersPtrs.push_back(vtVertexInput->_uniformBlockBuffer); // pin buffer with device
 
-                                                                                     // set primitive count (will loaded to "_uniformBlockBuffer" by cmdUpdateBuffer)
+        // set primitive count (will loaded to "_uniformBlockBuffer" by cmdUpdateBuffer)
         vtVertexInput->_uniformBlock.primitiveCount = info.primitiveCount;
         vtVertexInput->_uniformBlock.verticeAccessor = info.verticeAccessor;
         vtVertexInput->_uniformBlock.indiceAccessor = info.indiceAccessor;

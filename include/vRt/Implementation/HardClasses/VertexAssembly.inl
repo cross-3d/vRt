@@ -39,7 +39,7 @@ namespace _vt {
 
 
 
-    inline VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<VertexAssemblySet>& _vtVertexAssembly) {
+    inline VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblySetCreateInfo &info, std::shared_ptr<VertexAssemblySet>& _vtVertexAssembly) {
         VtResult result = VK_SUCCESS;
         auto& vtVertexAssembly = (_vtVertexAssembly = std::make_shared<VertexAssemblySet>());
         vtVertexAssembly->_device = _vtDevice;

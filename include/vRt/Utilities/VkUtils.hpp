@@ -191,33 +191,37 @@ namespace _vt {
     }
 
     // add dispatch in command buffer (with default pipeline barrier)
-    inline void cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1){
+    inline VkResult cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1){
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
         vkCmdDispatch(cmd, x, y, z);
         commandBarrier(cmd); // put shader barrier
+        return VK_SUCCESS;
     }
 
     // low level copy command between (prefer for host and device)
-    inline void cmdCopyBufferL(VkCommandBuffer cmd, vk::Buffer srcBuffer, vk::Buffer dstBuffer, const std::vector<vk::BufferCopy>& regions, const std::function<void(const VkCommandBuffer&)>& barrierFn = commandBarrier) {
+    inline VkResult cmdCopyBufferL(VkCommandBuffer cmd, vk::Buffer srcBuffer, vk::Buffer dstBuffer, const std::vector<vk::BufferCopy>& regions, const std::function<void(const VkCommandBuffer&)>& barrierFn = commandBarrier) {
         vk::CommandBuffer(cmd).copyBuffer(srcBuffer, dstBuffer, regions);
         barrierFn(cmd); // put copy barrier
+        return VK_SUCCESS;
     }
 
     // short data set with command buffer (alike push constant)
     template<class T>
-    inline void cmdUpdateBuffer(VkCommandBuffer cmd, const std::vector<T>& data, vk::Buffer dstBuffer, VkDeviceSize offset = 0) {
+    inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, const std::vector<T>& data, vk::Buffer dstBuffer, VkDeviceSize offset = 0) {
         vk::CommandBuffer(cmd).updateBuffer(dstBuffer, offset, data);
         //commandBarrier(cmd);
         fromHostCommandBarrier(cmd);
+        return VK_SUCCESS;
     }
 
     // template function for fill buffer by constant value
     // use for create repeat variant
     template<uint32_t Rv>
-    inline void cmdFillBuffer(VkCommandBuffer cmd, vk::Buffer dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
-        vk::CommandBuffer(cmd).fillBuffer(dstBuffer, offset, size, Rv);
+    inline VkResult cmdFillBuffer(VkCommandBuffer cmd, VkBuffer dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
+        vk::CommandBuffer(cmd).fillBuffer(vk::Buffer(dstBuffer), offset, size, Rv);
         //commandBarrier(cmd);
         fromHostCommandBarrier(cmd);
+        return VK_SUCCESS;
     }
 
     // make whole size buffer descriptor info
@@ -259,5 +263,15 @@ namespace _vt {
             vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer
         });
     };
+
+
+
+
+    template <class T>
+    inline auto makeVector(const T*ptr, size_t size = 1) {
+        std::vector<T>v(size); memcpy(v.data(), ptr, strided<T>(size));
+        return v;
+    }
+
 
 };
