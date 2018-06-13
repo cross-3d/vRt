@@ -12,11 +12,12 @@
 
 ### June 2018 ("Lava Rains")
 - Write rendering part (for debugging and experimenting)
-- Write shaders part (stabilize next-gen ray-tracing shaders)
-- Write Vulkan API 1.1 ray tracing interface
-- Write first implementation 
+- Write shaders part (stabilize next-gen ray-tracing shaders) WIP! 
+- ~~Write first Vulkan API 1.1 ray tracing interface~~ Done! 
+- ~~Write first implementation~~ Done! 
 
 ### July 2018 ("Early Vulkanism")
+- Improve API and interfaces
 - Development of implementation 
 - Debugging and experimenting stage 
 - Support for NVidia (GTX 9, 10, Titan series) and AMD (RX Vega) hardware

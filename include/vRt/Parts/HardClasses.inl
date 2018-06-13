@@ -134,7 +134,7 @@ namespace _vt { // store in undercover namespace
         VkPipeline _generationPipeline, _closestHitPipeline, _missHitPipeline, _resolvePipeline;
 
         // ray tracing set
-        std::shared_ptr<RayTracingSet> _rayTracingSet;
+        std::weak_ptr<RayTracingSet> _rayTracingSet;
 
         // material and accelerator descriptor sets, that sets to "1" is dedicated by another natives
         std::vector<VkDescriptorSet> _userDefinedDescriptorSets; // beyond than 1 only
@@ -177,7 +177,7 @@ namespace _vt { // store in undercover namespace
         VkPipelineLayout _vertexAssemblyPipelineLayout;
 
         // binding vertex assembly set
-        std::shared_ptr<VertexAssemblySet> _vertexAssemblySet;
+        std::weak_ptr<VertexAssemblySet> _vertexAssemblySet;
     };
 
 
@@ -219,7 +219,7 @@ namespace _vt { // store in undercover namespace
 
         // vertex assembly set
         std::shared_ptr<VertexAssemblySet> _vertexAssemblySet;
-        std::shared_ptr<AcceleratorSet> _acceleratorSet;
+        std::weak_ptr<AcceleratorSet> _acceleratorSet;
 
         // internal buffers
         std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _boundaryResultBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer;
