@@ -15,7 +15,7 @@ layout ( std430, binding = 0, set = 0 ) buffer VT_RAYS {VtRay rays[];};
 layout ( std430, binding = 1, set = 0 ) buffer VT_HITS {HitData hits[];};
 layout ( std430, binding = 2, set = 0 ) buffer VT_CLOSEST_HITS {int closestHits[];};
 layout ( std430, binding = 3, set = 0 ) buffer VT_MISS_HITS {int missHits[];};
-layout ( std430, binding = 4, set = 0 ) buffer VT_HIT_PAYLOAD { HitPayload hitPayload; };
+layout ( std430, binding = 4, set = 0 ) buffer VT_HIT_PAYLOAD { HitPayload hitPayload[]; };
 layout ( std430, binding = 5, set = 0 ) buffer VT_RAY_INDICES {int rayIndices[];};
 
 // system canvas info
@@ -79,8 +79,13 @@ int vtVerifyMissedHit(in int missId){
 }
 
 
-int vtClosestId(in int globalID){
+int vtClosestId(in int id){
     return closestHits[id]-1;
 }
+
+int vtMissId(in int id){
+    return missHits[id]-1;
+}
+
 
 #endif

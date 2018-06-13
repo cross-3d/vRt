@@ -89,7 +89,7 @@ vec3 randomCosine(in uvec2 superseed) {
     return normalize(vec3( cos(around) * over, sin(around) * over, up ));
 }
 
-
+/*
 vec3 randomDirectionInSphere() {
 #ifdef USE_HQUALITY_DIFFUSE
     vec2 hmsm = randf2q();
@@ -99,7 +99,7 @@ vec3 randomDirectionInSphere() {
     float up = (0.5f-hmsm.x)*2.f, over = sqrt(1.f - up * up), around = hmsm.y * TWO_PI;
     return normalize(vec3( cos(around) * over, sin(around) * over, up ));
 }
-
+*/
 
 
 vec3 randomCosineNormalOriented(in uvec2 superseed, in vec3 normal){
@@ -121,6 +121,6 @@ vec3 randomCosineNormalOriented(in uvec2 superseed, in vec3 normal){
     return ( up * normal ) + ( cos(around) * over * perpendicular1 ) + ( sin(around) * over * perpendicular2 );
 }
 
-float qrand(in float r){ return clamp01(random() < r ? 1.f : 0.f); }
+//float qrand(in float r){ return clamp01(random() < r ? 1.f : 0.f); }
 
 #endif

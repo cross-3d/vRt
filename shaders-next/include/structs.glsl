@@ -75,7 +75,7 @@ struct bbox {
 // 1. add extra array of ray metadata/offload (but we very limited in binding registers)
 
 struct VtRay {
-     vec4 origin; vec2 cdirect; uvec2 uindex;
+     vec4 origin; vec2 cdirect; uvec2 dcolor;
 };
 
 
@@ -89,6 +89,17 @@ uvec2 WriteColor(inout uvec2 rwby, in vec4 color){
 }
 
 
+
+// max attribute packing count
+const int ATTRIB_EXTENT = 4;
+
+// attribute formating
+const int NORMAL_TID = 0;
+const int TEXCOORD_TID = 1;
+const int TANGENT_TID = 2;
+const int BITANGENT_TID = 3;
+
+
 struct HitData {
     vec4 uvt; // UV, distance, triangle (base data)
     int rayID; // ray index
@@ -96,7 +107,7 @@ struct HitData {
     int materialID; // may not necessary 
     int next; // next chainged hit
 
-    vec4 attributes[4];
+    vec4 attributes[ATTRIB_EXTENT];
 };
 
 struct HitPayload {

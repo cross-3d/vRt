@@ -43,19 +43,19 @@ void main() {
         }
 
         if (Wave_Idx == 0) {
-            key = p2x(
+            key = p2x(uvec2(
                 //BFE(validAddress.x ? KeyTmp[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
                 //BFE(validAddress.y ? KeyTmp[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
                 validAddress.x ? BFE(KeyTmp[addr.x], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK,
                 validAddress.y ? BFE(KeyTmp[addr.y], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK
-            );
+            ));
         }
         LGROUP_BARRIER
 
         // WARP-optimized histogram calculation
         for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
             uvec_wave radice = uvec_wave(rk + Radice_Idx);
-            bvec2 owned = and(equal(p2x(key), radice.xx), validAddress);
+            bvec2 owned = and(equal(up2x(key), radice.xx), validAddress);
             if (any(owned)) countHistogram(uint(radice), owned);
             IFALL (all(or((radice >= RADICES).xx, or(owned, not(validAddress))))) break;
         }

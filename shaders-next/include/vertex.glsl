@@ -31,12 +31,16 @@
 
     #if (defined(VERTEX_FILLING) || defined(VTX_TRANSPLIT))
     layout ( binding = 3, set = VTX_SET, rgba32f  ) uniform imageBuffer lvtx;
+    #define TLOAD(img,t) imageLoad(img,t)
+    #else
+    layout ( binding = 5, set = VTX_SET           ) uniform samplerBuffer lvtx;
+    #define TLOAD(img,t) texelFetch(img,t)
     #endif
 
     layout ( binding = 4, set = VTX_SET, rgba32ui ) uniform uimage2D attrib_texture_out;
-    layout ( binding = 5, set = VTX_SET           ) uniform samplerBuffer lvtx;
+    
     layout ( binding = 6, set = VTX_SET           ) uniform usampler2D attrib_texture;
-    #define TLOAD(img,t) texelFetch(img,t)
+    
 #endif
 
 
@@ -64,14 +68,6 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
 #endif
 
 
-// max attribute packing count
-const int ATTRIB_EXTENT = 4;
-
-// attribute formating
-const int NORMAL_TID = 0;
-const int TEXCOORD_TID = 1;
-const int TANGENT_TID = 2;
-const int BITANGENT_TID = 3;
 
 
 
@@ -199,7 +195,7 @@ void interpolateMeshData(inout HitData ht) {
         [[unroll]]
         for (int i=0;i<4;i++) {
             vec2 trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+   NORMAL_TID))), sz, szt));
-            ht.attributes[i] = vs * mat3x4(SGATHER(attrib_texture, trig, 0)._SWIZV, SGATHER(attrib_texture, trig, 1)._SWIZV, SGATHER(attrib_texture, trig, 2)._SWIZV, SGATHER(attrib_texture, trig, 3)._SWIZV);
+            ht.attributes[i] = vs * mat4x3(SGATHER(attrib_texture, trig, 0)._SWIZV, SGATHER(attrib_texture, trig, 1)._SWIZV, SGATHER(attrib_texture, trig, 2)._SWIZV, SGATHER(attrib_texture, trig, 3)._SWIZV);
         }
     }
 }

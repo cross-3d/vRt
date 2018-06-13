@@ -67,8 +67,8 @@ struct RadicePropStruct { uint Descending; uint IsSigned; };
 layout (std430, binding = 0, set = 1 )  buffer KeyInB {KEYTYPE KeyIn[]; };
 layout (std430, binding = 1, set = 1 )  buffer ValueInB {uint ValueIn[]; };
 layout (std430, binding = 2, set = 0 )  readonly buffer VarsB { RadicePropStruct radProps[]; };
-layout (std430, binding = 3, set = 0 )  writeonly buffer KeyTmpB {KEYTYPE KeyTmp[]; };
-layout (std430, binding = 4, set = 0 )  writeonly buffer ValueTmpB {uint ValueTmp[]; };
+layout (std430, binding = 3, set = 0 )  buffer KeyTmpB {KEYTYPE KeyTmp[]; };
+layout (std430, binding = 4, set = 0 )  buffer ValueTmpB {uint ValueTmp[]; };
 layout (std430, binding = 5, set = 0 )  buffer HistogramB {uint Histogram[]; };
 layout (std430, binding = 6, set = 0 )  buffer PrefixSumB {uint PrefixSum[]; };
 

@@ -47,15 +47,15 @@ const ivec2 COMPONENTS = ivec2(0, 2);
 const ivec2 ATYPE = ivec2(2, 4);
 const ivec2 NORMALIZED = ivec2(6, 1);
 
-int aComponents(in VirtualDataAccess vac) {
+int aComponents(in VtAccessor vac) {
     return parameteri(COMPONENTS, vac.bitfield);
 }
 
-int aType(in VirtualDataAccess vac) {
+int aType(in VtAccessor vac) {
     return parameteri(ATYPE, vac.bitfield);
 }
 
-int aNormalized(in VirtualDataAccess vac) {
+int aNormalized(in VtAccessor vac) {
     return parameteri(NORMALIZED, vac.bitfield);
 }
 
@@ -159,7 +159,7 @@ void readByAccessor(in int accessor, in uint index, inout int outp) {
 void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
     if (accessor >= 0) {
         const bool U16 = aType(accessors[accessor]) == 2; // uint16
-        uint T = calculateByteOffset(binding, index, U16 ? 1 : 2);
+        uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
         if (U16) { outp = M16(bufferSpace,T+0); } else { outp = M32(bufferSpace,T+0); }
     }
 }
@@ -169,13 +169,14 @@ initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
 
 
 void main(){
-    const int wsize = vertexBlock.primitiveCount;
+    const int wsize = int(vertexBlock.primitiveCount);
     const int gS = int(gl_WorkGroupSize.x);
     const int wgs = int(gl_NumWorkGroups.x);
     const int wID = int(gl_WorkGroupID.x);
     const int lID = int(Local_Idx);
     const int rng = gS*wgs;
-    
+    const int trp = 3;
+
     // for faster geometry loading, just add counter in single thread
     if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(tcounter[0], wsize); }
     
@@ -198,20 +199,20 @@ void main(){
             for (int i=0;i<3;i++) {
                 // aggregated indices
                 uint indiceID = globalID * trp + i;
-                readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
+                readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
 
                 // load attrib data
                 [[unroll]]
                 for (uint a=0;a<min(4,attributes.length());a++) {{
                     uint a = attributes[a].attributeID;
-                    ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(tidc*ATTRIB_EXTENT+a));
+                    ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(int(tidc*ATTRIB_EXTENT+a)));
                     vec4 attribValue = vec4(0.f); readByAccessor(attributes[a].accessorID, indiceID, attribValue);
                     ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_, i), floatBitsToUint(attribValue));
                 }}
 
                 // load vertex data
                 {
-                    vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice);
+                    vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
                     imageStore(lvtx, tidc*3+i, vec4(vertice.xyz, 1.f));
                 }
             }

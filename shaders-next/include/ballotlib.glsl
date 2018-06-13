@@ -19,6 +19,7 @@
 #endif
 
 #ifndef OUR_INVOC_TERM
+    #define Global_Idx gl_GlobalInvocationID
     #define Local_Idx (gl_LocalInvocationIndex)
     #define Local_2D (gl_LocalInvocationIndex.xy)
     //#define Global_Idx ()

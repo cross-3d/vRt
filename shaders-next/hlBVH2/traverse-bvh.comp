@@ -10,8 +10,9 @@
 #define ENABLE_TRAVERSE_DATA
 #define ENABLE_VSTORAGE_DATA
 
-#include "../include/rayslib.glsl"
 #include "../include/driver.glsl"
+#include "../include/structs.glsl"
+#include "../include/rayslib.glsl"
 #include "../include/structs.glsl"
 #include "../include/morton.glsl"
 #include "../include/mathlib.glsl"
@@ -53,8 +54,9 @@ void main() {
             const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
             
             // make hit
+            int hid = -1;
             bool_ vintersect = lessF(geometrySpace.lastIntersection.z, INFINITY-0.001f) & bool_(triID >= 0) & bool_(hid < 0).x | lessF(geometrySpace.lastIntersection.z, hits[hid].uvt.z);
-            int hid = atomicIncHitCount();
+            hid = atomicIncHitCount();
 
             // save hit
             HitData hit = hits[hid];

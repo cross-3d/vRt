@@ -320,7 +320,7 @@ void main() {
             // additional validation of hit (hit point interpolated offset test)
             if (!overflow && hitID >= 0) {
                 int pid = hit.payloadID-1; 
-                if (pid < 0) pid = atomicIncIT();
+                if (pid < 0) pid = atomicIncPayloadHitCount();
                 hitPayload[pid] = hitp;
                 cray.origin.w = intBitsToFloat(hitID+1); // save hit index to ray
 

@@ -8,12 +8,12 @@
 #include "../include/random.glsl"
 
 // use partition by 8x8
-layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT);
+layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT) in;
 
 // planned ray generation shader example
 void main() {
     VtRay ray;
-    ray.origin.w = uintBitsToFloat(bitfieldInsert(bitfieldInsert(0u, GlobalIdx.x, 0, 16), GlobalIdx.y, 16, 16); // save hashed2D (max to 65535x65535)
+    ray.origin.w = uintBitsToFloat(bitfieldInsert(bitfieldInsert(0u, Global_Idx.x, 0, 16), Global_Idx.y, 16, 16)); // save hashed2D (max to 65535x65535)
     vtEmitRays(ray);
 
     /*
@@ -59,8 +59,8 @@ void main() {
                         uint uidx = atomicIncTT();
                         unorderedRays[uidx].cdirect = currentRay.cdirect;
                         unorderedRays[uidx].origin = currentRay.origin;
-                        unorderedRays[uidx].uindex.x = getGeneralNodeId()+1;
-                        unorderedRays[uidx].uindex.y = 0;
+                        unorderedRays[uidx].dcolor.x = getGeneralNodeId()+1;
+                        unorderedRays[uidx].dcolor.y = 0;
                     }
                 }
             }

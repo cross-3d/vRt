@@ -19,6 +19,7 @@ void main() {
     const int wsize = rayCounter;
     const int wcsize = int(gl_WorkGroupSize.x) / int(Wave_Size_RT);
     const int wcount = min(tiled(wsize, wcsize), 1000000);
+    const int wgs = int(gl_NumWorkGroups);
 
     // save image color information from ray tracing
     for (int w=0;w<wcount;w+=wgs) 
