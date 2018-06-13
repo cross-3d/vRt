@@ -13,16 +13,6 @@
 #include "../include/mathlib.glsl"
 #include "../include/random.glsl"
 
-/*
-vec3 lightCenter(in int i) {
-    return fma(normalize(lightUniform.lightNode[i].lightVector.xyz), lightUniform.lightNode[i].lightVector.www, lightUniform.lightNode[i].lightOffset.xyz);
-}
-
-vec3 sphereLightPoint(in int i) {
-    return fma(randomDirectionInSphere(), vec3(lightUniform.lightNode[i].lightColor.w - 0.0001f), lightCenter(i));
-}
-*/
-
 
 struct VtAppMaterial {
      vec4 diffuse;
@@ -301,7 +291,7 @@ void main() {
             hitp.albedo = diffuse.xyzw;
             hitp.specularGlossiness = specularGlossiness;
 
-
+/*
 #ifdef SIMPLE_RT_MODE
             // simple mode (alternate)
             float spwr = clamp01(max3_vec(specularColor.xyz));
@@ -313,6 +303,8 @@ void main() {
             hitp.emission = diffuseWithEmission;
             hitp.specularGlossiness = vec4(specularGlossiness.xyz, 0.f);
 #endif
+*/
+
 
             // additional validation of hit (hit point interpolated offset test)
             if (!overflow && hitID >= 0) {
