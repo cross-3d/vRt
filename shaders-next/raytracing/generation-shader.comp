@@ -39,64 +39,11 @@ void main() {
     }
 
     ray.dcolor = uvec2(0u.xx);
-    WriteColor(ray.dcolor, vec4(0.f));
+    WriteColor(ray.dcolor, vec4(1.f));
     RayActived(ray, true_);
     ray.origin.xyz = orig.xyz;
     ray.cdirect = lcts(dir.xyz);
     vtEmitRays(ray);
-
-
-    /*
-    int wsize = RAY_BLOCK samplerUniform.blockCount;
-    int wcsize = int(gl_WorkGroupSize.x) / int(Wave_Size_RT);
-    int wcount = min(tiled(wsize, wcsize), 1000000);
-
-    // invoke available blocks
-    bool overflow = false;
-    int wgs = int(gl_NumWorkGroups);
-
-    LGROUP_BARRIER;
-    for (int w=0;w<wcount;w+=wgs) {
-        SB_BARRIER
-        int globalID = (w + int(gl_WorkGroupID.x)) * wcsize + int(Wave_Idx);
-        globalInvocationSMP = globalID;
-
-        // check if not reached blocks limit
-        bool overflow = overflow || globalID >= wsize;
-        IFALL(overflow) break;
-        IFANY(!overflow) {
-            
-            // accquire shading block
-            currentBlock = -1;
-            if (!overflow) accquireBlock(globalID);
-            bool invld = anyInvoc(overflow || currentBlock < 0 || currentBlockSize <= 0);
-            if (invld) { currentBlock = -1; continue; }
-            
-            // invoke block data
-            if (!invld) {
-                uint bts = min(R_BLOCK_SIZE, currentBlockSize);
-                for (int tb = 0; tb < bts; tb += int(Wave_Size_RT)) {
-                    SB_BARRIER
-                    int nid = tb + int(Lane_Idx);
-                    randomClocks = 0, subHash = nid; // reset random clocks
-                    bool overflow = invld || overflow || nid >= bts || nid < 0;
-                    IFALL(overflow) break;
-                    accquireNode(nid); overflow = overflow || currentBlockNode < 0;
-                    IFALL(overflow) break;
-
-                    // make unordered lists for context
-                    if (!overflow && SSC(RayActived(currentRay))) {
-                        uint uidx = atomicIncTT();
-                        unorderedRays[uidx].cdirect = currentRay.cdirect;
-                        unorderedRays[uidx].origin = currentRay.origin;
-                        unorderedRays[uidx].dcolor.x = getGeneralNodeId()+1;
-                        unorderedRays[uidx].dcolor.y = 0;
-                    }
-                }
-            }
-
-        }
-    }*/
 
     LGROUP_BARRIER;
 }
