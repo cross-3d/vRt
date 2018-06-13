@@ -52,10 +52,15 @@ namespace vt { // store in official namespace
 
         // TODO: entry points support (default = "main")
         // shader paths to ray tracing stages shaders 
-        std::string generationShader = "raytracing/generation-shader.comp.spv";
-        std::string closestShader = "raytracing/closest-hit-shader.comp.spv";
-        std::string missShader = "raytracing/miss-hit-shader.comp.spv";
-        std::string resolveShader = "raytracing/resolve-shader.comp.spv";
+        //std::string generationShader = "raytracing/generation-shader.comp.spv";
+        //std::string closestShader = "raytracing/closest-hit-shader.comp.spv";
+        //std::string missShader = "raytracing/miss-hit-shader.comp.spv";
+        //std::string resolveShader = "raytracing/resolve-shader.comp.spv";
+
+        VkPipelineShaderStageCreateInfo generationModule;
+        VkPipelineShaderStageCreateInfo closestModule;
+        VkPipelineShaderStageCreateInfo missModule;
+        VkPipelineShaderStageCreateInfo resolveModule;
     };
 
 

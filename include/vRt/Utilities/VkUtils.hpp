@@ -184,6 +184,18 @@ namespace _vt {
         return pipeline;
     }
 
+    // create compute pipelines
+    inline auto createCompute(VkDevice device, const VkPipelineShaderStageCreateInfo& spi, VkPipelineLayout layout, VkPipelineCache cache) {
+        VkComputePipelineCreateInfo cmpi;
+        cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+        cmpi.layout = layout;
+        cmpi.stage = spi;
+
+        VkPipeline pipeline;
+        vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);
+        return pipeline;
+    }
+
     // add dispatch in command buffer (with default pipeline barrier)
     inline VkResult cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1){
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);

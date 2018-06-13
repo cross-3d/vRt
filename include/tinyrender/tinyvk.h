@@ -88,6 +88,10 @@ COMPILING & LINKING
 
 #include <vulkan/vulkan.h>
 
+#ifdef EXPERIMENTAL_RAY_TRACING
+#include <vRt/vRt.h>
+#endif
+
 #if defined(__cplusplus) && defined(TINY_RENDERER_CPP_NAMESPACE)
 namespace TINY_RENDERER_CPP_NAMESPACE {
 #endif
@@ -332,7 +336,10 @@ typedef enum tr_tessellation_domain_origin {
 typedef enum tr_pipeline_type {
   tr_pipeline_type_undefined = 0,
   tr_pipeline_type_compute,
-  tr_pipeline_type_graphics
+  tr_pipeline_type_graphics,
+#ifdef EXPERIMENTAL_RAY_TRACING
+  tr_pipeline_type_raytracing
+#endif
 } tr_pipeline_type;
 
 // Forward declarations
@@ -427,7 +434,11 @@ typedef struct tr_renderer {
     uint32_t                            vk_active_gpu_index;
     VkPhysicalDeviceMemoryProperties    vk_memory_properties;
     VkPhysicalDeviceProperties          vk_active_gpu_properties;
+#ifdef EXPERIMENTAL_RAY_TRACING
+    VtDevice                            vk_device;
+#else
     VkDevice                            vk_device;
+#endif
     VkSurfaceKHR                        vk_surface;
     VkSwapchainKHR                      vk_swapchain;
     VkDebugReportCallbackEXT            vk_debug_report;
@@ -460,7 +471,11 @@ typedef struct tr_cmd_pool {
 
 typedef struct tr_cmd {
     tr_cmd_pool*                        cmd_pool;
+#ifdef EXPERIMENTAL_RAY_TRACING
+    VtCommandBuffer                     vk_cmd_buf;
+#else
     VkCommandBuffer                     vk_cmd_buf;
+#endif
 } tr_cmd;
 
 typedef struct tr_buffer {
@@ -560,6 +575,9 @@ typedef struct tr_pipeline {
     tr_pipeline_type                    type;
     VkPipelineLayout                    vk_pipeline_layout;
     VkPipeline                          vk_pipeline;
+#ifdef EXPERIMENTAL_RAY_TRACING
+    VtPipeline                          vt_pipeline;
+#endif
 } tr_pipeline;
 
 typedef struct tr_render_target {
@@ -642,6 +660,12 @@ tr_api_export void tr_destroy_shader_program(tr_renderer* p_renderer, tr_shader_
 tr_api_export void tr_create_pipeline(tr_renderer* p_renderer, tr_shader_program* p_shader_program, const tr_vertex_layout* p_vertex_layout, tr_descriptor_set* p_descriptor_set, tr_render_target* p_render_target, const tr_pipeline_settings* p_pipeline_settings, tr_pipeline** pp_pipeline);
 tr_api_export void tr_create_compute_pipeline(tr_renderer* p_renderer, tr_shader_program* p_shader_program, tr_descriptor_set* p_descriptor_set, const tr_pipeline_settings* p_pipeline_settings, tr_pipeline** pp_pipeline);
 tr_api_export void tr_destroy_pipeline(tr_renderer* p_renderer, tr_pipeline* p_pipeline);
+
+#ifdef EXPERIMENTAL_RAY_TRACING
+// TODO 
+tr_api_export void tr_create_raytracing_program_compute(tr_renderer* p_renderer, uint32_t comp_size, const void* comp_code, const char* comp_enpt, tr_shader_program** pp_shader_program);
+tr_api_export void tr_create_raytracing_pipeline(tr_renderer* p_renderer, tr_shader_program* p_shader_program, tr_descriptor_set* p_descriptor_set, const tr_pipeline_settings* p_pipeline_settings, tr_pipeline** pp_pipeline);
+#endif
 
 tr_api_export void tr_create_render_target(tr_renderer* p_renderer, uint32_t width, uint32_t height, tr_sample_count sample_count, tr_format color_format, uint32_t color_attachment_count, const tr_clear_value* color_clear_values, tr_format depth_stencil_format, const tr_clear_value* depth_stencil_clear_value, tr_render_target** pp_render_target);
 tr_api_export void tr_destroy_render_target(tr_renderer* p_renderer, tr_render_target* p_render_target);
@@ -3726,7 +3750,14 @@ void tr_internal_vk_create_cmd(tr_cmd_pool *p_cmd_pool, bool secondary, tr_cmd* 
     alloc_info.commandPool        = p_cmd_pool->vk_cmd_pool;
     alloc_info.level              = secondary ? VK_COMMAND_BUFFER_LEVEL_SECONDARY : VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     alloc_info.commandBufferCount = 1;
+#ifdef EXPERIMENTAL_RAY_TRACING
+    // wrap-in ray tracing
+    VkCommandBuffer vk_cmd_buf;
+    VkResult vk_res = vkAllocateCommandBuffers(p_cmd_pool->renderer->vk_device, &alloc_info, &vk_cmd_buf);
+    vtQueryCommandInterface(p_cmd_pool->renderer->vk_device, vk_cmd_buf, &(p_cmd->vk_cmd_buf));
+#else
     VkResult vk_res = vkAllocateCommandBuffers(p_cmd_pool->renderer->vk_device, &alloc_info, &(p_cmd->vk_cmd_buf));
+#endif
     assert(VK_SUCCESS == vk_res);
 }
 
