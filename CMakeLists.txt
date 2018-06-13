@@ -24,6 +24,11 @@ set(SOURCES_LIST
     "./src/imgui/imgui.cpp"
     "./src/examples/*.hpp"
     
+    "./src/*/*/*.hpp"
+    "./src/*/*/*.cpp"
+    "./src/*/*/*.c"
+    "./src/*/*/*.h"
+    
     "./include/imgui/*.c"
     "./include/imgui/*.cpp"
     "./include/imgui/*/*.c"
@@ -85,9 +90,9 @@ find_package(Vulkan QUIET)
 get_filename_component(VULKAN_DIR ${Vulkan_LIBRARY} DIRECTORY )
 
 set (DEP_DIR "${PROJECT_SOURCE_DIR}")
-set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/testapps/lib" "${VULKAN_DIR}")
-set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/testapps/include" "${DEP_DIR}/testapps/" "${DEP_DIR}/testapps/imgui" "${PROJECT_SOURCE_DIR}")
-set (LIBS glfw3)
+set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/src/lib"     "${VULKAN_DIR}")
+set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/imgui" "${PROJECT_SOURCE_DIR}")
+set (LIBS glfw3 ${Vulkan_LIBRARY})
 
 # if OptiX was has
 if (OptiX_INSTALL_DIR AND ENABLE_OPTIX_DENOISER) 
