@@ -8,9 +8,12 @@
 namespace vt {
     using namespace _vt;
 
-    // experimental implementation of "vtCreateDevice"
-    inline VtResult vtCreateDevice(VtPhysicalDevice vtPhysicalDevice, VkDeviceCreateInfo * deviceCreateInfo, VtDevice * vtDevice) {
+    inline VtResult vtCreateDevice(VtPhysicalDevice vtPhysicalDevice, const VkDeviceCreateInfo * deviceCreateInfo, VtDevice * vtDevice) {
         return createDevice(vtPhysicalDevice._vtPhysicalDevice, *deviceCreateInfo, vtDevice->_vtDevice);
+    };
+
+    inline VtResult vtConvertDevice(VkDevice vkDevice, VtPhysicalDevice vtPhysicalDevice, const VtArtificalDeviceExtension * vtDeviceExtension, VtDevice * vtDevice) {
+        return convertDevice(vkDevice, vtPhysicalDevice, *vtDeviceExtension, *vtDevice);
     };
 
     inline VtResult vtCmdImageBarrier(VkCommandBuffer cmd, VtDeviceImage image) {

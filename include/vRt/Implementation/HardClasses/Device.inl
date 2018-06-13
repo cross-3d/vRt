@@ -6,19 +6,12 @@ namespace _vt {
     using namespace vt;
 
 
-    inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo vdvi, std::shared_ptr<Device>& _vtDevice) {
+    inline VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& _vtDevice) {
         auto& vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
+        vtDevice->_device = device;
 
-        VtResult result = VK_ERROR_INITIALIZATION_FAILED;
-        VtArtificalDeviceExtension vtExtension; // default structure values
-        auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);
-        if (vtExtensionPtr) { // if found, getting some info
-            vtExtension = (VtArtificalDeviceExtension&)*vtExtensionPtr;
-        }
-
-        // be occurate with "VkDeviceCreateInfo", because after creation device, all "vt" extended structures will destoyed
-        if (vkCreateDevice(*(vtDevice->_physicalDevice.lock()), (const VkDeviceCreateInfo*)vtExplodeArtificals(vdvi), nullptr, &vtDevice->_device) == VK_SUCCESS) { result = VK_SUCCESS; };
+        VtResult result = VK_SUCCESS;
 
         VmaAllocatorCreateInfo allocatorInfo;
         allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice.lock());
@@ -157,7 +150,27 @@ namespace _vt {
         createRadixSort(vtDevice, vtExtension, vtDevice->_radixSort);
         createVertexAssembly(vtDevice, vtExtension, vtDevice->_vertexAssembler);
         createAccelerator(vtDevice, vtExtension, vtDevice->_acceleratorBuilder);
+        return result;
+    };
 
+
+    inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo vdvi, std::shared_ptr<Device>& _vtDevice) {
+        //auto& vtDevice = (_vtDevice = std::make_shared<Device>());
+        //vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
+
+        VtResult result = VK_ERROR_INITIALIZATION_FAILED;
+        VtArtificalDeviceExtension vtExtension; // default structure values
+        auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);
+        if (vtExtensionPtr) { // if found, getting some info
+            vtExtension = (VtArtificalDeviceExtension&)*vtExtensionPtr;
+        }
+
+        // be occurate with "VkDeviceCreateInfo", because after creation device, all "vt" extended structures will destoyed
+        VkDevice vkDevice;
+        if (vkCreateDevice(*physicalDevice, (const VkDeviceCreateInfo*)vtExplodeArtificals(vdvi), nullptr, &vkDevice) == VK_SUCCESS) { result = VK_SUCCESS; };
+
+        // manually convert device
+        convertDevice(vkDevice, physicalDevice, vtExtension, _vtDevice);
         return result;
     };
 
