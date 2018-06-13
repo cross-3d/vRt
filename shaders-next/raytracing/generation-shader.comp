@@ -10,11 +10,41 @@
 // use partition by 8x8
 layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT) in;
 
+layout (binding = 0, set = 2) readonly buffer VT_GEN_EXAMPLE {
+    mat4x4 camInv;
+    mat4x4 projInv;
+    vec4 sceneRes;
+    int enable360, r0, r1, r2;
+} cameraUniform;
+
 // planned ray generation shader example
 void main() {
     VtRay ray;
-    ray.origin.w = uintBitsToFloat(bitfieldInsert(bitfieldInsert(0u, Global_Idx.x, 0, 16), Global_Idx.y, 16, 16)); // save hashed2D (max to 65535x65535)
+    ray.origin.w = uintBitsToFloat(bitfieldInsert(Global_Idx.x & 0xFFFFu, Global_Idx.y, 16, 16)); // save hashed2D (max to 65535x65535)
+    
+    ivec2 wh = ivec2(cameraUniform.sceneRes.xy);
+    ivec2 xy = ivec2(Global_Idx.xy);
+    vec2 sceneResInv = 1.0f / vec2(wh);
+    vec2 rnd = vec2(0.5f);
+    vec2 coord = (floor(vec2(xy)) + clamp(rnd, vec2(0.0001f), vec2(0.9999f))) * sceneResInv;
+
+    vec4 dir = vec4(0.f), orig = mult4(cameraUniform.camInv, vec4(vec3(0.0f), 1.0f)), eye = orig;
+    IFANY (cameraUniform.enable360 == 1) {
+        vec2 pic = (coord * vec2(2.f,1.f) + vec2(0.5f,0.0f)) * PI;
+        dir = mult4(cameraUniform.camInv, vec4(dcts(pic), 0.f));
+    } else {
+        vec4 co = divW(mult4(cameraUniform.camInv, mult4(cameraUniform.projInv, vec4(coord * 2.0f - 1.0f, 0.999f, 1.0f))));
+        orig = divW(mult4(cameraUniform.camInv, mult4(cameraUniform.projInv, vec4(coord * 2.0f - 1.0f, 0.001f, 1.0f))));
+        dir = vec4(normalize(co.xyz - orig.xyz)*vec3(1.f,1.f,1.f), 0.0f);
+    }
+
+    ray.dcolor = uvec2(0u.xx);
+    WriteColor(ray.dcolor, vec4(0.f));
+    RayActived(ray, true_);
+    ray.origin.xyz = orig.xyz;
+    ray.cdirect = lcts(dir.xyz);
     vtEmitRays(ray);
+
 
     /*
     int wsize = RAY_BLOCK samplerUniform.blockCount;
