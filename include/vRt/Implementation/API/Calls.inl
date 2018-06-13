@@ -95,7 +95,7 @@ namespace vt {
 
     // planned: roling by VtEntryUsageFlags
     inline VtResult vtCmdBindMaterialSet(VtCommandBuffer commandBuffer, VtEntryUsageFlags usageIn, VtMaterialSet materials) {
-        commandBuffer._vtCommandBuffer->_materialSet = materials._vtMaterialSet;
+        bindMaterialSet(commandBuffer, usageIn, materials);
         return VK_SUCCESS;
     };
 

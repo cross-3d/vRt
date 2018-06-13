@@ -14,6 +14,20 @@ namespace _vt {
         return result;
     }
 
+
+    // update material data in command
+    VtResult bindMaterialSet(std::shared_ptr<CommandBuffer>& cmdBuf, VtEntryUsageFlags usageIn, std::shared_ptr<MaterialSet> matrl) {
+        VtResult result = VK_SUCCESS;
+
+        // upload constants to material sets
+        vkCmdUpdateBuffer(*cmdBuf, *matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
+        fromHostCommandBarrier(*cmdBuf);
+        cmdBuf->_materialSet = matrl;
+
+        return result;
+    }
+
+
     VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t x = 1, uint32_t y = 1) {
         VtResult result = VK_SUCCESS;
 
@@ -28,22 +42,16 @@ namespace _vt {
         const uint32_t WG_COUNT = 64;
         const uint32_t RADICE_AFFINE = 16;
 
+        // descriptor sets of ray tracing (planned roling)
         std::vector<VkDescriptorSet> _rtSets = { rtset->_descriptorSet, matrl->_descriptorSet };
         std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
 
         // bind user descriptor sets
-        for (auto &s: cmdBuf->_boundDescriptorSets) {
-            _rtSets.push_back(s);
-        }
-
+        for (auto &s: cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
 
         {
             // reset counters of ray tracing
             cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
-
-            // upload constants to material sets
-            vkCmdUpdateBuffer(*cmdBuf, *matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
-            fromHostCommandBarrier(*cmdBuf);
 
             // run rays generation
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
