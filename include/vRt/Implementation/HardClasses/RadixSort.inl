@@ -10,20 +10,26 @@ namespace _vt {
         auto& vtRadix = (_vtRadix = std::make_shared<RadixSort>());
         vtRadix->_device = _vtDevice;
 
+        constexpr auto STEPS = 8u, WG_COUNT = 64u, RADICE_AFFINE = 16u;
+
         VtDeviceBufferCreateInfo bfi;
         bfi.familyIndex = _vtDevice->_mainFamilyIndex;
         bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
-        bfi.bufferSize = 1024 * 1024 * 32;
+        bfi.format = VK_FORMAT_R32_UINT;
+        bfi.bufferSize = vtExtension.maxPrimitives * sizeof(uint32_t);
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_tmpValuesBuffer);
 
-        bfi.bufferSize = 1024 * 1024 * 64;
+        bfi.format = VK_FORMAT_R32G32_UINT;
+        bfi.bufferSize = vtExtension.maxPrimitives * sizeof(uint64_t);
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_tmpKeysBuffer);
 
-        bfi.bufferSize = 1024;
+        bfi.format = VK_FORMAT_UNDEFINED;
+        bfi.bufferSize = 16 * STEPS;
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_stepsBuffer); // unused
 
-        bfi.bufferSize = 1024 * 1024;
+        bfi.format = VK_FORMAT_R32_UINT;
+        bfi.bufferSize = 1024 * RADICE_AFFINE * sizeof(uint32_t);
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_histogramBuffer);
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_prefixSumBuffer);
 
