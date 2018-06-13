@@ -5,8 +5,7 @@
 > Vulkan API ray tracing cross-platform layer 
 
 ## Critical news!
-
-We have no good debug application base for Vulkan API. Any search in Github don't gave any good results. Project have risk to be frozen up to 1 year. We currently have an acute shortage of time to find solutions, and especially the development of our own. I now have very bad health to write a new platform for debugging. F#CKING C++ ECOSYSTEM!
+We have no good debug application base for Vulkan API. Any search in Github don't gave any good results. Project have risk to be frozen up to 1 year. We currently have an acute shortage of time to find solutions, and especially the development of our own. I now have very bad health to write a new platform for debugging. 
 
 ## Repositories
 - https://github.com/world8th/vRt (GitHub, owned by Microsoft)
@@ -20,13 +19,13 @@ We have no good debug application base for Vulkan API. Any search in Github don'
 - ~~Write first Vulkan API 1.1 ray tracing interface~~ Done! 
 - ~~Write first implementation~~ Done! 
 
-### ~~July 2018 ("Early Vulkanism")~~ 2019?
+### July 2018 ("Early Vulkanism"), hope
 - Improve API and interfaces
 - Development of implementation 
 - Debugging and experimenting stage 
 - Support for NVidia (GTX 9, 10, Titan series) and AMD (RX Vega) hardware
 
-### ~~August 2018 ("First Life")~~ 2019?
+### August 2018 ("First Life"), hope
 - Coming to alpha stage
 - Finish to fix common bugs and issues 
 - First implementations in bigger framework and engines (The Forge, Unreal Engine 5, Blender 2.90)
