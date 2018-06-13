@@ -11,7 +11,8 @@ namespace _vt {
         vtAccelerator->_device = _vtDevice;
 
         // planned import from descriptor
-        constexpr auto maxPrimitives = 1024u * 1024u;
+        //constexpr auto maxPrimitives = 1024u * 1024u;
+        const auto& maxPrimitives = info.maxPrimitives;
 
         // build BVH builder program
         {
@@ -172,11 +173,6 @@ namespace _vt {
                 bfi.bufferSize = sizeof(uint32_t) * 8;
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBlockUniform);
-
-                // TODO: merge to ray tracing 
-                //bfi.bufferSize = 1024 * 256 * sizeof(uint32_t);
-                //bfi.format = VK_FORMAT_R32G32B32A32_SINT;
-                //createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_traverseCache);
             };
 
             {
@@ -184,7 +180,6 @@ namespace _vt {
                 std::vector<vk::WriteDescriptorSet> writes = {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView)),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView(&vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView)),
-                    //vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtAccelerator->_traverseCache->_bufferView)),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_bvhBlockUniform->_descriptorInfo())),
                 };

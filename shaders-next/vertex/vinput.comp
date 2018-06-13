@@ -165,9 +165,8 @@ void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
 }
 
 
-//const int m[3] = {0, 1, 2}, mq[3] = {3, 0, 2}, ms[3] = {2, 1, 3};
 initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
-// 
+
 
 void main(){
     const int wsize = vertexBlock.primitiveCount;

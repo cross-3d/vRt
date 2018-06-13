@@ -44,7 +44,8 @@ namespace _vt {
         auto& vtVertexAssembly = (_vtVertexAssembly = std::make_shared<VertexAssemblySet>());
         vtVertexAssembly->_device = _vtDevice;
 
-        constexpr auto maxPrimitives = 1024u * 1024u; // planned import from descriptor
+        //constexpr auto maxPrimitives = 1024u * 1024u; // planned import from descriptor
+        const auto& maxPrimitives = info.maxPrimitives;
 
         // build vertex input assembly program
         {
@@ -80,7 +81,7 @@ namespace _vt {
             tfi.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             tfi.layout = VK_IMAGE_LAYOUT_GENERAL;
             tfi.mipLevels = 1;
-            tfi.size = { 6144u, tiled(maxPrimitives * 3u * ATTRIB_EXTENT, 6144u) };
+            tfi.size = { 6144u, tiled(maxPrimitives * 3u * ATTRIB_EXTENT, 6144ull) };
             createDeviceImage(_vtDevice, tfi, vtVertexAssembly->_attributeTexelBuffer);
         };
 

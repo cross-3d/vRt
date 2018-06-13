@@ -45,7 +45,7 @@ namespace _vt {
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexInput->_bBufferRegionBindings->_descriptorInfo())),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexInput->_bBufferViews->_descriptorInfo())),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexInput->_bBufferAccessors->_descriptorInfo())),
-            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexInput->_bBufferAttributeBindings->_descriptorInfo())),
+            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexInput->_bBufferAttributeBindings->_descriptorInfo()).setOffset(info.attributeByteOffset)),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexInput->_uniformBlockBuffer->_descriptorInfo())),
         };
         vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});

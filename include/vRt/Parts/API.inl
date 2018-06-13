@@ -13,8 +13,8 @@ namespace vt { // store in official namespace
     inline VtResult vtCreateDevice(VtPhysicalDevice vtPhysicalDevice, VkDeviceCreateInfo * deviceCreateInfo, VtDevice * vtDevice);
 
     // conversion API objects from VK
-    inline VtResult vtConvertInstance(VkDevice vkInstance, const VtInstanceConversionInfo * vtInstanceCreateInfo, VtInstance * vtInstance);
-    inline VtResult vtConvertPhysicalDevice(VkPhysicalDevice vkPhysicalDevice, const VtPhysicalDeviceConversionInfo * vtPhysicalDeviceConvertInfo, VtPhysicalDevice * vtPhysicalDevice);
+    inline VtResult vtConvertInstance(VkInstance vkInstance, const VtInstanceConversionInfo * vtInstanceCreateInfo, VtInstance * vtInstance);
+    inline VtResult vtConvertPhysicalDevice(VtInstance vtInstance, VkPhysicalDevice vkPhysicalDevice, VtPhysicalDevice * vtPhysicalDevice);
     inline VtResult vtConvertDevice(VkDevice vkDevice, const VtDeviceConversionInfo * vtDeviceConvertInfo, VtDevice * vtDevice);
 
     // create ray tracing pipelineLayout 
@@ -81,4 +81,8 @@ namespace vt { // store in official namespace
 
     // image barrier (with state Vulkan API command buffer)
     inline VtResult vtCmdImageBarrier(VkCommandBuffer commandBuffer, VtDeviceImage image);
+
+
+    // radix sort API
+    inline VtResult vtRadixSort(VtCommandBuffer commandBuffer, VkDescriptorSet radixInput, uint32_t primCount = 2);
 };

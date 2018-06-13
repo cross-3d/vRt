@@ -29,8 +29,10 @@ namespace _vt {
         vtRTSet->_device = _vtDevice;
 
         // planned variable size
-        auto rayCount = 4096 * 4096;
+        
         {
+            const auto& rayCount = info.maxRays;
+
             {
                 VtDeviceBufferCreateInfo bfi;
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
@@ -82,7 +84,7 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_constBuffer);
 
 
-                bfi.bufferSize = tiled(rayCount, 4096) * 4096 * sizeof(uint32_t);
+                bfi.bufferSize = tiled(rayCount, 4096ull) * 4096ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_blockBuffer);
             };

@@ -19,7 +19,8 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION;
         const void* pNext = nullptr;
         uint32_t mainQueueFamily = 0;
-        VkDeviceSize sharedCacheSize = 16 * 1024 * 1024;
+        size_t sharedCacheSize = 16u * 1024u * 1024u;
+        size_t maxPrimitives = 1024u * 1024u;
     };
 
     struct VtDeviceConversionInfo {
@@ -38,6 +39,8 @@ namespace vt { // store in official namespace
     struct VtRayTracingSetCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_SET_CREATE_INFO;
         const void* pNext = nullptr;
+
+        size_t maxRays = 4096u * 4096u;
     };
 
     struct VtRayTracingPipelineCreateInfo {
@@ -58,6 +61,7 @@ namespace vt { // store in official namespace
 
 
     // use immutables in accelerator inputs
+    // planned support of indirect const buffers
     struct VtVertexInputCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_INPUT_CREATE_INFO;
         const void* pNext = nullptr;
@@ -81,6 +85,7 @@ namespace vt { // store in official namespace
         VtVertexAttributeBinding * pBufferAttributeBindings = nullptr;
         VkBuffer bBufferAttributeBindings = nullptr; // direct descriptor set bind
         uint32_t attributeBindingCount = 0;
+        uint32_t attributeByteOffset = 0; // for buffer maners
 
         VtVertexBufferView * pBufferViews = nullptr;
         VkBuffer bBufferViews = nullptr; // direct descriptor set bind
@@ -125,6 +130,7 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
+        size_t maxPrimitives = 1024u * 1024u;
     };
 
 
@@ -133,7 +139,8 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_ACCELERATOR_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
-        VtVertexAssemblySet vertexAssembly;
+        size_t maxPrimitives = 1024u * 1024u;
+        //VtVertexAssemblySet vertexAssembly;
     };
 
 

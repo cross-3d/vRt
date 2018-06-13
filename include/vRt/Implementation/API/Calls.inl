@@ -84,20 +84,29 @@ namespace vt {
         return bindVertexInputs(commandBuffer, makeVector<std::shared_ptr<VertexInputSet>>((std::shared_ptr<VertexInputSet>*)sets, setCount));
     };
 
-
-
-    inline VtResult vtCmdBindDescriptorSets(VtCommandBuffer commandBuffer, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t firstSet, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets, uint32_t dynamicOffsetCount, const uint32_t* pDynamicOffsets) {
-        if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_RAY_TRACING) {
-            commandBuffer._vtCommandBuffer->_boundDescriptorSets = makeVector<VkDescriptorSet>(pDescriptorSets, descriptorSetCount);
-        }
-        return VK_SUCCESS;
-    };
-
     // planned: roling by VtEntryUsageFlags
     inline VtResult vtCmdBindMaterialSet(VtCommandBuffer commandBuffer, VtEntryUsageFlags usageIn, VtMaterialSet materials) {
-        bindMaterialSet(commandBuffer, usageIn, materials);
-        return VK_SUCCESS;
+        return bindMaterialSet(commandBuffer, usageIn, materials);
     };
 
+    inline VtResult vtCmdBindDescriptorSets(VtCommandBuffer commandBuffer, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t firstSet, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets, uint32_t dynamicOffsetCount, const uint32_t* pDynamicOffsets) {
+        return bindDescriptorSets(commandBuffer, pipelineBindPoint, layout, firstSet, makeVector<VkDescriptorSet>(pDescriptorSets, descriptorSetCount));
+    };
+
+
+
+    inline VtResult vtConvertPhysicalDevice(VtInstance vtInstance, VkPhysicalDevice vkPhysicalDevice, VtPhysicalDevice * vtPhysicalDevice) {
+        return convertPhysicalDevice(vtInstance, vkPhysicalDevice, *vtPhysicalDevice);
+    };
+
+    inline VtResult vtConvertInstance(VkInstance vkInstance, const VtInstanceConversionInfo * cinfo, VtInstance * vtInstance) {
+        return convertInstance(vkInstance, *cinfo, *vtInstance);
+    };
+
+
+    // radix sort API
+    inline VtResult vtRadixSort(VtCommandBuffer commandBuffer, VkDescriptorSet radixInput, uint32_t primCount = 2) {
+        return radixSort(commandBuffer, radixInput, primCount);
+    };
 
 };

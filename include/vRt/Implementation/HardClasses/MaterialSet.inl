@@ -15,13 +15,9 @@ namespace _vt {
         // planned variable size
         auto rayCount = 4096 * 4096;
         {
-            //vtMaterialSet->_virtualSamplerCombinedBuffer = info.bImageSamplerCombinations;
-            //vtMaterialSet->_materialDataBuffer = info.bMaterialDescriptionsBuffer;
             vtMaterialSet->_materialCount = info.materialCount;
 
-
             {
-                
                 VtDeviceBufferCreateInfo bfi;
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);

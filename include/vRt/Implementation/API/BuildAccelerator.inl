@@ -65,6 +65,7 @@ namespace _vt {
 
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting
+        cmdFillBuffer<0xFFu>(*cmdBuf, *acclb->_mortonCodesBuffer);
         cmdFillBuffer<0u>(*cmdBuf, *acclb->_countersBuffer); // reset counters
         std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
