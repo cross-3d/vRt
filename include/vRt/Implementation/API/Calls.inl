@@ -49,7 +49,7 @@ namespace vt {
     };
 
     inline VtResult vtQueryCommandInterface(VtDevice device, VkCommandBuffer commandBuffer, VtCommandBuffer * vtCommandBuffer) {
-        return createCommandBuffer(device, commandBuffer, *vtCommandBuffer);
+        return queryCommandBuffer(device, commandBuffer, *vtCommandBuffer);
     };
 
     inline VtResult vtCmdBindPipeline(VtCommandBuffer commandBuffer, VtPipelineBindPoint pipelineBindPoint, VtPipeline vtPipeline) {
@@ -108,7 +108,7 @@ namespace vt {
 
 
     // radix sort API
-    inline VtResult vtRadixSort(VtCommandBuffer commandBuffer, VkDescriptorSet radixInput, uint32_t primCount = 2) {
+    inline VtResult vtRadixSort(VtCommandBuffer commandBuffer, VkDescriptorSet radixInput, uint32_t primCount) {
         return radixSort(commandBuffer, radixInput, primCount);
     };
 

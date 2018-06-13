@@ -38,7 +38,7 @@ namespace _vt { // store in undercover namespace
     inline VtResult createRayTracingSet(std::shared_ptr<Device> _vtDevice, const VtRayTracingSetCreateInfo& info, std::shared_ptr<RayTracingSet>& _vtRTSet);
 
     // create wrapped command buffer
-    inline VtResult createCommandBuffer(std::shared_ptr<Device> _vtDevice, VkCommandBuffer cmdBuf, std::shared_ptr<CommandBuffer>& vtCmdBuf) {
+    inline VtResult queryCommandBuffer(std::shared_ptr<Device> _vtDevice, VkCommandBuffer cmdBuf, std::shared_ptr<CommandBuffer>& vtCmdBuf) {
         vtCmdBuf = std::make_shared<CommandBuffer>();
         vtCmdBuf->_device = _vtDevice;
         vtCmdBuf->_commandBuffer = cmdBuf;
