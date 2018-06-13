@@ -24,6 +24,11 @@ set(SOURCES_LIST
     "./src/imgui/imgui.cpp"
     "./src/examples/*.hpp"
     
+    "./src/base/*.hpp"
+    "./src/base/*.cpp"
+    "./src/base/*.c"
+    "./src/base/*.h"
+    
     "./src/*/*/*.hpp"
     "./src/*/*/*.cpp"
     "./src/*/*/*.c"
@@ -64,6 +69,8 @@ set(SOURCES_LIST
 
 set (DEFINES
     -DNOMINMAX
+    -D_CRT_SECURE_NO_WARNINGS
+    -D_USE_MATH_DEFINES
     -DGLM_ENABLE_EXPERIMENTAL
     -DGLFW_INCLUDE_NONE
     -DUSE_CIMG
@@ -73,7 +80,7 @@ set (DEFINES
 )
 
 if(MSVC OR MSVS OR MSYS OR MINGW)
-    set(DEFINES ${DEFINES} -DOS_WIN) 
+    set(DEFINES ${DEFINES} -DOS_WIN -DWIN32) 
 endif()
 
 if(UNIX AND NOT APPLE)
@@ -91,7 +98,7 @@ get_filename_component(VULKAN_DIR ${Vulkan_LIBRARY} DIRECTORY )
 
 set (DEP_DIR "${PROJECT_SOURCE_DIR}")
 set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/src/lib"     "${VULKAN_DIR}")
-set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/imgui" "${PROJECT_SOURCE_DIR}")
+set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/base/" "${DEP_DIR}/src/base/imgui" "${PROJECT_SOURCE_DIR}")
 set (LIBS glfw3 ${Vulkan_LIBRARY})
 
 # if OptiX was has
