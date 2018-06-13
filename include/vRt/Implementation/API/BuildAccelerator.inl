@@ -80,9 +80,4 @@ namespace _vt {
         return result;
     }
 
-
-    // TODO to complete
-
-
-
 };
