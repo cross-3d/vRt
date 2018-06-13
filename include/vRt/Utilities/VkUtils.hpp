@@ -20,14 +20,8 @@
 #include <cstddef>
 #include <optional>
 
-// don't be so stupid in C++20 area
-//#define DEFAULT_FENCE_TIMEOUT 100000000000
-
 namespace _vt {
-    const int64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
-    const int32_t zero[1] = { 0 };
-
-
+    constexpr auto DEFAULT_FENCE_TIMEOUT = 100000000000ll;
 
     template <typename T>
     inline auto sgn(T val) { return (T(0) < val) - (val < T(0)); }
