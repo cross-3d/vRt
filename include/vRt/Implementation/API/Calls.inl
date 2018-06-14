@@ -126,4 +126,42 @@ namespace vt {
     inline VtResult vtCreateHostToDeviceBuffer(VtDevice device, const VtDeviceBufferCreateInfo * info, VtHostToDeviceBuffer * buffer) { return createHostToDeviceBuffer(device, *info, *buffer); };
     inline VtResult vtCreateDeviceToHostBuffer(VtDevice device, const VtDeviceBufferCreateInfo * info, VtDeviceToHostBuffer * buffer) { return createDeviceToHostBuffer(device, *info, *buffer); };
 
+
+
+
+    // between buffers
+    inline VtResult vtCmdCopyDeviceBuffer(VtCommandBuffer commandBuffer, VtDeviceBuffer srcBuffer, VtDeviceBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy* pRegions) {
+        cmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, makeVector<vk::BufferCopy>((const vk::BufferCopy *)pRegions, regionCount)); return VK_SUCCESS;
+    };
+
+    // between buffers and host
+    inline VtResult vtCmdCopyHostToDeviceBuffer(VtCommandBuffer commandBuffer, VtHostToDeviceBuffer srcBuffer, VtDeviceBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy* pRegions) {
+        cmdCopyBufferFromHost(commandBuffer, srcBuffer, dstBuffer, makeVector<vk::BufferCopy>((const vk::BufferCopy *)pRegions, regionCount)); return VK_SUCCESS;
+    };
+
+    inline VtResult vtCmdCopyDeviceBufferToHost(VtCommandBuffer commandBuffer, VtDeviceBuffer srcBuffer, VtDeviceToHostBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy* pRegions) {
+        cmdCopyBufferToHost(commandBuffer, srcBuffer, dstBuffer, makeVector<vk::BufferCopy>((const vk::BufferCopy *)pRegions, regionCount)); return VK_SUCCESS;
+    };
+
+    // between host and images
+    inline VtResult vtCmdCopyHostToDeviceImage(VtCommandBuffer commandBuffer, VtHostToDeviceBuffer srcBuffer, VtDeviceImage dstImage, uint32_t regionCount, const VkBufferImageCopy* pRegions) {
+        cmdCopyBufferToImage<VMA_MEMORY_USAGE_CPU_TO_GPU>(commandBuffer, srcBuffer, dstImage, makeVector<vk::BufferImageCopy>((const vk::BufferImageCopy *)pRegions, regionCount)); return VK_SUCCESS;
+    };
+    inline VtResult vtCmdCopyDeviceImageToHost(VtCommandBuffer commandBuffer, VtDeviceImage srcImage, VtDeviceToHostBuffer dstBuffer, uint32_t regionCount, const VkBufferImageCopy* pRegions) {
+        cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>(commandBuffer, srcImage, dstBuffer, makeVector<vk::BufferImageCopy>((const vk::BufferImageCopy *)pRegions, regionCount)); return VK_SUCCESS;
+    };
+
+    // between buffers and images 
+    inline VtResult vtCmdCopyDeviceBufferToImage(VtCommandBuffer commandBuffer, VtDeviceBuffer srcBuffer, VtDeviceImage dstImage, uint32_t regionCount, const VkBufferImageCopy* pRegions) {
+        cmdCopyBufferToImage<VMA_MEMORY_USAGE_GPU_ONLY>(commandBuffer, srcBuffer, dstImage, makeVector<vk::BufferImageCopy>((const vk::BufferImageCopy *)pRegions, regionCount)); return VK_SUCCESS;
+    };
+    inline VtResult vtCmdCopyDeviceImageToBuffer(VtCommandBuffer commandBuffer, VtDeviceImage srcImage, VtDeviceBuffer dstBuffer, uint32_t regionCount, const VkBufferImageCopy* pRegions) {
+        cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_ONLY>(commandBuffer, srcImage, dstBuffer, makeVector<vk::BufferImageCopy>((const vk::BufferImageCopy *)pRegions, regionCount)); return VK_SUCCESS;
+    };
+
+    // between images 
+    inline VtResult vtCmdCopyDeviceImage(VtCommandBuffer commandBuffer, VtDeviceImage srcImage, VtDeviceImage dstImage, uint32_t regionCount, const VkImageCopy* pRegions) {
+        cmdCopyDeviceImage(commandBuffer, srcImage, dstImage, makeVector<vk::ImageCopy>((const vk::ImageCopy *)pRegions, regionCount));
+    };
+
 };

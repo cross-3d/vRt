@@ -131,29 +131,38 @@ namespace _vt { // store in undercover namespace
 
     // copy from host buffer
     // you can't use it for form long command buffer from host
-    inline void cmdCopyBufferFromHost(VkCommandBuffer cmd, std::shared_ptr<DeviceToHostBuffer> srcBuffer, std::shared_ptr<DeviceBuffer> dstBuffer, const std::vector<vk::BufferCopy>& regions) {
+    inline void cmdCopyBufferFromHost(VkCommandBuffer cmd, std::shared_ptr<HostToDeviceBuffer> srcBuffer, std::shared_ptr<DeviceBuffer> dstBuffer, const std::vector<vk::BufferCopy>& regions) {
         cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions, fromHostCommandBarrier);
     };
 
+
+
+    inline void cmdCopyDeviceImage(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> srcImage, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::ImageCopy>& regions) {
+        //vk::CommandBuffer(cmd).copyBufferToImage((vk::Buffer&)(srcBuffer->_buffer), (vk::Image&)(dstImage->_image), vk::ImageLayout(dstImage->_layout), regions);
+        vk::CommandBuffer(cmd).copyImage((vk::Image&)(*srcImage), vk::ImageLayout(srcImage->_layout), (vk::Image&)(*dstImage), vk::ImageLayout(dstImage->_layout), regions);
+        commandBarrier(cmd);
+    };
 
     // copy buffer to image (from gpu or host)
     // you can't use it for form long command buffer from host
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_CPU_TO_GPU>
     inline void cmdCopyBufferToImage(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> srcBuffer, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::BufferImageCopy>& regions) {
-        vk::CommandBuffer(cmd).copyBufferToImage((vk::Buffer&)(srcBuffer->_buffer), (vk::Image&)(dstImage->_image), vk::ImageLayout(dstImage->_layout), regions);
+        vk::CommandBuffer(cmd).copyBufferToImage((vk::Buffer&)(*srcBuffer), (vk::Image&)(*dstImage), vk::ImageLayout(dstImage->_layout), regions);
 
-        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else
+        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
             if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }
+        }
     };
 
     // copy image to buffer (to gpu or host)
     // you can't use it for form long command buffer to host
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
     inline void cmdCopyImageToBuffer(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> srcImage, std::shared_ptr<RoledBuffer<U>> dstBuffer, const std::vector<vk::BufferImageCopy>& regions) {
-        vk::CommandBuffer(cmd).copyImageToBuffer((vk::Image&)(srcImage->_image), vk::ImageLayout(srcImage->_layout), (vk::Buffer&)(dstBuffer->_buffer), regions);
+        vk::CommandBuffer(cmd).copyImageToBuffer((vk::Image&)(*srcImage), vk::ImageLayout(srcImage->_layout), (vk::Buffer&)(*dstBuffer), regions);
 
-        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else
+        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
             if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }
+        }
     };
 
 
