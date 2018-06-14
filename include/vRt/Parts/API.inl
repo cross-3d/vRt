@@ -109,4 +109,18 @@ namespace vt { // store in official namespace
 
     // between images 
     inline VtResult vtCmdCopyDeviceImage(VtCommandBuffer commandBuffer, VtDeviceImage srcImage, VtDeviceImage dstImage, uint32_t regionCount, const VkImageCopy* pRegions);
+
+
+
+
+
+    template <class T>
+    inline void vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset = 0);
+
+    template <class T>
+    inline void vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset = 0);
+    
+    template <class T>
+    inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, size_t count = 1, intptr_t offset = 0);
+
 };

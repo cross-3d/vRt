@@ -164,4 +164,21 @@ namespace vt {
         cmdCopyDeviceImage(commandBuffer, srcImage, dstImage, makeVector<vk::ImageCopy>((const vk::ImageCopy *)pRegions, regionCount));
     };
 
+
+
+    template <class T>
+    inline void vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset) {
+        return setBufferSubData(hostdata, buffer, offset);
+    };
+
+    template <class T>
+    inline void vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset) {
+        return getBufferSubData(buffer, hostdata, offset);
+    };
+
+    template <class T>
+    inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, size_t count, intptr_t offset) {
+        return getBufferSubData(buffer, count, offset);
+    };
+
 };
