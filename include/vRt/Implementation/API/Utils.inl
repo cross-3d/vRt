@@ -6,19 +6,17 @@
 namespace _vt { // store in undercover namespace
     using namespace vt;
 
-    // TODO merge some extra functions to another headers
-
 
     constexpr uint32_t VtIdentifier = 0x1FFu;
     struct VkShortHead {
         //uint32_t sublevel : 24, identifier : 12;
-        uint32_t sublevel : 12, identifier : 24; // I don't know ordering of bits
-        uintptr_t pNext; // pull of C++20 raw pointers
+        uint32_t identifier : 12, sublevel : 24; // I don't know ordering of bits
+        uintptr_t pNext = 0ull; // pull of C++20 raw pointers
     };
 
     struct VkFullHead {
         uint32_t sType;
-        uintptr_t pNext; // pull of C++20 raw pointers
+        uintptr_t pNext = 0ull; // pull of C++20 raw pointers
     };
 
 
