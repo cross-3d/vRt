@@ -21,7 +21,7 @@ namespace vt { // store in official namespace
         uint32_t mainQueueFamily = 0;
         size_t sharedCacheSize = 16u * 1024u * 1024u;
         size_t maxPrimitives = 1024u * 1024u;
-        std::string shaderPath = "./";
+        std::string_view shaderPath = "./";
     };
 
     struct VtDeviceConversionInfo {
@@ -53,10 +53,10 @@ namespace vt { // store in official namespace
 
         // TODO: entry points support (default = "main")
         // shader paths to ray tracing stages shaders 
-        //std::string generationShader = "raytracing/generation-shader.comp.spv";
-        //std::string closestShader = "raytracing/closest-hit-shader.comp.spv";
-        //std::string missShader = "raytracing/miss-hit-shader.comp.spv";
-        //std::string resolveShader = "raytracing/resolve-shader.comp.spv";
+        //std::string_view generationShader = "raytracing/generation-shader.comp.spv";
+        //std::string_view closestShader = "raytracing/closest-hit-shader.comp.spv";
+        //std::string_view missShader = "raytracing/miss-hit-shader.comp.spv";
+        //std::string_view resolveShader = "raytracing/resolve-shader.comp.spv";
 
         VkPipelineShaderStageCreateInfo generationModule;
         VkPipelineShaderStageCreateInfo closestModule;

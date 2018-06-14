@@ -6,4 +6,5 @@
 //#include <vulkan/vulkan.hpp> // for debugging, because intelisense interrupting on any indirection or looped undefined behaviour
 #include <vector>
 #include <memory>
+#include <string_view>
 #include <map>
