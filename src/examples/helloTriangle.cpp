@@ -7,6 +7,8 @@
 #include <appBase.hpp>
 
 void main() {
+	using namespace vt;
+
     if (!glfwInit()) exit(EXIT_FAILURE);
     if (!glfwVulkanSupported()) exit(EXIT_FAILURE);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -62,7 +64,7 @@ void main() {
 
 
     // create image output
-    vt::VtDeviceImageCreateInfo dii;
+    VtDeviceImageCreateInfo dii;
     dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
     dii.familyIndex = deviceQueue->familyIndex;
     dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -71,8 +73,8 @@ void main() {
     dii.size = {1280, 720, 1};
 
     // create device image
-    vt::VtDeviceImage outImage;
-    vt::vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outImage);
+    VtDeviceImage outImage;
+    vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outImage);
 
 
 
@@ -219,7 +221,7 @@ void main() {
 			auto viewport = vk::Viewport(0.0f, 0.0f, appfw->size().width, appfw->size().height, 0, 1.0f);
 
 			// create command buffer (with rewrite)
-			auto& commandBuffer = (currentContext->framebuffers[n_semaphore].commandBuffer = _vt::createCommandBuffer(currentContext->queue->device->logical, currentContext->queue->commandPool, false)); // do reference of cmd buffer
+			auto& commandBuffer = (currentContext->framebuffers[n_semaphore].commandBuffer = vte::createCommandBuffer(currentContext->queue->device->logical, currentContext->queue->commandPool, false)); // do reference of cmd buffer
 			commandBuffer.beginRenderPass(vk::RenderPassBeginInfo(currentContext->renderpass, currentContext->framebuffers[currentBuffer].frameBuffer, renderArea, clearValues.size(), clearValues.data()), vk::SubpassContents::eInline);
 			commandBuffer.setViewport(0, std::vector<vk::Viewport> { viewport });
 			commandBuffer.setScissor(0, std::vector<vk::Rect2D> { renderArea });
@@ -241,7 +243,7 @@ void main() {
 				.setPSignalSemaphores(signalSemaphores.data()).setSignalSemaphoreCount(signalSemaphores.size());
 
 			// submit command once
-			_vt::submitCmd(currentContext->queue->device->logical, currentContext->queue->queue, { commandBuffer }, smbi);
+			vte::submitCmd(currentContext->queue->device->logical, currentContext->queue->queue, { commandBuffer }, smbi);
 			currentContext->queue->device->logical.freeCommandBuffers(currentContext->queue->commandPool, { commandBuffer });
 
 			// reset wait semaphore
