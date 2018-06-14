@@ -34,7 +34,7 @@ void main() {
         if (Local_Idx < RADICES) localHistogram[Local_Idx] = awHistogram;
 
         // calc prefix-sum
-        uint rdcAwPrefixOffset = localHistogram[Local_Idx];
+        uint rdcAwPrefixOffset = 0;
         {
             uvec_wave ldx = Local_Idx;
             {
