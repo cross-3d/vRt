@@ -4,8 +4,8 @@
 
 > Vulkan API ray tracing cross-platform layer 
 
-## Critical news!
-We have no good debug application base for Vulkan API. Any search in Github don't gave any good results. Project have risk to be frozen up to 1 year. We currently have an acute shortage of time to find solutions, and especially the development of our own. I now have very bad health to write a new platform for debugging. 
+## June is done?
+- Don't know, I used not very good solution for testing and debugging. But for first time, it can be used. 
 
 ## Repositories
 - https://github.com/world8th/vRt (GitHub, owned by Microsoft)
