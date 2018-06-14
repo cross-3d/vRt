@@ -1,16 +1,20 @@
 #pragma once
 
-#include "../utils.hpp"
+#include "appUtils.hpp"
 
-#define VK_USE_PLATFORM_WIN32_KHR
-
+// include vulkan headers
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vk_mem_alloc.h>
+
+// include ray tracing library
 #include <vRt/vRt.h>
 
-namespace NSM
-{
-    constexpr auto DEFAULT_FENCE_TIMEOUT = 100000000000ll;
+// include inner utils from library (for development purpose)
+#include <vRt/Utilities/VkUtils.hpp>
+#include <vRt/Implementation/HardClasses.inl>
+
+namespace NSM {
+	using namespace _vt;
 
     struct QueueType;
     struct DevQueueType;
@@ -33,17 +37,17 @@ namespace NSM
 
     struct DevQueueType : public std::enable_shared_from_this<DevQueueType> {
         uint32_t familyIndex = 0;
-        vk::Queue queue;
+        vk::Queue queue = nullptr;
     };
 
     struct DeviceType : public std::enable_shared_from_this<DeviceType> {
         vt::VtDevice rtDev;
-        vk::Device logical;
-        vk::PhysicalDevice physical;
+        vk::Device logical = nullptr;
+        vk::PhysicalDevice physical = nullptr;
 
-        vk::DescriptorPool descriptorPool;
-        vk::PipelineCache pipelineCache;
-        vk::DispatchLoaderDynamic dldid;
+        vk::DescriptorPool descriptorPool = nullptr;
+        vk::PipelineCache pipelineCache = nullptr;
+        vk::DispatchLoaderDynamic dldid = nullptr;
         VmaAllocator allocator;
 
         std::vector<DevQueue> queues;
@@ -51,12 +55,12 @@ namespace NSM
         operator vt::VtDevice() const { return rtDev; }
     };
 
-    // application device structure
+    // combined device, command pool and queue
     struct QueueType : public std::enable_shared_from_this<QueueType> {
         Device device;
-        vk::CommandPool commandPool;
-        vk::Queue queue;
-        vk::Fence fence;
+        vk::CommandPool commandPool = nullptr;
+        vk::Queue queue = nullptr;
+        vk::Fence fence = nullptr;
         uint32_t familyIndex = 0;
 
         operator Device() const { return device; }
@@ -76,10 +80,10 @@ namespace NSM
 
     // framebuffer with command buffer and fence
     struct Framebuffer : public std::enable_shared_from_this<Framebuffer> {
-        vk::Framebuffer frameBuffer;
-        vk::CommandBuffer commandBuffer; // terminal command (barrier)
-        vk::Fence waitFence;
-        vk::Semaphore semaphore;
+        vk::Framebuffer frameBuffer = nullptr;
+        vk::CommandBuffer commandBuffer = nullptr; // terminal command (barrier)
+        vk::Fence waitFence = nullptr;
+        vk::Semaphore semaphore = nullptr;
     };
 
     // vertex layout
@@ -90,26 +94,14 @@ namespace NSM
 
     // context for rendering (can be switched)
     struct GraphicsContext : public std::enable_shared_from_this<GraphicsContext> {
-        Queue queue;     // used device by context
-        vk::SwapchainKHR swapchain; // swapchain state
-        vk::Pipeline pipeline;      // current pipeline
-        vk::PipelineLayout pipelineLayout;
-        vk::PipelineCache pipelineCache;
-        vk::DescriptorPool descriptorPool; // current descriptor pool
-        vk::RenderPass renderpass;
+        Queue queue;                                   // used device by context
+        vk::SwapchainKHR swapchain = nullptr;          // swapchain state
+        vk::Pipeline pipeline = nullptr;               // current pipeline
+        vk::PipelineLayout pipelineLayout = nullptr;
+        vk::PipelineCache pipelineCache = nullptr;
+        vk::DescriptorPool descriptorPool = nullptr;   // current descriptor pool
+        vk::RenderPass renderpass = nullptr;
         std::vector<vk::DescriptorSet> descriptorSets; // descriptor sets
         std::vector<Framebuffer> framebuffers;         // swapchain framebuffers
-    };
-
-    // compute context
-    struct ComputeContextType : public std::enable_shared_from_this<ComputeContextType> {
-        Queue queue;          // used device by context
-        vk::CommandBuffer commandBuffer; // command buffer of compute context
-        vk::Pipeline pipeline;           // current pipeline
-        vk::PipelineCache pipelineCache;
-        vk::PipelineLayout pipelineLayout;
-        vk::Fence waitFence;             // wait fence of computing
-        vk::DescriptorPool descriptorPool;             // current descriptor pool
-        std::vector<vk::DescriptorSet> descriptorSets; // descriptor sets
     };
 };

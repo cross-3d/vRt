@@ -1,7 +1,5 @@
 #pragma once
 
-//#define GLFW_INCLUDE_VULKAN
-
 #ifdef OS_WIN
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
@@ -12,7 +10,7 @@
 #define GLFW_EXPOSE_NATIVE_GLX
 #endif
 
-#include <gapi.hpp>
+#include "appStructures.hpp"
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
@@ -33,9 +31,7 @@ namespace NSM
         // instance extensions
         std::vector<const char *> wantedExtensions = {
             "VK_KHR_get_physical_device_properties2",
-            "VK_EXT_debug_report",
-            //"VK_KHR_surface",
-            //"VK_KHR_win32_surface"
+            "VK_EXT_debug_report"
         };
 
         // default device extensions
@@ -205,10 +201,6 @@ namespace NSM
                 }
             }
 
-
-
-
-
             // get features and queue family properties
             auto gpuFeatures = gpu.getFeatures();
             auto gpuQueueProps = gpu.getQueueFamilyProperties();
@@ -269,53 +261,8 @@ namespace NSM
                     .setPpEnabledExtensionNames(deviceExtensions.data()).setEnabledExtensionCount(deviceExtensions.size())
                     .setPpEnabledLayerNames(deviceValidationLayers.data()).setEnabledLayerCount(deviceValidationLayers.size()));
 
-
-
-                // load API calls for context
-                //volkLoadDevice(devicePtr->logical);
-
-                // load API calls for mapping
-                //VolkDeviceTable vktable;
-                //volkLoadDeviceTable(&vktable, devicePtr->logical);
-
                 // init dispatch loader
                 devicePtr->dldid = vk::DispatchLoaderDynamic(instance, devicePtr->logical);
-
-                // getting queues by family
-                // don't get it now
-                //for (int i = 0; i < queues.size(); i++) { queues[i]->queue = devicePtr->logical.getQueue(queues[i]->familyIndex, 0); }
-
-                // mapping volk with VMA functions
-                /*
-                VmaVulkanFunctions vfuncs;
-                vfuncs.vkAllocateMemory = vktable.vkAllocateMemory;
-                vfuncs.vkBindBufferMemory = vktable.vkBindBufferMemory;
-                vfuncs.vkBindImageMemory = vktable.vkBindImageMemory;
-                vfuncs.vkCreateBuffer = vktable.vkCreateBuffer;
-                vfuncs.vkCreateImage = vktable.vkCreateImage;
-                vfuncs.vkDestroyBuffer = vktable.vkDestroyBuffer;
-                vfuncs.vkDestroyImage = vktable.vkDestroyImage;
-                vfuncs.vkFreeMemory = vktable.vkFreeMemory;
-                vfuncs.vkGetBufferMemoryRequirements = vktable.vkGetBufferMemoryRequirements;
-                vfuncs.vkGetBufferMemoryRequirements2KHR = vktable.vkGetBufferMemoryRequirements2KHR;
-                vfuncs.vkGetImageMemoryRequirements = vktable.vkGetImageMemoryRequirements;
-                vfuncs.vkGetImageMemoryRequirements2KHR = vktable.vkGetImageMemoryRequirements2KHR;
-                vfuncs.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
-                vfuncs.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
-                vfuncs.vkMapMemory = vktable.vkMapMemory;
-                vfuncs.vkUnmapMemory = vktable.vkUnmapMemory;
-                */
-
-				/*
-                // create allocator
-                VmaAllocatorCreateInfo allocatorInfo = {};
-                //allocatorInfo.pVulkanFunctions = &vfuncs;
-                allocatorInfo.physicalDevice = devicePtr->physical;
-                allocatorInfo.device = devicePtr->logical;
-                allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb
-                allocatorInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-                vmaCreateAllocator(&allocatorInfo, &devicePtr->allocator);
-				*/
 
                 // pool sizes, and create descriptor pool
                 std::vector<vk::DescriptorPoolSize> psizes = {
@@ -334,14 +281,14 @@ namespace NSM
             // return device with queue pointer
             auto deviceQueuePtr = std::make_shared<QueueType>();
             deviceQueuePtr->device = devicePtr;
-            deviceQueuePtr->fence = createFence(devicePtr, false);
+            deviceQueuePtr->fence = createFence(devicePtr->logical, false);
             deviceQueuePtr->commandPool = devicePtr->logical.createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer), deviceQueuePtr->familyIndex));
             deviceQueuePtr->queue = devicePtr->logical.getQueue(devicePtr->queues[isComputePrior ? 0 : 1]->familyIndex, 0); // deferred getting of queue
             deviceQueuePtr->familyIndex = devicePtr->queues[isComputePrior ? 0 : 1]->familyIndex;
             devices.push_back(deviceQueuePtr);
 
 
-            {
+            { // create ray tracing instances and devices
                 vt::VtInstanceConversionInfo cinfo;
                 vt::VtInstance cinstance;
                 vt::vtConvertInstance(instance, &cinfo, &cinstance);
@@ -630,8 +577,7 @@ namespace NSM
             // create depth image
             auto imageInfo = vk::ImageCreateInfo(
                 vk::ImageCreateFlags(), vk::ImageType::e2D, formats.depthFormat,
-                vk::Extent3D(applicationWindow.surfaceSize.width,
-                    applicationWindow.surfaceSize.height, 1),
+                vk::Extent3D(applicationWindow.surfaceSize.width, applicationWindow.surfaceSize.height, 1),
                 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
                 vk::ImageUsageFlagBits::eDepthStencilAttachment |
                 vk::ImageUsageFlagBits::eTransferSrc,

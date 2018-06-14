@@ -5,8 +5,6 @@
 #define VMA_IMPLEMENTATION
 
 #include <appBase.hpp>
-#include <vRt/Utilities/VkUtils.hpp>
-#include <vRt/Implementation/HardClasses.inl>
 
 void main() {
     if (!glfwInit()) exit(EXIT_FAILURE);
@@ -20,15 +18,13 @@ void main() {
     uint32_t currentBuffer = 0;
     int32_t currSemaphore = -1;
     std::shared_ptr<vte::ApplicationBase> appfw = std::make_shared<vte::ApplicationBase>();
-    std::shared_ptr<vte::GraphicsContext> currentContext;
-
     
     std::string title = "vRt early test";
     uint32_t canvasWidth = 1280, canvasHeight = 720;
     float windowScale = 1.0;
 
     // create GLFW window
-    GLFWwindow* window = glfwCreateWindow(canvasWidth, canvasHeight, "Running...", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(canvasWidth, canvasHeight, "vRt early test", NULL, NULL);
     if (!window) { glfwTerminate(); exit(EXIT_FAILURE); }
 
 
@@ -95,8 +91,8 @@ void main() {
     {
         // pipeline stages
         std::vector<vk::PipelineShaderStageCreateInfo> pipelineShaderStages = {
-            vk::PipelineShaderStageCreateInfo().setModule(loadAndCreateShaderModule(deviceQueue->device, shaderPack + "/output/render.vert.spv")).setPName("main").setStage(vk::ShaderStageFlagBits::eVertex),
-            vk::PipelineShaderStageCreateInfo().setModule(loadAndCreateShaderModule(deviceQueue->device, shaderPack + "/output/render.frag.spv")).setPName("main").setStage(vk::ShaderStageFlagBits::eFragment)
+            vk::PipelineShaderStageCreateInfo().setModule(vte::loadAndCreateShaderModule(deviceQueue->device->logical, vte::readBinary(shaderPack + "/output/render.vert.spv"))).setPName("main").setStage(vk::ShaderStageFlagBits::eVertex),
+            vk::PipelineShaderStageCreateInfo().setModule(vte::loadAndCreateShaderModule(deviceQueue->device->logical, vte::readBinary(shaderPack + "/output/render.frag.spv"))).setPName("main").setStage(vk::ShaderStageFlagBits::eFragment)
         };
 
         // blend modes per framebuffer targets
@@ -175,8 +171,10 @@ void main() {
     }
 
 
+
+	auto currentContext = std::make_shared<vte::GraphicsContext>();
     { // create graphic context
-        auto context = std::make_shared<vte::GraphicsContext>();
+        auto& context = currentContext;
 
         // create graphics context
         context->queue = deviceQueue;
@@ -189,7 +187,6 @@ void main() {
         context->renderpass = renderpass;
         context->swapchain = appfw->createSwapchain(deviceQueue);
         context->framebuffers = appfw->createSwapchainFramebuffer(deviceQueue, context->swapchain, context->renderpass);
-        currentContext = context;
     }
 
 
@@ -199,6 +196,14 @@ void main() {
     while (!glfwWindowShouldClose(appfw->window())) {
 		glfwPollEvents();
 
+
+		{ // reserved field for computing code
+
+
+
+		}
+
+
         auto n_semaphore = currSemaphore;
 		auto c_semaphore = (currSemaphore + 1) % currentContext->framebuffers.size();
 		currSemaphore = c_semaphore;
@@ -206,11 +211,6 @@ void main() {
         // acquire next image where will rendered (and get semaphore when will presented finally)
         n_semaphore = (n_semaphore >= 0 ? n_semaphore : (currentContext->framebuffers.size() - 1));
         currentContext->queue->device->logical.acquireNextImageKHR(currentContext->swapchain, std::numeric_limits<uint64_t>::max(), currentContext->framebuffers[n_semaphore].semaphore, nullptr, &currentBuffer);
-
-        { // 
-
-
-        }
 
 		{ // submit rendering (and wait presentation in device)
 			// prepare viewport and clear info

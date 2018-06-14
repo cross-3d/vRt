@@ -72,6 +72,28 @@ namespace _vt {
         return data;
     };
 
+	// read source (unused)
+	inline std::string readSource(const std::string &filePath, const bool &lineDirective = false) {
+		std::string content = "";
+		std::ifstream fileStream(filePath, std::ios::in);
+		if (!fileStream.is_open())
+		{
+			std::cerr << "Could not read file " << filePath << ". File does not exist."
+				<< std::endl;
+			return "";
+		}
+		std::string line = "";
+		while (!fileStream.eof())
+		{
+			std::getline(fileStream, line);
+			if (lineDirective || line.find("#line") == std::string::npos)
+				content.append(line + "\n");
+		}
+		fileStream.close();
+		return content;
+	};
+
+
 
 
     // general command buffer barrier
@@ -300,14 +322,20 @@ namespace _vt {
         });
     };
 
-
-
-
     template <class T>
     inline auto makeVector(const T*ptr, size_t size = 1) {
         std::vector<T>v(size); memcpy(v.data(), ptr, strided<T>(size));
         return v;
     }
+
+
+
+	// create fence function
+	inline vk::Fence createFence(VkDevice device, bool signaled = true) {
+		vk::FenceCreateInfo info;
+		if (signaled) info.setFlags(vk::FenceCreateFlagBits::eSignaled);
+		return vk::Device(device).createFence(info);
+	}
 
 
 };
