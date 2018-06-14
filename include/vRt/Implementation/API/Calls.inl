@@ -96,6 +96,13 @@ namespace vt {
         return bindDescriptorSets(commandBuffer, pipelineBindPoint, layout, firstSet, makeVector<VkDescriptorSet>(pDescriptorSets, descriptorSetCount));
     };
 
+    // planned to merge into dedicated implementation
+    inline VtResult vtCmdBindRayTracingSet(VtCommandBuffer commandBuffer, VtRayTracingSet rtset) {
+        commandBuffer->_rayTracingSet = std::shared_ptr<_vt::RayTracingSet>(rtset);
+        return VK_SUCCESS;
+    };
+
+
 
 
     inline VtResult vtConvertPhysicalDevice(VtInstance vtInstance, VkPhysicalDevice vkPhysicalDevice, VtPhysicalDevice * vtPhysicalDevice) {

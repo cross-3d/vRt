@@ -55,7 +55,7 @@ namespace vt { // store in official namespace
     } VtTopologyType;
 
     // ray tracing pipeline usages
-    typedef enum VtEntryUsageFlags : uint32_t {
+    typedef enum VtEntryUsageFlagBits : uint32_t {
         VT_ENTRY_USAGE_CLOSEST = 0x00000001,
         VT_ENTRY_USAGE_MISS = 0x00000002,
         VT_ENTRY_USAGE_GENERATION = 0x00000004,

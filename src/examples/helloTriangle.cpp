@@ -61,12 +61,91 @@ void main() {
     dii.layout = VK_IMAGE_LAYOUT_GENERAL;
     dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     dii.size = { 1280, 720, 1 };
-
-    // create device image
     VtDeviceImage outImage;
     vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outImage);
 
 
+
+    //////////////////////////////////////
+    // ray tracing preparing long stage //
+    //////////////////////////////////////
+
+    // custom bindings for ray tracing systems
+    std::vector<vk::DescriptorSetLayout> customedLayouts;
+    const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // constants for generation shader
+        vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute) // env map for miss shader
+    };
+    customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
+
+    // create descriptor set, based on layout
+    // TODO: fill descriptor set by inputs
+    auto dsc = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setPSetLayouts(customedLayouts.data()).setDescriptorSetCount(customedLayouts.size()));
+
+    // create pipeline layout for ray tracing
+    vk::PipelineLayoutCreateInfo vpi;
+    vpi.pSetLayouts = customedLayouts.data();
+    vpi.setLayoutCount = customedLayouts.size();
+    VtPipelineLayout vpl; vtCreateRayTracingPipelineLayout(deviceQueue->device->rtDev, &(VkPipelineLayoutCreateInfo)vpi, &vpl);
+
+    // create ray tracing set
+    VtRayTracingSetCreateInfo rtsi;
+    VtRayTracingSet rtSet; vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &rtSet);
+
+    // MOST incomplete stuff 
+    // TODO: add default images and samplers in descriptor sets (arrays stubs)
+    VtMaterialSetCreateInfo mtsi;
+    // TODO: need fill material set
+    VtMaterialSet mts; vtCreateMaterialSet(deviceQueue->device->rtDev, &mtsi, &mts);
+
+    // create ray tracing pipeline
+    VtRayTracingPipelineCreateInfo rtpi;
+    rtpi.closestModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/closest-hit-shader.comp.spv"));
+    rtpi.missModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/miss-hit-shader.comp.spv"));
+    rtpi.generationModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/generation-shader.comp.spv"));
+    rtpi.resolveModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/resolve-shader.comp.spv"));
+    rtpi.pipelineLayout = vpl;
+    VtPipeline rtPipeline; vtCreateRayTracingPipeline(deviceQueue->device->rtDev, &rtpi, &rtPipeline);
+
+    // create accelerator set
+    VtAcceleratorSetCreateInfo acci;
+    VtAcceleratorSet accel; vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accel);
+
+    // create vertex assembly
+    VtVertexAssemblySetCreateInfo vtsi;
+    VtVertexAssemblySet vets; vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vets);
+
+
+    VtVertexInputCreateInfo vtii;
+    // TODO: need fill vertex input
+    VtVertexInputSet vinp; vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vinp);
+
+
+    // make accelerator and vertex builder command
+    auto bCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false);
+    VtCommandBuffer rtBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &rtBCmdBuf);
+    vtCmdBindAccelerator(rtBCmdBuf, accel);
+    vtCmdBindVertexAssembly(rtBCmdBuf, vets);
+    vtCmdBindVertexInputSets(rtBCmdBuf, 1, &vinp);
+    vtCmdBuildVertexAssembly(rtBCmdBuf);
+    vtCmdBuildAccelerator(rtBCmdBuf);
+    vkEndCommandBuffer(rtBCmdBuf);
+
+    // make ray tracing command buffer
+    auto cmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false);
+    VtCommandBuffer rtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, cmdBuf, &rtCmdBuf);
+    vtCmdBindPipeline(rtCmdBuf, VT_PIPELINE_BIND_POINT_RAY_TRACING, rtPipeline);
+    vtCmdBindMaterialSet(rtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), mts);
+    vtCmdBindDescriptorSets(rtCmdBuf, VT_PIPELINE_BIND_POINT_RAY_TRACING, vpl, 0, 1, (VkDescriptorSet *)&dsc[0], 0, nullptr);
+    vtCmdBindRayTracingSet(rtCmdBuf, rtSet);
+    vtCmdBindAccelerator(rtCmdBuf, accel);
+    vtCmdBindVertexAssembly(rtCmdBuf, vets);
+    vtCmdDispatchRayTracing(rtCmdBuf, 1280, 720);
+    vkEndCommandBuffer(rtCmdBuf);
+
+    //////////////////////////////////////
+    // ray tracing preparing stage end  //
+    //////////////////////////////////////
 
 
 

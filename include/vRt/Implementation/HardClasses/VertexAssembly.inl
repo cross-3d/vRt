@@ -81,7 +81,7 @@ namespace _vt {
             tfi.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             tfi.layout = VK_IMAGE_LAYOUT_GENERAL;
             tfi.mipLevels = 1;
-            tfi.size = { 6144u, uint32_t(tiled(maxPrimitives * 3u * ATTRIB_EXTENT, 6144ull)) };
+            tfi.size = { 6144u, uint32_t(tiled(maxPrimitives * 3u * ATTRIB_EXTENT, 6144ull)), 1u };
             createDeviceImage(_vtDevice, tfi, vtVertexAssembly->_attributeTexelBuffer);
         };
 

@@ -173,32 +173,41 @@ namespace _vt {
         return cmdBuffer;
     };
 
-    // create shader module
-    inline auto loadAndCreateShaderModule(VkDevice device, const std::vector<uint8_t>& code) {
-        VkShaderModuleCreateInfo smi;//{ VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr, {}, code.size(), (uint32_t *)code.data() };
+
+    inline auto loadAndCreateShaderModuleInfo(const std::vector<uint8_t>& code) {
+        VkShaderModuleCreateInfo smi;
         smi.pNext = nullptr;
         smi.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         smi.pCode = (uint32_t *)code.data();
         smi.codeSize = code.size();
         smi.flags = {};
+        return smi;
+    }
+
+    // create shader module
+    inline auto loadAndCreateShaderModule(VkDevice device, const std::vector<uint8_t>& code) {
         VkShaderModule sm = nullptr;
-        vkCreateShaderModule(device, &smi, nullptr, &sm);
+        vkCreateShaderModule(device, &loadAndCreateShaderModuleInfo(code), nullptr, &sm);
         return sm;
+    };
+
+    // create shader module
+    inline auto loadAndCreateShaderModuleStage(VkDevice device, const std::vector<uint8_t>& code, const char * entry = "main") {
+        VkPipelineShaderStageCreateInfo spi;
+        spi.pNext = nullptr;
+        spi.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        spi.flags = {};
+        spi.module = loadAndCreateShaderModule(device, code);
+        spi.pName = entry;
+        spi.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+        spi.pSpecializationInfo = nullptr;
+        return spi;
     };
 
     // create compute pipelines
     inline auto createCompute(VkDevice device, std::string path, VkPipelineLayout layout, VkPipelineCache cache) {
         auto code = readBinary(path);
-        auto module = loadAndCreateShaderModule(device, code);
-
-        VkPipelineShaderStageCreateInfo spi;
-        spi.pNext = nullptr;
-        spi.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        spi.flags = {};
-        spi.module = module;
-        spi.pName = "main";
-        spi.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-        spi.pSpecializationInfo = nullptr;
+        auto spi = loadAndCreateShaderModuleStage(device, code);
 
         VkComputePipelineCreateInfo cmpi;
         cmpi.pNext = nullptr;
@@ -217,9 +226,13 @@ namespace _vt {
     // create compute pipelines
     inline auto createCompute(VkDevice device, const VkPipelineShaderStageCreateInfo& spi, VkPipelineLayout layout, VkPipelineCache cache) {
         VkComputePipelineCreateInfo cmpi;
+        cmpi.pNext = nullptr;
         cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+        cmpi.flags = {};
         cmpi.layout = layout;
         cmpi.stage = spi;
+        cmpi.basePipelineHandle = {};
+        cmpi.basePipelineIndex = -1;
 
         VkPipeline pipeline = nullptr;
         vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);

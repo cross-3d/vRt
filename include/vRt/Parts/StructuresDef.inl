@@ -18,7 +18,7 @@ namespace vt { // store in official namespace
 
     // use as low level typed descriptor set
     struct VtMaterialSetCreateInfo;
-    struct VtAcceleratorCreateInfo;
+    struct VtAcceleratorSetCreateInfo;
 
 
     // custom (unified) object create info, exclusive for vRt ray tracing system, and based on classic Satellite objects

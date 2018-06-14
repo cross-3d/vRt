@@ -42,6 +42,7 @@ namespace _vt { // store in undercover namespace
         vtCmdBuf = std::make_shared<CommandBuffer>();
         vtCmdBuf->_device = _vtDevice;
         vtCmdBuf->_commandBuffer = cmdBuf;
+        return VK_SUCCESS;
     };
 
 };
