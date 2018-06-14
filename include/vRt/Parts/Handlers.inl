@@ -27,18 +27,6 @@ namespace vt { // store in official namespace
         auto* operator->() { return _vtPhysicalDevice.get(); };
     };
 
-    struct VtDevice {
-        std::shared_ptr<_vt::Device> _vtDevice;
-        operator std::shared_ptr<_vt::Device>() const { return _vtDevice; };
-        operator std::shared_ptr<_vt::Device>&() { return _vtDevice; };
-        operator VkDevice() const { return *_vtDevice; }
-        operator VkPipelineCache() const { return *_vtDevice; };
-        operator VkDescriptorPool() const { return *_vtDevice; };
-        operator VmaAllocator() const { return *_vtDevice; }
-        operator bool() const { return !!_vtDevice; };
-        auto* operator->() { return _vtDevice.get(); };
-    };
-
     struct VtCommandBuffer {
         std::shared_ptr<_vt::CommandBuffer> _vtCommandBuffer;
         operator std::shared_ptr<_vt::CommandBuffer>() const { return _vtCommandBuffer; };
@@ -157,6 +145,25 @@ namespace vt { // store in official namespace
         operator VkImageView() const { return *_vtDeviceImage; };
         operator bool() const { return !!_vtDeviceImage; };
         auto* operator->() { return _vtDeviceImage.get(); };
+    };
+
+
+
+    struct VtDevice {
+        std::shared_ptr<_vt::Device> _vtDevice;
+        operator std::shared_ptr<_vt::Device>() const { return _vtDevice; };
+        operator std::shared_ptr<_vt::Device>&() { return _vtDevice; };
+        operator VkDevice() const { return *_vtDevice; }
+        operator VkPipelineCache() const { return *_vtDevice; };
+        operator VkDescriptorPool() const { return *_vtDevice; };
+        operator VmaAllocator() const { return *_vtDevice; }
+
+        // casting operators with traffic buffers
+        operator VtHostToDeviceBuffer() const { return VtHostToDeviceBuffer{ _vtDevice->_bufferTraffic->_uploadBuffer }; };
+        operator VtDeviceToHostBuffer() const { return VtDeviceToHostBuffer{ _vtDevice->_bufferTraffic->_downloadBuffer }; };
+
+        operator bool() const { return !!_vtDevice; };
+        auto* operator->() { return _vtDevice.get(); };
     };
 
 };

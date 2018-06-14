@@ -58,26 +58,21 @@ namespace _vt { // store in undercover namespace
         VkPipelineCache _pipelineCache; // store native pipeline cache
         VkDescriptorPool _descriptorPool;
 
-        std::shared_ptr<RadixSort> _radixSort; // create native radix sort
+        std::shared_ptr<RadixSort> _radixSort;
         std::shared_ptr<Accelerator> _acceleratorBuilder;
         std::shared_ptr<VertexAssembly> _vertexAssembler;
         std::shared_ptr<BufferTraffic> _bufferTraffic;
+        //std::shared_ptr<CopyProgram> _copyProgram;
 
-        //std::shared_ptr<CopyProgram> _copyProgram; // create native pipelines for (indirect) copying
-
-        std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap; // descriptor layout map in ray tracing system
-
-        // weak pointers with in-device bind allocatable objects
-        // make sure that these buffers stil may destoyed
-        //std::vector<std::weak_ptr<DeviceToHostBuffer>> _deviceToHostBuffersPtrs;
-        //std::vector<std::weak_ptr<HostToDeviceBuffer>> _hostToDeviceBuffersPtrs;
-        //std::vector<std::weak_ptr<DeviceBuffer>> _deviceBuffersPtrs;
-        //std::vector<std::weak_ptr<DeviceImage>> _deviceImagesPtrs;
+        // descriptor layout map in ray tracing system
+        std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap;
 
         operator VkDevice() const { return _device; };
         operator VkPipelineCache() const { return _pipelineCache; };
         operator VkDescriptorPool() const { return _descriptorPool; };
         operator VmaAllocator() const { return _allocator; };
+        operator std::shared_ptr<HostToDeviceBuffer>() const { return _bufferTraffic->_uploadBuffer; };
+        operator std::shared_ptr<DeviceToHostBuffer>() const { return _bufferTraffic->_downloadBuffer; };
         std::shared_ptr<PhysicalDevice> _parent() const { return _physicalDevice; };
     };
 
