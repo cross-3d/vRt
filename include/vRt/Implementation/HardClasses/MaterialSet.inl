@@ -32,8 +32,8 @@ namespace _vt {
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtMaterialSet->_constBuffer);
             };
-            
-            
+
+
 
             { // planned to add support of default element in not enough 
                 std::vector<vk::DescriptorSetLayout> dsLayouts = {
@@ -44,7 +44,7 @@ namespace _vt {
 
 
                 std::vector<vk::DescriptorImageInfo> _samplers = {};
-                for (int i = 0; i < info.samplerCount;i++) {
+                for (int i = 0; i < info.samplerCount; i++) {
                     _samplers.push_back(vk::DescriptorImageInfo().setSampler(info.pSamplers[i]));
                 }
 

@@ -18,8 +18,8 @@ namespace _vt {
         allocatorInfo.device = vtDevice->_device;
         allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb
         allocatorInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-		allocatorInfo.pAllocationCallbacks = nullptr;
-		allocatorInfo.pVulkanFunctions = nullptr;
+        allocatorInfo.pAllocationCallbacks = nullptr;
+        allocatorInfo.pVulkanFunctions = nullptr;
         if (vmaCreateAllocator(&allocatorInfo, &vtDevice->_allocator) == VK_SUCCESS) { result = VK_SUCCESS; };
 
         // link device with vulkan.hpp
@@ -41,7 +41,7 @@ namespace _vt {
         };
         vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(128).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size())));
         vtDevice->_mainFamilyIndex = vtExtension.mainQueueFamily;
-		vtDevice->_shadersPath = vtExtension.shaderPath;
+        vtDevice->_shadersPath = vtExtension.shaderPath;
 
         // make traffic buffers 
         VtDeviceBufferCreateInfo dbfi;
@@ -50,9 +50,9 @@ namespace _vt {
         dbfi.familyIndex = vtExtension.mainQueueFamily;
 
 
-		// make weak proxy (avoid cycled linking)
-		vtDevice->_bufferTraffic = std::make_shared<BufferTraffic>();
-		vtDevice->_bufferTraffic->_device = vtDevice;
+        // make weak proxy (avoid cycled linking)
+        vtDevice->_bufferTraffic = std::make_shared<BufferTraffic>();
+        vtDevice->_bufferTraffic->_device = vtDevice;
         createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_uploadBuffer);
         createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_downloadBuffer);
 

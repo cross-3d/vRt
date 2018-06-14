@@ -7,31 +7,26 @@
 #include <appBase.hpp>
 
 void main() {
-	using namespace vt;
+    using namespace vt;
 
     if (!glfwInit()) exit(EXIT_FAILURE);
     if (!glfwVulkanSupported()) exit(EXIT_FAILURE);
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-
-
-    uint32_t gpuID = 0;
-    uint32_t currentBuffer = 0;
-    int32_t currSemaphore = -1;
-    std::shared_ptr<vte::ApplicationBase> appfw = std::make_shared<vte::ApplicationBase>();
-    
-    std::string title = "vRt early test";
-    uint32_t canvasWidth = 1280, canvasHeight = 720;
-    float windowScale = 1.0;
+    // choiced physical device
+    uint32_t gpuID = 0; // at now "0" by default
 
     // create GLFW window
+    std::string title = "vRt early test";
+    uint32_t canvasWidth = 1280, canvasHeight = 720; float windowScale = 1.0;
+
     GLFWwindow* window = glfwCreateWindow(canvasWidth, canvasHeight, "vRt early test", NULL, NULL);
     if (!window) { glfwTerminate(); exit(EXIT_FAILURE); }
 
-
-	// create vulkan instance
-	auto instance = appfw->createInstance();
+    // create vulkan and ray tracing instance
+    auto appfw = std::make_shared<vte::ApplicationBase>();
+    auto instance = appfw->createInstance();
 
     // get physical devices
     auto physicalDevices = instance.enumeratePhysicalDevices();
@@ -42,25 +37,20 @@ void main() {
     if (gpuID < 0 || gpuID == -1) gpuID = 0;
     auto gpu = physicalDevices[gpuID];
 
+    // create surface and get format by physical device
+    glfwGetWindowContentScale(window, &windowScale, nullptr);
+    appfw->createWindowSurface(window, canvasWidth, canvasHeight, title);
+    appfw->format(appfw->getSurfaceFormat(gpu));
+
+    // write physical device name
     vk::PhysicalDeviceProperties devProperties = gpu.getProperties();
     std::cout << "Current Device: ";
     std::cout << devProperties.deviceName << std::endl;
 
-    // create surface
-    appfw->createWindowSurface(window, canvasWidth, canvasHeight, title);
-    appfw->format(appfw->getSurfaceFormat(gpu));
-
-
-	// shader pack
-	const std::string shaderPack = "./shaders/amd/";
-
-    // create basic Vulkan objects
+    // create combined device object
+    const std::string shaderPack = "./shaders/amd/";
     auto deviceQueue = appfw->createDeviceQueue(gpu, false, shaderPack); // create default graphical device
     auto renderpass = appfw->createRenderpass(deviceQueue);
-
-    // resize buffers and canvas
-    glfwGetWindowContentScale(window, &windowScale, nullptr);
-
 
 
     // create image output
@@ -70,7 +60,7 @@ void main() {
     dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
     dii.layout = VK_IMAGE_LAYOUT_GENERAL;
     dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    dii.size = {1280, 720, 1};
+    dii.size = { 1280, 720, 1 };
 
     // create device image
     VtDeviceImage outImage;
@@ -78,7 +68,7 @@ void main() {
 
 
 
-    
+
 
     // descriptor set bindings
     std::vector<vk::DescriptorSetLayoutBinding> descriptorSetLayoutBindings = { vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, nullptr) };
@@ -118,27 +108,27 @@ void main() {
             .setPInputAssemblyState(&vk::PipelineInputAssemblyStateCreateInfo().setTopology(vk::PrimitiveTopology::eTriangleStrip))
             .setPViewportState(&vk::PipelineViewportStateCreateInfo().setViewportCount(1).setScissorCount(1))
             .setPRasterizationState(&vk::PipelineRasterizationStateCreateInfo()
-                .setDepthClampEnable(false)
-                .setRasterizerDiscardEnable(false)
-                .setPolygonMode(vk::PolygonMode::eFill)
-                .setCullMode(vk::CullModeFlagBits::eBack)
-                .setFrontFace(vk::FrontFace::eCounterClockwise)
-                .setDepthBiasEnable(false)
-                .setDepthBiasConstantFactor(0)
-                .setDepthBiasClamp(0)
-                .setDepthBiasSlopeFactor(0)
-                .setLineWidth(1.f))
+            .setDepthClampEnable(false)
+            .setRasterizerDiscardEnable(false)
+            .setPolygonMode(vk::PolygonMode::eFill)
+            .setCullMode(vk::CullModeFlagBits::eBack)
+            .setFrontFace(vk::FrontFace::eCounterClockwise)
+            .setDepthBiasEnable(false)
+            .setDepthBiasConstantFactor(0)
+            .setDepthBiasClamp(0)
+            .setDepthBiasSlopeFactor(0)
+            .setLineWidth(1.f))
             .setPDepthStencilState(&vk::PipelineDepthStencilStateCreateInfo()
-                .setDepthTestEnable(false)
-                .setDepthWriteEnable(false)
-                .setDepthCompareOp(vk::CompareOp::eLessOrEqual)
-                .setDepthBoundsTestEnable(false)
-                .setStencilTestEnable(false))
+            .setDepthTestEnable(false)
+            .setDepthWriteEnable(false)
+            .setDepthCompareOp(vk::CompareOp::eLessOrEqual)
+            .setDepthBoundsTestEnable(false)
+            .setStencilTestEnable(false))
             .setPColorBlendState(&vk::PipelineColorBlendStateCreateInfo()
-                .setLogicOpEnable(false)
-                .setLogicOp(vk::LogicOp::eClear)
-                .setPAttachments(colorBlendAttachments.data())
-                .setAttachmentCount(colorBlendAttachments.size()))
+            .setLogicOpEnable(false)
+            .setLogicOp(vk::LogicOp::eClear)
+            .setPAttachments(colorBlendAttachments.data())
+            .setAttachmentCount(colorBlendAttachments.size()))
             .setLayout(pipelineLayout)
             .setRenderPass(renderpass)
             .setBasePipelineIndex(0)
@@ -149,7 +139,7 @@ void main() {
         );
     }
 
-    
+
     { // write descriptors for showing texture
         vk::SamplerCreateInfo samplerInfo;
         samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;
@@ -174,7 +164,7 @@ void main() {
 
 
 
-	auto currentContext = std::make_shared<vte::GraphicsContext>();
+    auto currentContext = std::make_shared<vte::GraphicsContext>();
     { // create graphic context
         auto& context = currentContext;
 
@@ -194,61 +184,62 @@ void main() {
 
 
     // rendering presentation 
+    int32_t currSemaphore = -1; uint32_t currentBuffer = 0;
     auto tIdle = std::chrono::high_resolution_clock::now();
     while (!glfwWindowShouldClose(appfw->window())) {
-		glfwPollEvents();
+        glfwPollEvents();
 
 
-		{ // reserved field for computing code
+        { // reserved field for computing code
 
 
 
-		}
+        }
 
 
         auto n_semaphore = currSemaphore;
-		auto c_semaphore = (currSemaphore + 1) % currentContext->framebuffers.size();
-		currSemaphore = c_semaphore;
+        auto c_semaphore = (currSemaphore + 1) % currentContext->framebuffers.size();
+        currSemaphore = c_semaphore;
 
         // acquire next image where will rendered (and get semaphore when will presented finally)
         n_semaphore = (n_semaphore >= 0 ? n_semaphore : (currentContext->framebuffers.size() - 1));
         currentContext->queue->device->logical.acquireNextImageKHR(currentContext->swapchain, std::numeric_limits<uint64_t>::max(), currentContext->framebuffers[n_semaphore].semaphore, nullptr, &currentBuffer);
 
-		{ // submit rendering (and wait presentation in device)
-			// prepare viewport and clear info
-			std::vector<vk::ClearValue> clearValues = { vk::ClearColorValue(std::array<float,4>{0.2f, 0.2f, 0.2f, 1.0f}), vk::ClearDepthStencilValue(1.0f, 0) };
-			auto renderArea = vk::Rect2D(vk::Offset2D(0, 0), appfw->size());
-			auto viewport = vk::Viewport(0.0f, 0.0f, appfw->size().width, appfw->size().height, 0, 1.0f);
+        { // submit rendering (and wait presentation in device)
+            // prepare viewport and clear info
+            std::vector<vk::ClearValue> clearValues = { vk::ClearColorValue(std::array<float,4>{0.2f, 0.2f, 0.2f, 1.0f}), vk::ClearDepthStencilValue(1.0f, 0) };
+            auto renderArea = vk::Rect2D(vk::Offset2D(0, 0), appfw->size());
+            auto viewport = vk::Viewport(0.0f, 0.0f, appfw->size().width, appfw->size().height, 0, 1.0f);
 
-			// create command buffer (with rewrite)
-			auto& commandBuffer = (currentContext->framebuffers[n_semaphore].commandBuffer = vte::createCommandBuffer(currentContext->queue->device->logical, currentContext->queue->commandPool, false)); // do reference of cmd buffer
-			commandBuffer.beginRenderPass(vk::RenderPassBeginInfo(currentContext->renderpass, currentContext->framebuffers[currentBuffer].frameBuffer, renderArea, clearValues.size(), clearValues.data()), vk::SubpassContents::eInline);
-			commandBuffer.setViewport(0, std::vector<vk::Viewport> { viewport });
-			commandBuffer.setScissor(0, std::vector<vk::Rect2D> { renderArea });
-			commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, currentContext->pipeline);
-			commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, currentContext->pipelineLayout, 0, currentContext->descriptorSets, nullptr);
-			commandBuffer.draw(4, 1, 0, 0);
-			commandBuffer.endRenderPass();
-			commandBuffer.end();
+            // create command buffer (with rewrite)
+            auto& commandBuffer = (currentContext->framebuffers[n_semaphore].commandBuffer = vte::createCommandBuffer(currentContext->queue->device->logical, currentContext->queue->commandPool, false)); // do reference of cmd buffer
+            commandBuffer.beginRenderPass(vk::RenderPassBeginInfo(currentContext->renderpass, currentContext->framebuffers[currentBuffer].frameBuffer, renderArea, clearValues.size(), clearValues.data()), vk::SubpassContents::eInline);
+            commandBuffer.setViewport(0, std::vector<vk::Viewport> { viewport });
+            commandBuffer.setScissor(0, std::vector<vk::Rect2D> { renderArea });
+            commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, currentContext->pipeline);
+            commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, currentContext->pipelineLayout, 0, currentContext->descriptorSets, nullptr);
+            commandBuffer.draw(4, 1, 0, 0);
+            commandBuffer.endRenderPass();
+            commandBuffer.end();
 
-			// create render submission 
-			std::vector<vk::Semaphore> 
-				waitSemaphores = { currentContext->framebuffers[n_semaphore].semaphore }, 
-				signalSemaphores = { currentContext->framebuffers[c_semaphore].semaphore };
-			std::vector<vk::PipelineStageFlags> waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+            // create render submission 
+            std::vector<vk::Semaphore>
+                waitSemaphores = { currentContext->framebuffers[n_semaphore].semaphore },
+                signalSemaphores = { currentContext->framebuffers[c_semaphore].semaphore };
+            std::vector<vk::PipelineStageFlags> waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
-			auto smbi = vk::SubmitInfo()
-				.setPWaitDstStageMask(waitStages.data()).setPWaitSemaphores(waitSemaphores.data()).setWaitSemaphoreCount(waitSemaphores.size())
-				.setPCommandBuffers(&commandBuffer).setCommandBufferCount(1)
-				.setPSignalSemaphores(signalSemaphores.data()).setSignalSemaphoreCount(signalSemaphores.size());
+            auto smbi = vk::SubmitInfo()
+                .setPWaitDstStageMask(waitStages.data()).setPWaitSemaphores(waitSemaphores.data()).setWaitSemaphoreCount(waitSemaphores.size())
+                .setPCommandBuffers(&commandBuffer).setCommandBufferCount(1)
+                .setPSignalSemaphores(signalSemaphores.data()).setSignalSemaphoreCount(signalSemaphores.size());
 
-			// submit command once
-			vte::submitCmd(currentContext->queue->device->logical, currentContext->queue->queue, { commandBuffer }, smbi);
-			currentContext->queue->device->logical.freeCommandBuffers(currentContext->queue->commandPool, { commandBuffer });
+            // submit command once
+            vte::submitCmd(currentContext->queue->device->logical, currentContext->queue->queue, { commandBuffer }, smbi);
+            currentContext->queue->device->logical.freeCommandBuffers(currentContext->queue->commandPool, { commandBuffer });
 
-			// reset wait semaphore
-			//currentContext->queue->device->logical.destroySemaphore(currentContext->framebuffers[n_semaphore].semaphore);
-			//currentContext->framebuffers[n_semaphore].semaphore = currentContext->queue->device->logical.createSemaphore(vk::SemaphoreCreateInfo());
+            // reset wait semaphore
+            //currentContext->queue->device->logical.destroySemaphore(currentContext->framebuffers[n_semaphore].semaphore);
+            //currentContext->framebuffers[n_semaphore].semaphore = currentContext->queue->device->logical.createSemaphore(vk::SemaphoreCreateInfo());
         }
 
         // present for displaying of this image
@@ -259,8 +250,8 @@ void main() {
         ));
     }
 
-	glfwDestroyWindow(window); glfwTerminate(); 
-	//system("pause");
+    glfwDestroyWindow(window); glfwTerminate();
+    //system("pause");
 
 
 }

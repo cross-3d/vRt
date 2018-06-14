@@ -28,15 +28,13 @@ namespace _vt {
     inline auto sgn(T val) { return (T(0) < val) - (val < T(0)); }
 
     template<class T = uint32_t>
-    static inline T tiled(T sz, T gmaxtile)
-    {
+    static inline T tiled(T sz, T gmaxtile) {
         // return (int32_t)ceil((double)sz / (double)gmaxtile);
         return sz <= 0 ? 0 : (sz / gmaxtile + sgn(sz % gmaxtile));
     }
 
 
-    static inline double milliseconds()
-    {
+    static inline double milliseconds() {
         auto duration = std::chrono::high_resolution_clock::now();
         double millis = std::chrono::duration_cast<std::chrono::nanoseconds>(
             duration.time_since_epoch())
@@ -48,7 +46,7 @@ namespace _vt {
     template <class T>
     inline size_t strided(size_t sizeo) { return sizeof(T) * sizeo; }
 
-    
+
 
 
 
@@ -64,34 +62,33 @@ namespace _vt {
             file.seekg(0, std::ios::beg);
             file.read((char *)data.data(), size);
             file.close();
-        }
-        else
+        } else
         {
             std::cerr << "Failure to open " + filePath << std::endl;
         }
         return data;
     };
 
-	// read source (unused)
-	inline std::string readSource(const std::string &filePath, const bool &lineDirective = false) {
-		std::string content = "";
-		std::ifstream fileStream(filePath, std::ios::in);
-		if (!fileStream.is_open())
-		{
-			std::cerr << "Could not read file " << filePath << ". File does not exist."
-				<< std::endl;
-			return "";
-		}
-		std::string line = "";
-		while (!fileStream.eof())
-		{
-			std::getline(fileStream, line);
-			if (lineDirective || line.find("#line") == std::string::npos)
-				content.append(line + "\n");
-		}
-		fileStream.close();
-		return content;
-	};
+    // read source (unused)
+    inline std::string readSource(const std::string &filePath, const bool &lineDirective = false) {
+        std::string content = "";
+        std::ifstream fileStream(filePath, std::ios::in);
+        if (!fileStream.is_open())
+        {
+            std::cerr << "Could not read file " << filePath << ". File does not exist."
+                << std::endl;
+            return "";
+        }
+        std::string line = "";
+        while (!fileStream.eof())
+        {
+            std::getline(fileStream, line);
+            if (lineDirective || line.find("#line") == std::string::npos)
+                content.append(line + "\n");
+        }
+        fileStream.close();
+        return content;
+    };
 
 
 
@@ -101,15 +98,15 @@ namespace _vt {
         VkMemoryBarrier memoryBarrier;
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.pNext = nullptr;
-        memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, 
-        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT;
-        
+        memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
+            memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+
         vkCmdPipelineBarrier(
             cmdBuffer,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_DEPENDENCY_BY_REGION_BIT,
             1, &memoryBarrier,
-            0, nullptr, 
+            0, nullptr,
             0, nullptr);
     };
 
@@ -120,7 +117,7 @@ namespace _vt {
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.pNext = nullptr;
         memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_HOST_READ_BIT,
-        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+            memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT;
 
         vkCmdPipelineBarrier(
             cmdBuffer,
@@ -138,7 +135,7 @@ namespace _vt {
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.pNext = nullptr;
         memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT,
-        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_HOST_WRITE_BIT;
+            memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_HOST_WRITE_BIT;
 
         vkCmdPipelineBarrier(
             cmdBuffer,
@@ -170,8 +167,8 @@ namespace _vt {
 
         VkCommandBufferBeginInfo bgi;
         bgi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		bgi.pNext = nullptr;
-		bgi.flags = {};
+        bgi.pNext = nullptr;
+        bgi.flags = {};
         //bgi.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
         bgi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         bgi.pInheritanceInfo = secondary ? &inhi : nullptr;
@@ -181,40 +178,40 @@ namespace _vt {
     };
 
     // create shader module
-	inline auto loadAndCreateShaderModule(VkDevice device, const std::vector<uint8_t>& code) {
-		VkShaderModuleCreateInfo smi;//{ VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr, {}, code.size(), (uint32_t *)code.data() };
-		smi.pNext = nullptr;
-		smi.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		smi.pCode = (uint32_t *)code.data();
-		smi.codeSize = code.size();
-		smi.flags = {};
+    inline auto loadAndCreateShaderModule(VkDevice device, const std::vector<uint8_t>& code) {
+        VkShaderModuleCreateInfo smi;//{ VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr, {}, code.size(), (uint32_t *)code.data() };
+        smi.pNext = nullptr;
+        smi.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        smi.pCode = (uint32_t *)code.data();
+        smi.codeSize = code.size();
+        smi.flags = {};
         VkShaderModule sm = nullptr;
-		vkCreateShaderModule(device, &smi, nullptr, &sm);
+        vkCreateShaderModule(device, &smi, nullptr, &sm);
         return sm;
-	};
+    };
 
     // create compute pipelines
-    inline auto createCompute(VkDevice device, std::string path, VkPipelineLayout layout, VkPipelineCache cache){
-		auto code = readBinary(path);
+    inline auto createCompute(VkDevice device, std::string path, VkPipelineLayout layout, VkPipelineCache cache) {
+        auto code = readBinary(path);
         auto module = loadAndCreateShaderModule(device, code);
 
         VkPipelineShaderStageCreateInfo spi;
-		spi.pNext = nullptr;
+        spi.pNext = nullptr;
         spi.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		spi.flags = {};
+        spi.flags = {};
         spi.module = module;
         spi.pName = "main";
         spi.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-		spi.pSpecializationInfo = nullptr;
+        spi.pSpecializationInfo = nullptr;
 
         VkComputePipelineCreateInfo cmpi;
-		cmpi.pNext = nullptr;
+        cmpi.pNext = nullptr;
         cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-		cmpi.flags = {};
+        cmpi.flags = {};
         cmpi.layout = layout;
         cmpi.stage = spi;
-		cmpi.basePipelineHandle = {};
-		cmpi.basePipelineIndex = -1;
+        cmpi.basePipelineHandle = {};
+        cmpi.basePipelineIndex = -1;
 
         VkPipeline pipeline = nullptr;
         vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);
@@ -234,7 +231,7 @@ namespace _vt {
     }
 
     // add dispatch in command buffer (with default pipeline barrier)
-    inline VkResult cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1){
+    inline VkResult cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1) {
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
         vkCmdDispatch(cmd, x, y, z);
         commandBarrier(cmd); // put shader barrier
@@ -275,21 +272,21 @@ namespace _vt {
 
 
 
-	// submit command (with async wait)
-	inline void submitCmd(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, VkSubmitInfo smbi = {}) {
-		// no commands 
-		if (cmds.size() <= 0) return;
+    // submit command (with async wait)
+    inline void submitCmd(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, VkSubmitInfo smbi = {}) {
+        // no commands 
+        if (cmds.size() <= 0) return;
 
-		smbi.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		smbi.commandBufferCount = cmds.size();
-		smbi.pCommandBuffers = cmds.data();
+        smbi.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        smbi.commandBufferCount = cmds.size();
+        smbi.pCommandBuffers = cmds.data();
 
-		VkFence fence = nullptr; VkFenceCreateInfo fin{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr };
-		vkCreateFence(device, &fin, nullptr, &fence);
-		vkQueueSubmit(queue, 1, &smbi, fence);
-		vkWaitForFences(device, 1, &fence, true, DEFAULT_FENCE_TIMEOUT);
-		vkDestroyFence(device, fence, nullptr);
-	}
+        VkFence fence = nullptr; VkFenceCreateInfo fin{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr };
+        vkCreateFence(device, &fin, nullptr, &fence);
+        vkQueueSubmit(queue, 1, &smbi, fence);
+        vkWaitForFences(device, 1, &fence, true, DEFAULT_FENCE_TIMEOUT);
+        vkDestroyFence(device, fence, nullptr);
+    }
 
     // submit command (with async wait)
     inline void submitCmdAsync(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, std::function<void()> asyncCallback = {}, VkSubmitInfo smbi = {}) {
@@ -330,12 +327,12 @@ namespace _vt {
 
 
 
-	// create fence function
-	inline vk::Fence createFence(VkDevice device, bool signaled = true) {
-		vk::FenceCreateInfo info;
-		if (signaled) info.setFlags(vk::FenceCreateFlagBits::eSignaled);
-		return vk::Device(device).createFence(info);
-	}
+    // create fence function
+    inline vk::Fence createFence(VkDevice device, bool signaled = true) {
+        vk::FenceCreateInfo info;
+        if (signaled) info.setFlags(vk::FenceCreateFlagBits::eSignaled);
+        return vk::Device(device).createFence(info);
+    }
 
 
 };

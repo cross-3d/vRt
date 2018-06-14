@@ -42,7 +42,7 @@ namespace _vt {
         cmdFillBuffer<0u>(*cmdBuf, *vertx->_countersBuffer);
         vertx->_calculatedPrimitiveCount = 0;
         for (auto& iV_ : cmdBuf->_vertexInputs) {
-			auto iV = iV_.lock();
+            auto iV = iV_.lock();
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, vertb->_vertexAssemblyPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, 4096);
@@ -58,11 +58,11 @@ namespace _vt {
         auto device = cmdBuf->_parent();
         auto acclb = device->_acceleratorBuilder;
         auto accel = cmdBuf->_acceleratorSet.lock();
-		auto vertx = cmdBuf->_vertexSet.lock();
+        auto vertx = cmdBuf->_vertexSet.lock();
 
         // copy vertex assembly counter values
-        cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64+0), strided<uint32_t>(1)) });
-        cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64+1), strided<uint32_t>(1)) });
+        cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 0), strided<uint32_t>(1)) });
+        cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 1), strided<uint32_t>(1)) });
 
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting

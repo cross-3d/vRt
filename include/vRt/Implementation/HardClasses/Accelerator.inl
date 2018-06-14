@@ -28,8 +28,8 @@ namespace _vt {
 
                 // create pipeline layout
                 vtAccelerator->_buildPipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
-				auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-				vtAccelerator->_buildDescriptorSet = dsc[0];
+                auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                vtAccelerator->_buildDescriptorSet = dsc[0];
             };
 
             {
@@ -51,9 +51,9 @@ namespace _vt {
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
-				bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16;
-				bfi.format = VK_FORMAT_UNDEFINED;
-				createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_leafBuffer);
+                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16;
+                bfi.format = VK_FORMAT_UNDEFINED;
+                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_leafBuffer);
 
                 bfi.bufferSize = maxPrimitives * sizeof(uint64_t);
                 bfi.format = VK_FORMAT_R32G32_UINT;

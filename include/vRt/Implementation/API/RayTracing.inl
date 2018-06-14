@@ -56,7 +56,7 @@ namespace _vt {
         std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
 
         // bind user descriptor sets
-        for (auto &s: cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
+        for (auto &s : cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
 
         {
             // reset counters of ray tracing

@@ -14,7 +14,7 @@
 #include <vRt/Implementation/HardClasses.inl>
 
 namespace NSM {
-	using namespace _vt;
+    using namespace _vt;
 
     struct QueueType;
     struct DevQueueType;

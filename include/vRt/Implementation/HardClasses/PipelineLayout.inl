@@ -13,11 +13,11 @@ namespace _vt {
         vtPipelineLayout->_device = _vtDevice;
 
         std::vector<vk::DescriptorSetLayout> dsLayouts = {
-            vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]), 
+            vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]),
             vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["materialSet"])
         };
 
-        for (int i = 0; i < vtRayTracingPipelineLayoutCreateInfo.setLayoutCount;i++) {
+        for (int i = 0; i < vtRayTracingPipelineLayoutCreateInfo.setLayoutCount; i++) {
             dsLayouts.push_back(vtRayTracingPipelineLayoutCreateInfo.pSetLayouts[i]);
         }
 

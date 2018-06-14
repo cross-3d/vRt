@@ -11,12 +11,12 @@ namespace vt { // store in official namespace
     // planned merge ray tracing exclusive errors
     typedef VkResult VtResult;
 
-    typedef enum VtPipelineBindPoint: uint32_t {
+    typedef enum VtPipelineBindPoint : uint32_t {
         VT_PIPELINE_BIND_POINT_RAY_TRACING = 0x11F00000,
         VT_PIPELINE_BIND_POINT_ACCELERATOR = 0x11F00001 // unknown
     } VtPipelineBindPoint;
 
-    typedef enum VtStructureType: uint32_t {
+    typedef enum VtStructureType : uint32_t {
         VT_STRUCTURE_TYPE_INSTANCE_CONVERSION_INFO = 0x11F00000,
         VT_STRUCTURE_TYPE_DEVICE_CONVERSION_INFO = 0x11F00001,
         VT_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONVERSION_INFO = 0x11F00002,
@@ -41,7 +41,7 @@ namespace vt { // store in official namespace
     using VtFormat = VtFormatDecomp;
 
     // use constexpr VtFormat constants
-    constexpr auto  
+    constexpr auto
         VT_R32G32B32A32_SFLOAT = VtFormatDecomp(4u, VT_FLOAT),
         VT_R32G32B32_SFLOAT = VtFormatDecomp(3u, VT_FLOAT),
         VT_R32G32_SFLOAT = VtFormatDecomp(2u, VT_FLOAT),
@@ -50,7 +50,7 @@ namespace vt { // store in official namespace
         VT_R16_UINT = VtFormatDecomp(1u, VT_UINT16);
 
     // all supported topologies
-    typedef enum VtTopologyType: uint32_t {
+    typedef enum VtTopologyType : uint32_t {
         VT_TOPOLOGY_TYPE_TRIANGLES_LIST = 0x11F00000
     } VtTopologyType;
 

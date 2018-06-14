@@ -47,17 +47,16 @@ namespace _vt {
             if (result == VK_SUCCESS && cinfo.format) {
                 vtDeviceBuffer->_bufferView;
                 VkBufferViewCreateInfo bvi;
-				bvi.pNext = nullptr;
+                bvi.pNext = nullptr;
                 bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
-				bvi.flags = {};
+                bvi.flags = {};
                 bvi.buffer = vtDeviceBuffer->_buffer;
                 bvi.format = cinfo.format;
                 bvi.offset = 0;
                 bvi.range = VK_WHOLE_SIZE;
                 if (vkCreateBufferView(device->_device, &bvi, nullptr, &vtDeviceBuffer->_bufferView) == VK_SUCCESS) {
                     result = VK_SUCCESS;
-                }
-                else {
+                } else {
                     result = VK_INCOMPLETE;
                 };
             }

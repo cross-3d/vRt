@@ -83,7 +83,7 @@ namespace vt { // store in official namespace
         VT_UINT16 = 2,
         VT_HALF = 3
     } VtType;
-    
+
     // constexpr format compositor
     struct VtFormatDecomp {
         union { uint32_t _format = 0; struct { uint32_t _components : 2, _type : 4, _normalized : 1; } _formatDecomp; };
@@ -98,7 +98,7 @@ namespace vt { // store in official namespace
         constexpr VtFormatDecomp& setType(uint8_t type) { _formatDecomp._type = type; return *this; };
         constexpr VtFormatDecomp& setNormalized(bool normalized) { _formatDecomp._normalized = normalized; return *this; };
 
-        constexpr uint8_t getComponents() const { return _formatDecomp._components+1u; };
+        constexpr uint8_t getComponents() const { return _formatDecomp._components + 1u; };
         constexpr uint8_t getType() const { return _formatDecomp._type; };
         constexpr bool getNormalized() const { return _formatDecomp._normalized; };
     };

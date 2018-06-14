@@ -34,15 +34,15 @@ namespace _vt { // store in undercover namespace
 
 
 
-	// host <-> device buffer traffic
-	class BufferTraffic : public std::enable_shared_from_this<BufferTraffic> {
-	public:
-		friend Device;
-		std::weak_ptr<Device> _device;
-		std::shared_ptr<HostToDeviceBuffer> _uploadBuffer; // from host
-		std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
-		std::shared_ptr<Device> _parent() const { return _device.lock(); };
-	};
+    // host <-> device buffer traffic
+    class BufferTraffic : public std::enable_shared_from_this<BufferTraffic> {
+    public:
+        friend Device;
+        std::weak_ptr<Device> _device;
+        std::shared_ptr<HostToDeviceBuffer> _uploadBuffer; // from host
+        std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+    };
 
 
     // ray tracing device with aggregation
@@ -61,10 +61,10 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<RadixSort> _radixSort; // create native radix sort
         std::shared_ptr<Accelerator> _acceleratorBuilder;
         std::shared_ptr<VertexAssembly> _vertexAssembler;
-		std::shared_ptr<BufferTraffic> _bufferTraffic;
+        std::shared_ptr<BufferTraffic> _bufferTraffic;
 
         //std::shared_ptr<CopyProgram> _copyProgram; // create native pipelines for (indirect) copying
-       
+
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap; // descriptor layout map in ray tracing system
 
         // weak pointers with in-device bind allocatable objects
@@ -126,14 +126,14 @@ namespace _vt { // store in undercover namespace
         // in-set buffers
         std::shared_ptr<DeviceBuffer> _rayBuffer, _rayIndiceBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer;
 
-        
+
         operator VkDescriptorSet() const { return _descriptorSet; };
         std::shared_ptr<Device> _parent() const { return _device; };
     };
 
 
     // ray tracing advanced pipeline
-    class Pipeline: public std::enable_shared_from_this<Pipeline> {
+    class Pipeline : public std::enable_shared_from_this<Pipeline> {
     public:
         friend Device;
         const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
@@ -184,8 +184,8 @@ namespace _vt { // store in undercover namespace
         VkPipeline _vertexAssemblyPipeline;
         VkPipelineLayout _vertexAssemblyPipelineLayout;
 
-		operator VkPipeline() const { return _dullPipeline; };
-		std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        operator VkPipeline() const { return _dullPipeline; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
 
@@ -206,7 +206,7 @@ namespace _vt { // store in undercover namespace
 
     // ray tracing accelerator structure object
     // planned to merge pipeline programs to device
-    class Accelerator: public std::enable_shared_from_this<Accelerator> {
+    class Accelerator : public std::enable_shared_from_this<Accelerator> {
     public:
         friend Device;
         const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
@@ -240,7 +240,7 @@ namespace _vt { // store in undercover namespace
 
     // this is wrapped advanced buffer class
     template<VmaMemoryUsage U>
-    class RoledBuffer: public std::enable_shared_from_this<RoledBuffer<U>> {
+    class RoledBuffer : public std::enable_shared_from_this<RoledBuffer<U>> {
     public:
         ~RoledBuffer();
 
@@ -263,7 +263,7 @@ namespace _vt { // store in undercover namespace
 
 
     // this is wrapped advanced image class
-    class DeviceImage: public std::enable_shared_from_this<DeviceImage> {
+    class DeviceImage : public std::enable_shared_from_this<DeviceImage> {
     public:
         ~DeviceImage();
 
@@ -289,12 +289,12 @@ namespace _vt { // store in undercover namespace
 
     // this class does not using in ray tracing API
     // can be pinned with device
-    class RadixSort: public std::enable_shared_from_this<RadixSort> {
+    class RadixSort : public std::enable_shared_from_this<RadixSort> {
     public:
         friend Device;
         const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
         std::shared_ptr<Device> _device;
-        
+
         std::shared_ptr<DeviceBuffer> _histogramBuffer;
         std::shared_ptr<DeviceBuffer> _prefixSumBuffer;
         std::shared_ptr<DeviceBuffer> _stepsBuffer; // constant buffer
@@ -313,7 +313,7 @@ namespace _vt { // store in undercover namespace
     // can be pinned with device 
     // in every copy procedure prefer create own descriptor sets
     // or use push descriptors 
-    class CopyProgram: public std::enable_shared_from_this<CopyProgram> {
+    class CopyProgram : public std::enable_shared_from_this<CopyProgram> {
     public:
         friend Device;
         const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
@@ -365,7 +365,7 @@ namespace _vt { // store in undercover namespace
         VtUniformBlock _uniformBlock;
 
         // buffer pointers for storing vertexInput
-        
+
         std::shared_ptr<DeviceBuffer> _bBufferRegionBindings;
         std::shared_ptr<DeviceBuffer> _bBufferAccessors;
         std::shared_ptr<DeviceBuffer> _bBufferAttributeBindings;

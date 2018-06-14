@@ -35,7 +35,7 @@ namespace _vt {
         vtRTSet->_device = _vtDevice;
 
         // planned variable size
-        
+
         {
             const auto& rayCount = info.maxRays;
 
@@ -94,7 +94,7 @@ namespace _vt {
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_blockBuffer);
             };
-            
+
             {
                 std::vector<vk::DescriptorSetLayout> dsLayouts = {
                     vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]),

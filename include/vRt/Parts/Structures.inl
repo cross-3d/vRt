@@ -21,7 +21,7 @@ namespace vt { // store in official namespace
         uint32_t mainQueueFamily = 0;
         size_t sharedCacheSize = 16u * 1024u * 1024u;
         size_t maxPrimitives = 1024u * 1024u;
-		std::string shaderPath = "./";
+        std::string shaderPath = "./";
     };
 
     struct VtDeviceConversionInfo {
@@ -170,7 +170,7 @@ namespace vt { // store in official namespace
 
         VkImageViewType imageViewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
         VkImageLayout layout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
-        VkExtent3D size = {1, 1, 1};
+        VkExtent3D size = { 1, 1, 1 };
         VkImageUsageFlags usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
         VkFormat format = VK_FORMAT_R32G32B32A32_SFLOAT;
         uint32_t mipLevels = 1;

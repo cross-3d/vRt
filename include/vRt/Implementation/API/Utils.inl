@@ -46,8 +46,7 @@ namespace _vt { // store in undercover namespace
             if (head->identifier != VtIdentifier) {
                 if (lastVkStructure) {
                     lastVkStructure->pNext = (uintptr_t)head;
-                }
-                else {
+                } else {
                     firstVkStructure = head;
                 }
                 lastVkStructure = head;
@@ -145,9 +144,8 @@ namespace _vt { // store in undercover namespace
     inline void cmdCopyBufferToImage(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> srcBuffer, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::BufferImageCopy>& regions) {
         vk::CommandBuffer(cmd).copyBufferToImage((vk::Buffer&)(srcBuffer->_buffer), (vk::Image&)(dstImage->_image), vk::ImageLayout(dstImage->_layout), regions);
 
-        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else 
-        if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) {   toHostCommandBarrier(cmd); } else
-        { commandBarrier(cmd); }
+        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else
+            if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }
     };
 
     // copy image to buffer (to gpu or host)
@@ -157,8 +155,7 @@ namespace _vt { // store in undercover namespace
         vk::CommandBuffer(cmd).copyImageToBuffer((vk::Image&)(srcImage->_image), vk::ImageLayout(srcImage->_layout), (vk::Buffer&)(dstBuffer->_buffer), regions);
 
         if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else
-        if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) {   toHostCommandBarrier(cmd); } else
-        { commandBarrier(cmd); }
+            if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }
     };
 
 

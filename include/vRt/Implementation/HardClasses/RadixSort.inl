@@ -7,7 +7,7 @@ namespace _vt {
 
 
     inline VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<RadixSort>& _vtRadix) {
-		VtResult result = VK_SUCCESS;
+        VtResult result = VK_SUCCESS;
 
         auto& vtRadix = (_vtRadix = std::make_shared<RadixSort>());
         vtRadix->_device = _vtDevice;
@@ -63,7 +63,7 @@ namespace _vt {
         };
         vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
 
-		return result;
+        return result;
     };
 
 };

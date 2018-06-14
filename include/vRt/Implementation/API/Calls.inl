@@ -104,7 +104,7 @@ namespace vt {
 
     inline VtResult vtConvertInstance(VkInstance vkInstance, const VtInstanceConversionInfo * cinfo, VtInstance * vtInstance) {
         return convertInstance(vkInstance, *cinfo, *vtInstance);
-    };  
+    };
 
 
     // radix sort API

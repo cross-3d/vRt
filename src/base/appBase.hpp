@@ -20,7 +20,7 @@ namespace NSM
 
     class ApplicationBase : public std::enable_shared_from_this<ApplicationBase> {
     protected:
-        
+
 
         // application binding
         vk::Instance instance;
@@ -298,10 +298,10 @@ namespace NSM
 
                 vt::VtArtificalDeviceExtension dbi;
                 dbi.mainQueueFamily = deviceQueuePtr->familyIndex;
-				dbi.shaderPath = shaderPath;
+                dbi.shaderPath = shaderPath;
                 vt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
 
-				devicePtr->allocator = deviceQueuePtr->device->rtDev->_allocator;
+                devicePtr->allocator = deviceQueuePtr->device->rtDev->_allocator;
             }
 
 
@@ -348,7 +348,7 @@ namespace NSM
             return applicationWindow.surfaceSize;
         }
 
-        
+
         // setters
         void format(SurfaceFormat format) {
             applicationWindow.surfaceFormat = format;
@@ -363,7 +363,7 @@ namespace NSM
         {
             auto surfaceFormats = gpu.getSurfaceFormatsKHR(applicationWindow.surface);
 
-            const std::vector<vk::Format> preferredFormats = {vk::Format::eR8G8B8A8Unorm, vk::Format::eB8G8R8A8Unorm };
+            const std::vector<vk::Format> preferredFormats = { vk::Format::eR8G8B8A8Unorm, vk::Format::eB8G8R8A8Unorm };
 
             vk::Format surfaceColorFormat =
                 surfaceFormats.size() == 1 &&
@@ -567,7 +567,7 @@ namespace NSM
             }
         }
 
-        virtual std::vector<Framebuffer> createSwapchainFramebuffer( Queue queue, vk::SwapchainKHR swapchain, vk::RenderPass renderpass) {
+        virtual std::vector<Framebuffer> createSwapchainFramebuffer(Queue queue, vk::SwapchainKHR swapchain, vk::RenderPass renderpass) {
             auto &formats = applicationWindow.surfaceFormat;
 
             // The swapchain handles allocating frame images.
