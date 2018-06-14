@@ -30,7 +30,7 @@ namespace _vt {
 
         // planned add external buffer support
         createDeviceBuffer(_vtDevice, bfi, vtVertexInput->_uniformBlockBuffer);
-        _vtDevice->_deviceBuffersPtrs.push_back(vtVertexInput->_uniformBlockBuffer); // pin buffer with device
+        //_vtDevice->_deviceBuffersPtrs.push_back(vtVertexInput->_uniformBlockBuffer); // pin buffer with device
 
         // set primitive count (will loaded to "_uniformBlockBuffer" by cmdUpdateBuffer)
         vtVertexInput->_uniformBlock.primitiveCount = info.primitiveCount;
@@ -48,7 +48,7 @@ namespace _vt {
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexInput->_bBufferAttributeBindings->_descriptorInfo()).setOffset(info.attributeByteOffset)),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexInput->_uniformBlockBuffer->_descriptorInfo())),
         };
-        vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});
+        vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
 
         return result;
     };

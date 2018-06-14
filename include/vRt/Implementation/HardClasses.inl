@@ -6,6 +6,8 @@
 #include "HardClasses/Pipeline.inl"
 #include "HardClasses/MaterialSet.inl"
 #include "HardClasses/RadixSort.inl"
+#include "HardClasses/VertexInput.inl"
+#include "HardClasses/VertexAssembly.inl"
 #include "HardClasses/Accelerator.inl"
 #include "HardClasses/PhysicalDevice.inl"
 #include "HardClasses/Device.inl"

@@ -3,6 +3,7 @@
 //#include "../Parts/Headers.inl"
 
 #include <vulkan/vulkan.hpp> // only for inner usage
+#include <vulkan/vk_mem_alloc.h>
 #include <chrono>
 #include <fstream>
 #include <functional>
@@ -53,15 +54,15 @@ namespace _vt {
 
 
     // read binary (for SPIR-V)
-    inline std::vector<char> readBinary(std::string filePath) {
+    inline auto readBinary(std::string filePath) {
         std::ifstream file(filePath, std::ios::in | std::ios::binary | std::ios::ate);
-        std::vector<char> data;
+        std::vector<uint8_t> data;
         if (file.is_open())
         {
             std::streampos size = file.tellg();
             data.resize(size);
             file.seekg(0, std::ios::beg);
-            file.read(&data[0], size);
+            file.read((char *)data.data(), size);
             file.close();
         }
         else
@@ -130,7 +131,7 @@ namespace _vt {
 
     // create secondary command buffers for batching compute invocations
     inline auto createCommandBuffer(const VkDevice device, const VkCommandPool cmdPool, bool secondary = true) {
-        VkCommandBuffer cmdBuffer;
+        VkCommandBuffer cmdBuffer = nullptr;
 
         VkCommandBufferAllocateInfo cmdi;
         cmdi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -147,7 +148,8 @@ namespace _vt {
 
         VkCommandBufferBeginInfo bgi;
         bgi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        //bgi.flags = 0;
+		bgi.pNext = nullptr;
+		bgi.flags = {};
         //bgi.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
         bgi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         bgi.pInheritanceInfo = secondary ? &inhi : nullptr;
@@ -157,29 +159,42 @@ namespace _vt {
     };
 
     // create shader module
-    inline auto loadAndCreateShaderModule(VkDevice device, std::string path) {
-        auto code = readBinary(path);
-        VkShaderModuleCreateInfo smi{ VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr , 0, code.size(), (uint32_t *)code.data() };
-        VkShaderModule sm; vkCreateShaderModule(device, &smi, nullptr, &sm);
+	inline auto loadAndCreateShaderModule(VkDevice device, const std::vector<uint8_t>& code) {
+		VkShaderModuleCreateInfo smi;//{ VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr, {}, code.size(), (uint32_t *)code.data() };
+		smi.pNext = nullptr;
+		smi.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		smi.pCode = (uint32_t *)code.data();
+		smi.codeSize = code.size();
+		smi.flags = {};
+        VkShaderModule sm = nullptr;
+		vkCreateShaderModule(device, &smi, nullptr, &sm);
         return sm;
-    }
+	};
 
     // create compute pipelines
     inline auto createCompute(VkDevice device, std::string path, VkPipelineLayout layout, VkPipelineCache cache){
-        auto module = loadAndCreateShaderModule(device, path);
+		auto code = readBinary(path);
+        auto module = loadAndCreateShaderModule(device, code);
 
         VkPipelineShaderStageCreateInfo spi;
+		spi.pNext = nullptr;
         spi.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		spi.flags = {};
         spi.module = module;
         spi.pName = "main";
         spi.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+		spi.pSpecializationInfo = nullptr;
 
         VkComputePipelineCreateInfo cmpi;
+		cmpi.pNext = nullptr;
         cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		cmpi.flags = {};
         cmpi.layout = layout;
         cmpi.stage = spi;
+		cmpi.basePipelineHandle = {};
+		cmpi.basePipelineIndex = -1;
 
-        VkPipeline pipeline;
+        VkPipeline pipeline = nullptr;
         vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);
         return pipeline;
     }
@@ -191,7 +206,7 @@ namespace _vt {
         cmpi.layout = layout;
         cmpi.stage = spi;
 
-        VkPipeline pipeline;
+        VkPipeline pipeline = nullptr;
         vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);
         return pipeline;
     }
@@ -231,39 +246,54 @@ namespace _vt {
     }
 
     // make whole size buffer descriptor info
-    inline auto bufferDescriptorInfo(VkBuffer buffer, intptr_t offset = 0, VkDeviceSize size = VK_WHOLE_SIZE) {
-        return VkDescriptorBufferInfo(vk::DescriptorBufferInfo(buffer, offset, size));
+    inline auto bufferDescriptorInfo(vk::Buffer buffer, vk::DeviceSize offset = 0, vk::DeviceSize size = VK_WHOLE_SIZE) {
+        return vk::DescriptorBufferInfo(buffer, offset, size);
     }
 
 
+
+
+	// submit command (with async wait)
+	inline void submitCmd(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, VkSubmitInfo smbi = {}) {
+		// no commands 
+		if (cmds.size() <= 0) return;
+
+		smbi.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		smbi.commandBufferCount = cmds.size();
+		smbi.pCommandBuffers = cmds.data();
+
+		VkFence fence = nullptr; VkFenceCreateInfo fin{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr };
+		vkCreateFence(device, &fin, nullptr, &fence);
+		vkQueueSubmit(queue, 1, &smbi, fence);
+		vkWaitForFences(device, 1, &fence, true, DEFAULT_FENCE_TIMEOUT);
+		vkDestroyFence(device, fence, nullptr);
+	}
+
     // submit command (with async wait)
-    inline void submitCmdAsync(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, std::function<void()> asyncCallback = {}){
+    inline void submitCmdAsync(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, std::function<void()> asyncCallback = {}, VkSubmitInfo smbi = {}) {
         // no commands 
         if (cmds.size() <= 0) return;
 
-        VkSubmitInfo smbi;
         smbi.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        smbi.waitSemaphoreCount = 0;
-        smbi.signalSemaphoreCount = 0;
         smbi.commandBufferCount = cmds.size();
         smbi.pCommandBuffers = cmds.data();
 
-        VkFence fence; VkFenceCreateInfo fin{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr };
+        VkFence fence = nullptr; VkFenceCreateInfo fin{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr };
         vkCreateFence(device, &fin, nullptr, &fence);
         vkQueueSubmit(queue, 1, &smbi, fence);
         std::async(std::launch::async | std::launch::deferred, [=]() {
             vkWaitForFences(device, 1, &fence, true, DEFAULT_FENCE_TIMEOUT);
             std::async(std::launch::async | std::launch::deferred, [=]() {
                 vkDestroyFence(device, fence, nullptr);
-                asyncCallback();
+                if (asyncCallback) asyncCallback();
             });
         });
     }
 
 
     // once submit command buffer
-    inline void submitOnce(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> asyncCallback = {}) {
-        auto cmdBuf = createCommandBuffer(device, cmdPool, false);
+    inline void submitOnce(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, std::function<void(VkCommandBuffer)> asyncCallback = {}, VkSubmitInfo smbi = {}) {
+        auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf);
         submitCmdAsync(device, queue, { cmdBuf }, [=]() {
             asyncCallback(cmdBuf); // call async callback
             vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer

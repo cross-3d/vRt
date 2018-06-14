@@ -28,6 +28,8 @@ namespace _vt {
 
                 // create pipeline layout
                 vtAccelerator->_buildPipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
+				auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+				vtAccelerator->_buildDescriptorSet = dsc[0];
             };
 
             {
@@ -49,6 +51,10 @@ namespace _vt {
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
+				bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16;
+				bfi.format = VK_FORMAT_UNDEFINED;
+				createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_leafBuffer);
+
                 bfi.bufferSize = maxPrimitives * sizeof(uint64_t);
                 bfi.format = VK_FORMAT_R32G32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_mortonCodesBuffer);
@@ -57,9 +63,9 @@ namespace _vt {
                 bfi.format = VK_FORMAT_R32_SINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_mortonIndicesBuffer);
 
-                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16 * 2;
-                bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_boundaryResultBuffer);
+                //bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16 * 2;
+                //bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                //createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_boundaryResultBuffer);
 
                 bfi.bufferSize = maxPrimitives * 2 * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
@@ -93,9 +99,8 @@ namespace _vt {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(6).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_currentNodeIndices->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(7).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_leafNodeIndices->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(9).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_generalBoundaryResultBuffer->_descriptorInfo())),
-                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(12).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_boundaryResultBuffer->_descriptorInfo())),
                 };
-                vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});
+                vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
             };
 
             // create pipelines (planned to unify between accelerator instances)
@@ -124,7 +129,7 @@ namespace _vt {
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonCodesBuffer->_descriptorInfo())), //unused
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonIndicesBuffer->_descriptorInfo()))
             };
-            vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});
+            vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
         };
 
         return result;
@@ -183,7 +188,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_bvhBlockUniform->_descriptorInfo())),
                 };
-                vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});
+                vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
             };
         };
 

@@ -8,14 +8,14 @@ namespace _vt {
     // make default descriptor info for buffers
     template<VmaMemoryUsage U>
     inline VkDescriptorBufferInfo RoledBuffer<U>::_descriptorInfo() const {
-        //return VkDescriptorBufferInfo(vk::DescriptorBufferInfo(_buffer, 0u, VK_WHOLE_SIZE));
+        //return vk::DescriptorBufferInfo(_buffer, 0u, VK_WHOLE_SIZE);
         return bufferDescriptorInfo(_buffer);
     };
 
     // destructor of advanced buffer
     template<VmaMemoryUsage U>
     inline RoledBuffer<U>::~RoledBuffer() {
-        vmaDestroyBuffer(_device.lock()->_allocator, _buffer, _allocation);
+        vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
     };
 
     template<VmaMemoryUsage U>
@@ -47,7 +47,9 @@ namespace _vt {
             if (result == VK_SUCCESS && cinfo.format) {
                 vtDeviceBuffer->_bufferView;
                 VkBufferViewCreateInfo bvi;
+				bvi.pNext = nullptr;
                 bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+				bvi.flags = {};
                 bvi.buffer = vtDeviceBuffer->_buffer;
                 bvi.format = cinfo.format;
                 bvi.offset = 0;

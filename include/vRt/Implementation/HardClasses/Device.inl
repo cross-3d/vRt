@@ -14,14 +14,16 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
 
         VmaAllocatorCreateInfo allocatorInfo;
-        allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice.lock());
+        allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice);
         allocatorInfo.device = vtDevice->_device;
         allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb
-        allocatorInfo.flags = VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VmaAllocationCreateFlagBits::VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        allocatorInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		allocatorInfo.pAllocationCallbacks = nullptr;
+		allocatorInfo.pVulkanFunctions = nullptr;
         if (vmaCreateAllocator(&allocatorInfo, &vtDevice->_allocator) == VK_SUCCESS) { result = VK_SUCCESS; };
 
         // link device with vulkan.hpp
-        auto& _device = vk::Device(vtDevice->_device);
+        auto _device = vk::Device(vtDevice->_device);
 
         // create default pipeline cache
         vtDevice->_pipelineCache = VkPipelineCache(_device.createPipelineCache(vk::PipelineCacheCreateInfo()));
@@ -39,14 +41,20 @@ namespace _vt {
         };
         vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(128).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size())));
         vtDevice->_mainFamilyIndex = vtExtension.mainQueueFamily;
+		vtDevice->_shadersPath = vtExtension.shaderPath;
 
         // make traffic buffers 
         VtDeviceBufferCreateInfo dbfi;
         dbfi.bufferSize = tiled(vtExtension.sharedCacheSize, sizeof(uint32_t));
         dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
         dbfi.familyIndex = vtExtension.mainQueueFamily;
-        createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_uploadBuffer);
-        createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_downloadBuffer);
+
+
+		// make weak proxy (avoid cycled linking)
+		vtDevice->_bufferTraffic = std::make_shared<BufferTraffic>();
+		vtDevice->_bufferTraffic->_device = vtDevice;
+        createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_uploadBuffer);
+        createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_downloadBuffer);
 
 
         {

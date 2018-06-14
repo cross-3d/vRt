@@ -9,7 +9,7 @@ namespace _vt { // store in undercover namespace
     // TODO merge some extra functions to another headers
 
 
-    uint32_t VtIdentifier = 0x1FFu;
+    constexpr uint32_t VtIdentifier = 0x1FFu;
     struct VkShortHead {
         //uint32_t sublevel : 24, identifier : 12;
         uint32_t sublevel : 12, identifier : 24; // I don't know ordering of bits

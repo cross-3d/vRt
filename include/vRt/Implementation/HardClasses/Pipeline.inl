@@ -123,7 +123,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(6).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_constBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(8).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_blockBuffer->_descriptorInfo())),
                 };
-                vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});
+                vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
             };
         }
 

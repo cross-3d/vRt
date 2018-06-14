@@ -12,7 +12,7 @@ namespace _vt {
 
     // destructor of DeviceImage
     inline DeviceImage::~DeviceImage() {
-        vmaDestroyImage(_device.lock()->_allocator, _image, _allocation);
+        vmaDestroyImage(_device->_allocator, _image, _allocation);
     };
 
 

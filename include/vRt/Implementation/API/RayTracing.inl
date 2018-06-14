@@ -40,13 +40,13 @@ namespace _vt {
     VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t x = 1, uint32_t y = 1) {
         VtResult result = VK_SUCCESS;
 
-        auto &device = cmdBuf->_parent();
-        auto &acclb = device->_acceleratorBuilder;
-        auto &accel = cmdBuf->_acceleratorSet;
-        auto &vertx = cmdBuf->_vertexSet;
-        auto &matrl = cmdBuf->_materialSet;
-        auto &rtppl = cmdBuf->_rayTracingPipeline;
-        auto &rtset = cmdBuf->_rayTracingSet;
+        auto device = cmdBuf->_parent();
+        auto acclb = device->_acceleratorBuilder;
+        auto accel = cmdBuf->_acceleratorSet.lock();
+        auto vertx = cmdBuf->_vertexSet.lock();
+        auto matrl = cmdBuf->_materialSet.lock();
+        auto rtppl = cmdBuf->_rayTracingPipeline.lock();
+        auto rtset = cmdBuf->_rayTracingSet.lock();
 
         const uint32_t WG_COUNT = 64;
         const uint32_t RADICE_AFFINE = 16;

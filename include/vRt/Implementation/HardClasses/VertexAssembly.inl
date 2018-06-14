@@ -81,7 +81,7 @@ namespace _vt {
             tfi.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             tfi.layout = VK_IMAGE_LAYOUT_GENERAL;
             tfi.mipLevels = 1;
-            tfi.size = { 6144u, tiled(maxPrimitives * 3u * ATTRIB_EXTENT, 6144ull) };
+            tfi.size = { 6144u, uint32_t(tiled(maxPrimitives * 3u * ATTRIB_EXTENT, 6144ull)) };
             createDeviceImage(_vtDevice, tfi, vtVertexAssembly->_attributeTexelBuffer);
         };
 
@@ -114,7 +114,7 @@ namespace _vt {
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView(&vk::BufferView(vtVertexAssembly->_verticeBuffer->_bufferView)),
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(6).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&vk::DescriptorImageInfo(vtVertexAssembly->_attributeTexelBuffer->_descriptorInfo()).setSampler(attributeSampler)),
             };
-            vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});
+            vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
         };
 
         return result;

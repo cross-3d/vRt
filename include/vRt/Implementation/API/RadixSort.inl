@@ -10,8 +10,8 @@ namespace _vt {
         constexpr auto STEPS = 8u, WG_COUNT = 64u, RADICE_AFFINE = 16u;
 
         VtResult result = VK_SUCCESS;
-        auto &device = cmdBuf->_parent();
-        auto &radix = device->_radixSort;
+        auto device = cmdBuf->_parent();
+        auto radix = device->_radixSort;
         std::vector<VkDescriptorSet> _sets = { radix->_descriptorSet, inputSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, radix->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         for (uint32_t i = 0; i < STEPS; i++) {

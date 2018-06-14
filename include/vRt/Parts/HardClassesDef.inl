@@ -21,6 +21,7 @@ namespace _vt { // store in undercover namespace
     class VertexAssembly;
     class VertexAssemblySet;
     class RayTracingSet;
+	class BufferTraffic;
 
     // use roled buffers
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY> class RoledBuffer;

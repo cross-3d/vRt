@@ -26,12 +26,23 @@ namespace _vt { // store in undercover namespace
     public:
         friend Instance;
         VkPhysicalDevice _physicalDevice = nullptr;
-        std::weak_ptr<Instance> _instance;
+        std::shared_ptr<Instance> _instance;
 
         operator VkPhysicalDevice() const { return _physicalDevice; };
-        std::shared_ptr<Instance> _parent() const { return _instance.lock(); };
+        std::shared_ptr<Instance> _parent() const { return _instance; };
     };
 
+
+
+	// host <-> device buffer traffic
+	class BufferTraffic : public std::enable_shared_from_this<BufferTraffic> {
+	public:
+		friend Device;
+		std::weak_ptr<Device> _device;
+		std::shared_ptr<HostToDeviceBuffer> _uploadBuffer; // from host
+		std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
+		std::shared_ptr<Device> _parent() const { return _device.lock(); };
+	};
 
 
     // ray tracing device with aggregation
@@ -39,7 +50,7 @@ namespace _vt { // store in undercover namespace
     public:
         friend PhysicalDevice;
         VkDevice _device = nullptr;
-        std::weak_ptr<PhysicalDevice> _physicalDevice;
+        std::shared_ptr<PhysicalDevice> _physicalDevice;
 
         uint32_t _mainFamilyIndex = 0;
         std::string _shadersPath = "./";
@@ -48,26 +59,26 @@ namespace _vt { // store in undercover namespace
         VkDescriptorPool _descriptorPool;
 
         std::shared_ptr<RadixSort> _radixSort; // create native radix sort
-        std::shared_ptr<Accelerator> _acceleratorBuilder; 
-        std::shared_ptr<VertexAssembly> _vertexAssembler; 
+        std::shared_ptr<Accelerator> _acceleratorBuilder;
+        std::shared_ptr<VertexAssembly> _vertexAssembler;
+		std::shared_ptr<BufferTraffic> _bufferTraffic;
 
         //std::shared_ptr<CopyProgram> _copyProgram; // create native pipelines for (indirect) copying
-        std::shared_ptr<HostToDeviceBuffer> _uploadBuffer; // from host
-        std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
+       
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap; // descriptor layout map in ray tracing system
 
         // weak pointers with in-device bind allocatable objects
         // make sure that these buffers stil may destoyed
-        std::vector<std::weak_ptr<DeviceToHostBuffer>> _deviceToHostBuffersPtrs;
-        std::vector<std::weak_ptr<HostToDeviceBuffer>> _hostToDeviceBuffersPtrs;
-        std::vector<std::weak_ptr<DeviceBuffer>> _deviceBuffersPtrs;
-        std::vector<std::weak_ptr<DeviceImage>> _deviceImagesPtrs;
+        //std::vector<std::weak_ptr<DeviceToHostBuffer>> _deviceToHostBuffersPtrs;
+        //std::vector<std::weak_ptr<HostToDeviceBuffer>> _hostToDeviceBuffersPtrs;
+        //std::vector<std::weak_ptr<DeviceBuffer>> _deviceBuffersPtrs;
+        //std::vector<std::weak_ptr<DeviceImage>> _deviceImagesPtrs;
 
         operator VkDevice() const { return _device; };
         operator VkPipelineCache() const { return _pipelineCache; };
         operator VkDescriptorPool() const { return _descriptorPool; };
         operator VmaAllocator() const { return _allocator; };
-        std::shared_ptr<PhysicalDevice> _parent() const { return _physicalDevice.lock(); };
+        std::shared_ptr<PhysicalDevice> _parent() const { return _physicalDevice; };
     };
 
 
@@ -77,18 +88,18 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         VkCommandBuffer _commandBuffer = nullptr;
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
 
-        std::shared_ptr<RayTracingSet> _rayTracingSet;
-        std::shared_ptr<MaterialSet> _materialSet; // will bound in "cmdDispatch" 
-        std::shared_ptr<AcceleratorSet> _acceleratorSet;
-        std::shared_ptr<VertexAssemblySet> _vertexSet;
-        std::shared_ptr<Pipeline> _rayTracingPipeline;
-        std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs; // bound vertex input sets 
+        std::weak_ptr<RayTracingSet> _rayTracingSet;
+        std::weak_ptr<MaterialSet> _materialSet; // will bound in "cmdDispatch" 
+        std::weak_ptr<AcceleratorSet> _acceleratorSet;
+        std::weak_ptr<VertexAssemblySet> _vertexSet;
+        std::weak_ptr<Pipeline> _rayTracingPipeline;
+        std::vector<std::weak_ptr<VertexInputSet>> _vertexInputs; // bound vertex input sets 
         std::vector<VkDescriptorSet> _boundDescriptorSets;
 
         operator VkCommandBuffer() const { return _commandBuffer; };
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
     };
 
 
@@ -98,10 +109,10 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         VkPipelineLayout _pipelineLayout = nullptr; // replaced set 0 and 1
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
 
         operator VkPipelineLayout() const { return _pipelineLayout; }; // no correct conversion
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
     };
 
 
@@ -110,14 +121,14 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         VkDescriptorSet _descriptorSet = nullptr;
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
 
         // in-set buffers
         std::shared_ptr<DeviceBuffer> _rayBuffer, _rayIndiceBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer;
 
         
         operator VkDescriptorSet() const { return _descriptorSet; };
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
     };
 
 
@@ -127,20 +138,17 @@ namespace _vt { // store in undercover namespace
         friend Device;
         const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
 
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
         std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout, when pipeline was created
 
         // 
         VkPipeline _generationPipeline, _closestHitPipeline, _missHitPipeline, _resolvePipeline;
 
-        // ray tracing set
-        std::weak_ptr<RayTracingSet> _rayTracingSet;
-
         // material and accelerator descriptor sets, that sets to "1" is dedicated by another natives
         std::vector<VkDescriptorSet> _userDefinedDescriptorSets; // beyond than 1 only
 
         operator VkPipeline() const { return _dullPipeline; };
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
     };
 
 
@@ -149,7 +157,7 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         VkDescriptorSet _descriptorSet = nullptr;
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
 
         // vertex and bvh export 
         std::shared_ptr<DeviceImage> _attributeTexelBuffer;
@@ -162,7 +170,7 @@ namespace _vt { // store in undercover namespace
         uint32_t _calculatedPrimitiveCount = 0;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
     };
 
 
@@ -176,8 +184,8 @@ namespace _vt { // store in undercover namespace
         VkPipeline _vertexAssemblyPipeline;
         VkPipelineLayout _vertexAssemblyPipelineLayout;
 
-        // binding vertex assembly set
-        std::weak_ptr<VertexAssemblySet> _vertexAssemblySet;
+		operator VkPipeline() const { return _dullPipeline; };
+		std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
 
@@ -186,13 +194,13 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         VkDescriptorSet _descriptorSet; // protect from stupid casting
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
 
         // vertex and bvh export 
         std::shared_ptr<DeviceBuffer> _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
     };
 
 
@@ -219,14 +227,14 @@ namespace _vt { // store in undercover namespace
 
         // vertex assembly set
         std::shared_ptr<VertexAssemblySet> _vertexAssemblySet;
-        std::weak_ptr<AcceleratorSet> _acceleratorSet;
 
         // internal buffers
-        std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _boundaryResultBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer;
+        std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer;
 
         operator VkPipeline() const { return _dullPipeline; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
+
 
 
 
@@ -238,7 +246,7 @@ namespace _vt { // store in undercover namespace
 
         friend Device;
         VkBuffer _buffer = nullptr;
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
 
         VkBufferView _bufferView;
         VmaAllocation _allocation;
@@ -261,7 +269,7 @@ namespace _vt { // store in undercover namespace
 
         friend Device;
         VkImage _image = nullptr;
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
 
         VkImageView _imageView;
         VmaAllocation _allocation;
@@ -271,7 +279,7 @@ namespace _vt { // store in undercover namespace
         VkImageLayout _initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, _layout = VK_IMAGE_LAYOUT_GENERAL;
         VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
 
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
         operator VkImage() const { return _image; }; // cast operator
         operator VkImageView() const { return _imageView; }; // cast operator
         VkDescriptorImageInfo _descriptorInfo() const; //generated structure
@@ -285,7 +293,7 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
         
         std::shared_ptr<DeviceBuffer> _histogramBuffer;
         std::shared_ptr<DeviceBuffer> _prefixSumBuffer;
@@ -296,7 +304,7 @@ namespace _vt { // store in undercover namespace
         VkPipelineLayout _pipelineLayout; // use unified pipeline layout
         VkDescriptorSet _descriptorSet;
 
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
         operator VkPipeline() const { return _dullPipeline; };
     };
 
@@ -309,12 +317,12 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
 
         VkPipeline _bufferCopyPipeline, _bufferCopyIndirectPipeline, _imageCopyPipeline, _imageCopyIndirectPipeline;
         VkPipelineLayout _bufferCopyPipelineLayout, _imageCopyPipelineLayout;
 
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
         operator VkPipeline() const { return _dullPipeline; };
     };
 
@@ -324,7 +332,7 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         VkDescriptorSet _descriptorSet = nullptr;
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
 
         // textures and samplers bound in descriptor set directly
 
@@ -336,7 +344,7 @@ namespace _vt { // store in undercover namespace
         uint32_t _materialCount = 0;
         uint32_t _materialOffset = 0;
 
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
         operator VkDescriptorSet() const { return _descriptorSet; };
     };
 
@@ -353,7 +361,7 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         VkDescriptorSet _descriptorSet = nullptr;
-        std::weak_ptr<Device> _device;
+        std::shared_ptr<Device> _device;
         VtUniformBlock _uniformBlock;
 
         // buffer pointers for storing vertexInput
@@ -365,7 +373,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _uniformBlockBuffer; // replacement for push constant (contains primitiveCount, verticeAccessorID, indiceAccessorID, materialID)
         std::shared_ptr<DeviceBuffer> _dataSourceBuffer; // universe buffer for vertex input
 
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        std::shared_ptr<Device> _parent() const { return _device; };
         operator VkDescriptorSet() const { return _descriptorSet; };
     };
 

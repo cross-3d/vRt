@@ -65,7 +65,7 @@ namespace _vt {
                     //vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtMaterialSet->_materialDataBuffer->_descriptorInfo())),
                     //vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setPBufferInfo(&vk::DescriptorBufferInfo(vtMaterialSet->_virtualSamplerCombinedBuffer->_descriptorInfo())),
                 };
-                vk::Device(*_vtDevice).updateDescriptorSets(_write_tmpl, {});
+                vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
             };
         }
 

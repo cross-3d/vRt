@@ -36,12 +36,13 @@ namespace _vt {
 
     VtResult buildVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf) {
         VtResult result = VK_SUCCESS;
-        auto &device = cmdBuf->_parent();
-        auto &vertb = device->_vertexAssembler;
-        auto &vertx = cmdBuf->_vertexSet;
+        auto device = cmdBuf->_parent();
+        auto vertb = device->_vertexAssembler;
+        auto vertx = cmdBuf->_vertexSet.lock();
         cmdFillBuffer<0u>(*cmdBuf, *vertx->_countersBuffer);
         vertx->_calculatedPrimitiveCount = 0;
-        for (auto& iV : cmdBuf->_vertexInputs) {
+        for (auto& iV_ : cmdBuf->_vertexInputs) {
+			auto iV = iV_.lock();
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, vertb->_vertexAssemblyPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, 4096);
@@ -54,10 +55,10 @@ namespace _vt {
 
     VtResult buildAccelerator(std::shared_ptr<CommandBuffer>& cmdBuf) {
         VtResult result = VK_SUCCESS;
-        auto &device = cmdBuf->_parent();
-        auto &acclb = device->_acceleratorBuilder;
-        auto &accel = cmdBuf->_acceleratorSet;
-        auto &vertx = cmdBuf->_vertexSet;
+        auto device = cmdBuf->_parent();
+        auto acclb = device->_acceleratorBuilder;
+        auto accel = cmdBuf->_acceleratorSet.lock();
+		auto vertx = cmdBuf->_vertexSet.lock();
 
         // copy vertex assembly counter values
         cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64+0), strided<uint32_t>(1)) });

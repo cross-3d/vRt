@@ -47,9 +47,12 @@ set(SOURCES_LIST
     #"./include/tinyrender/*/*.c"
     #"./include/tinyrender/*/*.cpp"
     "./include/vRt/*.c"
-    "./include/vRt/*.cpp"
+    #"./include/vRt/*.cpp"
     "./include/vRt/*/*.c"
-    "./include/vRt/*/*.cpp"
+    #"./include/vRt/*/*.cpp"
+    "./include/*.h"
+    "./include/*.hpp"
+    "./include/*.inl"
     "./include/*/*.h"
     "./include/*/*.hpp"
     "./include/*/*.inl"
@@ -73,9 +76,8 @@ set (DEFINES
     -D_USE_MATH_DEFINES
     -DGLM_ENABLE_EXPERIMENTAL
     -DGLFW_INCLUDE_NONE
-    -DUSE_CIMG
     -DEXPERIMENTAL_GLTF
-    -DNSM=vt
+    -DNSM=vte
     -DTINY_RENDERER_VK
 )
 

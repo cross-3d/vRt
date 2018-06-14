@@ -9,15 +9,15 @@ namespace vt {
     using namespace _vt;
 
     inline VtResult vtCreateDevice(VtPhysicalDevice vtPhysicalDevice, const VkDeviceCreateInfo * deviceCreateInfo, VtDevice * vtDevice) {
-        return createDevice(vtPhysicalDevice._vtPhysicalDevice, *deviceCreateInfo, vtDevice->_vtDevice);
+        return createDevice(vtPhysicalDevice, *deviceCreateInfo, vtDevice->_vtDevice);
     };
 
-    inline VtResult vtConvertDevice(VkDevice vkDevice, VtPhysicalDevice vtPhysicalDevice, const VtArtificalDeviceExtension * vtDeviceExtension, VtDevice * vtDevice) {
+    inline VtResult vtConvertDevice(VtPhysicalDevice vtPhysicalDevice, VkDevice vkDevice, const VtArtificalDeviceExtension * vtDeviceExtension, VtDevice * vtDevice) {
         return convertDevice(vkDevice, vtPhysicalDevice, *vtDeviceExtension, *vtDevice);
     };
 
     inline VtResult vtCmdImageBarrier(VkCommandBuffer cmd, VtDeviceImage image) {
-        return imageBarrier(cmd, image._vtDeviceImage);
+        return imageBarrier(cmd, image);
     };
 
     inline VtResult vtCreateRayTracingPipelineLayout(VtDevice device, const VkPipelineLayoutCreateInfo * vtRayTracingPipelineLayoutCreateInfo, VtPipelineLayout * vtPipelineLayout) {
@@ -104,12 +104,19 @@ namespace vt {
 
     inline VtResult vtConvertInstance(VkInstance vkInstance, const VtInstanceConversionInfo * cinfo, VtInstance * vtInstance) {
         return convertInstance(vkInstance, *cinfo, *vtInstance);
-    };
+    };  
 
 
     // radix sort API
     inline VtResult vtRadixSort(VtCommandBuffer commandBuffer, VkDescriptorSet radixInput, uint32_t primCount) {
         return radixSort(commandBuffer, radixInput, primCount);
     };
+
+
+    // create device image and buffers
+    inline VtResult vtCreateDeviceImage(VtDevice device, const VtDeviceImageCreateInfo * info, VtDeviceImage * image) { return createDeviceImage(device, *info, *image); };
+    inline VtResult vtCreateDeviceBuffer(VtDevice device, const VtDeviceBufferCreateInfo * info, VtDeviceBuffer * buffer) { return createDeviceBuffer(device, *info, *buffer); };
+    inline VtResult vtCreateHostToDeviceBuffer(VtDevice device, const VtDeviceBufferCreateInfo * info, VtHostToDeviceBuffer * buffer) { return createHostToDeviceBuffer(device, *info, *buffer); };
+    inline VtResult vtCreateDeviceToHostBuffer(VtDevice device, const VtDeviceBufferCreateInfo * info, VtDeviceToHostBuffer * buffer) { return createDeviceToHostBuffer(device, *info, *buffer); };
 
 };

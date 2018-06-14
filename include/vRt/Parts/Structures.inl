@@ -21,6 +21,7 @@ namespace vt { // store in official namespace
         uint32_t mainQueueFamily = 0;
         size_t sharedCacheSize = 16u * 1024u * 1024u;
         size_t maxPrimitives = 1024u * 1024u;
+		std::string shaderPath = "./";
     };
 
     struct VtDeviceConversionInfo {
