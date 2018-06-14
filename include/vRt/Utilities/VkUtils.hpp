@@ -55,15 +55,13 @@ namespace _vt {
     inline auto readBinary(std::string filePath) {
         std::ifstream file(filePath, std::ios::in | std::ios::binary | std::ios::ate);
         std::vector<uint8_t> data;
-        if (file.is_open())
-        {
+        if (file.is_open()) {
             std::streampos size = file.tellg();
             data.resize(size);
             file.seekg(0, std::ios::beg);
             file.read((char *)data.data(), size);
             file.close();
-        } else
-        {
+        } else {
             std::cerr << "Failure to open " + filePath << std::endl;
         }
         return data;
@@ -73,15 +71,13 @@ namespace _vt {
     inline std::string readSource(const std::string &filePath, const bool &lineDirective = false) {
         std::string content = "";
         std::ifstream fileStream(filePath, std::ios::in);
-        if (!fileStream.is_open())
-        {
+        if (!fileStream.is_open()) {
             std::cerr << "Could not read file " << filePath << ". File does not exist."
                 << std::endl;
             return "";
         }
         std::string line = "";
-        while (!fileStream.eof())
-        {
+        while (!fileStream.eof()) {
             std::getline(fileStream, line);
             if (lineDirective || line.find("#line") == std::string::npos)
                 content.append(line + "\n");

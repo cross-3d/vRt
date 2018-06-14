@@ -27,29 +27,13 @@ namespace _vt {
         // init image dimensional type
         vk::ImageType imageType = vk::ImageType::e2D; bool isCubemap = false;
         switch (vk::ImageViewType(cinfo.imageViewType)) {
-            case vk::ImageViewType::e1D:
-            imageType = vk::ImageType::e1D;
-            break;
-            case vk::ImageViewType::e1DArray:
-            imageType = vk::ImageType::e2D;
-            break;
-            case vk::ImageViewType::e2D:
-            imageType = vk::ImageType::e2D;
-            break;
-            case vk::ImageViewType::e2DArray:
-            imageType = vk::ImageType::e3D;
-            break;
-            case vk::ImageViewType::e3D:
-            imageType = vk::ImageType::e3D;
-            break;
-            case vk::ImageViewType::eCube:
-            imageType = vk::ImageType::e3D;
-            isCubemap = true;
-            break;
-            case vk::ImageViewType::eCubeArray:
-            imageType = vk::ImageType::e3D;
-            isCubemap = true;
-            break;
+            case vk::ImageViewType::e1D: imageType = vk::ImageType::e1D; break;
+            case vk::ImageViewType::e1DArray: imageType = vk::ImageType::e2D; break;
+            case vk::ImageViewType::e2D: imageType = vk::ImageType::e2D; break;
+            case vk::ImageViewType::e2DArray: imageType = vk::ImageType::e3D; break;
+            case vk::ImageViewType::e3D: imageType = vk::ImageType::e3D; break;
+            case vk::ImageViewType::eCube: imageType = vk::ImageType::e3D; isCubemap = true; break;
+            case vk::ImageViewType::eCubeArray: imageType = vk::ImageType::e3D; isCubemap = true; break;
         };
 
         // additional usage

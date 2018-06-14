@@ -31,12 +31,12 @@ namespace _vt {
         // make memory usages 
         auto usageFlag = cinfo.usageFlag;
         if constexpr (U != VMA_MEMORY_USAGE_GPU_ONLY) { allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT; }
-        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { usageFlag |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; } else // from src only
-        if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { usageFlag |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; } else // to dst only
-        {
-            usageFlag |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-            if (cinfo.format) { usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT; } // if has format, add texel storage usage
-        } // bidirectional
+        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { usageFlag |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; } else {
+            if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { usageFlag |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; } else {
+                usageFlag |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+                if (cinfo.format) { usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT; } // if has format, add texel storage usage
+            }; // bidirectional
+        };
 
         auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, cinfo.bufferSize, usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &cinfo.familyIndex };
         if (vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo) == VK_SUCCESS) { result = VK_SUCCESS; };
