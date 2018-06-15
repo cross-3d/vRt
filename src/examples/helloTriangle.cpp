@@ -38,7 +38,7 @@ struct VtCameraUniform {
 
 // application fast utility for fill buffers
 template<class T>
-inline auto writeIntoBuffer(vte::Queue deviceQueue, const vt::VtDeviceBuffer& dBuffer, const std::vector<T>& vctr, size_t byteOffset = 0) {
+inline auto writeIntoBuffer(vte::Queue deviceQueue, const std::vector<T>& vctr, const vt::VtDeviceBuffer& dBuffer, size_t byteOffset = 0) {
     VkResult result = VK_SUCCESS;
     vt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
     vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
@@ -47,6 +47,18 @@ inline auto writeIntoBuffer(vte::Queue deviceQueue, const vt::VtDeviceBuffer& dB
     return result;
 };
 
+
+template<class T>
+inline auto readFromBuffer(vte::Queue deviceQueue, const vt::VtDeviceBuffer& dBuffer, std::vector<T>& vctr, size_t byteOffset = 0) {
+    VkResult result = VK_SUCCESS;
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+        vt::vtCmdCopyDeviceBufferToHost(cmdBuf, dBuffer, deviceQueue->device->rtDev, 1, (const VkBufferCopy *)&(vk::BufferCopy(0, byteOffset, vte::strided<T>(vctr.size()))));
+    });
+    vt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
+    return result;
+};
+
+
 inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer, size_t byteSize = 1024 * 16) {
     vt::VtDeviceBufferCreateInfo dbs;
     dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
@@ -54,7 +66,7 @@ inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer
     dbs.familyIndex = deviceQueue->familyIndex;
     dbs.format = VK_FORMAT_R16_UINT;
     vt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
-}
+};
 
 
 
@@ -194,7 +206,7 @@ void main() {
 
         // set first buffer data
         VtAppMaterial initialMaterialDesc;
-        writeIntoBuffer<VtAppMaterial>(deviceQueue, materialDescs, { initialMaterialDesc }, 0);
+        writeIntoBuffer<VtAppMaterial>(deviceQueue, { initialMaterialDesc }, materialDescs, 0);
     }
 
 
@@ -204,7 +216,7 @@ void main() {
 
         // set first buffer data
         VtVirtualCombinedImage initialMaterialDesc;
-        writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, materialCombImages, { initialMaterialDesc }, 0);
+        writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, { initialMaterialDesc }, materialCombImages,  0);
     }
 
     {
@@ -252,7 +264,7 @@ void main() {
         cameraUniformData.projInv = glm::transpose(glm::inverse(pjMatrix));
         cameraUniformData.camInv = glm::transpose(glm::inverse(atMatrix));
         cameraUniformData.sceneRes = glm::vec4(1280.f, 720.f, 1.f, 1.f);
-        writeIntoBuffer<VtCameraUniform>(deviceQueue, rtUniformBuffer, { cameraUniformData }, 0);
+        writeIntoBuffer<VtCameraUniform>(deviceQueue, { cameraUniformData }, rtUniformBuffer, 0);
     }
 
     { 
@@ -323,7 +335,7 @@ void main() {
             { 3, 0, VT_R32G32B32_SFLOAT }, // tangents
             { 4, 0, VT_R32G32B32_SFLOAT }, // bitangents
         };
-        writeIntoBuffer(deviceQueue, VAccessorSet, accessors, 0);
+        writeIntoBuffer(deviceQueue, accessors, VAccessorSet, 0);
 
         // attribute binding with accessors
         std::vector<VtVertexAttributeBinding> attributes = {
@@ -332,13 +344,13 @@ void main() {
             { 2, 3 }, 
             { 3, 4 },
         };
-        writeIntoBuffer(deviceQueue, VAttributes, attributes, 0);
+        writeIntoBuffer(deviceQueue, attributes, VAttributes, 0);
 
         // global buffer space
         std::vector<VtVertexAttributeBinding> bufferRegions = {
             { 0, 1024 * 16 },
         };
-        writeIntoBuffer(deviceQueue, VBufferRegions, bufferRegions, 0);
+        writeIntoBuffer(deviceQueue, bufferRegions, VBufferRegions, 0);
 
         // vertice using first offsets for vertices, anothers using seros, planned add colors support
         std::vector<VtVertexBufferView> bufferViews = {
@@ -348,7 +360,7 @@ void main() {
             { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
             { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
         };
-        writeIntoBuffer(deviceQueue, VBufferView, bufferViews, 0);
+        writeIntoBuffer(deviceQueue, bufferViews, VBufferView, 0);
 
         // test vertex data
         std::vector<glm::vec3> vertices = {
@@ -380,9 +392,9 @@ void main() {
         };
 
         // write data space by offsets
-        writeIntoBuffer(deviceQueue, VDataSpace, vertices, 0u);
-        writeIntoBuffer(deviceQueue, VDataSpace, zeros, sizeof(glm::vec3) * 6);
-        writeIntoBuffer(deviceQueue, VDataSpace, colors, sizeof(glm::vec3) * 12);
+        writeIntoBuffer(deviceQueue, vertices, VDataSpace, 0u);
+        writeIntoBuffer(deviceQueue, zeros, VDataSpace, sizeof(glm::vec3) * 6);
+        writeIntoBuffer(deviceQueue, colors, VDataSpace, sizeof(glm::vec3) * 12);
     }
 
     // create vertex input
