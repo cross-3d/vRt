@@ -280,23 +280,22 @@ namespace _vt {
 
 
     // submit command (with async wait)
-    inline void submitCmd(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, VkSubmitInfo smbi = {}) {
+    inline void submitCmd(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, vk::SubmitInfo smbi = {}) {
         // no commands 
         if (cmds.size() <= 0) return;
 
-        smbi.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         smbi.commandBufferCount = cmds.size();
-        smbi.pCommandBuffers = cmds.data();
+        smbi.pCommandBuffers = (vk::CommandBuffer *)cmds.data();
 
         VkFence fence = nullptr; VkFenceCreateInfo fin{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr };
         vkCreateFence(device, &fin, nullptr, &fence);
-        vkQueueSubmit(queue, 1, &smbi, fence);
+        vkQueueSubmit(queue, 1, (const VkSubmitInfo *)&smbi, fence);
         vkWaitForFences(device, 1, &fence, true, DEFAULT_FENCE_TIMEOUT);
         vkDestroyFence(device, fence, nullptr);
     };
 
     // once submit command buffer
-    inline void submitOnce(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, VkSubmitInfo smbi = {}) {
+    inline void submitOnce(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, vk::SubmitInfo smbi = {}) {
         auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf);
         submitCmd(device, queue, { cmdBuf });
         vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer
@@ -304,17 +303,16 @@ namespace _vt {
 
 
     // submit command (with async wait)
-    inline void submitCmdAsync(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, std::function<void()> asyncCallback = {}, VkSubmitInfo smbi = {}) {
+    inline void submitCmdAsync(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, std::function<void()> asyncCallback = {}, vk::SubmitInfo smbi = {}) {
         // no commands 
         if (cmds.size() <= 0) return;
 
-        smbi.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         smbi.commandBufferCount = cmds.size();
-        smbi.pCommandBuffers = cmds.data();
+        smbi.pCommandBuffers = (const vk::CommandBuffer *)cmds.data();
 
         VkFence fence = nullptr; VkFenceCreateInfo fin{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr };
         vkCreateFence(device, &fin, nullptr, &fence);
-        vkQueueSubmit(queue, 1, &smbi, fence);
+        vkQueueSubmit(queue, 1, (const VkSubmitInfo *)&smbi, fence);
         std::async(std::launch::async | std::launch::deferred, [=]() {
             vkWaitForFences(device, 1, &fence, true, DEFAULT_FENCE_TIMEOUT);
             std::async(std::launch::async | std::launch::deferred, [=]() {
@@ -325,7 +323,7 @@ namespace _vt {
     };
 
     // once submit command buffer
-    inline void submitOnceAsync(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, std::function<void(VkCommandBuffer)> asyncCallback = {}, VkSubmitInfo smbi = {}) {
+    inline void submitOnceAsync(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, std::function<void(VkCommandBuffer)> asyncCallback = {}, vk::SubmitInfo smbi = {}) {
         auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf);
         submitCmdAsync(device, queue, { cmdBuf }, [=]() {
             asyncCallback(cmdBuf); // call async callback
