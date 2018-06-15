@@ -1,22 +1,7 @@
 #pragma once
 
-#include <chrono>
-#include <fstream>
-#include <functional>
-#include <future>
-#include <iostream>
-#include <stdexcept>
-#include <memory>
-#include <array>
-#include <map>
-#include <random>
-#include <vector>
-#include <algorithm>
-#include <execution>
-#include <iterator>
-#include <cstddef>
-
-#include <misc/half.hpp> // force include half's
+#include <stdio.h>
+#include <misc/half.hpp>
 #include <misc/pcg_random.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
@@ -39,3 +24,17 @@
 #ifndef NSM
 #define NSM vte
 #endif
+
+// include ray tracing library
+#include "vRt/vRt.h"
+
+// include inner utils from library (for development purpose)
+#include "vRt/Utilities/VkUtils.hpp"
+
+
+// inner utils of application
+namespace NSM {
+
+    
+
+};

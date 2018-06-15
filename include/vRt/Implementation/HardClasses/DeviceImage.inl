@@ -12,7 +12,9 @@ namespace _vt {
 
     // destructor of DeviceImage
     inline DeviceImage::~DeviceImage() {
-        vmaDestroyImage(_device->_allocator, _image, _allocation);
+        std::async(std::launch::async | std::launch::deferred, [=]() {
+            vmaDestroyImage(_device->_allocator, _image, _allocation);
+        });
     };
 
 

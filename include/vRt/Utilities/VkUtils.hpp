@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <vulkan/vulkan.hpp> // only for inner usage
 #include <vulkan/vk_mem_alloc.h>
+
+// include STL
 #include <chrono>
 #include <fstream>
 #include <functional>
@@ -31,7 +33,6 @@ namespace _vt {
         // return (int32_t)ceil((double)sz / (double)gmaxtile);
         return sz <= 0 ? 0 : (sz / gmaxtile + sgn(sz % gmaxtile));
     }
-
 
     inline double milliseconds() {
         auto duration = std::chrono::high_resolution_clock::now();

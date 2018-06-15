@@ -15,7 +15,9 @@ namespace _vt {
     // destructor of advanced buffer
     template<VmaMemoryUsage U>
     inline RoledBuffer<U>::~RoledBuffer() {
-        vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
+        std::async(std::launch::async | std::launch::deferred, [=]() {
+            vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
+        });
     };
 
     template<VmaMemoryUsage U>

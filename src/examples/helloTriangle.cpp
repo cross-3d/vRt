@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <sstream>
-
-//#define RVT_IMPLEMENTATION
-//#define VMA_IMPLEMENTATION
 
 #include <appBase.hpp>
 

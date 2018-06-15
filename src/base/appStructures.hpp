@@ -2,17 +2,6 @@
 
 #include "appUtils.hpp"
 
-// include vulkan headers
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vk_mem_alloc.h>
-
-// include ray tracing library
-#include <vRt/vRt.h>
-
-// include inner utils from library (for development purpose)
-#include <vRt/Utilities/VkUtils.hpp>
-//#include <vRt/Implementation/HardClasses.inl>
-
 namespace NSM {
     using namespace _vt;
 
