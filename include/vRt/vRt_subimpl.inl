@@ -4,4 +4,4 @@
 #include "vRt.h"
 #include "Utilities/VkUtils.hpp"
 #include "Implementation/API/Initializers.inl"
-#include "Implementation/API/Utils.inl"
+#include "Implementation/API/Utils.hpp"

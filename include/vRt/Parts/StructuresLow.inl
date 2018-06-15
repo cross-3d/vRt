@@ -53,7 +53,7 @@ namespace vt { // store in official namespace
 
         // per-component constructor
         VtVirtualCombinedImage(uint32_t textureID = 0u, uint32_t samplerID = 0u) : _combination({ textureID + 1u, samplerID + 1u }) {};
-        VtVirtualCombinedImage(uint64_t combined = 0ull) : _combined(combined) {};
+        VtVirtualCombinedImage(uint64_t combined) : _combined(combined) {};
         //VtVirtualCombinedImage() {};
 
         // component setters
@@ -69,12 +69,13 @@ namespace vt { // store in official namespace
         operator uint64_t&() { return _combined; };
     };
 
+    /*
     struct VtVertexDataBufferBinding {
         uint32_t binding = 0;
         VkBuffer pBuffer = nullptr;
         VkDeviceSize offset = 0;
     };
-
+    */
 
 
     typedef enum VtType : uint32_t {
@@ -109,6 +110,8 @@ namespace vt { // store in official namespace
         uint32_t byteOffset = 0;
         VtFormatDecomp format;
     };
+
+
 
 
 };

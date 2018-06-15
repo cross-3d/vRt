@@ -73,7 +73,8 @@ namespace vt { // store in official namespace
         const void* pNext = nullptr;
 
         // all sources buffer
-        VkBuffer sourceBuffer = nullptr;
+        //VkBuffer sourceBuffer = nullptr;
+        VkBufferView sourceBuffer = nullptr;
         uint32_t primitiveCount = 0;
         //uint32_t sourceBufferBinding;
 

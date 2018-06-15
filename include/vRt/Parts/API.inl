@@ -114,14 +114,12 @@ namespace vt { // store in official namespace
 
 
 
+    template <class T>
+    extern inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset = 0);
 
     template <class T>
-    extern inline void vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset = 0);
-
-    template <class T>
-    extern inline void vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset = 0);
+    extern inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset = 0);
     
     template <class T>
     extern inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, size_t count = 1, intptr_t offset = 0);
-
 };

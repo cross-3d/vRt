@@ -90,7 +90,7 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<AcceleratorSet> _acceleratorSet;
         std::weak_ptr<VertexAssemblySet> _vertexSet;
         std::weak_ptr<Pipeline> _rayTracingPipeline;
-        std::vector<std::weak_ptr<VertexInputSet>> _vertexInputs; // bound vertex input sets 
+        std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs; // bound vertex input sets 
         std::vector<VkDescriptorSet> _boundDescriptorSets;
 
         operator VkCommandBuffer() const { return _commandBuffer; };
@@ -252,7 +252,9 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
         operator VkBuffer() const { return _buffer; }; // cast operator
         operator VkBufferView() const { return _bufferView; }; // cast operator
-        VkDescriptorBufferInfo _descriptorInfo() const; //generated structure
+        auto _descriptorInfo() const {
+            return VkDescriptorBufferInfo{ _buffer, 0u, VK_WHOLE_SIZE };
+        };
     };
 
 
@@ -277,7 +279,9 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _parent() const { return _device; };
         operator VkImage() const { return _image; }; // cast operator
         operator VkImageView() const { return _imageView; }; // cast operator
-        VkDescriptorImageInfo _descriptorInfo() const; //generated structure
+        auto _descriptorInfo() const {
+            return VkDescriptorImageInfo{ {}, _imageView, _layout };
+        };
     };
 
 

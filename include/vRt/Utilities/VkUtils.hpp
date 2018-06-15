@@ -295,8 +295,8 @@ namespace _vt {
     };
 
     // once submit command buffer
-    inline void submitOnce(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, vk::SubmitInfo smbi = {}) {
-        auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf);
+    inline void submitOnce(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(const VkCommandBuffer&)> cmdFn = {}, vk::SubmitInfo smbi = {}) {
+        auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf); vkEndCommandBuffer(cmdBuf);
         submitCmd(device, queue, { cmdBuf });
         vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer
     };
@@ -323,8 +323,8 @@ namespace _vt {
     };
 
     // once submit command buffer
-    inline void submitOnceAsync(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, std::function<void(VkCommandBuffer)> asyncCallback = {}, vk::SubmitInfo smbi = {}) {
-        auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf);
+    inline void submitOnceAsync(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, std::function<void(const VkCommandBuffer&)> asyncCallback = {}, vk::SubmitInfo smbi = {}) {
+        auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf); vkEndCommandBuffer(cmdBuf);
         submitCmdAsync(device, queue, { cmdBuf }, [=]() {
             asyncCallback(cmdBuf); // call async callback
             vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer
@@ -349,5 +349,6 @@ namespace _vt {
         return vk::Device(device).createFence(info);
     }
 
-
 };
+
+

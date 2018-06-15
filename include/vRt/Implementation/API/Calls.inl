@@ -79,7 +79,11 @@ namespace vt {
 
 
     inline VtResult vtCmdBindVertexInputSets(VtCommandBuffer commandBuffer, uint32_t setCount, const VtVertexInputSet * sets) {
-        return bindVertexInputs(commandBuffer, makeVector<std::shared_ptr<VertexInputSet>>((std::shared_ptr<VertexInputSet>*)sets, setCount));
+        std::vector<std::shared_ptr<VertexInputSet>> inputSets;
+        for (int i = 0; i < setCount;i++) {
+            inputSets.push_back(sets[i]);
+        }
+        return bindVertexInputs(commandBuffer, inputSets);
     };
 
     // planned: roling by VtEntryUsageFlags
@@ -160,20 +164,21 @@ namespace vt {
     };
 
 
-
+    /*
     template <class T>
     inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset) {
-        return setBufferSubData(hostdata, buffer, offset);
+        setBufferSubData<T, VMA_MEMORY_USAGE_CPU_TO_GPU>(hostdata, buffer, offset); return VK_SUCCESS;
     };
 
     template <class T>
     inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset) {
-        return getBufferSubData(buffer, hostdata, offset);
+        getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, hostdata, offset); return VK_SUCCESS;
     };
 
     template <class T>
     inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, size_t count, intptr_t offset) {
-        return getBufferSubData(buffer, count, offset);
+        return getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, count, offset);
     };
+    */
 
 };

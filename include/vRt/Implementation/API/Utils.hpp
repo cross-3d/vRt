@@ -202,5 +202,29 @@ namespace _vt { // store in undercover namespace
         if (hostdata.size() > 0) memcpy(hostdata.data(), (const uint8_t *)buffer->_hostMapped() + offset, count * sizeof(T));
         return hostdata; // in return will copying, C++ does not made mechanism for zero-copy of anything
     }
-
 };
+
+
+
+// templates is not supported by static libs 
+// all pure C++ stuff will implementing by headers in SDK
+
+namespace vt {
+    using namespace _vt;
+
+    template <class T>
+    inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset) {
+        setBufferSubData<T, VMA_MEMORY_USAGE_CPU_TO_GPU>(hostdata, buffer, offset); return VK_SUCCESS;
+    };
+
+    template <class T>
+    inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset) {
+        getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, hostdata, offset); return VK_SUCCESS;
+    };
+
+    template <class T>
+    inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, size_t count, intptr_t offset) {
+        return getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, count, offset);
+    };
+};
+

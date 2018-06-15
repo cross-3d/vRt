@@ -1,6 +1,67 @@
 
 #include <appBase.hpp>
 
+
+
+
+struct VtAppMaterial {
+    glm::vec4 diffuse = glm::vec4(0.f);
+    glm::vec4 specular = glm::vec4(0.f);
+    glm::vec4 transmission = glm::vec4(0.f);
+    glm::vec4 emissive = glm::vec4(0.f);
+
+    float ior = 1.f;
+    float roughness = 0.f;
+    float alpharef = 0.f;
+    float unk0f = 0.f;
+
+    glm::uint diffuseTexture = 0;
+    glm::uint specularTexture = 0;
+    glm::uint bumpTexture = 0;
+    glm::uint emissiveTexture = 0;
+
+    int flags = 0;
+    int alphafunc = 0;
+    int binding = 0;
+    int bitfield = 0;
+};
+
+struct VtCameraUniform {
+    glm::mat4x4 camInv = glm::mat4x4(1.f);
+    glm::mat4x4 projInv = glm::mat4x4(1.f);
+    glm::vec4 sceneRes = glm::vec4(1.f);
+    int enable360 = 0, r0 = 0, r1 = 0, r2 = 0;
+};
+
+
+
+
+// application fast utility for fill buffers
+template<class T>
+inline auto writeIntoBuffer(vte::Queue deviceQueue, const vt::VtDeviceBuffer& dBuffer, const std::vector<T>& vctr, size_t byteOffset = 0) {
+    VkResult result = VK_SUCCESS;
+    vt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
+    vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+        vt::vtCmdCopyHostToDeviceBuffer(cmdBuf, deviceQueue->device->rtDev, dBuffer, 1, (const VkBufferCopy *)&(vk::BufferCopy(0, byteOffset, vte::strided<T>(vctr.size()))));
+    });
+    return result;
+};
+
+inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer, size_t byteSize = 1024 * 16) {
+    vt::VtDeviceBufferCreateInfo dbs;
+    dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    dbs.bufferSize = 1024 * 16;
+    dbs.familyIndex = deviceQueue->familyIndex;
+    dbs.format = VK_FORMAT_R16_UINT;
+    vt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
+}
+
+
+
+
+
+
+
 void main() {
     using namespace vt;
 
@@ -59,84 +120,313 @@ void main() {
     VtDeviceImage outImage;
     vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outImage);
 
+    // dispatch image barrier
+    vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+        vtCmdImageBarrier(cmdBuf, outImage);
+    });
+
+
 
 
     //////////////////////////////////////
     // ray tracing preparing long stage //
     //////////////////////////////////////
 
-    // custom bindings for ray tracing systems
+    VtDeviceImage envImage;
+    VtDeviceImage dullImage;
+    VkSampler dullSampler;
+    VtDeviceBuffer materialDescs;
+    VtDeviceBuffer materialCombImages;
+    VkDescriptorSet usrDescSet;
     std::vector<vk::DescriptorSetLayout> customedLayouts;
-    const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
-        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // constants for generation shader
-        vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute) // env map for miss shader
-    };
-    customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
+    VtMaterialSet materialSet;
+    VtRayTracingSet raytracingSet;
+    VtPipelineLayout rtPipelineLayout;
+    VtPipeline rtPipeline;
+    VtAcceleratorSet accelerator;
+    VtVertexAssemblySet vertexAssembly;
+    VtVertexInputSet vertexInput;
+    VkCommandBuffer bCmdBuf, rtCmdBuf;
+    VtDeviceBuffer rtUniformBuffer;
 
-    // create descriptor set, based on layout
-    // TODO: fill descriptor set by inputs
-    auto dsc = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setPSetLayouts(customedLayouts.data()).setDescriptorSetCount(customedLayouts.size()));
 
-    // create pipeline layout for ray tracing
-    vk::PipelineLayoutCreateInfo vpi;
-    vpi.pSetLayouts = customedLayouts.data();
-    vpi.setLayoutCount = customedLayouts.size();
-    VtPipelineLayout vpl; vtCreateRayTracingPipelineLayout(deviceQueue->device->rtDev, &(VkPipelineLayoutCreateInfo)vpi, &vpl);
+    // create vertex input buffer objects
+    VtDeviceBuffer VDataSpace, VBufferRegions, VBufferView, VAccessorSet, VAttributes;
+    {
+        createBufferFast(deviceQueue, VDataSpace);
+        createBufferFast(deviceQueue, VBufferRegions);
+        createBufferFast(deviceQueue, VBufferView);
+        createBufferFast(deviceQueue, VAccessorSet);
+        createBufferFast(deviceQueue, VAttributes);
+    }
 
-    // create ray tracing set
-    VtRayTracingSetCreateInfo rtsi;
-    VtRayTracingSet rtSet; vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &rtSet);
+    {
+        // create dull image
+        VtDeviceImageCreateInfo dii;
+        dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        dii.familyIndex = deviceQueue->familyIndex;
+        dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+        dii.layout = VK_IMAGE_LAYOUT_GENERAL;
+        dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        dii.size = { 2, 2, 1 };
+        vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &dullImage);
 
-    // MOST incomplete stuff 
-    // TODO: add default images and samplers in descriptor sets (arrays stubs)
-    VtMaterialSetCreateInfo mtsi;
-    // TODO: need fill material set
-    VtMaterialSet mts; vtCreateMaterialSet(deviceQueue->device->rtDev, &mtsi, &mts);
+        // dispatch image barrier
+        vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+            vtCmdImageBarrier(cmdBuf, dullImage);
+        });
+    }
 
-    // create ray tracing pipeline
-    VtRayTracingPipelineCreateInfo rtpi;
-    rtpi.closestModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/closest-hit-shader.comp.spv"));
-    rtpi.missModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/miss-hit-shader.comp.spv"));
-    rtpi.generationModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/generation-shader.comp.spv"));
-    rtpi.resolveModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/resolve-shader.comp.spv"));
-    rtpi.pipelineLayout = vpl;
-    VtPipeline rtPipeline; vtCreateRayTracingPipeline(deviceQueue->device->rtDev, &rtpi, &rtPipeline);
+    {
+        // create dull sampler
+        vk::SamplerCreateInfo samplerInfo;
+        samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;
+        samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;
+        samplerInfo.minFilter = vk::Filter::eLinear;
+        samplerInfo.magFilter = vk::Filter::eLinear;
+        samplerInfo.compareEnable = false;
+        dullSampler = deviceQueue->device->logical.createSampler(samplerInfo); // create sampler
+    }
+
+    {
+        // create dull material description set
+        createBufferFast(deviceQueue, materialDescs, vte::strided<VtAppMaterial>(1));
+
+        // set first buffer data
+        VtAppMaterial initialMaterialDesc;
+        writeIntoBuffer<VtAppMaterial>(deviceQueue, materialDescs, { initialMaterialDesc }, 0);
+    }
+
+
+    {
+        // create dull material description set
+        createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImage>(1));
+
+        // set first buffer data
+        VtVirtualCombinedImage initialMaterialDesc;
+        writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, materialCombImages, { initialMaterialDesc }, 0);
+    }
+
+    {
+        // custom bindings for ray tracing systems
+        const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
+            vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // constants for generation shader
+            vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute) // env map for miss shader
+        };
+        customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
+
+        // create descriptor set, based on layout
+        // TODO: fill descriptor set by inputs
+        auto dsc = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setPSetLayouts(customedLayouts.data()).setDescriptorSetCount(customedLayouts.size()));
+        usrDescSet = dsc[0];
+    }
+
+    {
+        // create env image
+        VtDeviceImageCreateInfo dii;
+        dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        dii.familyIndex = deviceQueue->familyIndex;
+        dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+        dii.layout = VK_IMAGE_LAYOUT_GENERAL;
+        dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        dii.size = { 2, 2, 1 };
+        vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &envImage);
+
+        // dispatch image barrier
+        vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+            vtCmdImageBarrier(cmdBuf, envImage);
+        });
+    }
+
+    {
+        // initial matrices
+        auto atMatrix = glm::lookAt(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto pjMatrix = glm::perspective(float(M_PI) / 4.f, 16.f / 9.f, 0.0001f, 1000.f);
+
+        // create uniform buffer
+        createBufferFast(deviceQueue, rtUniformBuffer, vte::strided<VtCameraUniform>(1));
+
+        // set first uniform buffer data
+        VtCameraUniform cameraUniformData;
+        cameraUniformData.projInv = glm::transpose(glm::inverse(pjMatrix));
+        cameraUniformData.camInv = glm::transpose(glm::inverse(atMatrix));
+        cameraUniformData.sceneRes = glm::vec4(1280.f, 720.f, 1.f, 1.f);
+        writeIntoBuffer<VtCameraUniform>(deviceQueue, rtUniformBuffer, { cameraUniformData }, 0);
+    }
+
+    { 
+        // write ray tracing user defined descriptor set
+        auto _write_tmpl = vk::WriteDescriptorSet(usrDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+        std::vector<vk::WriteDescriptorSet> writes = {
+            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&vk::DescriptorBufferInfo(rtUniformBuffer->_descriptorInfo())),
+            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler)),
+        };
+        vk::Device(deviceQueue->device->rtDev).updateDescriptorSets(writes, {});
+    }
+
+    {
+        // create pipeline layout for ray tracing
+        vk::PipelineLayoutCreateInfo vpi;
+        vpi.pSetLayouts = customedLayouts.data();
+        vpi.setLayoutCount = customedLayouts.size();
+        vtCreateRayTracingPipelineLayout(deviceQueue->device->rtDev, &(VkPipelineLayoutCreateInfo)vpi, &rtPipelineLayout);
+    }
+
+    {
+        // create ray tracing set
+        VtRayTracingSetCreateInfo rtsi;
+        vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &raytracingSet);
+    }
+
+    { 
+        // create material set
+        VtMaterialSetCreateInfo mtsi;
+        mtsi.imageCount = 1; mtsi.pImages = &dullImage->_descriptorInfo();
+        mtsi.samplerCount = 1; mtsi.pSamplers = (VkSampler *)&dullSampler;
+        mtsi.bMaterialDescriptionsBuffer = materialDescs;
+        mtsi.bImageSamplerCombinations = materialCombImages;
+        mtsi.materialCount = 1;
+        vtCreateMaterialSet(deviceQueue->device->rtDev, &mtsi, &materialSet);
+    }
+
+    {
+        // create ray tracing pipeline
+        VtRayTracingPipelineCreateInfo rtpi;
+        rtpi.closestModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/closest-hit-shader.comp.spv"));
+        rtpi.missModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/miss-hit-shader.comp.spv"));
+        rtpi.generationModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/generation-shader.comp.spv"));
+        rtpi.resolveModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/resolve-shader.comp.spv"));
+        rtpi.pipelineLayout = rtPipelineLayout;
+        vtCreateRayTracingPipeline(deviceQueue->device->rtDev, &rtpi, &rtPipeline);
+    }
+
 
     // create accelerator set
     VtAcceleratorSetCreateInfo acci;
-    VtAcceleratorSet accel; vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accel);
+    vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
+
 
     // create vertex assembly
     VtVertexAssemblySetCreateInfo vtsi;
-    VtVertexAssemblySet vets; vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vets);
+    vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
 
-    VtVertexInputCreateInfo vtii;
-    // TODO: need fill vertex input
-    VtVertexInputSet vinp; vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vinp);
 
+    {
+        // all available accessors
+        std::vector<VtVertexAccessor> accessors = {
+            { 0, 0, VT_R32G32B32_SFLOAT }, // vertices
+            { 1, 0, VT_R32G32B32_SFLOAT }, // normals
+            { 2, 0, VT_R32G32B32_SFLOAT }, // texcoords
+            { 3, 0, VT_R32G32B32_SFLOAT }, // tangents
+            { 4, 0, VT_R32G32B32_SFLOAT }, // bitangents
+        };
+        writeIntoBuffer(deviceQueue, VAccessorSet, accessors, 0);
 
-    // make accelerator and vertex builder command
-    auto bCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false);
-    VtCommandBuffer rtBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &rtBCmdBuf);
-    vtCmdBindAccelerator(rtBCmdBuf, accel);
-    vtCmdBindVertexAssembly(rtBCmdBuf, vets);
-    vtCmdBindVertexInputSets(rtBCmdBuf, 1, &vinp);
-    vtCmdBuildVertexAssembly(rtBCmdBuf);
-    vtCmdBuildAccelerator(rtBCmdBuf);
-    vkEndCommandBuffer(rtBCmdBuf);
+        // attribute binding with accessors
+        std::vector<VtVertexAttributeBinding> attributes = {
+            { 0, 1 }, 
+            { 1, 2 }, 
+            { 2, 3 }, 
+            { 3, 4 },
+        };
+        writeIntoBuffer(deviceQueue, VAttributes, attributes, 0);
 
-    // make ray tracing command buffer
-    auto cmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false);
-    VtCommandBuffer rtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, cmdBuf, &rtCmdBuf);
-    vtCmdBindPipeline(rtCmdBuf, VT_PIPELINE_BIND_POINT_RAY_TRACING, rtPipeline);
-    vtCmdBindMaterialSet(rtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), mts);
-    vtCmdBindDescriptorSets(rtCmdBuf, VT_PIPELINE_BIND_POINT_RAY_TRACING, vpl, 0, 1, (VkDescriptorSet *)&dsc[0], 0, nullptr);
-    vtCmdBindRayTracingSet(rtCmdBuf, rtSet);
-    vtCmdBindAccelerator(rtCmdBuf, accel);
-    vtCmdBindVertexAssembly(rtCmdBuf, vets);
-    vtCmdDispatchRayTracing(rtCmdBuf, 1280, 720);
-    vkEndCommandBuffer(rtCmdBuf);
+        // global buffer space
+        std::vector<VtVertexAttributeBinding> bufferRegions = {
+            { 0, 1024 * 16 },
+        };
+        writeIntoBuffer(deviceQueue, VBufferRegions, bufferRegions, 0);
+
+        // vertice using first offsets for vertices, anothers using seros, planned add colors support
+        std::vector<VtVertexBufferView> bufferViews = {
+            { 0, 0, sizeof(glm::vec3) },
+            { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
+            { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
+            { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
+            { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
+        };
+        writeIntoBuffer(deviceQueue, VBufferView, bufferViews, 0);
+
+        // test vertex data
+        std::vector<glm::vec3> vertices = {
+            glm::vec3( 1.f, -1.f, 0.f), 
+            glm::vec3(-1.f, -1.f, 0.f), 
+            glm::vec3( 0.f,  1.f, 0.f),
+
+            glm::vec3( 1.f, -1.f, 0.f),
+            glm::vec3(-1.f, -1.f, 0.f),
+            glm::vec3( 0.f,  0.f, 1.f),
+        };
+        std::vector<glm::vec3> colors = {
+            glm::vec3(1.f, 0.f, 0.f), 
+            glm::vec3(0.f, 1.f, 0.f), 
+            glm::vec3(0.f, 0.f, 1.f),
+
+            glm::vec3(1.f, 0.f, 0.f),
+            glm::vec3(0.f, 1.f, 0.f),
+            glm::vec3(0.f, 0.f, 1.f),
+        };
+        std::vector<glm::vec3> zeros = {
+            glm::vec3(0.f), 
+            glm::vec3(0.f), 
+            glm::vec3(0.f),
+            
+            glm::vec3(0.f),
+            glm::vec3(0.f),
+            glm::vec3(0.f),
+        };
+
+        // write data space by offsets
+        writeIntoBuffer(deviceQueue, VDataSpace, vertices, 0u);
+        writeIntoBuffer(deviceQueue, VDataSpace, zeros, sizeof(glm::vec3) * 6);
+        writeIntoBuffer(deviceQueue, VDataSpace, colors, sizeof(glm::vec3) * 12);
+    }
+
+    // create vertex input
+    {
+        VtVertexInputCreateInfo vtii;
+        vtii.topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
+        vtii.verticeAccessor = 0;
+        vtii.indiceAccessor = -1;
+        vtii.sourceBuffer = VDataSpace;
+        vtii.bBufferAccessors = VAccessorSet;
+        vtii.bBufferAttributeBindings = VAttributes;
+        vtii.bBufferRegionBindings = VBufferRegions;
+        vtii.bBufferViews = VBufferView;
+        vtii.primitiveCount = 2;
+        vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vertexInput);
+    }
+
+    
+
+    // ray tracing command buffers creation
+
+    {
+        // make accelerator and vertex builder command
+        bCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false);
+        VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
+        vtCmdBindAccelerator(qBCmdBuf, accelerator);
+        vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
+        vtCmdBindVertexInputSets(qBCmdBuf, 1, &vertexInput);
+        vtCmdBuildVertexAssembly(qBCmdBuf);
+        vtCmdBuildAccelerator(qBCmdBuf);
+        vkEndCommandBuffer(qBCmdBuf);
+    }
+
+    {
+        // make ray tracing command buffer
+        rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false);
+        VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
+        vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAY_TRACING, rtPipeline);
+        vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), materialSet);
+        vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAY_TRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
+        vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
+        vtCmdBindAccelerator(qRtCmdBuf, accelerator);
+        vtCmdBindVertexAssembly(qRtCmdBuf, vertexAssembly);
+        vtCmdDispatchRayTracing(qRtCmdBuf, 1280, 720);
+        vkEndCommandBuffer(qRtCmdBuf);
+    }
 
     //////////////////////////////////////
     // ray tracing preparing stage end  //

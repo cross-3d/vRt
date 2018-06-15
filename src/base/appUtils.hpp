@@ -31,6 +31,8 @@
 // include inner utils from library (for development purpose)
 #include "vRt/Utilities/VkUtils.hpp"
 
+// also need include these headers
+#include "vRt/Implementation/API/Utils.hpp"
 
 // inner utils of application
 namespace NSM {
