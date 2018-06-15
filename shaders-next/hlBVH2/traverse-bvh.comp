@@ -55,19 +55,18 @@ void main() {
             // make hit
             int hid = -1;
             bool_ vintersect = lessF(geometrySpace.lastIntersection.z, INFINITY-0.001f) & bool_(triID >= 0) & bool_(hid < 0).x | lessF(geometrySpace.lastIntersection.z, hits[hid].uvt.z);
-            //hid = atomicIncHitCount();
-            hid = it;   // prefer same index as ray, if using one hit mode
-                        // for use multiple hits mode need create hit index map per ray (i.e. additional image2D buffer) 
-                        // but because BVH traversing is system feature or vRt feature, it moment available only for Source/Dev version 
+            hid = atomicIncHitCount();
 
             // save hit
             HitData hit = hits[hid];
             hit.rayID = it+1;
             hit.uvt = geometrySpace.lastIntersection;
-            hit.payloadID = 0;
+            hit.payloadID = hid+1;
+            //hit.payloadID = 0;
             hit.materialID = materials[triID];
             hit.next = 0;
             hit.attributes[NORMAL_TID] = vec4(normalize(cross(e1, e2)), 1.f);
+            imageStore(rayLink, it, uvec4(hid+1));
             //currentRayTmp.origin.w = intBitsToFloat(hid+1); // don't save in rays
             
             IF (vintersect) {
@@ -75,12 +74,17 @@ void main() {
                 interpolateMeshData(hit);
 #endif
                 vtVerifyClosestHit(hid);
-            } else {
+            }
+            
+            IF (not(vintersect)) {
                 vtVerifyMissedHit(hid);
             }
 
             hits[hid] = hit;
             rays[it] = currentRayTmp;
+
+            // error debug
+            hitPayload[hid].emission = vec4(1.f, 0.f, 1.f, 1.f);
         }
     }
 

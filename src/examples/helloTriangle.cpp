@@ -33,7 +33,20 @@ struct VtCameraUniform {
     int enable360 = 0, r0 = 0, r1 = 0, r2 = 0;
 };
 
+struct VtBvhUniformDebug {
+    glm::mat4x4 transform = glm::mat4x4(1.f);
+    glm::mat4x4 transformInv = glm::mat4x4(1.f);
+    glm::mat4x4 projection = glm::mat4x4(1.f);
+    glm::mat4x4 projectionInv = glm::mat4x4(1.f);
+    int leafCount = 0, primitiveCount = 0, r1 = 0, r2 = 0;
+};
 
+
+struct VtLeafDebug {
+    glm::vec4 boxMn;
+    glm::vec4 boxMx;
+    glm::ivec4 pdata;
+};
 
 
 // application fast utility for fill buffers
@@ -573,14 +586,46 @@ void main() {
         glfwPollEvents();
 
 
+        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
+
+        
+        /*
         { // reserved field for computing code
+            std::vector<uint32_t> debugCounters(2);
+            readFromBuffer(deviceQueue, { vertexAssembly->_countersBuffer }, debugCounters);
 
-            vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+            std::vector<VtBvhUniformDebug> debugUniform(1);
+            readFromBuffer(deviceQueue, { accelerator->_bvhBlockUniform }, debugUniform);
 
-            vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
+            std::vector<uint64_t> debugMortons(8);
+            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_mortonCodesBuffer }, debugMortons);
 
+            std::vector<uint32_t> debugMortonIdc(8);
+            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_mortonIndicesBuffer }, debugMortonIdc);
+
+            std::vector<VtLeafDebug> debugLeafs(2);
+            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_leafBuffer }, debugLeafs);
+
+            std::vector<uint32_t> debugBvhCounters(8);
+            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_countersBuffer }, debugBvhCounters);
+
+            std::vector<glm::vec4> debugBvhGenBoxes(256);
+            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_generalBoundaryResultBuffer }, debugBvhGenBoxes);
+
+            std::vector<glm::vec4> debugBvhBoxes(16);
+            readFromBuffer(deviceQueue, { accelerator->_bvhBoxBuffer }, debugBvhBoxes);
+
+            std::vector<glm::ivec4> debugBvhMeta(8);
+            readFromBuffer(deviceQueue, { accelerator->_bvhMetaBuffer }, debugBvhMeta);
+
+            std::vector<uint32_t> debugLeafIdx(8);
+            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_leafNodeIndices }, debugLeafIdx);
+
+            std::vector<glm::vec4> debugBvhWorkBoxes(16);
+            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_onWorkBoxes }, debugBvhWorkBoxes);
         }
-
+        */
 
         auto n_semaphore = currSemaphore;
         auto c_semaphore = (currSemaphore + 1) % currentContext->framebuffers.size();

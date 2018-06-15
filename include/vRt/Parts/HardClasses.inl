@@ -119,7 +119,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _device;
 
         // in-set buffers
-        std::shared_ptr<DeviceBuffer> _rayBuffer, _rayIndiceBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer;
+        std::shared_ptr<DeviceBuffer> _rayBuffer, _rayIndiceBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer, _rayLinkPayload;
 
 
         operator VkDescriptorSet() const { return _descriptorSet; };
@@ -224,7 +224,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<VertexAssemblySet> _vertexAssemblySet;
 
         // internal buffers
-        std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer;
+        std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
 
         operator VkPipeline() const { return _dullPipeline; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };

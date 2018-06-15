@@ -291,15 +291,14 @@ void main() {
             hitp.albedo = diffuse.xyzw;
             hitp.specularGlossiness = specularGlossiness;
 
+            // triangle intersection test
+            hitp.emission = vec4(vec3(0.1f, 0.5f, 0.1f), 1.f);
+
             // additional validation of hit (hit point interpolated offset test)
             if (!overflow && hitID >= 0) {
-                int pid = hit.payloadID-1; 
-                if (pid < 0) pid = atomicIncPayloadHitCount();
+                int pid = hit.payloadID-1;
+                if (pid < 0) pid = hitID;//atomicIncPayloadHitCount();
                 hitPayload[pid] = hitp;
-                //cray.origin.w = intBitsToFloat(hitID+1); // save hit index to ray
-
-                // highlight geometry intersections
-                WriteColor(cray.dcolor, vec4(vec3(0.1f, 0.5f, 0.1f), 1.f));
 
                 // make payload ID
                 if (hit.payloadID <= 0) {

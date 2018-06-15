@@ -98,6 +98,7 @@ void main() {
         int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
         bool overflow = overflow || globalID >= wsize || globalID < 0;
         int hitID = overflow ? -1 : vtMissId(globalID);
+
         IFALL(overflow) break;
         {
 #ifdef DMA_HIT
@@ -119,7 +120,8 @@ void main() {
             globalInvocationSMP = globalID;
 
             matID = -1;//hit.materialID;// - materialOffset;
-            bool overflow = overflow || rayID < 0 || (matID >= materialCount || matID < 0);
+            //bool overflow = overflow || rayID < 0 || (matID >= materialCount || matID < 0);
+            bool overflow = overflow || rayID < 0;
 
             // static colors
             textured.diffuse = material.diffuse;
@@ -170,16 +172,15 @@ void main() {
             hitp.specularGlossiness = vec4(0.f.xxx, 1.f);
             hitp.albedo = vec4(0.f.xxx, 1.f);
             EnvironmentShader(hitp.emission, cray);
+            
+            // ray direction debug emission
+            hitp.emission = vec4(viewVec*0.5f+0.5f, 1.f);
 
             // additional validation of hit (hit point interpolated offset test)
             if (!overflow && hitID >= 0) {
-                int pid = hit.payloadID-1; 
-                if (pid < 0) pid = atomicIncPayloadHitCount();
+                int pid = hit.payloadID-1;
+                if (pid < 0) pid = hitID;//atomicIncPayloadHitCount();
                 hitPayload[pid] = hitp;
-                //cray.origin.w = intBitsToFloat(hitID+1); // save hit index to ray
-
-                // planned enable when will envMap
-                //WriteColor(cray.dcolor, vec4(hitp.emission.xyz, 1.f));
 
                 // make payload ID
                 if (hit.payloadID <= 0) {

@@ -63,9 +63,9 @@ namespace _vt {
                 bfi.format = VK_FORMAT_R32_SINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_mortonIndicesBuffer);
 
-                //bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16 * 2;
-                //bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-                //createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_boundaryResultBuffer);
+                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16 * 2;
+                bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_onWorkBoxes);
 
                 bfi.bufferSize = maxPrimitives * 2 * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
@@ -95,6 +95,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonCodesBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonIndicesBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_leafBuffer->_descriptorInfo())),
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_onWorkBoxes->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_fitStatusBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(6).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_currentNodeIndices->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(7).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_leafNodeIndices->_descriptorInfo())),
@@ -175,7 +176,7 @@ namespace _vt {
                 bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBoxBuffer);
 
-                bfi.bufferSize = sizeof(uint32_t) * 8;
+                bfi.bufferSize = sizeof(uint32_t) * 128;
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBlockUniform);
             };

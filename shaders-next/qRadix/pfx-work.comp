@@ -50,7 +50,7 @@ void main() {
             for (int i=1;i<limit;i<<=1) {
                 uint prv = ldx >= i ? ldx-i : 0;
                 uint off = ldx >= i && ldx < limit ? localHistogram[prv] : 0, 
-                    hst =             ldx < limit ? localHistogram[ldx] : 0;
+                     hst =             ldx < limit ? localHistogram[ldx] : 0;
                 LGROUP_BARRIER
                 if (ldx < limit) localHistogram[ldx] = off + hst;
                 LGROUP_BARRIER

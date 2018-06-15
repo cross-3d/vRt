@@ -80,6 +80,11 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_hitPayloadBuffer);
 
 
+                bfi.bufferSize = rayCount * sizeof(uint32_t);
+                bfi.format = VK_FORMAT_R32_UINT;
+                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayLinkPayload);
+
+
                 bfi.bufferSize = 1024 * 256 * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32G32B32A32_SINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_traverseCache);
@@ -113,7 +118,7 @@ namespace _vt {
                 std::vector<vk::WriteDescriptorSet> writes = {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(7).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_countersBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(9).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtRTSet->_traverseCache->_bufferView)),
-
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(10).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtRTSet->_rayLinkPayload->_bufferView)),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_rayBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_hitBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_closestHitIndiceBuffer->_descriptorInfo())),

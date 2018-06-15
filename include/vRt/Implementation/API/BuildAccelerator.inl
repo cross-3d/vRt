@@ -45,6 +45,7 @@ namespace _vt {
             auto iV = iV_;
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, vertb->_vertexAssemblyPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+            vkCmdPushConstants(*cmdBuf, vertb->_vertexAssemblyPipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, 4096);
             cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, vertx->_countersBuffer, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(1), strided<uint32_t>(1)) });
             vertx->_calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
@@ -68,6 +69,7 @@ namespace _vt {
         // planned to use secondary buffer for radix sorting
         cmdFillBuffer<0xFFu>(*cmdBuf, *acclb->_mortonCodesBuffer);
         cmdFillBuffer<0u>(*cmdBuf, *acclb->_countersBuffer); // reset counters
+        cmdFillBuffer<0u>(*cmdBuf, *acclb->_fitStatusBuffer);
         std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 128); // calculate general box of BVH

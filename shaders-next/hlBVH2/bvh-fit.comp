@@ -64,7 +64,8 @@ void main() {
         const int globalID = w + (wID * gS + lID);
         IFALL (globalID >= wsize) break;
 
-        int idx = globalID < wsize ? exchange(LeafIndices[globalID], 0)-1 : -1;
+        //int idx = globalID < wsize ? exchange(LeafIndices[globalID], 0)-1 : -1;
+        int idx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
 
         [[unroll, dependency_length(4)]]
         for (int l=0;l<65536;l++) {

@@ -26,15 +26,20 @@ void main() {
         SB_BARRIER
         int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
         bool overflow = overflow || globalID >= wsize || globalID < 0;
+        int rayID = globalID;
 
         // get ray by id
-        VtRay ray = vtFetchRay(globalID);
+        VtRay ray = vtFetchRay(rayID);
+        int hitIdc = vtFetchHitIdc(rayID);
+        vec4 emisson = hitPayload[hits[hitIdc].payloadID-1].emission;
 
         // get output image 2D coord
         ivec2 icoord = ivec2(bitfieldExtract(floatBitsToUint(ray.origin.w), 0, 16), bitfieldExtract(floatBitsToUint(ray.origin.w), 16, 16));
 
         // save result of ray tracing by ray saved indice
-        if (!overflow) { imageStore(ColorOutput, icoord, vec4(f16_f32(ray.dcolor).xyz, 1.f)); }
+        //if (!overflow) { imageStore(ColorOutput, icoord, vec4(f16_f32(ray.dcolor).xyz, 1.f)); }
+        if (!overflow) { imageStore(ColorOutput, icoord, vec4(emisson.xyz, 1.f)); }
+        
     }
 
     LGROUP_BARRIER;

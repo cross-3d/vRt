@@ -46,6 +46,9 @@ layout ( std430, binding = 8, set = 0 ) buffer VT_9_LINE { highp uint ispace[][R
 #define m16s(a,b,i) (ispace[b][i] = uint(a+1))
 #endif
 
+// ray and hit linking buffer
+layout ( rgba32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
+
 
 // atomic counters with subgroups
 initAtomicSubgroupIncFunction(rayCounter, atomicIncRayCount, 1, int)
@@ -58,11 +61,16 @@ initAtomicSubgroupIncFunction(blockSpaceCounter, atomicIncblockSpaceCount, 1, in
 // alpha version of low level ray emitter
 int vtEmitRays(in VtRay ray) {
     int rayID = atomicIncRayCount();
-    rays[rayID] = ray;
+    rays[rayID] = ray; imageStore(rayLink, rayID, uvec4(0xFFFFFFFFu));
     return rayID;
 }
 
-VtRay vtFetchRay(in int lidx){
+
+int vtFetchHitIdc(in int lidx) {
+    return int(imageLoad(rayLink, lidx).x)-1;
+}
+
+VtRay vtFetchRay(in int lidx) {
     return rays[lidx];
 }
 
