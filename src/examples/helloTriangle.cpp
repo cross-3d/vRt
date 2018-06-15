@@ -377,13 +377,13 @@ void main() {
 
         // test vertex data
         std::vector<glm::vec3> vertices = {
-            glm::vec3( 1.f, -1.f, -1.f),
+            glm::vec3(1.f, -1.f, -1.f),
             glm::vec3(-1.f, -1.f, -1.f),
-            glm::vec3( 0.f,  1.f, -1.f),
+            glm::vec3(0.f,  0.f,  1.f),
 
-            glm::vec3( 1.f, -1.f, -1.f),
+            glm::vec3(1.f, -1.f, -1.f),
             glm::vec3(-1.f, -1.f, -1.f),
-            glm::vec3( 0.f,  0.f,  1.f),
+            glm::vec3(0.f,  1.f, -1.f),
         };
         std::vector<glm::vec3> colors = {
             glm::vec3(1.f, 0.f, 0.f), 
@@ -589,9 +589,9 @@ void main() {
         vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
         vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
+
         
-        /*
-        { // reserved field for computing code
+        /*{ // reserved field for computing code
             std::vector<uint32_t> debugCounters(2);
             readFromBuffer(deviceQueue, { vertexAssembly->_countersBuffer }, debugCounters);
 
@@ -624,8 +624,8 @@ void main() {
 
             std::vector<glm::vec4> debugBvhWorkBoxes(16);
             readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_onWorkBoxes }, debugBvhWorkBoxes);
-        }
-        */
+        }*/
+        
 
         auto n_semaphore = currSemaphore;
         auto c_semaphore = (currSemaphore + 1) % currentContext->framebuffers.size();

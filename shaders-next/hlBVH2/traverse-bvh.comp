@@ -55,7 +55,8 @@ void main() {
             // make hit
             int hid = -1;
             bool_ vintersect = lessF(geometrySpace.lastIntersection.z, INFINITY-0.001f) & bool_(triID >= 0) & bool_(hid < 0).x | lessF(geometrySpace.lastIntersection.z, hits[hid].uvt.z);
-            hid = atomicIncHitCount();
+            //hid = atomicIncHitCount();
+            hid = it;
 
             // save hit
             HitData hit = hits[hid];
