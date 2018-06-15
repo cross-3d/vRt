@@ -47,7 +47,7 @@ set(SOURCES_LIST
     #"./include/tinyrender/*/*.c"
     #"./include/tinyrender/*/*.cpp"
     "./include/vRt/*.c"
-    #"./include/vRt/*.cpp"
+    "./include/vRt/*.cpp"
     "./include/vRt/*/*.c"
     #"./include/vRt/*/*.cpp"
     "./include/*.h"

@@ -11,7 +11,7 @@
 
 // include inner utils from library (for development purpose)
 #include <vRt/Utilities/VkUtils.hpp>
-#include <vRt/Implementation/HardClasses.inl>
+//#include <vRt/Implementation/HardClasses.inl>
 
 namespace NSM {
     using namespace _vt;

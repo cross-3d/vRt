@@ -60,11 +60,6 @@ namespace vt {
         return dispatchRayTracing(commandBuffer, x, y);
     };
 
-    //inline VtResult vtCmdCopyBuffer(VtCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy* pRegions) {
-    //    auto vctr = makeVector<vk::BufferCopy>((vk::BufferCopy *)pRegions, regionCount);
-    //    return cmdCopyBufferL(commandBuffer, srcBuffer, dstBuffer, vctr, commandBarrier);
-    //};
-
     inline VtResult vtCmdBindAccelerator(VtCommandBuffer commandBuffer, VtAcceleratorSet accelerator) {
         return bindAccelerator(commandBuffer, accelerator);
     };
@@ -161,18 +156,18 @@ namespace vt {
 
     // between images 
     inline VtResult vtCmdCopyDeviceImage(VkCommandBuffer commandBuffer, VtDeviceImage srcImage, VtDeviceImage dstImage, uint32_t regionCount, const VkImageCopy* pRegions) {
-        cmdCopyDeviceImage(commandBuffer, srcImage, dstImage, makeVector<vk::ImageCopy>((const vk::ImageCopy *)pRegions, regionCount));
+        cmdCopyDeviceImage(commandBuffer, srcImage, dstImage, makeVector<vk::ImageCopy>((const vk::ImageCopy *)pRegions, regionCount)); return VK_SUCCESS;
     };
 
 
 
     template <class T>
-    inline void vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset) {
+    inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset) {
         return setBufferSubData(hostdata, buffer, offset);
     };
 
     template <class T>
-    inline void vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset) {
+    inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset) {
         return getBufferSubData(buffer, hostdata, offset);
     };
 

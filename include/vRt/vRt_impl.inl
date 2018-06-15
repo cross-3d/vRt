@@ -4,4 +4,3 @@
 // implement these
 #include "Implementation/HardClasses.inl"
 #include "Implementation/API/Calls.inl"
-

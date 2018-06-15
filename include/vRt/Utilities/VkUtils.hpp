@@ -28,13 +28,13 @@ namespace _vt {
     inline auto sgn(T val) { return (T(0) < val) - (val < T(0)); }
 
     template<class T = uint32_t>
-    static inline T tiled(T sz, T gmaxtile) {
+    inline T tiled(T sz, T gmaxtile) {
         // return (int32_t)ceil((double)sz / (double)gmaxtile);
         return sz <= 0 ? 0 : (sz / gmaxtile + sgn(sz % gmaxtile));
     }
 
 
-    static inline double milliseconds() {
+    inline double milliseconds() {
         auto duration = std::chrono::high_resolution_clock::now();
         double millis = std::chrono::duration_cast<std::chrono::nanoseconds>(
             duration.time_since_epoch())

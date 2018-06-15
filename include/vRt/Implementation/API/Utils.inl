@@ -55,7 +55,7 @@ namespace _vt { // store in undercover namespace
     };
 
     // transition texture layout
-    inline VtResult imageBarrier(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> image) {
+    inline auto imageBarrier(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> image) {
         VtResult result = VK_SUCCESS; // planned to complete
         if (image->_initialLayout == image->_layout) return result; // no need transfering more
 
