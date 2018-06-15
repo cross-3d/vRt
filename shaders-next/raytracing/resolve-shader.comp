@@ -8,7 +8,7 @@
 #include "../include/random.glsl"
 
 // user descriptor set output image
-layout ( rgba32f, binding = 0, set = 2 ) uniform image2D ColorOutput;
+layout ( rgba32f, binding = 2, set = 2 ) uniform image2D ColorOutput;
 
 // use partition by 8x8
 //layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT);
@@ -16,23 +16,25 @@ LOCAL_SIZE_LAYOUT;
 
 // 
 void main() {
-    const int wsize = rayCounter;
-    const int wcsize = int(gl_WorkGroupSize.x) / int(Wave_Size_RT);
-    const int wcount = min(tiled(wsize, wcsize), 1000000);
+    const int wsize = int(rayCounter);
+    const int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
     const int wgs = int(gl_NumWorkGroups);
-
-    // save image color information from ray tracing
-    for (int w=0;w<wcount;w+=wgs) 
-    {
+    const int rayID = -1;
+    
+    bool overflow = false;
+    for (int w=0;w<wcount;w+=wgs) {
         SB_BARRIER
-        int globalID = (w + int(gl_WorkGroupID.x)) * wcsize + int(Wave_Idx);
+        int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
+        bool overflow = overflow || globalID >= wsize || globalID < 0;
+
+        // get ray by id
         VtRay ray = vtFetchRay(globalID);
 
         // get output image 2D coord
         ivec2 icoord = ivec2(bitfieldExtract(floatBitsToUint(ray.origin.w), 0, 16), bitfieldExtract(floatBitsToUint(ray.origin.w), 16, 16));
 
         // save result of ray tracing by ray saved indice
-        imageStore(ColorOutput, icoord, vec4(f16_f32(ray.dcolor).xyz, 1.f));
+        if (!overflow) { imageStore(ColorOutput, icoord, vec4(f16_f32(ray.dcolor).xyz, 1.f)); }
     }
 
     LGROUP_BARRIER;

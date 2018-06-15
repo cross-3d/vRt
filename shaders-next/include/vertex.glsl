@@ -191,11 +191,25 @@ void interpolateMeshData(inout HitData ht) {
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0), szt = sz * 0.9999f;
     const bool_ validInterpolant = greaterEqualF(ht.uvt.z, 0.0f) & lessF(ht.uvt.z, INFINITY) & bool_(tri >= 0) & bool_(materials[tri] == ht.materialID);
 
+    /*
+    const int itri = tri*3;
+    const mat3 vT = transpose(mat3(
+        TLOAD(lvtx, itri+0).xyz,
+        TLOAD(lvtx, itri+1).xyz,
+        TLOAD(lvtx, itri+2).xyz
+    ));
+    const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
+    const vec3 nm = normalize(cross(e1, e2));
+    */
+
     IF (validInterpolant) {
         [[unroll]]
         for (int i=0;i<4;i++) {
             vec2 trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+   NORMAL_TID))), sz, szt));
             ht.attributes[i] = vs * mat4x3(SGATHER(attrib_texture, trig, 0)._SWIZV, SGATHER(attrib_texture, trig, 1)._SWIZV, SGATHER(attrib_texture, trig, 2)._SWIZV, SGATHER(attrib_texture, trig, 3)._SWIZV);
+
+            // if this is normal, fix zero interpolation result, when have no 
+            //if (i == NORMAL_TID && length(ht.attributes[i].xyz) < 0.0001f) { ht.attributes[i].xyz = nm; } 
         }
     }
 }

@@ -117,12 +117,12 @@ void main() {
     dii.layout = VK_IMAGE_LAYOUT_GENERAL;
     dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     dii.size = { 1280, 720, 1 };
-    VtDeviceImage outImage;
-    vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outImage);
+    VtDeviceImage outputImage;
+    vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outputImage);
 
     // dispatch image barrier
     vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
-        vtCmdImageBarrier(cmdBuf, outImage);
+        vtCmdImageBarrier(cmdBuf, outputImage);
     });
 
 
@@ -211,7 +211,8 @@ void main() {
         // custom bindings for ray tracing systems
         const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
             vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // constants for generation shader
-            vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute) // env map for miss shader
+            vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute), // env map for miss shader
+            vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eCompute) // env map for miss shader
         };
         customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
 
@@ -260,6 +261,7 @@ void main() {
         std::vector<vk::WriteDescriptorSet> writes = {
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&vk::DescriptorBufferInfo(rtUniformBuffer->_descriptorInfo())),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler)),
+            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo(&vk::DescriptorImageInfo(outputImage->_descriptorInfo())),
         };
         vk::Device(deviceQueue->device->rtDev).updateDescriptorSets(writes, {});
     }
@@ -350,13 +352,13 @@ void main() {
 
         // test vertex data
         std::vector<glm::vec3> vertices = {
-            glm::vec3( 1.f, -1.f, 0.f), 
-            glm::vec3(-1.f, -1.f, 0.f), 
-            glm::vec3( 0.f,  1.f, 0.f),
+            glm::vec3( 1.f, -1.f, -1.f),
+            glm::vec3(-1.f, -1.f, -1.f),
+            glm::vec3( 0.f,  1.f, -1.f),
 
-            glm::vec3( 1.f, -1.f, 0.f),
-            glm::vec3(-1.f, -1.f, 0.f),
-            glm::vec3( 0.f,  0.f, 1.f),
+            glm::vec3( 1.f, -1.f, -1.f),
+            glm::vec3(-1.f, -1.f, -1.f),
+            glm::vec3( 0.f,  0.f,  1.f),
         };
         std::vector<glm::vec3> colors = {
             glm::vec3(1.f, 0.f, 0.f), 
@@ -404,7 +406,7 @@ void main() {
 
     {
         // make accelerator and vertex builder command
-        bCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false);
+        bCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
         vtCmdBindAccelerator(qBCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
@@ -416,7 +418,7 @@ void main() {
 
     {
         // make ray tracing command buffer
-        rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false);
+        rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
         vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAY_TRACING, rtPipeline);
         vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), materialSet);
@@ -511,7 +513,7 @@ void main() {
         samplerInfo.magFilter = vk::Filter::eLinear;
         samplerInfo.compareEnable = false;
         auto sampler = deviceQueue->device->logical.createSampler(samplerInfo); // create sampler
-        auto& image = outImage;
+        auto& image = outputImage;
 
         // desc texture texture
         vk::DescriptorImageInfo imageDesc;
@@ -545,6 +547,12 @@ void main() {
     }
 
 
+    // dispatch building accelerators and vertex internal data
+    //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+
+    // dispatch ray tracing
+    //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
+
 
     // rendering presentation 
     int32_t currSemaphore = -1; uint32_t currentBuffer = 0;
@@ -555,7 +563,9 @@ void main() {
 
         { // reserved field for computing code
 
+            vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
 
+            vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
         }
 

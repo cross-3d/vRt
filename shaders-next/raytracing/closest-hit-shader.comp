@@ -5,7 +5,7 @@
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
 #define CACHE_HIT_PAYLOAD
-#define DMA_HIT
+//#define DMA_HIT // unpreferred
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
@@ -291,27 +291,15 @@ void main() {
             hitp.albedo = diffuse.xyzw;
             hitp.specularGlossiness = specularGlossiness;
 
-/*
-#ifdef SIMPLE_RT_MODE
-            // simple mode (alternate)
-            float spwr = clamp01(max3_vec(specularColor.xyz));
-            vec4 simpleDiffuse = vec4(diffuse.xyz * max(dot(hitp.normalHeight.xyz, normalize(lightCenter(0).xyz - rorigin.xyz)) * vec3(3.f.xxx), 0.f), 1.f) * (1.f - spwr);
-            simpleDiffuse *= 1.f - max3_vec(specularColor.xyz);
-            vec4 diffuseWithEmission = emission.xyzw + simpleDiffuse;
-
-            hitp.albedo = vec4(0.f, 0.f, 0.f, diffuse.w);
-            hitp.emission = diffuseWithEmission;
-            hitp.specularGlossiness = vec4(specularGlossiness.xyz, 0.f);
-#endif
-*/
-
-
             // additional validation of hit (hit point interpolated offset test)
             if (!overflow && hitID >= 0) {
                 int pid = hit.payloadID-1; 
                 if (pid < 0) pid = atomicIncPayloadHitCount();
                 hitPayload[pid] = hitp;
-                cray.origin.w = intBitsToFloat(hitID+1); // save hit index to ray
+                //cray.origin.w = intBitsToFloat(hitID+1); // save hit index to ray
+
+                // highlight geometry intersections
+                WriteColor(cray.dcolor, vec4(vec3(0.1f, 0.5f, 0.1f), 1.f));
 
                 // make payload ID
                 if (hit.payloadID <= 0) {

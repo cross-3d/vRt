@@ -24,8 +24,6 @@
 
 LOCAL_SIZE_LAYOUT;
 
-#define cray rays[hit.rayID-1]
-
 void main() {
     int wsize = rayCounter;//PREPARED_COUNT;
     int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
@@ -40,9 +38,10 @@ void main() {
         IFALL(overflow) break;
 
         // do BVH traversing 
+        currentRayTmp = rays[it];
         traverseBvh2(not(overflow), rays[it]);
 
-        { // verify intersection
+        IF (not(overflow)) { // verify intersection
             const int triID = floatBitsToInt(geometrySpace.lastIntersection.w)-1;
             const int itri = triID*3;//tri*9;
             const mat3 vT = transpose(mat3(
@@ -56,7 +55,10 @@ void main() {
             // make hit
             int hid = -1;
             bool_ vintersect = lessF(geometrySpace.lastIntersection.z, INFINITY-0.001f) & bool_(triID >= 0) & bool_(hid < 0).x | lessF(geometrySpace.lastIntersection.z, hits[hid].uvt.z);
-            hid = atomicIncHitCount();
+            //hid = atomicIncHitCount();
+            hid = it;   // prefer same index as ray, if using one hit mode
+                        // for use multiple hits mode need create hit index map per ray (i.e. additional image2D buffer) 
+                        // but because BVH traversing is system feature or vRt feature, it moment available only for Source/Dev version 
 
             // save hit
             HitData hit = hits[hid];
@@ -66,7 +68,7 @@ void main() {
             hit.materialID = materials[triID];
             hit.next = 0;
             hit.attributes[NORMAL_TID] = vec4(normalize(cross(e1, e2)), 1.f);
-            currentRayTmp.origin.w = intBitsToFloat(hid+1);
+            //currentRayTmp.origin.w = intBitsToFloat(hid+1); // don't save in rays
             
             IF (vintersect) {
 #ifdef ENABLE_VERTEX_INTERPOLATOR
@@ -78,10 +80,8 @@ void main() {
             }
 
             hits[hid] = hit;
+            rays[it] = currentRayTmp;
         }
-
-        // save ray state
-        rays[it] = currentRayTmp;
     }
 
     LGROUP_BARRIER;

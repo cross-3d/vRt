@@ -5,7 +5,7 @@
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
 #define CACHE_HIT_PAYLOAD
-#define DMA_HIT
+//#define DMA_HIT // unpreferred
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
@@ -176,7 +176,10 @@ void main() {
                 int pid = hit.payloadID-1; 
                 if (pid < 0) pid = atomicIncPayloadHitCount();
                 hitPayload[pid] = hitp;
-                cray.origin.w = intBitsToFloat(hitID+1); // save hit index to ray
+                //cray.origin.w = intBitsToFloat(hitID+1); // save hit index to ray
+
+                // planned enable when will envMap
+                //WriteColor(cray.dcolor, vec4(hitp.emission.xyz, 1.f));
 
                 // make payload ID
                 if (hit.payloadID <= 0) {
