@@ -12,7 +12,7 @@
 ## VERY Relative Calendar (VRC):
 
 #### June/July 2018 ("Early Vulkanism")
-- **Hell Expect!** Debugging and experimenting stage 
+- Debugging and experimenting stage **Hell Line Passed**
 - Development of better implementation 
 - Improve API and interfaces
 - Support for NVidia (GTX 9, 10, Titan series) and AMD (RX Vega) hardware
