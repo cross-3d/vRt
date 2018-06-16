@@ -102,8 +102,8 @@ void main() {
 
     // store in global memory result of work
     if (tid == 0) {
-        minmax[gl_WorkGroupID.x*2 + 0] = sdata[tid].mn - 0.0001f;
-        minmax[gl_WorkGroupID.x*2 + 1] = sdata[tid].mx + 0.0001f;
+        minmax[gl_WorkGroupID.x*2 + 0] = sdata[tid].mn - 0.0005f;
+        minmax[gl_WorkGroupID.x*2 + 1] = sdata[tid].mx + 0.0005f;
     }
 
     LGROUP_BARRIER

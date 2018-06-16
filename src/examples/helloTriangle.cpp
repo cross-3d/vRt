@@ -450,7 +450,8 @@ void main() {
         vtCmdBindAccelerator(qBCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
         std::vector<VtVertexInputSet> vsets = { vertexInput , vertexInput2 };
-        vtCmdBindVertexInputSets(qBCmdBuf, vsets.size(), vsets.data());
+        //vtCmdBindVertexInputSets(qBCmdBuf, vsets.size(), vsets.data());
+        vtCmdBindVertexInputSets(qBCmdBuf, 1, &vertexInput);
         vtCmdBuildVertexAssembly(qBCmdBuf);
         vtCmdBuildAccelerator(qBCmdBuf);
         vkEndCommandBuffer(qBCmdBuf);
@@ -606,7 +607,7 @@ void main() {
 
 
         
-        /*{ // reserved field for computing code
+        { // reserved field for computing code
             std::vector<uint32_t> debugCounters(2);
             readFromBuffer(deviceQueue, { vertexAssembly->_countersBuffer }, debugCounters);
 
@@ -639,7 +640,7 @@ void main() {
 
             std::vector<glm::vec4> debugBvhWorkBoxes(16);
             readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_onWorkBoxes }, debugBvhWorkBoxes);
-        }*/
+        }
         
 
         auto n_semaphore = currSemaphore;
