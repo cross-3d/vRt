@@ -5,9 +5,23 @@
 ## What is it?
 > Vulkan API ray-tracing cross-platform layer (like DXR fallback layer). It will supported by common top GPU's (in far future and something else).
 
+## Features and advantages
+- Low level API for ray tracing (even lower than Embree)
+- Much more Vulkan API 1.1 capable (at 2018 year)
+- Higher extensibility than original project
+- Fixed issues of previous projects 
+- Reduced overheads, include dispatch calls 
+
 ## Repositories:
 - https://github.com/world8th/vRt (GitHub, owned by Microsoft)
 - https://gitlab.com/world8th/vRt (GitLab, merging)
+
+## Requirements: 
+- Vulkan API 1.1 headers and libraries
+- Vulkan Memory Allocator, VMA (https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+- C++17 capable compiler (include Visual Studio 2017)
+- GLSL to SPIR-V 1.3 compiler
+- GLM for test application run
 
 ## VERY Relative Calendar (VRC):
 
