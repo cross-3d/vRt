@@ -304,6 +304,7 @@ void main() {
     {
         // create ray tracing set
         VtRayTracingSetCreateInfo rtsi;
+        rtsi.maxRays = 1280 * 720; // prefer that limit
         vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &raytracingSet);
     }
 
@@ -332,11 +333,13 @@ void main() {
 
     // create accelerator set
     VtAcceleratorSetCreateInfo acci;
+    acci.maxPrimitives = 1024;
     vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
 
 
     // create vertex assembly
     VtVertexAssemblySetCreateInfo vtsi;
+    vtsi.maxPrimitives = 1024;
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
 
