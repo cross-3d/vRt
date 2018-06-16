@@ -73,7 +73,7 @@ uint M32(in usamplerBuffer m, in uint i) {
 highp uint M16(in usamplerBuffer m, in uint i) { return texelFetch(m, int(i)).x; }
 uint M32(in usamplerBuffer m, in uint i) { 
     uint _i2 = (i)<<1u; // division of index
-    return bitfieldInsert(bitfieldInsert(0u, M16(m,_i2), 0, 16), M16(m,_i2|1), 16, 16); // use bitfield insert hack
+    return bitfieldInsert(M16(m,_i2), M16(m,_i2|1), 16, 16); // use bitfield insert hack
 }
 #endif
 
