@@ -81,11 +81,21 @@ inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer
     vt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
 };
 
-
-
-
-
-
+inline auto getShaderDir(const uint32_t& vendorID) {
+    std::string shaderDir = "./universal/";
+    switch (vendorID) {
+        case 4318:
+            shaderDir = "./nvidia/";
+            break;
+        case 4098:
+            shaderDir = "./amd/";
+            break;
+        case 8086: // x86 ID, WHAT?
+            shaderDir = "./intel/";
+            break;
+    }
+    return shaderDir;
+}
 
 void main() {
     using namespace vt;
@@ -127,11 +137,14 @@ void main() {
     vk::PhysicalDeviceProperties devProperties = gpu.getProperties();
     std::cout << "Current Device: ";
     std::cout << devProperties.deviceName << std::endl;
+    std::cout << devProperties.vendorID << std::endl;
 
     // create combined device object
-    const std::string shaderPack = "./shaders/amd/";
+    const std::string shaderPack = "./shaders/" + getShaderDir(devProperties.vendorID);
     auto deviceQueue = appfw->createDeviceQueue(gpu, false, shaderPack); // create default graphical device
     auto renderpass = appfw->createRenderpass(deviceQueue);
+
+
 
 
     // create image output
