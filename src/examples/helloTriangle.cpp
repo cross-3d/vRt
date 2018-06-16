@@ -623,7 +623,7 @@ void main() {
 
 
         
-        { // reserved field for computing code
+        /*{ // reserved field for computing code
             std::vector<uint32_t> debugCounters(2);
             readFromBuffer(deviceQueue, { vertexAssembly->_countersBuffer }, debugCounters);
 
@@ -656,7 +656,7 @@ void main() {
 
             std::vector<glm::vec4> debugBvhWorkBoxes(16);
             readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_onWorkBoxes }, debugBvhWorkBoxes);
-        }
+        }*/
         
 
         auto n_semaphore = currSemaphore;
