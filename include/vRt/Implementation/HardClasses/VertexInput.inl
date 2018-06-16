@@ -37,6 +37,9 @@ namespace _vt {
         vtVertexInput->_uniformBlock.verticeAccessor = info.verticeAccessor;
         vtVertexInput->_uniformBlock.indiceAccessor = info.indiceAccessor;
         vtVertexInput->_uniformBlock.materialID = info.materialID;
+        vtVertexInput->_uniformBlock.primitiveOffset = info.primitiveOffset;
+        vtVertexInput->_uniformBlock.topology = info.topology;
+        vtVertexInput->_uniformBlock.attributeCount = info.attributeCount;
 
         // write descriptors
         auto _write_tmpl = vk::WriteDescriptorSet(vtVertexInput->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);

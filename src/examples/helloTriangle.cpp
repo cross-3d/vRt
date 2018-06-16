@@ -170,7 +170,7 @@ void main() {
     VtPipeline rtPipeline;
     VtAcceleratorSet accelerator;
     VtVertexAssemblySet vertexAssembly;
-    VtVertexInputSet vertexInput;
+    VtVertexInputSet vertexInput, vertexInput2; // arrayed
     VkCommandBuffer bCmdBuf, rtCmdBuf;
     VtDeviceBuffer rtUniformBuffer;
 
@@ -218,8 +218,10 @@ void main() {
         createBufferFast(deviceQueue, materialDescs, vte::strided<VtAppMaterial>(1));
 
         // set first buffer data
-        VtAppMaterial initialMaterialDesc;
-        writeIntoBuffer<VtAppMaterial>(deviceQueue, { initialMaterialDesc }, materialDescs, 0);
+        VtAppMaterial redEmission, greenEmission;
+        greenEmission.emissive = glm::vec4(0.1f, 0.5f, 0.1f, 1.f);
+        redEmission.emissive = glm::vec4(0.5f, 0.1f, 0.1f, 1.f);
+        writeIntoBuffer<VtAppMaterial>(deviceQueue, { greenEmission, redEmission }, materialDescs, 0);
     }
 
 
@@ -266,8 +268,8 @@ void main() {
 
     {
         // initial matrices
-        auto atMatrix = glm::lookAt(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
-        auto pjMatrix = glm::perspective(float(M_PI) / 4.f, 16.f / 9.f, 0.0001f, 1000.f);
+        auto atMatrix = glm::lookAt(glm::vec3(0.f, 0.f, 2.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
 
         // create uniform buffer
         createBufferFast(deviceQueue, rtUniformBuffer, vte::strided<VtCameraUniform>(1));
@@ -305,14 +307,14 @@ void main() {
         vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &raytracingSet);
     }
 
-    { 
+    {
         // create material set
         VtMaterialSetCreateInfo mtsi;
         mtsi.imageCount = 1; mtsi.pImages = &dullImage->_descriptorInfo();
         mtsi.samplerCount = 1; mtsi.pSamplers = (VkSampler *)&dullSampler;
         mtsi.bMaterialDescriptionsBuffer = materialDescs;
         mtsi.bImageSamplerCombinations = materialCombImages;
-        mtsi.materialCount = 1;
+        mtsi.materialCount = 2;
         vtCreateMaterialSet(deviceQueue->device->rtDev, &mtsi, &materialSet);
     }
 
@@ -339,7 +341,7 @@ void main() {
 
 
 
-    {
+    { // use two angled triangles
         // all available accessors
         std::vector<VtVertexAccessor> accessors = {
             { 0, 0, VT_R32G32B32_SFLOAT }, // vertices
@@ -347,6 +349,7 @@ void main() {
             { 2, 0, VT_R32G32B32_SFLOAT }, // texcoords
             { 3, 0, VT_R32G32B32_SFLOAT }, // tangents
             { 4, 0, VT_R32G32B32_SFLOAT }, // bitangents
+            { 5, 0, VT_R32G32B32_SFLOAT }, // colors
         };
         writeIntoBuffer(deviceQueue, accessors, VAccessorSet, 0);
 
@@ -356,6 +359,7 @@ void main() {
             { 1, 2 }, 
             { 2, 3 }, 
             { 3, 4 },
+            { 4, 5 },
         };
         writeIntoBuffer(deviceQueue, attributes, VAttributes, 0);
 
@@ -372,18 +376,19 @@ void main() {
             { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
             { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
             { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
+            { 0, sizeof(glm::vec3) * 12, sizeof(glm::vec3) },
         };
         writeIntoBuffer(deviceQueue, bufferViews, VBufferView, 0);
 
         // test vertex data
         std::vector<glm::vec3> vertices = {
-            glm::vec3(1.f, -1.f, -1.f),
+            glm::vec3( 1.f, -1.f, -1.f),
             glm::vec3(-1.f, -1.f, -1.f),
-            glm::vec3(0.f,  0.f,  1.f),
+            glm::vec3( 0.f,  1.f, -1.f),
 
-            glm::vec3(1.f, -1.f, -1.f),
+            glm::vec3( 1.f, -1.f, -1.f),
             glm::vec3(-1.f, -1.f, -1.f),
-            glm::vec3(0.f,  1.f, -1.f),
+            glm::vec3( 0.f, -1.f,  1.f),
         };
         std::vector<glm::vec3> colors = {
             glm::vec3(1.f, 0.f, 0.f), 
@@ -412,6 +417,7 @@ void main() {
 
     // create vertex input
     {
+        // part 1
         VtVertexInputCreateInfo vtii;
         vtii.topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
         vtii.verticeAccessor = 0;
@@ -421,8 +427,16 @@ void main() {
         vtii.bBufferAttributeBindings = VAttributes;
         vtii.bBufferRegionBindings = VBufferRegions;
         vtii.bBufferViews = VBufferView;
-        vtii.primitiveCount = 2;
+        vtii.primitiveCount = 1;
+        vtii.materialID = 0;
+        vtii.attributeCount = 5;
         vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vertexInput);
+
+        // part 2
+        vtii.primitiveCount = 1;
+        vtii.primitiveOffset = 1;
+        vtii.materialID = 1;
+        vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vertexInput2);
     }
 
     
@@ -435,7 +449,8 @@ void main() {
         VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
         vtCmdBindAccelerator(qBCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
-        vtCmdBindVertexInputSets(qBCmdBuf, 1, &vertexInput);
+        std::vector<VtVertexInputSet> vsets = { vertexInput , vertexInput2 };
+        vtCmdBindVertexInputSets(qBCmdBuf, vsets.size(), vsets.data());
         vtCmdBuildVertexAssembly(qBCmdBuf);
         vtCmdBuildAccelerator(qBCmdBuf);
         vkEndCommandBuffer(qBCmdBuf);

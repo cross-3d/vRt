@@ -81,6 +81,11 @@ layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM
     uint verticeAccessor;
     uint indiceAccessor;
     uint materialID;
+
+    uint primitiveOffset;
+    uint topology;
+    uint attributeCount;
+    uint reserved0;
 } vertexBlock;
 
 
@@ -198,12 +203,12 @@ void main(){
             [[unroll]]
             for (int i=0;i<3;i++) {
                 // aggregated indices
-                uint indiceID = globalID * trp + i;
+                uint indiceID = (vertexBlock.primitiveOffset + globalID) * trp + i;
                 readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
 
                 // load attrib data
                 [[unroll]]
-                for (uint a=0;a<min(4,attributes.length());a++) {{
+                for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
                     uint a = attributes[a].attributeID;
                     ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(int(tidc*ATTRIB_EXTENT+a)));
                     vec4 attribValue = vec4(0.f); readByAccessor(attributes[a].accessorID, indiceID, attribValue);

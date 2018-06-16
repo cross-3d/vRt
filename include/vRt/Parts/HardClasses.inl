@@ -352,8 +352,13 @@ namespace _vt { // store in undercover namespace
     struct VtUniformBlock {
         uint32_t primitiveCount = 0;
         uint32_t verticeAccessor = 0;
-        uint32_t indiceAccessor = 0xFFFFFFFF;
+        uint32_t indiceAccessor = 0xFFFFFFFFu;
         uint32_t materialID = 0;
+
+        uint32_t primitiveOffset = 0;
+        uint32_t topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
+        uint32_t attributeCount = 8;
+        uint32_t reserved1 = 0;
     };
 
     class VertexInputSet : public std::enable_shared_from_this<VertexInputSet> {

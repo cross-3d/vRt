@@ -51,7 +51,7 @@ namespace vt { // store in official namespace
 
     // all supported topologies
     typedef enum VtTopologyType : uint32_t {
-        VT_TOPOLOGY_TYPE_TRIANGLES_LIST = 0x11F00000
+        VT_TOPOLOGY_TYPE_TRIANGLES_LIST = 0x00000000
     } VtTopologyType;
 
     // ray tracing pipeline usages

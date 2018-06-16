@@ -76,6 +76,8 @@ namespace vt { // store in official namespace
         //VkBuffer sourceBuffer = nullptr;
         VkBufferView sourceBuffer = nullptr;
         uint32_t primitiveCount = 0;
+        uint32_t primitiveOffset = 0;
+        uint32_t attributeCount = 8;
         //uint32_t sourceBufferBinding;
 
         // bindings regions

@@ -14,7 +14,7 @@ namespace _vt {
 
         {
             std::vector<vk::PushConstantRange> constRanges = {
-                vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(4))
+                vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(8))
             };
             std::vector<vk::DescriptorSetLayout> dsLayouts = {
                 vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
@@ -49,7 +49,7 @@ namespace _vt {
 
         // build vertex input assembly program
         {
-            constexpr auto ATTRIB_EXTENT = 4u; // no way to set more than it now
+            constexpr auto ATTRIB_EXTENT = 8u; // no way to set more than it now
 
             VtDeviceBufferCreateInfo bfi;
             bfi.familyIndex = _vtDevice->_mainFamilyIndex;

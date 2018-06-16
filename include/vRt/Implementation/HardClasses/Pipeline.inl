@@ -38,6 +38,7 @@ namespace _vt {
 
         {
             const auto& rayCount = info.maxRays;
+            const int ATTRIB_EXTENT = 8;
 
             {
                 VtDeviceBufferCreateInfo bfi;
@@ -55,7 +56,7 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayIndiceBuffer);
 
 
-                bfi.bufferSize = rayCount * 128;
+                bfi.bufferSize = rayCount * (8 * sizeof(uint32_t) + 4 * ATTRIB_EXTENT * sizeof(uint32_t));
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_hitBuffer);
 

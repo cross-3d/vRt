@@ -204,8 +204,8 @@ void interpolateMeshData(inout HitData ht) {
 
     IF (validInterpolant) {
         [[unroll]]
-        for (int i=0;i<4;i++) {
-            vec2 trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+   NORMAL_TID))), sz, szt));
+        for (int i=0;i<ATTRIB_EXTENT;i++) {
+            vec2 trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, szt));
             ht.attributes[i] = vs * mat4x3(SGATHER(attrib_texture, trig, 0)._SWIZV, SGATHER(attrib_texture, trig, 1)._SWIZV, SGATHER(attrib_texture, trig, 2)._SWIZV, SGATHER(attrib_texture, trig, 3)._SWIZV);
 
             // if this is normal, fix zero interpolation result, when have no 
