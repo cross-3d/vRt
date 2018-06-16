@@ -32,22 +32,25 @@ namespace _vt {
         createDeviceBuffer(_vtDevice, bfi, vtVertexInput->_uniformBlockBuffer);
         //_vtDevice->_deviceBuffersPtrs.push_back(vtVertexInput->_uniformBlockBuffer); // pin buffer with device
 
-        // set primitive count (will loaded to "_uniformBlockBuffer" by cmdUpdateBuffer)
+        // fill uniforms 
         vtVertexInput->_uniformBlock.primitiveCount = info.primitiveCount;
         vtVertexInput->_uniformBlock.verticeAccessor = info.verticeAccessor;
         vtVertexInput->_uniformBlock.indiceAccessor = info.indiceAccessor;
         vtVertexInput->_uniformBlock.materialID = info.materialID;
+        
+        // additional block clause (16.06.2018)
         vtVertexInput->_uniformBlock.primitiveOffset = info.primitiveOffset;
         vtVertexInput->_uniformBlock.topology = info.topology;
         vtVertexInput->_uniformBlock.attributeCount = info.attributeCount;
+        vtVertexInput->_uniformBlock.reserved0 = info.reserved0;
 
         // write descriptors
         auto _write_tmpl = vk::WriteDescriptorSet(vtVertexInput->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
         std::vector<vk::WriteDescriptorSet> writes = {
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView(&vk::BufferView(info.sourceBuffer)),
-            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE)),
-            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferViews, 0, VK_WHOLE_SIZE)),
-            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferAccessors, 0, VK_WHOLE_SIZE)),
+            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset)),
+            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferViews, 0, VK_WHOLE_SIZE).setOffset(info.bufferViewByteOffset)),
+            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferAccessors, 0, VK_WHOLE_SIZE).setOffset(info.bufferAccessorByteOffset)),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferAttributeBindings, 0, VK_WHOLE_SIZE).setOffset(info.attributeByteOffset)),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexInput->_uniformBlockBuffer->_descriptorInfo())),
         };

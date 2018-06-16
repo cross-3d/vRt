@@ -73,41 +73,36 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_INPUT_CREATE_INFO;
         const void* pNext = nullptr;
 
-        // all sources buffer
-        //VkBuffer sourceBuffer = nullptr;
-        VkBufferView sourceBuffer = nullptr;
+        // original block
         uint32_t primitiveCount = 0;
-        uint32_t primitiveOffset = 0;
-        uint32_t attributeCount = 8;
-        //uint32_t sourceBufferBinding;
-
-        // bindings regions
-        VtVertexRegionBinding * pBufferRegionBindings = nullptr;
-        VkBuffer bBufferRegionBindings = nullptr; // direct descriptor set bind
-        uint32_t bufferRegionCount = 0;
-
-        // accessor regions
-        VtVertexAccessor * pBufferAccessors = nullptr;
-        VkBuffer bBufferAccessors = nullptr; // direct descriptor set bind
-        uint32_t bufferAccessorCount = 0;
-
-        // attribute bindings (will stored in special patterned image buffer)
-        VtVertexAttributeBinding * pBufferAttributeBindings = nullptr;
-        VkBuffer bBufferAttributeBindings = nullptr; // direct descriptor set bind
-        uint32_t attributeBindingCount = 0;
-        uint32_t attributeByteOffset = 0; // for buffer maners
-
-        VtVertexBufferView * pBufferViews = nullptr;
-        VkBuffer bBufferViews = nullptr; // direct descriptor set bind
-        uint32_t bufferViewCount = 0;
-
-        // where from must got vertex and indices
         uint32_t verticeAccessor = 0;
         uint32_t indiceAccessor = 0xFFFFFFFF; // has no indice accessor
-
-        // supported vertex topology
-        VtTopologyType topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
         uint32_t materialID = 0; // material ID for identify in hit shader
+
+        // additional clause (16.06.2018)
+        uint32_t primitiveOffset = 0;
+        VtTopologyType topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
+        uint32_t attributeCount = 8;
+        uint32_t reserved0 = 0;
+
+        // vertex data sources
+        VkBufferView sourceBuffer = nullptr;
+
+        // bindings regions
+        VkBuffer bBufferRegionBindings = nullptr; // direct descriptor set bind
+        uintptr_t bufferRegionByteOffset = 0;
+
+        // accessor regions
+        VkBuffer bBufferAccessors = nullptr; // direct descriptor set bind
+        uintptr_t bufferAccessorByteOffset = 0;
+
+        // attribute bindings (will stored in special patterned image buffer)
+        VkBuffer bBufferAttributeBindings = nullptr; // direct descriptor set bind
+        uintptr_t attributeByteOffset = 0; // for buffer maners
+
+        // buffer views
+        VkBuffer bBufferViews = nullptr; // direct descriptor set bind
+        uintptr_t bufferViewByteOffset = 0;
     };
 
     // use as low level typed descriptor set
