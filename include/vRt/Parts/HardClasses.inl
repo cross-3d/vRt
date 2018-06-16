@@ -90,7 +90,7 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<AcceleratorSet> _acceleratorSet;
         std::weak_ptr<VertexAssemblySet> _vertexSet;
         std::weak_ptr<Pipeline> _rayTracingPipeline;
-        std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs; // bound vertex input sets 
+        std::vector<std::weak_ptr<VertexInputSet>> _vertexInputs; // bound vertex input sets 
         std::vector<VkDescriptorSet> _boundDescriptorSets;
 
         operator VkCommandBuffer() const { return _commandBuffer; };

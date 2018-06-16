@@ -42,7 +42,7 @@ namespace _vt {
         cmdFillBuffer<0u>(*cmdBuf, *vertx->_countersBuffer);
         vertx->_calculatedPrimitiveCount = 0;
         for (auto& iV_ : cmdBuf->_vertexInputs) {
-            auto iV = iV_;
+            auto iV = iV_.lock();
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, vertb->_vertexAssemblyPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             vkCmdPushConstants(*cmdBuf, vertb->_vertexAssemblyPipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
