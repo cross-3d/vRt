@@ -22,6 +22,7 @@ namespace vt { // store in official namespace
         size_t sharedCacheSize = 16u * 1024u * 1024u;
         size_t maxPrimitives = 1024u * 1024u;
         std::string_view shaderPath = "./";
+        VmaAllocator allocator = nullptr;
     };
 
     struct VtDeviceConversionInfo {

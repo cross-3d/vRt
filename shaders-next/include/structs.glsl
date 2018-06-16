@@ -100,7 +100,7 @@ const int TANGENT_TID = 2;
 const int BITANGENT_TID = 3;
 const int VCOLOR_TID = 4;
 
-struct HitData {
+struct VtHitData {
     vec4 uvt; // UV, distance, triangle (base data)
     int rayID; // ray index
     int payloadID; // hit shaded index

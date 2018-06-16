@@ -20,7 +20,12 @@ namespace _vt {
         allocatorInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
         allocatorInfo.pAllocationCallbacks = nullptr;
         allocatorInfo.pVulkanFunctions = nullptr;
-        if (vmaCreateAllocator(&allocatorInfo, &vtDevice->_allocator) == VK_SUCCESS) { result = VK_SUCCESS; };
+
+        if (vtExtension.allocator) {
+            vtDevice->_allocator = vtExtension.allocator; result = VK_SUCCESS;
+        } else {
+            if (vmaCreateAllocator(&allocatorInfo, &vtDevice->_allocator) == VK_SUCCESS) { result = VK_SUCCESS; };
+        }
 
         // link device with vulkan.hpp
         auto _device = vk::Device(vtDevice->_device);

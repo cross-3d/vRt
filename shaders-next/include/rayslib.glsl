@@ -12,7 +12,7 @@ const int R_BLOCK_SIZE = R_BLOCK_WIDTH * R_BLOCK_HEIGHT;
 
 // basic ray tracing buffers
 layout ( std430, binding = 0, set = 0 ) buffer VT_RAYS {VtRay rays[];};
-layout ( std430, binding = 1, set = 0 ) buffer VT_HITS {HitData hits[];};
+layout ( std430, binding = 1, set = 0 ) buffer VT_HITS {VtHitData hits[];};
 layout ( std430, binding = 2, set = 0 ) buffer VT_CLOSEST_HITS {int closestHits[];};
 layout ( std430, binding = 3, set = 0 ) buffer VT_MISS_HITS {int missHits[];};
 layout ( std430, binding = 4, set = 0 ) buffer VT_HIT_PAYLOAD { HitPayload hitPayload[]; };

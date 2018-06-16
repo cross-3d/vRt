@@ -59,7 +59,7 @@ void main() {
             hid = it;
 
             // save hit
-            HitData hit = hits[hid];
+            VtHitData hit = hits[hid];
             hit.rayID = it+1;
             hit.uvt = geometrySpace.lastIntersection;
             hit.payloadID = hid+1;
