@@ -36,6 +36,7 @@ struct VtAppMaterial {
      int bitfield;
 };
 
+
 #define SETS_DESC_SET_ID 1
 const uint MAX_TEXTURES = 64, MAX_SAMPLERS = 16;
 
@@ -166,12 +167,12 @@ struct Textured {
     vec4 emissive;
 } textured;
 
-#define cray rays[rayID]//rayBlockNodes[rayID / R_BLOCK_SIZE][rayID % R_BLOCK_SIZE].data
+#define cray rays[rayID]
 
 LOCAL_SIZE_LAYOUT;
 
 #ifdef CACHE_HIT_PAYLOAD
-shared HitPayload hitPayloadCache[WORK_SIZE];
+shared VtHitPayload hitPayloadCache[WORK_SIZE];
 #endif
 
 void main() {

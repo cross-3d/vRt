@@ -38,6 +38,7 @@ struct VtAppMaterial {
      int bitfield;
 };
 
+
 #define SETS_DESC_SET_ID 1
 const uint MAX_TEXTURES = 64, MAX_SAMPLERS = 16;
 
@@ -75,7 +76,7 @@ struct Textured {
 LOCAL_SIZE_LAYOUT;
 
 #ifdef CACHE_HIT_PAYLOAD
-shared HitPayload hitPayloadCache[WORK_SIZE];
+shared VtHitPayload hitPayloadCache[WORK_SIZE];
 #endif
 
 void main() {

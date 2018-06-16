@@ -6,6 +6,16 @@
 #include "../include/morton.glsl"
 #include "../include/ballotlib.glsl"
 
+
+
+struct VtHitPayload {
+    // hit shaded data
+    vec4 normalHeight;
+    vec4 albedo;
+    vec4 emission;
+    vec4 specularGlossiness;
+};
+
 // paging optimized tiling
 const int R_BLOCK_WIDTH = 8, R_BLOCK_HEIGHT = 8;
 const int R_BLOCK_SIZE = R_BLOCK_WIDTH * R_BLOCK_HEIGHT;
@@ -15,7 +25,7 @@ layout ( std430, binding = 0, set = 0 ) buffer VT_RAYS {VtRay rays[];};
 layout ( std430, binding = 1, set = 0 ) buffer VT_HITS {VtHitData hits[];};
 layout ( std430, binding = 2, set = 0 ) buffer VT_CLOSEST_HITS {int closestHits[];};
 layout ( std430, binding = 3, set = 0 ) buffer VT_MISS_HITS {int missHits[];};
-layout ( std430, binding = 4, set = 0 ) buffer VT_HIT_PAYLOAD { HitPayload hitPayload[]; };
+layout ( std430, binding = 4, set = 0 ) buffer VT_HIT_PAYLOAD { VtHitPayload hitPayload[]; };
 layout ( std430, binding = 5, set = 0 ) buffer VT_RAY_INDICES {int rayIndices[];};
 
 // system canvas info

@@ -80,10 +80,12 @@ void main() {
             //int to = atomicIncLeaf();
             int to = globalID; //atomicIncLeaf();
 
+            bounding.mn -= 1e-5f.xxxx;
+            bounding.mx += 1e-5f.xxxx;
+
             // gen leaf
             HlbvhNode outLeaf = Leafs[to];
-            outLeaf.lbox[0] = bounding.mn - 1e-5f.xxxx;
-            outLeaf.lbox[1] = bounding.mx + 1e-5f.xxxx;
+            outLeaf.lbox = bounding;
             outLeaf.pdata.xy = ivec2(to);
             outLeaf.pdata.zw = ivec2(-1, tri+1);
 

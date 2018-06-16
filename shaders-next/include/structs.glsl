@@ -3,21 +3,6 @@
 
 #include "../include/mathlib.glsl"
 
-struct Texel {
-     vec4 coord;
-     vec4 color; // when collected from blocks
-     vec4 p3d;
-     vec4 albedo;
-     vec4 normal;
-};
-
-struct bbox {
-     vec4 mn;
-     vec4 mx;
-};
-
-
-
 #ifdef USE_F32_BVH 
     #define UNPACK_LROW(m) uintBitsToFloat(m)
 #else
@@ -110,13 +95,7 @@ struct VtHitData {
     vec4 attributes[ATTRIB_EXTENT];
 };
 
-struct HitPayload {
-    // hit shaded data
-    vec4 normalHeight;
-    vec4 albedo;
-    vec4 emission;
-    vec4 specularGlossiness;
-};
+
 
 
 
@@ -228,8 +207,14 @@ void RayDiffBounce(inout VtRay ray, in int bn) {
 
 
 
+
+struct bbox {
+     vec4 mn;
+     vec4 mx;
+};
+
 struct HlbvhNode {
-     vec4 lbox[2];
+     bbox lbox;
      ivec4 pdata;
 };
 
