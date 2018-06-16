@@ -18,6 +18,7 @@ layout ( binding = 0 ) uniform sampler2D samples;
 vec4 filtered(in vec2 tx) { return textureFixed(tx); }
 
 void main() {
-    outFragColor = vec4(fromLinear(filtered(vcoord.xy)).xyz, 1.0f);
+    outFragColor = vec4(filtered(vcoord.xy).xyz, 1.0f);
+    //outFragColor = vec4(fromLinear(filtered(vcoord.xy)).xyz, 1.0f);
     //outFragColor = vec4(0.2, 0.6f, 0.9f, 1.f); // working test
 }

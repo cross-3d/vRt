@@ -79,7 +79,7 @@ const int WARPED_WIDTH = 2048;
 //const ivec2 mit[3] = {ivec2(0,0), ivec2(1,0), ivec2(0,1)};
 const ivec2 mit[3] = {ivec2(0,1), ivec2(1,1), ivec2(1,0)};
 
-ivec2 mosaicIdc(in ivec2 mosaicCoord, in int idc) {
+ivec2 mosaicIdc(in ivec2 mosaicCoord, const int idc) {
 #ifdef VERTEX_FILLING
     mosaicCoord.x %= int(imageSize(attrib_texture_out).x);
 #endif
@@ -90,7 +90,7 @@ ivec2 gatherMosaic(in ivec2 uniformCoord) {
     return ivec2(uniformCoord.x * 3 + uniformCoord.y % 3, uniformCoord.y);
 }
 
-vec4 fetchMosaic(in sampler2D vertices, in ivec2 mosaicCoord, in uint idc) {
+vec4 fetchMosaic(in sampler2D vertices, in ivec2 mosaicCoord, const uint idc) {
     //return texelFetch(vertices, mosaicCoord + mit[idc], 0);
     return textureLod(vertices, (vec2(mosaicCoord + mit[idc]) + 0.49999f) / textureSize(vertices, 0), 0); // supper native warping
 }
@@ -205,8 +205,13 @@ void interpolateMeshData(inout VtHitData ht) {
     IF (validInterpolant) {
         [[unroll]]
         for (int i=0;i<ATTRIB_EXTENT;i++) {
-            vec2 trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, szt));
-            ht.attributes[i] = vs * mat4x3(SGATHER(attrib_texture, trig, 0)._SWIZV, SGATHER(attrib_texture, trig, 1)._SWIZV, SGATHER(attrib_texture, trig, 2)._SWIZV, SGATHER(attrib_texture, trig, 3)._SWIZV);
+            const vec2 trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, szt));
+            ht.attributes[i] = vs * mat4x3(
+                SGATHER(attrib_texture, trig, 0)._SWIZV, 
+                SGATHER(attrib_texture, trig, 1)._SWIZV, 
+                SGATHER(attrib_texture, trig, 2)._SWIZV, 
+                SGATHER(attrib_texture, trig, 3)._SWIZV
+            );
 
             // if this is normal, fix zero interpolation result, when have no 
             //if (i == NORMAL_TID && length(ht.attributes[i].xyz) < 0.0001f) { ht.attributes[i].xyz = nm; } 

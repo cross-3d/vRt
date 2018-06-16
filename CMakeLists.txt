@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 set (PROJECT_NAME vRt)
-set (APPLICATION_NAME vRt-dev)
+set (APPLICATION_NAME helloTriangle)
 set (LIBRARY_NAME vRt)
 project (${PROJECT_NAME})
 
