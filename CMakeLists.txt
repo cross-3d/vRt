@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 set (PROJECT_NAME vRt)
 set (APPLICATION_NAME vRt-dev)
+set (LIBRARY_NAME vRt)
 project (${PROJECT_NAME})
 
 if (COMPILER_ID MATCHES "MSVC")
@@ -145,3 +146,14 @@ foreach(source IN LISTS RSOURCES)
     string(REPLACE "/" "\\" source_path_msvc "${source_path}")
     source_group("${source_path_msvc}" FILES "${source}")
 endforeach()
+
+
+add_library(${LIBRARY_NAME} include/vRt/vRt_lib.cpp ${RSOURCES})
+target_link_libraries(${LIBRARY_NAME} ${LIBS})
+
+foreach(source IN LISTS RSOURCES)
+    get_filename_component(source_path "${source}" PATH)
+    string(REPLACE "/" "\\" source_path_msvc "${source_path}")
+    source_group("${source_path_msvc}" FILES "${source}")
+endforeach()
+
