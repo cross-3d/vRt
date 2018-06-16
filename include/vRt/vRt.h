@@ -10,6 +10,9 @@
 #include "Parts/Structures.inl"
 #include "Parts/API.inl"
 
+// notify compilers or IDE about Vulkan API ray tracing (vRt) library connection
+#define RVT_API_ENABLED
+
 // implementators
 #ifdef RVT_IMPLEMENTATION
 #include "vRt_impl.inl"
