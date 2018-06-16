@@ -76,17 +76,19 @@ uvec2 WriteColor(inout uvec2 rwby, in vec4 color){
 
 
 // max attribute packing count
-const int ATTRIB_EXTENT = 8;
+//const int ATTRIB_EXTENT = 8;
+const int ATTRIB_EXTENT = 5;
 
 // attribute formating
-const int NORMAL_TID = 0;
-const int TEXCOORD_TID = 1;
-const int TANGENT_TID = 2;
-const int BITANGENT_TID = 3;
-const int VCOLOR_TID = 4;
+//const int NORMAL_TID = 0;
+//const int TEXCOORD_TID = 1;
+//const int TANGENT_TID = 2;
+//const int BITANGENT_TID = 3;
+//const int VCOLOR_TID = 4;
 
 struct VtHitData {
     vec4 uvt; // UV, distance, triangle (base data)
+    vec4 vdat; // additional field (vertex normal, etc.)
     int rayID; // ray index
     int payloadID; // hit shaded index
     int materialID; // may not necessary 

@@ -131,10 +131,10 @@ void main() {
             textured.emissive = material.emissive;
 
             // AMD not supported per-lane texture data loading, if texture index is not constant
-            vec2 texcoord = hit.attributes[TEXCOORD_TID].xy; //hit.texcoord.xy;
-            vec3 normal = hit.attributes[NORMAL_TID].xyz;
-            vec3 bitang = hit.attributes[BITANGENT_TID].xyz;
-            vec3 tangent = hit.attributes[TANGENT_TID].xyz;
+            vec2 texcoord = cray.cdirect.xy;//hit.attributes[TEXCOORD_TID].xy; //hit.texcoord.xy;
+            vec3 normal = -viewVec;//hit.attributes[NORMAL_TID].xyz;
+            vec3 bitang = 0.f.xxx;//hit.attributes[BITANGENT_TID].xyz;
+            vec3 tangent = 0.f.xxx;//hit.attributes[TANGENT_TID].xyz;
 
             mat3 tbn = transpose(mat3(tangent.xyz, bitang.xyz, normal.xyz));
             vec3 pV = normalize(tbn * (-viewVec * hit.uvt.z));

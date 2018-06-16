@@ -62,11 +62,12 @@ void main() {
             VtHitData hit = hits[hid];
             hit.rayID = it+1;
             hit.uvt = geometrySpace.lastIntersection;
+            hit.vdat = vec4(normalize(cross(e1, e2)), 1.f);
             hit.payloadID = hid+1;
             //hit.payloadID = 0;
             hit.materialID = materials[triID];
             hit.next = 0;
-            hit.attributes[NORMAL_TID] = vec4(normalize(cross(e1, e2)), 1.f);
+            //hit.attributes[NORMAL_TID] = vec4(normalize(cross(e1, e2)), 1.f);
             imageStore(rayLink, it, uvec4(hid+1));
             //currentRayTmp.origin.w = intBitsToFloat(hid+1); // don't save in rays
             

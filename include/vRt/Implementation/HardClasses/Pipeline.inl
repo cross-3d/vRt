@@ -38,7 +38,6 @@ namespace _vt {
 
         {
             const auto& rayCount = info.maxRays;
-            const int ATTRIB_EXTENT = 8;
 
             {
                 VtDeviceBufferCreateInfo bfi;
@@ -46,7 +45,7 @@ namespace _vt {
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
 
-                bfi.bufferSize = rayCount * 32;
+                bfi.bufferSize = rayCount * 32ull;
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayBuffer);
 
@@ -56,7 +55,8 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayIndiceBuffer);
 
 
-                bfi.bufferSize = rayCount * (8 * sizeof(uint32_t) + 4 * ATTRIB_EXTENT * sizeof(uint32_t));
+                bfi.bufferSize = rayCount * 32ull * sizeof(uint32_t); // economy hit memory
+                //bfi.bufferSize = rayCount * 64ull * sizeof(uint32_t); // prefer to reserve as many as possible
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_hitBuffer);
 
@@ -71,12 +71,12 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_missedHitIndiceBuffer);
 
 
-                bfi.bufferSize = 8 * sizeof(uint32_t);
+                bfi.bufferSize = 8ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_countersBuffer);
 
 
-                bfi.bufferSize = rayCount * 128;
+                bfi.bufferSize = rayCount * 32ull * sizeof(uint32_t); // prefer to reserve as many as possible
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_hitPayloadBuffer);
 
@@ -86,12 +86,12 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayLinkPayload);
 
 
-                bfi.bufferSize = 1024 * 256 * sizeof(uint32_t);
+                bfi.bufferSize = 1024ull * 256ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32G32B32A32_SINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_traverseCache);
 
 
-                bfi.bufferSize = 8 * sizeof(uint32_t);
+                bfi.bufferSize = 8ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_constBuffer);
 
