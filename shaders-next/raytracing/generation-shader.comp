@@ -44,7 +44,9 @@ void main() {
     RayActived(ray, true_);
     ray.origin.xyz = orig.xyz;
     ray.cdirect = lcts(dir.xyz);
-    vtEmitRays(ray);
+
+    // filtering off rays by resolution
+    if (xy.x < wh.x && xy.y < wh.y) { vtEmitRays(ray); }
 
     LGROUP_BARRIER;
 }
