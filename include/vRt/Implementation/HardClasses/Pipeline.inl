@@ -14,15 +14,10 @@ namespace _vt {
         vtPipeline->_device = _vtDevice;
         vtPipeline->_pipelineLayout = info.pipelineLayout;
 
-        //vtPipeline->_closestHitPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + info.closestShader, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        //vtPipeline->_missHitPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + info.missShader, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        //vtPipeline->_generationPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + info.generationShader, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        //vtPipeline->_resolvePipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + info.resolveShader, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
-
-        vtPipeline->_closestHitPipeline = createCompute(VkDevice(*_vtDevice), info.closestModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        vtPipeline->_missHitPipeline = createCompute(VkDevice(*_vtDevice), info.missModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        vtPipeline->_generationPipeline = createCompute(VkDevice(*_vtDevice), info.generationModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        vtPipeline->_resolvePipeline = createCompute(VkDevice(*_vtDevice), info.resolveModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        if (info.closestModule.module) vtPipeline->_closestHitPipeline = createCompute(VkDevice(*_vtDevice), info.closestModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        if (info.missModule.module) vtPipeline->_missHitPipeline = createCompute(VkDevice(*_vtDevice), info.missModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        if (info.generationModule.module) vtPipeline->_generationPipeline = createCompute(VkDevice(*_vtDevice), info.generationModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        if (info.resolveModule.module) vtPipeline->_resolvePipeline = createCompute(VkDevice(*_vtDevice), info.resolveModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
 
         return result;
     }
