@@ -113,6 +113,7 @@ namespace _vt {
                 vtAccelerator->_leafPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/leaf-gen.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
                 vtAccelerator->_leafLinkPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/leaf-link.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
                 vtAccelerator->_intersectionPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/traverse-bvh.comp.spv", vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_interpolatorPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/interpolator.comp.spv", vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
             };
         };
 

@@ -210,7 +210,7 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<Device> _device;
 
         // traverse pipeline
-        VkPipeline _intersectionPipeline;
+        VkPipeline _intersectionPipeline, _interpolatorPipeline;
 
         // build BVH stages (few stages, in sequences)
         VkPipeline _boundingPipeline, _shorthandPipeline, _leafPipeline, /*...radix sort between*/ _buildPipeline, _fitPipeline, _leafLinkPipeline;

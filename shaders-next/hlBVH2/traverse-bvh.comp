@@ -4,7 +4,7 @@
 // THIS shader now not part of ray tracing pipeline - it part of BVH processing system
 
 //#define USE_FAST_INTERSECTION
-#define ENABLE_VERTEX_INTERPOLATOR
+//#define ENABLE_VERTEX_INTERPOLATOR
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
 #define DISCARD_SHARED_CACHING // store rays in registers if possible
@@ -26,7 +26,7 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    int wsize = rayCounter;//PREPARED_COUNT;
+    int wsize = rayCounter;
     int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
     int wgs = int(gl_NumWorkGroups);
     cacheID = int(gl_GlobalInvocationID.x);
@@ -44,50 +44,21 @@ void main() {
 
         IF (not(overflow)) { // verify intersection
             const int triID = floatBitsToInt(geometrySpace.lastIntersection.w)-1;
-            const int itri = triID*3;//tri*9;
-            const mat3 vT = transpose(mat3(
-                TLOAD(lvtx, itri+0).xyz,
-                TLOAD(lvtx, itri+1).xyz,
-                TLOAD(lvtx, itri+2).xyz
-            ));
-
-            const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
+            bool_ vintersect = lessF(geometrySpace.lastIntersection.z, INFINITY-0.001f) & bool_(triID >= 0);
             
-            // make hit
-            int hid = -1;
-            bool_ vintersect = lessF(geometrySpace.lastIntersection.z, INFINITY-0.001f) & bool_(triID >= 0) & bool_(hid < 0).x | lessF(geometrySpace.lastIntersection.z, hits[hid].uvt.z);
-            //hid = atomicIncHitCount();
-            hid = it;
-
             // save hit
-            VtHitData hit = hits[hid];
+            int hid = it; VtHitData hit = hits[hid];
             hit.rayID = it+1;
             hit.uvt = geometrySpace.lastIntersection;
-            hit.vdat = vec4(normalize(cross(e1, e2)), 1.f);
             hit.payloadID = hid+1;
-            //hit.payloadID = 0;
             hit.materialID = materials[triID];
             hit.next = 0;
-            //hit.attributes[NORMAL_TID] = vec4(normalize(cross(e1, e2)), 1.f);
+
+            // identify intersection
             imageStore(rayLink, it, uvec4(hid+1));
-            //currentRayTmp.origin.w = intBitsToFloat(hid+1); // don't save in rays
-            
-            IF (vintersect) {
-#ifdef ENABLE_VERTEX_INTERPOLATOR
-                interpolateMeshData(hit);
-#endif
-                vtVerifyClosestHit(hid);
-            }
-            
-            IF (not(vintersect)) {
-                vtVerifyMissedHit(hid);
-            }
+            IF (vintersect) { vtVerifyClosestHit(hid); } else { vtVerifyMissedHit(hid); }
 
             hits[hid] = hit;
-            rays[it] = currentRayTmp;
-
-            // error debug
-            hitPayload[hid].emission = vec4(1.f, 0.f, 1.f, 1.f);
         }
     }
 

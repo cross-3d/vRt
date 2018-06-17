@@ -77,7 +77,8 @@ namespace _vt {
 
             // run traverse processing 
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
-            cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, 4096);
+            cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, 4096); // traverse BVH
+            cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, 4096); // interpolate intersections
 
             // handling hits
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
