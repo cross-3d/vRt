@@ -160,6 +160,20 @@ namespace _vt {
             vtDevice->_descriptorLayoutMap["vertexInputSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         }
 
+
+        {
+            const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
+                vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eUniformTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // indice input
+                vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eUniformTexelBuffer, 8, vk::ShaderStageFlagBits::eCompute), // data inputs
+                vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // vertex output
+                vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageTexelBuffer, 8, vk::ShaderStageFlagBits::eCompute), // attribute outputs
+                vk::DescriptorSetLayoutBinding(4 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // indice output
+                vk::DescriptorSetLayoutBinding(5 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // vertex shader system constants
+            };
+            vtDevice->_descriptorLayoutMap["vertexShaderAdv"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
+        }
+
+
         // create radix sort tool
         createRadixSort(vtDevice, vtExtension, vtDevice->_radixSort);
         createVertexAssembly(vtDevice, vtExtension, vtDevice->_vertexAssembler);

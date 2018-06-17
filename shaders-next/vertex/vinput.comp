@@ -172,7 +172,6 @@ void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
 
 initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
 
-
 void main(){
     const int wsize = int(vertexBlock.primitiveCount);
     const int gS = int(gl_WorkGroupSize.x);
@@ -210,8 +209,8 @@ void main(){
                 [[unroll]]
                 for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
                     uint a = attributes[a].attributeID;
-                    ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(int(tidc*ATTRIB_EXTENT+a)));
                     vec4 attribValue = vec4(0.f); readByAccessor(attributes[a].accessorID, indiceID, attribValue);
+                    ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(int(tidc*ATTRIB_EXTENT+a)));
                     ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_, i), floatBitsToUint(attribValue));
                 }}
 

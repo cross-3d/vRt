@@ -1,0 +1,71 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+
+#define VERTEX_FILLING
+#define USE_PUSH_CONSTANT
+
+#include "../include/driver.glsl"
+#include "../include/structs.glsl"
+//#include "../include/vertex.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+
+LOCAL_SIZE_LAYOUT;
+
+
+// inputs (there is no RGB i.e. VEC3 formats support)
+// but who knows, it can be emulated?
+layout ( binding = 0, set = 0 ) uniform usamplerBuffer indiceBuffer;
+layout ( binding = 1, set = 0 ) uniform samplerBuffer inputs[8];
+
+layout ( binding = 2, set = 0 ) uniform imageBuffer vertexOut; // vertex outputs
+layout ( binding = 3, set = 0 ) uniform imageBuffer attribOut[8]; // attribute outputs
+layout ( binding = 4, set = 0 ) uniform uimageBuffer indiceOut; // indice outputs
+
+
+// uniform input of vertex loader
+#ifdef USE_PUSH_CONSTANT
+layout ( push_constant ) uniform VT_UNIFORM 
+#else
+layout ( binding = 5, set = 0, std430 ) readonly buffer VT_UNIFORM
+#endif
+{
+    uint primitiveCount;
+    uint verticeAccessor;
+    uint indiceAccessor;
+    uint materialID;
+
+    uint primitiveOffset;
+    uint topology;
+    uint attributeCount;
+    uint reserved0;
+} vertexBlock;
+
+
+uint _getIdc(in uint gID) { return texelFetch(indiceBuffer, int(gID)).x; }
+
+void main(){
+    const int wsize = int(vertexBlock.primitiveCount);
+    const int gS = int(gl_WorkGroupSize.x);
+    const int wgs = int(gl_NumWorkGroups.x);
+    const int wID = int(gl_WorkGroupID.x);
+    const int lID = int(Local_Idx);
+    const int rng = gS*wgs;
+
+    // process vertex assembly
+    for (int w=0;w<wsize;w+=rng) {
+        int globalID = w + wID * gS + lID;
+        IFALL (globalID >= wsize) break;
+        if (globalID < wsize && globalID >= 0) {
+
+            // vertice index
+            uint vIdx = _getIdc(uint(globalID));
+            
+            
+            
+            // TODO: write vertex shader with bufferView's support
+            
+        }
+    }
+}
