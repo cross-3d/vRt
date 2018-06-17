@@ -26,6 +26,7 @@
 ## VERY Relative Calendar (VRC):
 
 #### June/July 2018 ("Early Vulkanism")
+- Development of new vertex input model
 - Debugging and experimenting stage
 - Development of better implementation 
 - Improve API and interfaces

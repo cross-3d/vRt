@@ -10,40 +10,15 @@
 //#include "../include/vertex.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
+#include "../include/vertex-input.glsl"
 
 LOCAL_SIZE_LAYOUT;
 
+// for connection with vertex input v2
+layout ( binding = 0, set = 0 ) uniform imageBuffer vertexOut; // vertex outputs
+layout ( binding = 1, set = 0 ) uniform imageBuffer attribOut[8]; // attribute outputs
+layout ( binding = 2, set = 0 ) uniform uimageBuffer indiceOut; // indice outputs
 
-// inputs (there is no RGB i.e. VEC3 formats support)
-// but who knows, it can be emulated?
-layout ( binding = 0, set = 0 ) uniform usamplerBuffer indiceBuffer;
-layout ( binding = 1, set = 0 ) uniform samplerBuffer inputs[8];
-
-layout ( binding = 2, set = 0 ) uniform imageBuffer vertexOut; // vertex outputs
-layout ( binding = 3, set = 0 ) uniform imageBuffer attribOut[8]; // attribute outputs
-layout ( binding = 4, set = 0 ) uniform uimageBuffer indiceOut; // indice outputs
-
-
-// uniform input of vertex loader
-#ifdef USE_PUSH_CONSTANT
-layout ( push_constant ) uniform VT_UNIFORM 
-#else
-layout ( binding = 5, set = 0, std430 ) readonly buffer VT_UNIFORM
-#endif
-{
-    uint primitiveCount;
-    uint verticeAccessor;
-    uint indiceAccessor;
-    uint materialID;
-
-    uint primitiveOffset;
-    uint topology;
-    uint attributeCount;
-    uint reserved0;
-} vertexBlock;
-
-
-uint _getIdc(in uint gID) { return texelFetch(indiceBuffer, int(gID)).x; }
 
 void main(){
     const int wsize = int(vertexBlock.primitiveCount);
@@ -59,13 +34,8 @@ void main(){
         IFALL (globalID >= wsize) break;
         if (globalID < wsize && globalID >= 0) {
 
-            // vertice index
-            uint vIdx = _getIdc(uint(globalID));
             
-            
-            
-            // TODO: write vertex shader with bufferView's support
-            
+
         }
     }
 }

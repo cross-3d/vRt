@@ -1,0 +1,65 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+// fast vertex input
+
+#define VERTEX_FILLING
+#define USE_PUSH_CONSTANT
+
+#include "../include/driver.glsl"
+#include "../include/structs.glsl"
+#include "../include/vertex.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+
+
+// uniform input of vertex loader
+#ifdef USE_PUSH_CONSTANT
+layout ( push_constant ) uniform VT_UNIFORM 
+#else
+layout ( binding = 3, set = 1, std430 ) readonly buffer VT_UNIFORM
+#endif
+{
+    uint primitiveOffset;
+    uint primitiveCount;
+    uint materialID;
+    uint attributeCount;
+} vertexBlock;
+
+// internal inputs, will no directly connected
+layout ( binding = 0, set = 1 ) uniform usamplerBuffer indiceBuffer;
+layout ( binding = 1, set = 1 ) uniform samplerBuffer attribIn[8];
+layout ( binding = 2, set = 1 ) uniform samplerBuffer vertexIn;
+
+
+initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
+
+LOCAL_SIZE_LAYOUT;
+
+void main(){
+    const int wsize = int(vertexBlock.primitiveCount);
+    const int gS = int(gl_WorkGroupSize.x);
+    const int wgs = int(gl_NumWorkGroups.x);
+    const int wID = int(gl_WorkGroupID.x);
+    const int lID = int(Local_Idx);
+    const int rng = gS*wgs;
+    const int trp = 3;
+
+    // for faster geometry loading, just add counter in single thread
+    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(tcounter[0], wsize); }
+    
+    // process vertex assembly
+    for (int w=0;w<wsize;w+=rng) {
+        int globalID = w + wID * gS + lID;
+        IFALL (globalID >= wsize) break;
+        if (globalID < wsize && globalID >= 0) {
+
+            // constant material ID from vertex instance 
+            int matID = int(vertexBlock.materialID);
+            int ordr = tcounter[1] + int(globalID), tidc = ordr;
+
+            
+            
+        }
+    }
+}
