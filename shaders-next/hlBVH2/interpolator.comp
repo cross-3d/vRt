@@ -39,12 +39,14 @@ void main() {
                 TLOAD(lvtx, itri+1).xyz,
                 TLOAD(lvtx, itri+2).xyz
             ));
+            const vec3 vs = vec3(1.0f - hit.uvt.x - hit.uvt.y, hit.uvt.xy);
+            const vec3 hitOrigin = vs * vT;
 
             // interpolate hit
             IF (lessF(hit.uvt.z, INFINITY-0.001f) & bool_(triID >= 0)) {
                 const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
                 hit.vdat = vec4(normalize(cross(e1, e2)), 1.f);
-                interpolateMeshData(hit);
+                interpolateMeshData(hit, vs);
                 hits[hitID] = hit;
             }
         }

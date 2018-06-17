@@ -78,7 +78,7 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
 const int WARPED_WIDTH = 2048;
 //const ivec2 mit[3] = {ivec2(0,0), ivec2(1,0), ivec2(0,1)};
 const ivec2 mit[3] = {ivec2( 0,1), ivec2(1,1), ivec2(1, 0)};
-const vec2 mitf[3] = { vec2(-1,1),  vec2(1,1),  vec2(1,-1)};
+//const vec2 mitf[3] = { vec2(-1,1),  vec2(1,1),  vec2(1,-1)};
 
 ivec2 mosaicIdc(in ivec2 mosaicCoord, const int idc) {
 #ifdef VERTEX_FILLING
@@ -169,9 +169,9 @@ const int _BVH_WIDTH = 2048;
 #ifdef ENABLE_VSTORAGE_DATA
 #ifdef ENABLE_VERTEX_INTERPOLATOR
 // barycentric map (for corrections tangents in POM)
-void interpolateMeshData(inout VtHitData ht) {
+void interpolateMeshData(inout VtHitData ht, in vec3 vs) {
     const int tri = floatBitsToInt(ht.uvt.w)-1;
-    const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
+    //const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
     const bool_ validInterpolant = greaterEqualF(ht.uvt.z, 0.0f) & lessF(ht.uvt.z, INFINITY) & bool_(tri >= 0) & bool_(materials[tri] == ht.materialID);
     IFANY (validInterpolant) {
