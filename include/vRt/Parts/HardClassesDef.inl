@@ -16,7 +16,7 @@ namespace _vt { // store in undercover namespace
     class CopyProgram;
     class MaterialSet;
     class VertexInputSet;
-    class Accelerator;
+    class AcceleratorHLBVH2;
     class AcceleratorSet;
     class VertexAssembly;
     class VertexAssemblySet;

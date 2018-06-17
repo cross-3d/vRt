@@ -59,7 +59,7 @@ namespace _vt { // store in undercover namespace
         VkDescriptorPool _descriptorPool;
 
         std::shared_ptr<RadixSort> _radixSort;
-        std::shared_ptr<Accelerator> _acceleratorBuilder;
+        std::shared_ptr<AcceleratorHLBVH2> _acceleratorBuilder; // planned to rename
         std::shared_ptr<VertexAssembly> _vertexAssembler;
         std::shared_ptr<BufferTraffic> _bufferTraffic;
         //std::shared_ptr<CopyProgram> _copyProgram;
@@ -201,7 +201,7 @@ namespace _vt { // store in undercover namespace
 
     // ray tracing accelerator structure object
     // planned to merge pipeline programs to device
-    class Accelerator : public std::enable_shared_from_this<Accelerator> {
+    class AcceleratorHLBVH2 : public std::enable_shared_from_this<AcceleratorHLBVH2> {
     public:
         friend Device;
         const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
@@ -336,8 +336,8 @@ namespace _vt { // store in undercover namespace
         // textures and samplers bound in descriptor set directly
 
         // material data buffers
-        std::shared_ptr<DeviceBuffer> _virtualSamplerCombinedBuffer;
-        std::shared_ptr<DeviceBuffer> _materialDataBuffer;
+        //std::shared_ptr<DeviceBuffer> _virtualSamplerCombinedBuffer;
+        //std::shared_ptr<DeviceBuffer> _materialDataBuffer;
         std::shared_ptr<DeviceBuffer> _constBuffer;
 
         uint32_t _materialCount = 0;
@@ -370,12 +370,12 @@ namespace _vt { // store in undercover namespace
 
         // buffer pointers for storing vertexInput
 
-        std::shared_ptr<DeviceBuffer> _bBufferRegionBindings;
-        std::shared_ptr<DeviceBuffer> _bBufferAccessors;
-        std::shared_ptr<DeviceBuffer> _bBufferAttributeBindings;
-        std::shared_ptr<DeviceBuffer> _bBufferViews;
+        //std::shared_ptr<DeviceBuffer> _bBufferRegionBindings;
+        //std::shared_ptr<DeviceBuffer> _bBufferAccessors;
+        //std::shared_ptr<DeviceBuffer> _bBufferAttributeBindings;
+        //std::shared_ptr<DeviceBuffer> _bBufferViews;
         std::shared_ptr<DeviceBuffer> _uniformBlockBuffer; // replacement for push constant (contains primitiveCount, verticeAccessorID, indiceAccessorID, materialID)
-        std::shared_ptr<DeviceBuffer> _dataSourceBuffer; // universe buffer for vertex input
+        //std::shared_ptr<DeviceBuffer> _dataSourceBuffer; // universe buffer for vertex input
 
         std::shared_ptr<Device> _parent() const { return _device; };
         operator VkDescriptorSet() const { return _descriptorSet; };

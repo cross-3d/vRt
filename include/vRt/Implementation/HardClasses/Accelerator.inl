@@ -5,9 +5,9 @@
 namespace _vt {
     using namespace vt;
 
-    inline VtResult createAccelerator(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<Accelerator>& _vtAccelerator) {
+    inline VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<AcceleratorHLBVH2>& _vtAccelerator) {
         VtResult result = VK_SUCCESS;
-        auto& vtAccelerator = (_vtAccelerator = std::make_shared<Accelerator>());
+        auto& vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
         vtAccelerator->_device = _vtDevice;
 
         // planned import from descriptor

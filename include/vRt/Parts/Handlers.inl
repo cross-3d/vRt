@@ -87,10 +87,10 @@ namespace vt { // store in official namespace
         auto* operator->() { return _vtAcceleratorSet.get(); };
     };
 
-    struct VtAccelerator {
-        std::shared_ptr<_vt::Accelerator> _vtAccelerator;
-        operator std::shared_ptr<_vt::Accelerator>() const { return _vtAccelerator; };
-        operator std::shared_ptr<_vt::Accelerator>&() { return _vtAccelerator; };
+    struct VtAcceleratorHLBVH2 {
+        std::shared_ptr<_vt::AcceleratorHLBVH2> _vtAccelerator;
+        operator std::shared_ptr<_vt::AcceleratorHLBVH2>() const { return _vtAccelerator; };
+        operator std::shared_ptr<_vt::AcceleratorHLBVH2>&() { return _vtAccelerator; };
         operator bool() const { return !!_vtAccelerator; };
         auto* operator->() { return _vtAccelerator.get(); };
     };
