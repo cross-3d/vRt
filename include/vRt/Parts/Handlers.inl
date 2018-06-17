@@ -106,10 +106,10 @@ namespace vt { // store in official namespace
         auto* operator->() { return _vtVertexAssemblySet.get(); };
     };
 
-    struct VtVertexAssembly {
-        std::shared_ptr<_vt::VertexAssembly> _vtVertexAssembly;
-        operator std::shared_ptr<_vt::VertexAssembly>() const { return _vtVertexAssembly; };
-        operator std::shared_ptr<_vt::VertexAssembly>&() { return _vtVertexAssembly; };
+    struct VtVertexAssemblyPipeline {
+        std::shared_ptr<_vt::VertexAssemblyPipeline> _vtVertexAssembly;
+        operator std::shared_ptr<_vt::VertexAssemblyPipeline>() const { return _vtVertexAssembly; };
+        operator std::shared_ptr<_vt::VertexAssemblyPipeline>&() { return _vtVertexAssembly; };
         operator bool() const { return !!_vtVertexAssembly; };
         auto* operator->() { return _vtVertexAssembly.get(); };
     };

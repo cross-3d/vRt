@@ -28,7 +28,6 @@ start /b /wait glslangValidator %CFLAGSV% %INDIR%%RNDR%closest-hit-shader.comp -
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%RNDR%generation-shader.comp  -o %OUTDIR%%RNDR%generation-shader.comp.spv
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%RNDR%miss-hit-shader.comp    -o %OUTDIR%%RNDR%miss-hit-shader.comp.spv
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%RNDR%resolve-shader.comp     -o %OUTDIR%%RNDR%resolve-shader.comp.spv
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%RNDR%vertex-shader.comp      -o %OUTDIR%%RNDR%vertex-shader.comp.spv
 
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%VRTX%vinput.comp        -o %OUTDIR%%VRTX%vinput.comp.spv
 

@@ -6,25 +6,31 @@ namespace _vt {
     using namespace vt;
 
 
-    inline VtResult createRayTracingPipelineLayout(std::shared_ptr<Device> _vtDevice, VkPipelineLayoutCreateInfo vtRayTracingPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& _vtPipelineLayout) {
+    inline VtResult createPipelineLayout(std::shared_ptr<Device> _vtDevice, VkPipelineLayoutCreateInfo vtPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& _vtPipelineLayout, VtPipelineLayoutType type) {
         VtResult result = VK_SUCCESS;
 
         auto& vtPipelineLayout = (_vtPipelineLayout = std::make_shared<PipelineLayout>());
         vtPipelineLayout->_device = _vtDevice;
+        vtPipelineLayout->_type = type;
 
-        std::vector<vk::DescriptorSetLayout> dsLayouts = {
-            vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]),
-            vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["materialSet"])
-        };
+        auto dsLayouts = type == VT_PIPELINE_LAYOUT_TYPE_RAYTRACING ?
+            std::vector<vk::DescriptorSetLayout>{
+                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]),
+                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["materialSet"]),
+            } : 
+            std::vector<vk::DescriptorSetLayout>{
+                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
+                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
+            };
 
-        for (int i = 0; i < vtRayTracingPipelineLayoutCreateInfo.setLayoutCount; i++) {
-            dsLayouts.push_back(vtRayTracingPipelineLayoutCreateInfo.pSetLayouts[i]);
+        for (int i = 0; i < vtPipelineLayoutCreateInfo.setLayoutCount; i++) {
+            dsLayouts.push_back(vtPipelineLayoutCreateInfo.pSetLayouts[i]);
         }
 
-        vtRayTracingPipelineLayoutCreateInfo.setLayoutCount = dsLayouts.size();
-        vtRayTracingPipelineLayoutCreateInfo.pSetLayouts = (VkDescriptorSetLayout*)(dsLayouts.data());
+        vtPipelineLayoutCreateInfo.setLayoutCount = dsLayouts.size();
+        vtPipelineLayoutCreateInfo.pSetLayouts = (VkDescriptorSetLayout*)(dsLayouts.data());
 
-        vtPipelineLayout->_pipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo(vtRayTracingPipelineLayoutCreateInfo));
+        vtPipelineLayout->_pipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo(vtPipelineLayoutCreateInfo));
 
         return result;
     };

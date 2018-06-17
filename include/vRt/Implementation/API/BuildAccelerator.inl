@@ -37,15 +37,16 @@ namespace _vt {
     VtResult buildVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf) {
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
-        auto vertb = device->_vertexAssembler;
+        auto vertbd = device->_vertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
         cmdFillBuffer<0u>(*cmdBuf, *vertx->_countersBuffer);
         vertx->_calculatedPrimitiveCount = 0;
         for (auto& iV_ : cmdBuf->_vertexInputs) {
             auto iV = iV_.lock();
+            auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
-            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, vertb->_vertexAssemblyPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
-            vkCmdPushConstants(*cmdBuf, vertb->_vertexAssemblyPipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+            //vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, 4096);
             cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, vertx->_countersBuffer, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(1), strided<uint32_t>(1)) });
             vertx->_calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;

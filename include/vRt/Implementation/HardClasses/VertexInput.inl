@@ -11,6 +11,7 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         auto& vtVertexInput = (_vtVertexInput = std::make_shared<VertexInputSet>());
         vtVertexInput->_device = _vtDevice;
+        vtVertexInput->_vertexAssembly = info.vertexAssemblyPipeline._vtVertexAssembly;
 
         std::vector<vk::PushConstantRange> constRanges = {
             vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(4))

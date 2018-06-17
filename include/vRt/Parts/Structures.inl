@@ -73,6 +73,8 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_INPUT_CREATE_INFO;
         const void* pNext = nullptr;
 
+        VtVertexAssemblyPipeline vertexAssemblyPipeline;
+
         // original block
         uint32_t primitiveCount = 0;
         uint32_t verticeAccessor = 0;
@@ -127,6 +129,17 @@ namespace vt { // store in official namespace
         VkBuffer bMaterialDescriptionsBuffer = nullptr;
         //const uint32_t* pMaterialDescriptionIDs = nullptr; // I don't remember why it need
         uint32_t materialCount = 0;
+    };
+
+
+    // 
+    struct VtVertexAssemblyPipelineCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_PIPELINE_CREATE_INFO;
+        const void* pNext = nullptr;
+
+        size_t maxPrimitives = 1024u * 1024u;
+        VtPipelineLayout pipelineLayout;
+        VkPipelineShaderStageCreateInfo vertexAssemblyModule;
     };
 
 

@@ -7,31 +7,15 @@ namespace _vt {
 
 
 
-    inline VtResult createVertexAssembly(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<VertexAssembly>& _vtVertexAssembly) {
+    inline VtResult createVertexAssemblyPipeline(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblyPipelineCreateInfo& info, std::shared_ptr<VertexAssemblyPipeline>& _vtVertexAssembly) {
         VtResult result = VK_SUCCESS;
-        auto& vtVertexAssembly = (_vtVertexAssembly = std::make_shared<VertexAssembly>());
+        auto& vtVertexAssembly = (_vtVertexAssembly = std::make_shared<VertexAssemblyPipeline>());
         vtVertexAssembly->_device = _vtDevice;
 
         {
-            std::vector<vk::PushConstantRange> constRanges = {
-                vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(8))
-            };
-            std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
-            };
-            auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-
-            vk::Sampler attributeSampler = vk::Device(*_vtDevice).createSampler(vk::SamplerCreateInfo()
-                .setAddressModeU(vk::SamplerAddressMode::eRepeat)
-                .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
-                .setMagFilter(vk::Filter::eNearest)
-                .setMinFilter(vk::Filter::eNearest)
-            );
-
             // create pipeline
-            vtVertexAssembly->_vertexAssemblyPipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
-            vtVertexAssembly->_vertexAssemblyPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "vertex/vinput.comp.spv", vtVertexAssembly->_vertexAssemblyPipelineLayout, VkPipelineCache(*_vtDevice));
+            vtVertexAssembly->_pipelineLayout = info.pipelineLayout;
+            vtVertexAssembly->_vertexAssemblyPipeline = createCompute(VkDevice(*_vtDevice), info.vertexAssemblyModule, *vtVertexAssembly->_pipelineLayout, VkPipelineCache(*_vtDevice));
         };
 
         return result;

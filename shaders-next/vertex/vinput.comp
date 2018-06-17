@@ -3,7 +3,7 @@
 
 
 #define VERTEX_FILLING
-#define USE_PUSH_CONSTANT
+//#define USE_PUSH_CONSTANT
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"

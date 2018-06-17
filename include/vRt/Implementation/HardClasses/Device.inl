@@ -161,31 +161,15 @@ namespace _vt {
         }
 
 
-        { // vertex input v2
-            const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
-                vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eUniformTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // vertex output
-                vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eUniformTexelBuffer, 8, vk::ShaderStageFlagBits::eCompute), // attribute outputs
-                vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eUniformTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // indice output
-                vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // vertex shader system constants
-            };
-            vtDevice->_descriptorLayoutMap["vertexInputV2In"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
-        }
-
-
-        {
-            const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
-                vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // vertex output
-                vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eStorageTexelBuffer, 8, vk::ShaderStageFlagBits::eCompute), // attribute outputs
-                vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // indice output
-            };
-            vtDevice->_descriptorLayoutMap["vertexInputV2Out"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
-        }
-
-
+        //createPipelineLayout
+        VtVertexAssemblyPipelineCreateInfo simfo;
+        simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, readBinary(_vtDevice->_shadersPath + "vertex/vinput.comp.spv"));
+        simfo.maxPrimitives = vtExtension.maxPrimitives;
+        createPipelineLayout(vtDevice, vk::PipelineLayoutCreateInfo(), simfo.pipelineLayout, VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT);
 
         // create radix sort tool
         createRadixSort(vtDevice, vtExtension, vtDevice->_radixSort);
-        createVertexAssembly(vtDevice, vtExtension, vtDevice->_vertexAssembler);
+        createVertexAssemblyPipeline(vtDevice, simfo, vtDevice->_vertexAssembler);
         createAcceleratorHLBVH2(vtDevice, vtExtension, vtDevice->_acceleratorBuilder);
         return result;
     };

@@ -60,7 +60,7 @@ namespace _vt { // store in undercover namespace
 
         std::shared_ptr<RadixSort> _radixSort;
         std::shared_ptr<AcceleratorHLBVH2> _acceleratorBuilder; // planned to rename
-        std::shared_ptr<VertexAssembly> _vertexAssembler;
+        std::shared_ptr<VertexAssemblyPipeline> _vertexAssembler;
         std::shared_ptr<BufferTraffic> _bufferTraffic;
         //std::shared_ptr<CopyProgram> _copyProgram;
 
@@ -105,6 +105,7 @@ namespace _vt { // store in undercover namespace
         friend Device;
         VkPipelineLayout _pipelineLayout = nullptr; // replaced set 0 and 1
         std::shared_ptr<Device> _device;
+        VtPipelineLayoutType _type = VT_PIPELINE_LAYOUT_TYPE_RAYTRACING;
 
         operator VkPipelineLayout() const { return _pipelineLayout; }; // no correct conversion
         std::shared_ptr<Device> _parent() const { return _device; };
@@ -172,14 +173,14 @@ namespace _vt { // store in undercover namespace
 
 
     // vertex assembly program
-    class VertexAssembly : public std::enable_shared_from_this<VertexAssembly> {
+    class VertexAssemblyPipeline : public std::enable_shared_from_this<VertexAssemblyPipeline> {
     public:
         friend Device;
         const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
         std::weak_ptr<Device> _device;
 
         VkPipeline _vertexAssemblyPipeline;
-        VkPipelineLayout _vertexAssemblyPipelineLayout;
+        std::shared_ptr<PipelineLayout> _pipelineLayout;
 
         operator VkPipeline() const { return _dullPipeline; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
@@ -221,9 +222,6 @@ namespace _vt { // store in undercover namespace
         // build descriptor set 
         VkDescriptorSet _buildDescriptorSet;
         VkDescriptorSet _sortDescriptorSet;
-
-        // vertex assembly set
-        std::shared_ptr<VertexAssemblySet> _vertexAssemblySet;
 
         // internal buffers
         std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
@@ -378,6 +376,12 @@ namespace _vt { // store in undercover namespace
         //std::shared_ptr<DeviceBuffer> _bBufferViews;
         std::shared_ptr<DeviceBuffer> _uniformBlockBuffer; // replacement for push constant (contains primitiveCount, verticeAccessorID, indiceAccessorID, materialID)
         //std::shared_ptr<DeviceBuffer> _dataSourceBuffer; // universe buffer for vertex input
+
+        // vertex assembly set
+        //std::shared_ptr<VertexAssemblySet> _vertexAssemblySet;
+
+        // vertex assembly pipeline bound
+        std::shared_ptr<VertexAssemblyPipeline> _vertexAssembly;
 
         std::shared_ptr<Device> _parent() const { return _device; };
         operator VkDescriptorSet() const { return _descriptorSet; };
