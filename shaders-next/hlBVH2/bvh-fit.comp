@@ -67,7 +67,7 @@ void main() {
         //int idx = globalID < wsize ? exchange(LeafIndices[globalID], 0)-1 : -1;
         int idx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
 
-        [[unroll, dependency_length(4)]]
+        [[unroll]]
         for (int l=0;l<65536;l++) {
 
             // unify boxes for parent

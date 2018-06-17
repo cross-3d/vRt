@@ -63,7 +63,7 @@ void main() {
     int asize = asize_inv_;
 
     // building BVH
-    [[unroll, dependency_length(4)]]
+    [[unroll]]
     for (int m=0;m<65536;m++) {
 
         // swap buffers emulation

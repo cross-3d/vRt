@@ -77,7 +77,8 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
 
 const int WARPED_WIDTH = 2048;
 //const ivec2 mit[3] = {ivec2(0,0), ivec2(1,0), ivec2(0,1)};
-const ivec2 mit[3] = {ivec2(0,1), ivec2(1,1), ivec2(1,0)};
+const ivec2 mit[3] = {ivec2( 0,1), ivec2(1,1), ivec2(1, 0)};
+const vec2 mitf[3] = { vec2(-1,1),  vec2(1,1),  vec2(1,-1)};
 
 ivec2 mosaicIdc(in ivec2 mosaicCoord, const int idc) {
 #ifdef VERTEX_FILLING
@@ -114,9 +115,6 @@ float intersectTriangle(const vec3 orig, const mat3 M, const int axis, const int
             TLOAD(lvtx, itri+0).xyz-orig.xxx,
             TLOAD(lvtx, itri+1).xyz-orig.yyy,
             TLOAD(lvtx, itri+2).xyz-orig.zzz
-            //vec3(lvtx[itri+0], lvtx[itri+1], lvtx[itri+2])-orig.x,
-            //vec3(lvtx[itri+3], lvtx[itri+4], lvtx[itri+5])-orig.y,
-            //vec3(lvtx[itri+6], lvtx[itri+7], lvtx[itri+8])-orig.z
         )*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
@@ -138,9 +136,6 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
         TLOAD(lvtx, itri+0).xyz,
         TLOAD(lvtx, itri+1).xyz,
         TLOAD(lvtx, itri+2).xyz
-        //vec3(lvtx[itri+0], lvtx[itri+1], lvtx[itri+2]),
-        //vec3(lvtx[itri+3], lvtx[itri+4], lvtx[itri+5]),
-        //vec3(lvtx[itri+6], lvtx[itri+7], lvtx[itri+8])
     ));
     const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
     const vec3 h = cross(dir, e2);
@@ -163,8 +158,6 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
     if (!_valid) T = INFINITY;
     return T;
 }
-
-
 #endif
 #endif
 #endif
@@ -173,48 +166,24 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
 
 const int _BVH_WIDTH = 2048;
 
-/*
-#define bvhT_ptr ivec2
-bvhT_ptr mk_bvhT_ptr(in int linear) {
-    //int md = linear & 1; linear >>= 1;
-    //return bvhT_ptr(linear % _BVH_WIDTH, ((linear / _BVH_WIDTH) << 1) + md);
-    return bvhT_ptr(linear % _BVH_WIDTH, linear / _BVH_WIDTH); // just make linear (gather by tops of...)
-}*/
-
-
 #ifdef ENABLE_VSTORAGE_DATA
 #ifdef ENABLE_VERTEX_INTERPOLATOR
 // barycentric map (for corrections tangents in POM)
 void interpolateMeshData(inout VtHitData ht) {
-    const int tri = floatBitsToInt(ht.uvt.w)-1; 
-    const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy); 
-    const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0), szt = sz * 0.9999f;
+    const int tri = floatBitsToInt(ht.uvt.w)-1;
+    const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
+    const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
     const bool_ validInterpolant = greaterEqualF(ht.uvt.z, 0.0f) & lessF(ht.uvt.z, INFINITY) & bool_(tri >= 0) & bool_(materials[tri] == ht.materialID);
-
-    /*
-    const int itri = tri*3;
-    const mat3 vT = transpose(mat3(
-        TLOAD(lvtx, itri+0).xyz,
-        TLOAD(lvtx, itri+1).xyz,
-        TLOAD(lvtx, itri+2).xyz
-    ));
-    const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
-    const vec3 nm = normalize(cross(e1, e2));
-    */
-
     IF (validInterpolant) {
         [[unroll]]
         for (int i=0;i<ATTRIB_EXTENT;i++) {
-            const vec2 trig = (fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, szt));
+            const vec2 trig = fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, sz*0.5f);
             ht.attributes[i] = vs * mat4x3(
-                SGATHER(attrib_texture, trig, 0)._SWIZV, 
-                SGATHER(attrib_texture, trig, 1)._SWIZV, 
-                SGATHER(attrib_texture, trig, 2)._SWIZV, 
+                SGATHER(attrib_texture, trig, 0)._SWIZV,
+                SGATHER(attrib_texture, trig, 1)._SWIZV,
+                SGATHER(attrib_texture, trig, 2)._SWIZV,
                 SGATHER(attrib_texture, trig, 3)._SWIZV
             );
-
-            // if this is normal, fix zero interpolation result, when have no 
-            //if (i == NORMAL_TID && length(ht.attributes[i].xyz) < 0.0001f) { ht.attributes[i].xyz = nm; } 
         }
     }
 }

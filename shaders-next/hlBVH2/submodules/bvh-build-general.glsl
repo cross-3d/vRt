@@ -14,7 +14,7 @@ int findSplit( in int left, in int right ) {
     if (commonPrefix >= 64 || nstep <= 1) { // if morton code equals or so small range
         split = (split + nsplit)>>1;
     } else { //fast search SAH split
-        [[dependency_infinite, dependency_length(4)]]
+        [[dependency_infinite]]
         do {
             nstep = (nstep + 1) >> 1, nsplit = split + nstep;
             if (cdelta(split, nsplit) > commonPrefix) { split = nsplit; }
