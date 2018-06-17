@@ -125,8 +125,9 @@ void doIntersection() {
     traverseState.defTriangleID = -1;
 }
 
-void traverseBvh2(in bool_ valid, inout _RAY_TYPE rayIn) {
-    currentRayTmp = rayIn;
+//void traverseBvh2(in bool_ valid, inout _RAY_TYPE rayIn) {
+void traverseBvh2(in bool_ valid) {
+    //currentRayTmp = rayIn;
     vec3 origin = currentRayTmp.origin.xyz;
     vec3 direct = dcts(currentRayTmp.cdirect.xy);
     //int eht = floatBitsToInt(currentRayTmp.origin.w)-1;

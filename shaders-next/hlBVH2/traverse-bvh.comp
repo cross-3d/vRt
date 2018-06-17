@@ -39,8 +39,8 @@ void main() {
         IFALL(overflow) break;
 
         // do BVH traversing 
-        _RAY_TYPE _ray = rays[it]; // fix SPIR-V error
-        traverseBvh2(not(overflow), _ray);
+        currentRayTmp = rays[it]; // fix SPIR-V error
+        traverseBvh2(not(overflow));
 
         IF (not(overflow)) { // verify intersection
             const int triID = floatBitsToInt(geometrySpace.lastIntersection.w)-1;
