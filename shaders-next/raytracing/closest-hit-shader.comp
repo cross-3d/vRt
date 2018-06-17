@@ -181,6 +181,8 @@ LOCAL_SIZE_LAYOUT;
 
 #ifdef CACHE_HIT_PAYLOAD
 shared VtHitPayload hitPayloadCache[WORK_SIZE];
+#else
+VtHitPayload hitp;
 #endif
 
 void main() {
@@ -210,14 +212,12 @@ void main() {
 #else
             VtHitData hit = hits[hitID];
 #endif
-            rayID = hit.rayID-1;
 
 #ifdef CACHE_HIT_PAYLOAD
             #define hitp hitPayloadCache[Local_Idx]
-            hitp = hitPayload[hit.payloadID-1];
-#else
-            HitPayload hitp = hitPayload[hit.payloadID-1];
 #endif
+            rayID = hit.rayID-1;
+            hitp = hitPayload[hit.payloadID-1];
 
             vec3 viewVec = dcts(cray.cdirect.xy);
             vec3 rorigin = cray.origin.xyz;

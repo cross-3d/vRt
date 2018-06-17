@@ -4,7 +4,7 @@
 #define DISCARD_SHARED_CACHING
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
-#define CACHE_HIT_PAYLOAD
+//#define CACHE_HIT_PAYLOAD
 //#define DMA_HIT // unpreferred
 
 #include "../include/driver.glsl"
@@ -71,12 +71,14 @@ struct Textured {
     vec4 emissive;
 } textured;
 
-#define cray rays[rayID]//rayBlockNodes[rayID / R_BLOCK_SIZE][rayID % R_BLOCK_SIZE].data
+#define cray rays[rayID]
 
 LOCAL_SIZE_LAYOUT;
 
 #ifdef CACHE_HIT_PAYLOAD
 shared VtHitPayload hitPayloadCache[WORK_SIZE];
+#else
+VtHitPayload hitp;
 #endif
 
 void main() {
@@ -107,14 +109,13 @@ void main() {
 #else
             VtHitData hit = hits[hitID];
 #endif
-            rayID = hit.rayID-1;
 
 #ifdef CACHE_HIT_PAYLOAD
             #define hitp hitPayloadCache[Local_Idx]
-            hitp = hitPayload[hit.payloadID-1];
-#else
-            HitPayload hitp = hitPayload[hit.payloadID-1];
 #endif
+
+            rayID = hit.rayID-1;
+            hitp = hitPayload[hit.payloadID-1];
 
             vec3 viewVec = dcts(cray.cdirect.xy);
             vec3 rorigin = cray.origin.xyz;
