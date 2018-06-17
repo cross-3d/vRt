@@ -85,8 +85,11 @@ struct BvhTraverseState {
 
 struct GeometrySpace {
     vec4 lastIntersection;
-    //vec4 dir;
+#ifdef USE_FAST_INTERSECTION
+    vec4 dir;
+#else
     int axis; mat3 iM;
+#endif
 } geometrySpace;
 
 struct BVHSpace {
@@ -99,8 +102,13 @@ struct BVHSpace {
 void doIntersection() {
     bool_ near = bool_(traverseState.defTriangleID >= 0);
     vec2 uv = vec2(0.f.xx);
+    
+#ifdef USE_FAST_INTERSECTION
+    float d = intersectTriangle(currentRayTmp.origin.xyz, geometrySpace.dir.xyz, traverseState.defTriangleID, uv.xy, bool(near.x));
+#else
     float d = intersectTriangle(currentRayTmp.origin.xyz, geometrySpace.iM, geometrySpace.axis, traverseState.defTriangleID, uv.xy, bool(near.x));
-    //float d = intersectTriangle(currentRayTmp.origin.xyz, geometrySpace.dir.xyz, traverseState.defTriangleID, uv.xy, bool(near.x));
+#endif
+
     float nearhit = geometrySpace.lastIntersection.z;
 
     [[flatten]]
@@ -153,8 +161,10 @@ void traverseBvh2(in bool_ valid, inout _RAY_TYPE rayIn) {
 #endif
 
     geometrySpace.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO);
-    //geometrySpace.dir = vec4(direct, 1.f);
     
+#ifdef USE_FAST_INTERSECTION
+    geometrySpace.dir = vec4(direct, 1.f);
+#else
     // calculate longest axis
     geometrySpace.axis = 2;
     {
@@ -171,7 +181,7 @@ void traverseBvh2(in bool_ valid, inout _RAY_TYPE rayIn) {
         geometrySpace.axis == 1 ? vm.xwz : vec3(0.f,1.f,0.f),
         geometrySpace.axis == 2 ? vm.xyw : vec3(0.f,0.f,1.f)
     ));
-    
+#endif
 
     // test intersection with main box
     float near = -INFINITY, far = INFINITY;

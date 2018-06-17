@@ -3,6 +3,7 @@
 
 // THIS shader now not part of ray tracing pipeline - it part of BVH processing system
 
+//#define USE_FAST_INTERSECTION
 #define ENABLE_VERTEX_INTERPOLATOR
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
@@ -38,8 +39,8 @@ void main() {
         IFALL(overflow) break;
 
         // do BVH traversing 
-        currentRayTmp = rays[it];
-        traverseBvh2(not(overflow), rays[it]);
+        _RAY_TYPE _ray = rays[it]; // fix SPIR-V error
+        traverseBvh2(not(overflow), _ray);
 
         IF (not(overflow)) { // verify intersection
             const int triID = floatBitsToInt(geometrySpace.lastIntersection.w)-1;
