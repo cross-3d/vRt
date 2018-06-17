@@ -93,6 +93,7 @@ set OPTFLAGS= ^
 --scalar-replacement ^
 --simplify-instructions
 
+call spirv-opt %FIXFLAGS% %OUTDIR%%HLBV%interpolator.comp.spv    -o %OUTDIR%%HLBV%interpolator.comp.spv
 call spirv-opt %FIXFLAGS% %OUTDIR%%HLBV%traverse-bvh.comp.spv    -o %OUTDIR%%HLBV%traverse-bvh.comp.spv
 call spirv-opt %FIXFLAGS% %OUTDIR%%HLBV%bvh-build.comp.spv       -o %OUTDIR%%HLBV%bvh-build.comp.spv
 call spirv-opt %FIXFLAGS% %OUTDIR%%HLBV%bound-calc.comp.spv      -o %OUTDIR%%HLBV%bound-calc.comp.spv
