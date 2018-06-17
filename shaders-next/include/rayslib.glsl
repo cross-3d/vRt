@@ -30,8 +30,8 @@ layout ( std430, binding = 5, set = 0 ) buffer VT_RAY_INDICES {int rayIndices[];
 
 // system canvas info
 layout ( std430, binding = 6, set = 0 ) readonly buffer VT_CANVAS_INFO {
-    ivec2 size;
-} canvasInfo;
+    ivec2 size; int iteration, reserved0;
+} stageUniform;
 
 // counters
 layout ( std430, binding = 7, set = 0 ) buffer arcounterB { 

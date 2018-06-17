@@ -112,6 +112,8 @@ namespace _vt { // store in undercover namespace
 
 
 
+    struct VtStageUniform { int width = 1, height = 1, iteration = 0, reserved0 = 0; };
+
     class RayTracingSet : public std::enable_shared_from_this<RayTracingSet> {
     public:
         friend Device;
@@ -120,7 +122,7 @@ namespace _vt { // store in undercover namespace
 
         // in-set buffers
         std::shared_ptr<DeviceBuffer> _rayBuffer, _rayIndiceBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer, _rayLinkPayload;
-
+        VtStageUniform _cuniform;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
         std::shared_ptr<Device> _parent() const { return _device; };

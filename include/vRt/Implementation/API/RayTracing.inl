@@ -48,6 +48,10 @@ namespace _vt {
         auto rtppl = cmdBuf->_rayTracingPipeline.lock();
         auto rtset = cmdBuf->_rayTracingSet.lock();
 
+        rtset->_cuniform.width = x;
+        rtset->_cuniform.height = y;
+        rtset->_cuniform.iteration = 0;
+
         const uint32_t WG_COUNT = 64;
         const uint32_t RADICE_AFFINE = 16;
 
@@ -58,7 +62,12 @@ namespace _vt {
         // bind user descriptor sets
         for (auto &s : cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
 
-        {
+        for (int i = 0; i < 1; i++) { // TODO make support of steps
+            rtset->_cuniform.iteration = i;
+
+            // update uniform buffer of ray tracing steps
+            vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+
             // reset counters of ray tracing
             cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
 
