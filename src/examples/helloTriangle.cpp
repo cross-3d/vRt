@@ -613,6 +613,7 @@ void main() {
     int32_t currSemaphore = -1; uint32_t currentBuffer = 0;
     auto tIdle = std::chrono::high_resolution_clock::now();
     auto tPast = std::chrono::high_resolution_clock::now();
+    auto tPastFramerateStreamF = 60.0;
     while (!glfwWindowShouldClose(appfw->window())) {
         glfwPollEvents();
 
@@ -714,11 +715,16 @@ void main() {
         auto tNow = std::chrono::high_resolution_clock::now();
         auto tDiff = tNow - tPast; tPast = tNow;
 
-        std::stringstream stream;
+        std::stringstream tDiffStream;
         auto tDiffF = double(tDiff.count()) * 1e-6;
-        stream << std::fixed << std::setprecision(2) << tDiffF;
+        tDiffStream << std::fixed << std::setprecision(2) << tDiffF;
 
-        auto wTitle = "vRt : " + stream.str() + "ms";
+        std::stringstream tFramerateStream;
+        auto tFramerateStreamF = 1e9 / double(tDiff.count());
+        tPastFramerateStreamF = tPastFramerateStreamF * 0.5 + tFramerateStreamF * 0.5;
+        tFramerateStream << std::fixed << std::setprecision(0) << tPastFramerateStreamF;
+
+        auto wTitle = "vRt : " + tDiffStream.str() + "ms / " + tFramerateStream.str() + "Hz";
         glfwSetWindowTitle(window, wTitle.c_str());
 
     }
