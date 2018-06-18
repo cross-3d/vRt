@@ -358,12 +358,12 @@ void main() {
     { // use two angled triangles
         // all available accessors
         std::vector<VtVertexAccessor> accessors = {
-            { 0, 0, VT_R32G32B32_SFLOAT }, // vertices
-            { 1, 0, VT_R32G32B32_SFLOAT }, // normals
-            { 2, 0, VT_R32G32B32_SFLOAT }, // texcoords
-            { 3, 0, VT_R32G32B32_SFLOAT }, // tangents
-            { 4, 0, VT_R32G32B32_SFLOAT }, // bitangents
-            { 5, 0, VT_R32G32B32_SFLOAT }, // colors
+            { 0, 0, VT_FORMAT_R32G32B32_SFLOAT }, // vertices
+            { 1, 0, VT_FORMAT_R32G32B32_SFLOAT }, // normals
+            { 2, 0, VT_FORMAT_R32G32B32_SFLOAT }, // texcoords
+            { 3, 0, VT_FORMAT_R32G32B32_SFLOAT }, // tangents
+            { 4, 0, VT_FORMAT_R32G32B32_SFLOAT }, // bitangents
+            { 5, 0, VT_FORMAT_R32G32B32_SFLOAT }, // colors
         };
         writeIntoBuffer(deviceQueue, accessors, VAccessorSet, 0);
 
