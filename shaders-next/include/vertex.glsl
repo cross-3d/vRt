@@ -40,9 +40,7 @@
     layout ( binding = 4, set = VTX_SET, rgba32ui ) uniform uimage2D attrib_texture_out;
     
     layout ( binding = 6, set = VTX_SET           ) uniform usampler2D attrib_texture;
-    
 #endif
-
 
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION))
 // bvh uniform unified
@@ -189,5 +187,18 @@ void interpolateMeshData(inout VtHitData ht, in vec3 vs) {
 }
 #endif
 #endif
+
+
+#ifdef VERTEX_FILLING
+void storeAttribute(in ivec3 cdata, in vec4 fval) {
+    ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(int(cdata.x*ATTRIB_EXTENT+cdata.y)));
+    ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_, cdata.z), floatBitsToUint(fval));
+}
+
+void storePosition(in ivec2 cdata, in vec4 fval){
+    imageStore(lvtx, cdata.x*3+cdata.y, fval);
+}
+#endif
+
 
 #endif

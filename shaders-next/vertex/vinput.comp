@@ -52,16 +52,16 @@ void main(){
                 // load attrib data
                 [[unroll]]
                 for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
-                    uint a = attributes[a].attributeID;
-                    vec4 attribValue = vec4(0.f); readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-                    ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(int(tidc*ATTRIB_EXTENT+a)));
-                    ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_, i), floatBitsToUint(attribValue));
+                    vec4 attribValue = vec4(0.f); 
+                    readByAccessor(attributes[a].accessorID, indiceID, attribValue);
+                    storeAttribute(ivec3(tidc, attributes[a].attributeID, i), attribValue);
                 }}
 
                 // load vertex data
                 {
-                    vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
-                    imageStore(lvtx, tidc*3+i, vec4(vertice.xyz, 1.f));
+                    vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); 
+                    readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
+                    storePosition(ivec2(tidc, i), vec4(vertice.xyz, 1.f));
                 }
             }
             
