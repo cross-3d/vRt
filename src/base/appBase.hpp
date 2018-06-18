@@ -658,18 +658,15 @@ namespace NSM
 
             // get supported present mode, but prefer mailBox
             auto presentMode = vk::PresentModeKHR::eImmediate;
-            std::vector<vk::PresentModeKHR> priorityModes = { vk::PresentModeKHR::eMailbox, vk::PresentModeKHR::eFifoRelaxed, vk::PresentModeKHR::eFifo };
+            std::vector<vk::PresentModeKHR> priorityModes = { vk::PresentModeKHR::eImmediate, vk::PresentModeKHR::eMailbox, vk::PresentModeKHR::eFifoRelaxed, vk::PresentModeKHR::eFifo };
 
-            /* try immediate mode
+            bool found = false;
             for (auto &pm : priorityModes) {
-                if (presentMode != vk::PresentModeKHR::eImmediate) break;
+                if (found) break;
                 for (auto &sfm : surfacePresentModes) {
-                    if (pm == sfm) {
-                        presentMode = pm;
-                        break;
-                    }
+                    if (pm == sfm) { presentMode = pm; found = true; break; }
                 }
-            }*/
+            }
 
             // swapchain info
             auto swapchainCreateInfo = vk::SwapchainCreateInfoKHR();
