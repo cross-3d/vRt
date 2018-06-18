@@ -128,7 +128,6 @@ void traverseBvh2(in bool_ valid) {
     //currentRayTmp = rayIn;
     vec3 origin = currentRayTmp.origin.xyz;
     vec3 direct = dcts(currentRayTmp.cdirect.xy);
-    //int eht = floatBitsToInt(currentRayTmp.origin.w)-1;
     int eht = -1;
 
     // reset stack

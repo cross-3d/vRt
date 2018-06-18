@@ -20,8 +20,7 @@ layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
 // planned ray generation shader example
 void main() {
     VtRay ray;
-    //ray.origin.w = uintBitsToFloat(bitfieldInsert(Global_Idx.x & 0xFFFFu, Global_Idx.y, 16, 16)); // save hashed2D (max to 65535x65535)
-    
+
     ivec2 wh = stageUniform.size;//ivec2(cameraUniform.sceneRes.xy);
     ivec2 xy = ivec2(Global_Idx.xy);
     vec2 sceneResInv = 1.0f / vec2(wh);
