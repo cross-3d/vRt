@@ -92,6 +92,8 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<Pipeline> _rayTracingPipeline;
         std::vector<std::weak_ptr<VertexInputSet>> _vertexInputs; // bound vertex input sets 
         std::vector<VkDescriptorSet> _boundDescriptorSets;
+        std::vector<VkDescriptorSet> _boundVIDescriptorSets;
+        std::map<uint32_t, std::vector<VkDescriptorSet>> _perVertexInputDSC;
 
         operator VkCommandBuffer() const { return _commandBuffer; };
         std::shared_ptr<Device> _parent() const { return _device; };

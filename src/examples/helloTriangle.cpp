@@ -477,9 +477,9 @@ void main() {
         // make ray tracing command buffer
         rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
-        vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAY_TRACING, rtPipeline);
+        vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipeline);
         vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), materialSet);
-        vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAY_TRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
+        vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
         vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
         vtCmdBindAccelerator(qRtCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qRtCmdBuf, vertexAssembly);

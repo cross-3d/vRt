@@ -6,18 +6,21 @@ namespace _vt {
     using namespace vt;
 
 
+    // planned type validations, also, planned advanced descriptor sets support in vertex assemblies
     VtResult bindDescriptorSets(std::shared_ptr<CommandBuffer>& cmdBuf, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t firstSet = 0, const std::vector<VkDescriptorSet>& descriptorSets = {}, const std::vector<VkDescriptorSet>& dynamicOffsets = {}) {
         VtResult result = VK_SUCCESS;
-        if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_RAY_TRACING) {
+        if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_RAYTRACING) {
             cmdBuf->_boundDescriptorSets = descriptorSets;
+        } else {
+            cmdBuf->_boundVIDescriptorSets = descriptorSets;
         };
         return result;
     }
 
-
+    // planned type validations
     VtResult bindPipeline(std::shared_ptr<CommandBuffer>& cmdBuf, VtPipelineBindPoint pipelineBindPoint, std::shared_ptr<Pipeline>& pipeline) {
         VtResult result = VK_SUCCESS;
-        if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_RAY_TRACING) {
+        if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_RAYTRACING) {
             cmdBuf->_rayTracingPipeline = pipeline;
         };
         return result;

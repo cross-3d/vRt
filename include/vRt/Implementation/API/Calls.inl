@@ -99,6 +99,10 @@ namespace vt {
         return bindMaterialSet(commandBuffer, usageIn, materials);
     };
 
+    inline VtResult vtCmdBindDescriptorSetsPerVertexInput(VtCommandBuffer commandBuffer, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t vertexInputIdx, uint32_t firstSet, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets, uint32_t dynamicOffsetCount, const uint32_t* pDynamicOffsets) {
+        return bindDescriptorSetsPerVertexInput(commandBuffer, pipelineBindPoint, layout, vertexInputIdx, firstSet, makeVector<VkDescriptorSet>(pDescriptorSets, descriptorSetCount));
+    };
+
     inline VtResult vtCmdBindDescriptorSets(VtCommandBuffer commandBuffer, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t firstSet, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets, uint32_t dynamicOffsetCount, const uint32_t* pDynamicOffsets) {
         return bindDescriptorSets(commandBuffer, pipelineBindPoint, layout, firstSet, makeVector<VkDescriptorSet>(pDescriptorSets, descriptorSetCount));
     };

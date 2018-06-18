@@ -12,8 +12,8 @@ namespace vt { // store in official namespace
     typedef VkResult VtResult;
 
     typedef enum VtPipelineBindPoint : uint32_t {
-        VT_PIPELINE_BIND_POINT_RAY_TRACING = 0x11F00000,
-        VT_PIPELINE_BIND_POINT_ACCELERATOR = 0x11F00001 // unknown
+        VT_PIPELINE_BIND_POINT_RAYTRACING = 0x11F00000,
+        VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY = 0x11F00001
     } VtPipelineBindPoint;
 
     typedef enum VtStructureType : uint32_t {
