@@ -34,11 +34,11 @@ void main() {
         vec4 emisson = hitPayload[hits[hitIdc].payloadID-1].emission;
 
         // get output image 2D coord
-        ivec2 icoord = ivec2(bitfieldExtract(floatBitsToUint(ray.origin.w), 0, 16), bitfieldExtract(floatBitsToUint(ray.origin.w), 16, 16));
+        uvec2 icoord = vtFetchIndex(rayID);
 
         // save result of ray tracing by ray saved indice
         //if (!overflow) { imageStore(ColorOutput, icoord, vec4(f16_f32(ray.dcolor).xyz, 1.f)); }
-        if (!overflow) { imageStore(ColorOutput, icoord, vec4(emisson.xyz, 1.f)); }
+        if (!overflow) { imageStore(ColorOutput, ivec2(icoord), vec4(emisson.xyz, 1.f)); }
         
     }
 

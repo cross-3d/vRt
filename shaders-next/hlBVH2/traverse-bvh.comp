@@ -1,7 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-//#define USE_FAST_INTERSECTION
+#define USE_FAST_INTERSECTION
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
 #define DISCARD_SHARED_CACHING
@@ -52,7 +52,7 @@ void main() {
             hit.next = 0;
 
             // identify intersection
-            imageStore(rayLink, it, uvec4(hid+1));
+            imageStore(rayLink, it, uvec4(hid+1, imageLoad(rayLink, it).y, 0u.xx));
             IF (vintersect) { vtVerifyClosestHit(hid); } else { vtVerifyMissedHit(hid); }
 
             hits[hid] = hit;

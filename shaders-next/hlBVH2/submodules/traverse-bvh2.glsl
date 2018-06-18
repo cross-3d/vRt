@@ -98,8 +98,6 @@ struct BVHSpace {
     float cutOut, _0, _1, _2;
 } bvhSpace;
 
-
-
 void doIntersection() {
     bool_ near = bool_(traverseState.defTriangleID >= 0);
     vec2 uv = vec2(0.f.xx);

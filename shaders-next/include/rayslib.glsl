@@ -69,9 +69,10 @@ initAtomicSubgroupIncFunction(payloadHitCounter, atomicIncPayloadHitCount, 1, in
 initAtomicSubgroupIncFunction(blockSpaceCounter, atomicIncblockSpaceCount, 1, int)
 
 // alpha version of low level ray emitter
-int vtEmitRays(in VtRay ray) {
+int vtEmitRays(in VtRay ray, in uvec2 c2d) {
     int rayID = atomicIncRayCount();
-    rays[rayID] = ray; imageStore(rayLink, rayID, uvec4(0xFFFFFFFFu));
+    rays[rayID] = ray; 
+    imageStore(rayLink, rayID, uvec4(0xFFFFFFFFu, bitfieldInsert(c2d.x & 0xFFFFu, c2d.y, 16, 16), 0u.xx));
     return rayID;
 }
 
@@ -79,6 +80,13 @@ int vtEmitRays(in VtRay ray) {
 int vtFetchHitIdc(in int lidx) {
     return int(imageLoad(rayLink, lidx).x)-1;
 }
+
+
+uvec2 vtFetchIndex(in int lidx){
+    uint c2dp = imageLoad(rayLink, lidx).y;
+    return uvec2(c2dp&0xFFFFu, bitfieldExtract(c2dp, 16, 16));
+}
+
 
 VtRay vtFetchRay(in int lidx) {
     return rays[lidx];
