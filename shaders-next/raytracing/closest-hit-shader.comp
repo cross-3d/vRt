@@ -233,10 +233,10 @@ void main() {
             textured.emissive = material.emissive;
 
             // AMD not supported per-lane texture data loading, if texture index is not constant
-            vec2 texcoord = hit.attributes[TEXCOORD_TID].xy; //hit.texcoord.xy;
-            vec3 normal = hit.attributes[NORMAL_TID].xyz;
-            vec3 bitang = hit.attributes[BITANGENT_TID].xyz;
-            vec3 tangent = hit.attributes[TANGENT_TID].xyz;
+            vec2 texcoord = imageLoad(attributes, makeAttribID(hit.attribID, TEXCOORD_TID)).xy; //hit.attributes[TEXCOORD_TID].xy; //hit.texcoord.xy;
+            vec3 normal = imageLoad(attributes, makeAttribID(hit.attribID, NORMAL_TID)).xyz; //hit.attributes[NORMAL_TID].xyz;
+            vec3 bitang = imageLoad(attributes, makeAttribID(hit.attribID, BITANGENT_TID)).xyz; //hit.attributes[BITANGENT_TID].xyz;
+            vec3 tangent = imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz; //hit.attributes[TANGENT_TID].xyz;
 
             // use HW intersected normal if something wrong
             normal.xyz = length(hitp.normalHeight.xyz) <= 1e-5 ? hit.vdat.xyz : normal.xyz;
@@ -306,7 +306,7 @@ void main() {
 
             // triangle intersection test
             //hitp.emission = vec4(vec3(0.1f, 0.5f, 0.1f), 1.f);
-            hitp.emission = vec4(hit.attributes[VCOLOR_TID].xyz, 1.f);
+            hitp.emission = vec4(imageLoad(attributes, makeAttribID(hit.attribID, VCOLOR_TID)).xyz, 1.f);
 
             // additional validation of hit (hit point interpolated offset test)
             if (!overflow && hitID >= 0) {

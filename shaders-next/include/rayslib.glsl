@@ -37,12 +37,13 @@ layout ( std430, binding = 6, set = 0 ) readonly buffer VT_CANVAS_INFO {
 layout ( std430, binding = 7, set = 0 ) buffer arcounterB { 
     int rayCounter;
     int hitCounter;
-    int closestHitCounter;
+    int closestHitCounterCurrent;
     int missHitCounter;
 
     int payloadHitCounter;
     int blockSpaceCounter; // 9th line counter
-    int r0, r1;
+    int attribCounter;
+    int closestHitCounter;
 };
 
 // imported from satellite (blocky indicing)
@@ -58,15 +59,21 @@ layout ( std430, binding = 8, set = 0 ) buffer VT_9_LINE { highp uint ispace[][R
 
 // ray and hit linking buffer
 layout ( rgba32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
-
+layout ( rgba32f,  binding = 11, set = 0 ) uniform imageBuffer attributes;
 
 // atomic counters with subgroups
+initAtomicSubgroupIncFunction(attribCounter, atomicIncAttribCount, 1, int)
 initAtomicSubgroupIncFunction(rayCounter, atomicIncRayCount, 1, int)
 initAtomicSubgroupIncFunction(hitCounter, atomicIncHitCount, 1, int)
-initAtomicSubgroupIncFunction(closestHitCounter, atomicIncClosestHitCount, 1, int)
+initAtomicSubgroupIncFunction(closestHitCounterCurrent, atomicIncClosestHitCount, 1, int)
 initAtomicSubgroupIncFunction(missHitCounter, atomicIncMissHitCount, 1, int)
 initAtomicSubgroupIncFunction(payloadHitCounter, atomicIncPayloadHitCount, 1, int)
 initAtomicSubgroupIncFunction(blockSpaceCounter, atomicIncblockSpaceCount, 1, int)
+
+
+int makeAttribID(in int hAttribID, in int sub) {
+    return (hAttribID-1)*ATTRIB_EXTENT + sub;
+}
 
 // alpha version of low level ray emitter
 int vtEmitRays(in VtRay ray, in uvec2 c2d) {

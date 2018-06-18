@@ -57,6 +57,7 @@ namespace _vt {
 
         const uint32_t WG_COUNT = 64;
         const uint32_t RADICE_AFFINE = 16;
+        const uint32_t uzero = 0u;
 
         // descriptor sets of ray tracing (planned roling)
         std::vector<VkDescriptorSet> _rtSets = { rtset->_descriptorSet, matrl->_descriptorSet };
@@ -69,7 +70,7 @@ namespace _vt {
             rtset->_cuniform.iteration = i;
 
             // update uniform buffer of ray tracing steps
-            vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+            vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform); fromHostCommandBarrier(*cmdBuf);
 
             // reset counters of ray tracing
             cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
@@ -82,6 +83,7 @@ namespace _vt {
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, 4096); // traverse BVH
             cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, 4096); // interpolate intersections
+            vkCmdUpdateBuffer(*cmdBuf, *rtset->_countersBuffer, strided<uint32_t>(2), sizeof(uint32_t), &uzero); fromHostCommandBarrier(*cmdBuf);
 
             // handling hits
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);

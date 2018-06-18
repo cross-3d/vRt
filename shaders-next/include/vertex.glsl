@@ -162,6 +162,8 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
 
 
 
+
+
 const int _BVH_WIDTH = 2048;
 
 #ifdef ENABLE_VSTORAGE_DATA
@@ -176,12 +178,12 @@ void interpolateMeshData(inout VtHitData ht, in vec3 vs) {
         [[unroll]]
         for (int i=0;i<ATTRIB_EXTENT;i++) {
             const vec2 trig = fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, sz*0.5f);
-            ht.attributes[i] = vs * mat4x3(
+            imageStore(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(
                 SGATHER(attrib_texture, trig, 0)._SWIZV,
                 SGATHER(attrib_texture, trig, 1)._SWIZV,
                 SGATHER(attrib_texture, trig, 2)._SWIZV,
                 SGATHER(attrib_texture, trig, 3)._SWIZV
-            );
+            ));
         }
     }
 }

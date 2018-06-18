@@ -89,12 +89,11 @@ const int ATTRIB_EXTENT = 5;
 struct VtHitData {
     vec4 uvt; // UV, distance, triangle (base data)
     vec4 vdat; // additional field (vertex normal, etc.)
-    int rayID; // ray index
-    int payloadID; // hit shaded index
-    int materialID; // may not necessary 
-    int next; // next chainged hit
-
-    vec4 attributes[ATTRIB_EXTENT];
+    
+    int rayID, payloadID, materialID, next;
+    int attribID, r0, r1, r2;
+    
+    //vec4 attributes[ATTRIB_EXTENT];
 };
 
 

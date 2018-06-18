@@ -50,10 +50,16 @@ void main() {
             hit.payloadID = hid+1;
             hit.materialID = materials[triID];
             hit.next = 0;
+            hit.attribID = 0;
 
             // identify intersection
             imageStore(rayLink, it, uvec4(hid+1, imageLoad(rayLink, it).y, 0u.xx));
-            IF (vintersect) { vtVerifyClosestHit(hid); } else { vtVerifyMissedHit(hid); }
+            IF (vintersect) {
+                //atomicIncAttribCount()+1;
+                hit.attribID = vtVerifyClosestHit(hid)+1; // better link directly, because extra atomics (even with subgroups) also hits to performances
+            } else { 
+                vtVerifyMissedHit(hid); 
+            }
 
             hits[hid] = hit;
         }

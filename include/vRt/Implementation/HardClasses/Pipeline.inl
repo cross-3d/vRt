@@ -33,6 +33,7 @@ namespace _vt {
 
         {
             const auto& rayCount = info.maxRays;
+            const auto& maxAttribCount = 8;
 
             {
                 VtDeviceBufferCreateInfo bfi;
@@ -50,8 +51,7 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayIndiceBuffer);
 
 
-                bfi.bufferSize = rayCount * 32ull * sizeof(uint32_t); // economy hit memory
-                //bfi.bufferSize = rayCount * 64ull * sizeof(uint32_t); // prefer to reserve as many as possible
+                bfi.bufferSize = rayCount * 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_hitBuffer);
 
@@ -94,6 +94,11 @@ namespace _vt {
                 bfi.bufferSize = tiled(rayCount, 4096ull) * 4096ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_blockBuffer);
+
+
+                bfi.bufferSize = rayCount * 4 * maxAttribCount * sizeof(uint32_t);
+                bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_attribBuffer);
             };
 
             {
@@ -115,6 +120,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(7).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_countersBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(9).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtRTSet->_traverseCache->_bufferView)),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(10).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtRTSet->_rayLinkPayload->_bufferView)),
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(11).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtRTSet->_attribBuffer->_bufferView)),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_rayBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_hitBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_closestHitIndiceBuffer->_descriptorInfo())),

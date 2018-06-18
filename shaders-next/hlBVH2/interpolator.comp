@@ -18,7 +18,12 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    int wsize = int(closestHitCounter);
+    // accumulate closest hits
+    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { 
+        atomicAdd(closestHitCounter, closestHitCounterCurrent); 
+    }
+    
+    int wsize = int(closestHitCounterCurrent);
     int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
     int wgs = int(gl_NumWorkGroups);
 
