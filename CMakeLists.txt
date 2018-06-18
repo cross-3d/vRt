@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 set (PROJECT_NAME vRt)
-set (APPLICATION_NAME helloTriangle)
-set (LIBRARY_NAME vRt)
+
 project (${PROJECT_NAME})
 
 if (COMPILER_ID MATCHES "MSVC")
@@ -138,6 +137,9 @@ link_directories(${LIB_DIR})
 include_directories(${INCLUDE_LIST})
 file (GLOB RSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCES_LIST})
 
+
+# make helloTriangle
+set (APPLICATION_NAME helloTriangle)
 add_executable(${APPLICATION_NAME} src/examples/helloTriangle.cpp ${RSOURCES})
 target_link_libraries(${APPLICATION_NAME} ${LIBS})
 
@@ -148,6 +150,8 @@ foreach(source IN LISTS RSOURCES)
 endforeach()
 
 
+# make static library
+set (LIBRARY_NAME vRt)
 add_library(${LIBRARY_NAME} include/vRt/vRt_lib.cpp ${RSOURCES})
 target_link_libraries(${LIBRARY_NAME} ${LIBS})
 
