@@ -2,8 +2,6 @@
 #include <appBase.hpp>
 
 
-
-
 struct VtAppMaterial {
     glm::vec4 diffuse = glm::vec4(0.f);
     glm::vec4 specular = glm::vec4(0.f);
@@ -614,6 +612,7 @@ void main() {
     // rendering presentation 
     int32_t currSemaphore = -1; uint32_t currentBuffer = 0;
     auto tIdle = std::chrono::high_resolution_clock::now();
+    auto tPast = std::chrono::high_resolution_clock::now();
     while (!glfwWindowShouldClose(appfw->window())) {
         glfwPollEvents();
 
@@ -710,6 +709,18 @@ void main() {
             1, &currentContext->swapchain,
             &currentBuffer, nullptr
         ));
+
+
+        auto tNow = std::chrono::high_resolution_clock::now();
+        auto tDiff = tNow - tPast; tPast = tNow;
+
+        std::stringstream stream;
+        auto tDiffF = double(tDiff.count()) * 1e-6;
+        stream << std::fixed << std::setprecision(2) << tDiffF;
+
+        auto wTitle = "vRt : " + stream.str() + "ms";
+        glfwSetWindowTitle(window, wTitle.c_str());
+
     }
 
     glfwDestroyWindow(window); glfwTerminate();

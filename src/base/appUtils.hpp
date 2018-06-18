@@ -12,6 +12,11 @@
 #include <glm/gtx/component_wise.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/transform.hpp>
+#include <iomanip>
+#include <cmath>
+#include <cfenv>
+#include <ios>
+#include <sstream>
 
 #ifdef USE_CIMG
 #include "tinyexr.h"
