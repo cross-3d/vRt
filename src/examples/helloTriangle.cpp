@@ -101,7 +101,7 @@ void main() {
     if (!glfwInit()) exit(EXIT_FAILURE);
     if (!glfwVulkanSupported()) exit(EXIT_FAILURE);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     // choiced physical device
     uint32_t gpuID = 0; // at now "0" by default
