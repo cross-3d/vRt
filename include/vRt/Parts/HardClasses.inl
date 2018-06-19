@@ -66,6 +66,7 @@ namespace _vt { // store in undercover namespace
 
         // descriptor layout map in ray tracing system
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap;
+        VtVendor _vendorName = VT_VENDOR_UNIVERSAL;
 
         operator VkDevice() const { return _device; };
         operator VkPipelineCache() const { return _pipelineCache; };

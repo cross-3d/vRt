@@ -7,6 +7,7 @@ cd %~dp0
   
 set INDIR=.\
 set OUTDIR=..\build\shaders\nvidia\
+set HRDDIR=..\include\vRt\HardCodes\nvidia\
 set OUTSHR=..\build\shaders\
 
 call shaders-list.cmd

@@ -9,6 +9,8 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         auto& vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
         vtAccelerator->_device = _vtDevice;
+        const auto& vendorName = _vtDevice->_vendorName;
+        //VtVendor vendorName = VtVendor(_vtDevice->_vendorName);
 
         // planned import from descriptor
         //constexpr auto maxPrimitives = 1024u * 1024u;
@@ -106,14 +108,14 @@ namespace _vt {
 
             // create pipelines (planned to unify between accelerator instances)
             {
-                vtAccelerator->_shorthandPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/shorthand.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_boundingPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/bound-calc.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_buildPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/bvh-build.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_fitPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/bvh-fit.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_leafPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/leaf-gen.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_leafLinkPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/leaf-link.comp.spv", vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_intersectionPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/traverse-bvh.comp.spv", vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_interpolatorPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "hlBVH2/interpolator.comp.spv", vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_shorthandPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::shorthand[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_boundingPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::outerBox[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_buildPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::builder[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_fitPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::fitBox[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_leafPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::genLeafs[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_leafLinkPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::linkLeafs[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_intersectionPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::traverse[vendorName], vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_interpolatorPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::interpolator[vendorName], vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
             };
         };
 

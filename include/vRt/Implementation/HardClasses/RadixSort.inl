@@ -5,7 +5,7 @@
 namespace _vt {
     using namespace vt;
 
-
+    // planned add hardcodes for radix sorting
     inline VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<RadixSort>& _vtRadix) {
         VtResult result = VK_SUCCESS;
 

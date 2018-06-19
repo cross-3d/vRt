@@ -7,6 +7,7 @@ cd %~dp0
 
 set INDIR=.\
 set OUTDIR=..\build\shaders\amd\
+set HRDDIR=..\include\vRt\HardCodes\amd\
 set OUTSHR=..\build\shaders\
 
 call shaders-list.cmd

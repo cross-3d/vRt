@@ -5,3 +5,4 @@
 #include "Utilities/VkUtils.hpp"
 #include "Implementation/API/Initializers.inl"
 #include "Implementation/API/Utils.hpp"
+#include "Utilities/HardCode.hpp"

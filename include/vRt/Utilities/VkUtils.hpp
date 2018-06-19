@@ -50,14 +50,13 @@ namespace _vt {
 
 
 
-
     // read binary (for SPIR-V)
     inline auto readBinary(std::string filePath) {
         std::ifstream file(filePath, std::ios::in | std::ios::binary | std::ios::ate);
-        std::vector<uint8_t> data;
+        std::vector<uint32_t> data;
         if (file.is_open()) {
             std::streampos size = file.tellg();
-            data.resize(size);
+            data.resize(tiled(size_t(size), sizeof(uint32_t)));
             file.seekg(0, std::ios::beg);
             file.read((char *)data.data(), size);
             file.close();
@@ -175,25 +174,25 @@ namespace _vt {
     };
 
 
-    inline auto loadAndCreateShaderModuleInfo(const std::vector<uint8_t>& code) {
+    inline auto loadAndCreateShaderModuleInfo(const std::vector<uint32_t>& code) {
         VkShaderModuleCreateInfo smi;
         smi.pNext = nullptr;
         smi.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         smi.pCode = (uint32_t *)code.data();
-        smi.codeSize = code.size();
+        smi.codeSize = code.size()*4;
         smi.flags = {};
         return smi;
     }
 
     // create shader module
-    inline auto loadAndCreateShaderModule(VkDevice device, const std::vector<uint8_t>& code) {
+    inline auto loadAndCreateShaderModule(VkDevice device, const std::vector<uint32_t>& code) {
         VkShaderModule sm = nullptr;
         vkCreateShaderModule(device, &loadAndCreateShaderModuleInfo(code), nullptr, &sm);
         return sm;
     };
 
     // create shader module
-    inline auto loadAndCreateShaderModuleStage(VkDevice device, const std::vector<uint8_t>& code, const char * entry = "main") {
+    inline auto loadAndCreateShaderModuleStage(VkDevice device, const std::vector<uint32_t>& code, const char * entry = "main") {
         VkPipelineShaderStageCreateInfo spi;
         spi.pNext = nullptr;
         spi.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -239,6 +238,27 @@ namespace _vt {
         vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);
         return pipeline;
     }
+
+
+    // create compute pipelines
+    inline auto createComputeMemory(VkDevice device, const std::vector<uint32_t>& code, VkPipelineLayout layout, VkPipelineCache cache) {
+        auto spi = loadAndCreateShaderModuleStage(device, code);
+
+        VkComputePipelineCreateInfo cmpi;
+        cmpi.pNext = nullptr;
+        cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+        cmpi.flags = {};
+        cmpi.layout = layout;
+        cmpi.stage = spi;
+        cmpi.basePipelineHandle = {};
+        cmpi.basePipelineIndex = -1;
+
+        VkPipeline pipeline = nullptr;
+        vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);
+        return pipeline;
+    }
+
+
 
     // add dispatch in command buffer (with default pipeline barrier)
     inline VkResult cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1) {

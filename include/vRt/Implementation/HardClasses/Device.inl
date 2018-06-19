@@ -6,10 +6,30 @@ namespace _vt {
     using namespace vt;
 
 
+    inline auto getVendorName(const uint32_t& vendorID) {
+        auto shaderDir = VT_VENDOR_UNIVERSAL;
+        switch (vendorID) {
+            case 4318:
+                shaderDir = VT_VENDOR_NVIDIA;
+                break;
+            case 4098:
+                shaderDir = VT_VENDOR_AMD;
+                break;
+            case 8086: // x86 ID, WHAT?
+                shaderDir = VT_VENDOR_INTEL;
+                break;
+        }
+        return shaderDir;
+    }
+
+
     inline VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& _vtDevice) {
         auto& vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
         vtDevice->_device = device;
+
+        vk::PhysicalDevice gpu = *vtDevice->_physicalDevice;
+        vtDevice->_vendorName = getVendorName(gpu.getProperties().vendorID);
 
         VtResult result = VK_SUCCESS;
 

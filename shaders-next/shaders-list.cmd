@@ -19,7 +19,7 @@ mkdir %OUTDIR%%RDXI%
 mkdir %OUTDIR%%OUTP%
 mkdir %OUTDIR%%GENG%
 mkdir %OUTDIR%%HLBV%next-gen-sort
-
+mkdir %HRDDIR%%HLBV%
 
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%OUTP%render.frag        -o %OUTDIR%%OUTP%render.frag.spv
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%OUTP%render.vert        -o %OUTDIR%%OUTP%render.vert.spv
@@ -31,14 +31,14 @@ start /b /wait glslangValidator %CFLAGSV% %INDIR%%RNDR%resolve-shader.comp     -
 
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%VRTX%vinput.comp        -o %OUTDIR%%VRTX%vinput.comp.spv
 
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bound-calc.comp    -o %OUTDIR%%HLBV%bound-calc.comp.spv
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-build.comp     -o %OUTDIR%%HLBV%bvh-build.comp.spv
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-fit.comp       -o %OUTDIR%%HLBV%bvh-fit.comp.spv
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%leaf-gen.comp      -o %OUTDIR%%HLBV%leaf-gen.comp.spv
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%leaf-link.comp     -o %OUTDIR%%HLBV%leaf-link.comp.spv
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%shorthand.comp     -o %OUTDIR%%HLBV%shorthand.comp.spv
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%traverse-bvh.comp  -o %OUTDIR%%HLBV%traverse-bvh.comp.spv
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%interpolator.comp  -o %OUTDIR%%HLBV%interpolator.comp.spv
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bound-calc.comp   -x -o %HRDDIR%%HLBV%bound-calc.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-build.comp    -x -o %HRDDIR%%HLBV%bvh-build.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-fit.comp      -x -o %HRDDIR%%HLBV%bvh-fit.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%leaf-gen.comp     -x -o %HRDDIR%%HLBV%leaf-gen.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%leaf-link.comp    -x -o %HRDDIR%%HLBV%leaf-link.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%shorthand.comp    -x -o %HRDDIR%%HLBV%shorthand.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%traverse-bvh.comp -x -o %HRDDIR%%HLBV%traverse-bvh.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%interpolator.comp -x -o %HRDDIR%%HLBV%interpolator.comp.inl
 
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%permute.comp       -o %OUTDIR%%RDXI%permute.comp.spv
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%histogram.comp     -o %OUTDIR%%RDXI%histogram.comp.spv

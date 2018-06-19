@@ -68,4 +68,12 @@ namespace vt { // store in official namespace
         VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT
     } VtPipelineLayoutType;
 
+
+    typedef enum VtVendor : uint32_t {
+        VT_VENDOR_UNIVERSAL = 0,
+        VT_VENDOR_AMD,
+        VT_VENDOR_NVIDIA,
+        VT_VENDOR_INTEL
+    } VtVendor;
+
 };
