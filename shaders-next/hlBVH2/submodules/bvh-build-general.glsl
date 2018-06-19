@@ -30,8 +30,8 @@ void splitNode(in int fID, in int side) {
     [[flatten]]
     if (prID >= 0 && fID >= 0) {
         // initial box and refit status
-        bvhBoxesWork[prID] = vec4[2](100000.f.xxxx, -100000.f.xxxx); // initial AABB
-        Flags[prID] = 0; // reset flag of refit
+        //bvhBoxesWork[prID] = vec4[2](100000.f.xxxx, -100000.f.xxxx); // initial AABB
+        //Flags[prID] = 0; // reset flag of refit
 
         // splitting nodes
         ivec4 _pdata = imageLoad(bvhMeta, prID)-1;
