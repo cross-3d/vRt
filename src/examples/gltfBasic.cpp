@@ -165,6 +165,26 @@ void main() {
 
 
 
+    tinygltf::Model model;
+    tinygltf::TinyGLTF loader;
+    std::string err;
+    std::string input_filename("BoomBox.gltf");
+    bool ret = loader.LoadASCIIFromFile(&model, &err, input_filename.c_str());
+
+
+    //model
+    std::vector<VtDeviceBuffer> VDataSpace;
+    for (auto& b : model.buffers) {
+        VtDeviceBuffer buf;
+        createBufferFast(deviceQueue, buf, b.data.size);
+        VDataSpace.push_back(buf);
+    }
+
+
+
+
+
+
     //////////////////////////////////////
     // ray tracing preparing long stage //
     //////////////////////////////////////
@@ -188,9 +208,10 @@ void main() {
 
 
     // create vertex input buffer objects
-    VtDeviceBuffer VDataSpace, VBufferRegions, VBufferView, VAccessorSet, VAttributes;
+    VtDeviceBuffer //VDataSpace, 
+        VBufferRegions, VBufferView, VAccessorSet, VAttributes;
     {
-        createBufferFast(deviceQueue, VDataSpace);
+        //createBufferFast(deviceQueue, VDataSpace);
         createBufferFast(deviceQueue, VBufferRegions);
         createBufferFast(deviceQueue, VBufferView);
         createBufferFast(deviceQueue, VAccessorSet);
@@ -355,7 +376,7 @@ void main() {
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
 
-
+    /*
     { // use two angled triangles
         // all available accessors
         std::vector<VtVertexAccessor> accessors = {
@@ -377,14 +398,6 @@ void main() {
             { 4, 5 },
         };
         writeIntoBuffer(deviceQueue, attributes, VAttributes, 0);
-
-        /*
-        // global buffer space
-        std::vector<VtVertexAttributeBinding> bufferRegions = {
-            { 0, 1024 * 16 },
-        };
-        writeIntoBuffer(deviceQueue, bufferRegions, VBufferRegions, 0);
-        */
 
         // vertice using first offsets for vertices, anothers using seros, planned add colors support
         std::vector<VtVertexBufferView> bufferViews = {
@@ -430,7 +443,7 @@ void main() {
         writeIntoBuffer(deviceQueue, vertices, VDataSpace, 0u);
         writeIntoBuffer(deviceQueue, zeros, VDataSpace, sizeof(glm::vec3) * 6);
         writeIntoBuffer(deviceQueue, colors, VDataSpace, sizeof(glm::vec3) * 12);
-    }
+    }*/
 
     // create vertex input
     {
@@ -440,9 +453,11 @@ void main() {
         vtii.verticeAccessor = 0;
         vtii.indiceAccessor = -1;
 
-        auto bvi = VkBufferView(VDataSpace);
-        vtii.pSourceBuffers = &bvi;
-        vtii.sourceBufferCount = 1;
+        std::vector<VkBufferView> bviews; for (auto&b : VDataSpace) { bviews.push_back(b); };
+
+        //auto bvi = VkBufferView(VDataSpace);
+        vtii.pSourceBuffers = bviews.data();
+        vtii.sourceBufferCount = bviews.size();
         vtii.bBufferAccessors = VAccessorSet;
         vtii.bBufferAttributeBindings = VAttributes;
         vtii.bBufferRegionBindings = VBufferRegions;
@@ -453,10 +468,10 @@ void main() {
         vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vertexInput);
 
         // part 2
-        vtii.primitiveCount = 1;
-        vtii.primitiveOffset = 1;
-        vtii.materialID = 1;
-        vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vertexInput2);
+        //vtii.primitiveCount = 1;
+        //vtii.primitiveOffset = 1;
+        //vtii.materialID = 1;
+        //vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vertexInput2);
     }
 
     
