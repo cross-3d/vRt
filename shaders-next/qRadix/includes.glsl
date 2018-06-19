@@ -84,19 +84,3 @@ blocks_info get_blocks_info(in uint n) {
     uint block_offset = gl_WorkGroupID.x * block_tile * block_count;
     return blocks_info(block_count, block_offset, min(block_offset + tiled(block_size, block_tile)*block_tile, n), 0);
 }
-
-uint_rdc_wave_lcm p2x(in lowp uvec2 a) {
-#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
-    return packUint2x16(uint_rdc_wave_2(a));
-#else
-    return bitfieldInsert(a.x, a.y, 16, 16);
-#endif
-};
-
-uvec2 up2x(in uint_rdc_wave_lcm a) {
-#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
-    return uvec2(unpackUint2x16(a));
-#else
-    return uvec2(bitfieldExtract(a, 0, 16), bitfieldExtract(a, 16, 16));
-#endif
-};

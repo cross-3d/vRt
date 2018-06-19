@@ -79,7 +79,7 @@ int makeAttribID(in int hAttribID, in int sub) {
 int vtEmitRays(in VtRay ray, in uvec2 c2d) {
     int rayID = atomicIncRayCount();
     rays[rayID] = ray; 
-    imageStore(rayLink, rayID, uvec4(0xFFFFFFFFu, bitfieldInsert(c2d.x & 0xFFFFu, c2d.y, 16, 16), 0u.xx));
+    imageStore(rayLink, rayID, uvec4(0xFFFFFFFFu, p2x(c2d), 0u.xx));
     return rayID;
 }
 
@@ -91,7 +91,7 @@ int vtFetchHitIdc(in int lidx) {
 
 uvec2 vtFetchIndex(in int lidx){
     uint c2dp = imageLoad(rayLink, lidx).y;
-    return uvec2(c2dp&0xFFFFu, bitfieldExtract(c2dp, 16, 16));
+    return up2x(c2dp);
 }
 
 

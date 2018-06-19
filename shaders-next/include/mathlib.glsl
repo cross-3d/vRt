@@ -528,6 +528,26 @@ vec3 dcts(in vec2 hr) {
 }
 
 
+
+
+uint p2x(in highp uvec2 a) {
+#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+    return packUint2x16(u16vec2(a));
+#else
+    return bitfieldInsert(a.x & 0xFFFFu, a.y, 16, 16);
+#endif
+};
+
+highp uvec2 up2x(in uint a) {
+#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+    return uvec2(unpackUint2x16(a));
+#else
+    return uvec2(a & 0xFFFFu, bitfieldExtract(a, 16, 16));
+#endif
+};
+
+
+
 #define f32_f16 packHalf4x16
 #define f16_f32 unpackHalf4x16
 
