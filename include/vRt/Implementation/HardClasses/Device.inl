@@ -20,6 +20,7 @@ namespace _vt {
         allocatorInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
         allocatorInfo.pAllocationCallbacks = nullptr;
         allocatorInfo.pVulkanFunctions = nullptr;
+        allocatorInfo.pHeapSizeLimit = nullptr;
 
         if (vtExtension.allocator) {
             vtDevice->_allocator = vtExtension.allocator; result = VK_SUCCESS;
