@@ -33,7 +33,7 @@ namespace _vt {
 
         VtResult result = VK_SUCCESS;
 
-        VmaAllocatorCreateInfo allocatorInfo;
+        VmaAllocatorCreateInfo allocatorInfo = {};
         allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice);
         allocatorInfo.device = vtDevice->_device;
         allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb
