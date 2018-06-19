@@ -116,7 +116,7 @@ namespace _vt { // store in undercover namespace
 
 
 
-    struct VtStageUniform { int width = 1, height = 1, iteration = 0, reserved0 = 0; };
+    struct VtStageUniform { int width = 1, height = 1, iteration = 0, closestHitOffset = 0; };
 
     class RayTracingSet : public std::enable_shared_from_this<RayTracingSet> {
     public:

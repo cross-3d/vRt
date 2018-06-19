@@ -30,7 +30,7 @@ layout ( std430, binding = 5, set = 0 ) buffer VT_RAY_INDICES {int rayIndices[];
 
 // system canvas info
 layout ( std430, binding = 6, set = 0 ) readonly buffer VT_CANVAS_INFO {
-    ivec2 size; int iteration, reserved0;
+    ivec2 size; int iteration, closestHitOffset;
 } stageUniform;
 
 // counters
@@ -38,12 +38,12 @@ layout ( std430, binding = 7, set = 0 ) buffer arcounterB {
     int rayCounter;
     int hitCounter;
     int closestHitCounterCurrent;
-    int missHitCounter;
+    int closestHitCounter;
 
+    int missHitCounter;
     int payloadHitCounter;
     int blockSpaceCounter; // 9th line counter
     int attribCounter;
-    int closestHitCounter;
 };
 
 // imported from satellite (blocky indicing)

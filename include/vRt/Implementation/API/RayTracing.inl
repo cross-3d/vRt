@@ -54,6 +54,7 @@ namespace _vt {
         rtset->_cuniform.width = x;
         rtset->_cuniform.height = y;
         rtset->_cuniform.iteration = 0;
+        rtset->_cuniform.closestHitOffset = 0;
 
         const uint32_t WG_COUNT = 64;
         const uint32_t RADICE_AFFINE = 16;
@@ -79,11 +80,13 @@ namespace _vt {
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             if (rtppl->_generationPipeline) cmdDispatch(*cmdBuf, rtppl->_generationPipeline, tiled(x, 8u), tiled(y, 8u));
 
-            // run traverse processing 
-            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
-            cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, 4096); // traverse BVH
-            cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, 4096); // interpolate intersections
-            vkCmdUpdateBuffer(*cmdBuf, *rtset->_countersBuffer, strided<uint32_t>(2), sizeof(uint32_t), &uzero); fromHostCommandBarrier(*cmdBuf);
+            { // run traverse processing
+                vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
+                cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, 4096); // traverse BVH
+                cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), strided<uint32_t>(3), strided<uint32_t>(1)) });
+                cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, 4096); // interpolate intersections
+                vkCmdUpdateBuffer(*cmdBuf, *rtset->_countersBuffer, strided<uint32_t>(2), sizeof(uint32_t), &uzero); fromHostCommandBarrier(*cmdBuf);
+            }
 
             // handling hits
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
