@@ -4,7 +4,7 @@
 #define DISCARD_SHARED_CACHING
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
-#define CACHE_HIT_PAYLOAD
+//#define CACHE_HIT_PAYLOAD
 //#define DMA_HIT // unpreferred
 
 #include "../include/driver.glsl"
