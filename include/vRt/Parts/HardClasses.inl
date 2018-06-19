@@ -278,6 +278,7 @@ namespace _vt { // store in undercover namespace
         VkImageSubresourceLayers _subresourceLayers;
         VkImageLayout _initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, _layout = VK_IMAGE_LAYOUT_GENERAL;
         VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        VkExtent3D _extent = {1u, 1u, 1u};
 
         std::shared_ptr<Device> _parent() const { return _device; };
         operator VkImage() const { return _image; }; // cast operator

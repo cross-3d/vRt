@@ -13,6 +13,7 @@ namespace _vt {
         vtRadix->_device = _vtDevice;
 
         constexpr auto STEPS = 8u, WG_COUNT = 64u, RADICE_AFFINE = 16u;
+        const auto& vendorName = _vtDevice->_vendorName;
 
         VtDeviceBufferCreateInfo bfi;
         bfi.familyIndex = _vtDevice->_mainFamilyIndex;
@@ -45,9 +46,9 @@ namespace _vt {
         };
 
         vtRadix->_pipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
-        vtRadix->_histogramPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "qRadix/histogram.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        vtRadix->_workPrefixPipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "qRadix/pfx-work.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        vtRadix->_permutePipeline = createCompute(VkDevice(*_vtDevice), _vtDevice->_shadersPath + "qRadix/permute.comp.spv", vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtRadix->_histogramPipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::histogram[vendorName], vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtRadix->_workPrefixPipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::workPrefix[vendorName], vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtRadix->_permutePipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::permute[vendorName], vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
 
         auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
         vtRadix->_descriptorSet = dsc[0];

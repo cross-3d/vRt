@@ -70,6 +70,8 @@ namespace _vt {
         texture->_subresourceLayers.aspectMask = texture->_subresourceRange.aspectMask;
         texture->_subresourceLayers.mipLevel = texture->_subresourceRange.baseMipLevel;
 
+        texture->_extent = imageInfo.extent;
+
         // descriptor for usage 
         // (unhandled by vtResult)
         texture->_imageView = vk::Device(device->_device).createImageView(vk::ImageViewCreateInfo()

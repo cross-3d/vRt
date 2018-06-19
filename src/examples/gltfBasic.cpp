@@ -1,5 +1,6 @@
 
 #include <appBase.hpp>
+#include <tinygltf/tiny_gltf.h>
 
 
 struct VtAppMaterial {

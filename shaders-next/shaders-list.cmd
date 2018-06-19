@@ -18,8 +18,8 @@ mkdir %OUTDIR%%HLBV%
 mkdir %OUTDIR%%RDXI%
 mkdir %OUTDIR%%OUTP%
 mkdir %OUTDIR%%GENG%
-mkdir %OUTDIR%%HLBV%next-gen-sort
 mkdir %HRDDIR%%HLBV%
+mkdir %HRDDIR%%RDXI%
 
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%OUTP%render.frag        -o %OUTDIR%%OUTP%render.frag.spv
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%OUTP%render.vert        -o %OUTDIR%%OUTP%render.vert.spv
@@ -40,9 +40,9 @@ start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%shorthand.comp    -x -o %
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%traverse-bvh.comp -x -o %HRDDIR%%HLBV%traverse-bvh.comp.inl
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%interpolator.comp -x -o %HRDDIR%%HLBV%interpolator.comp.inl
 
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%permute.comp       -o %OUTDIR%%RDXI%permute.comp.spv
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%histogram.comp     -o %OUTDIR%%RDXI%histogram.comp.spv
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%pfx-work.comp      -o %OUTDIR%%RDXI%pfx-work.comp.spv
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%permute.comp      -x -o %HRDDIR%%RDXI%permute.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%histogram.comp    -x -o %HRDDIR%%RDXI%histogram.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%pfx-work.comp     -x -o %HRDDIR%%RDXI%pfx-work.comp.inl
 
 :: --ccp not supported by that renderer 
 
