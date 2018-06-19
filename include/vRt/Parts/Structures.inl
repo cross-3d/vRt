@@ -88,7 +88,8 @@ namespace vt { // store in official namespace
         uint32_t reserved0 = 0;
 
         // vertex data sources
-        VkBufferView sourceBuffer = nullptr;
+        const VkBufferView * pSourceBuffers = nullptr;
+        uint32_t sourceBufferCount = 0;
 
         // bindings regions
         VkBuffer bBufferRegionBindings = nullptr; // direct descriptor set bind

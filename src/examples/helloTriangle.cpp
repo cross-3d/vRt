@@ -377,11 +377,13 @@ void main() {
         };
         writeIntoBuffer(deviceQueue, attributes, VAttributes, 0);
 
+        /*
         // global buffer space
         std::vector<VtVertexAttributeBinding> bufferRegions = {
             { 0, 1024 * 16 },
         };
         writeIntoBuffer(deviceQueue, bufferRegions, VBufferRegions, 0);
+        */
 
         // vertice using first offsets for vertices, anothers using seros, planned add colors support
         std::vector<VtVertexBufferView> bufferViews = {
@@ -436,7 +438,10 @@ void main() {
         vtii.topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
         vtii.verticeAccessor = 0;
         vtii.indiceAccessor = -1;
-        vtii.sourceBuffer = VDataSpace;
+
+        auto bvi = VkBufferView(VDataSpace);
+        vtii.pSourceBuffers = &bvi;
+        vtii.sourceBufferCount = 1;
         vtii.bBufferAccessors = VAccessorSet;
         vtii.bBufferAttributeBindings = VAttributes;
         vtii.bBufferRegionBindings = VBufferRegions;

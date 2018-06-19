@@ -45,10 +45,19 @@ namespace _vt {
         vtVertexInput->_uniformBlock.attributeCount = info.attributeCount;
         vtVertexInput->_uniformBlock.reserved0 = info.reserved0;
 
+
+
+        const auto inputCount = 8u;
+        std::vector<vk::BufferView> sourceBuffers;
+        const auto sourceBufferCount = std::min(info.sourceBufferCount, inputCount);
+        for (int i = 0; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }
+        for (int i = sourceBufferCount; i < inputCount; i++) { sourceBuffers.push_back(sourceBuffers[sourceBufferCount-1]); }
+
+
         // write descriptors
         auto _write_tmpl = vk::WriteDescriptorSet(vtVertexInput->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
         std::vector<vk::WriteDescriptorSet> writes = {
-            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView(&vk::BufferView(info.sourceBuffer)),
+            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(inputCount).setPTexelBufferView(sourceBuffers.data()),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset)),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferViews, 0, VK_WHOLE_SIZE).setOffset(info.bufferViewByteOffset)),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferAccessors, 0, VK_WHOLE_SIZE).setOffset(info.bufferAccessorByteOffset)),
