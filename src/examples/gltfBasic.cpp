@@ -1,5 +1,8 @@
 
 #include <appBase.hpp>
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <tinygltf/tiny_gltf.h>
 
 
@@ -59,6 +62,16 @@ inline auto writeIntoBuffer(vte::Queue deviceQueue, const std::vector<T>& vctr, 
     return result;
 };
 
+template<class T>
+inline auto writeIntoImage(vte::Queue deviceQueue, const std::vector<T>& vctr, const vt::VtDeviceImage& dImage, size_t byteOffset = 0) {
+    VkResult result = VK_SUCCESS;
+    vt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
+    vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+        //vt::vtCmdCopyHostToDeviceBuffer(cmdBuf, deviceQueue->device->rtDev, dImage, 1, (const VkBufferCopy *)&(vk::BufferCopy(0, byteOffset, vte::strided<T>(vctr.size()))));
+        vt::vtCmdCopyHostToDeviceImage(cmdBuf, deviceQueue->device->rtDev, dImage, 1, &(VkBufferImageCopy{ 0, dImage->_extent.width, dImage->_extent.height, dImage->_subresourceRange, {0u,0u,0u}, dImage->_extent }));
+    });
+    return result;
+};
 
 template<class T>
 inline auto readFromBuffer(vte::Queue deviceQueue, const vt::VtDeviceBuffer& dBuffer, std::vector<T>& vctr, size_t byteOffset = 0) {
@@ -176,7 +189,7 @@ void main() {
     std::vector<VtDeviceBuffer> VDataSpace;
     for (auto& b : model.buffers) {
         VtDeviceBuffer buf;
-        createBufferFast(deviceQueue, buf, b.data.size);
+        createBufferFast(deviceQueue, buf, b.data.size());
         VDataSpace.push_back(buf);
     }
 
