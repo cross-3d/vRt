@@ -64,6 +64,7 @@ void main() {
     LGROUP_BARRIER // stage sync
 
     uint asize = asize_inv_;
+    LGROUP_BARRIER
 
     // building BVH
     //[[unroll]]

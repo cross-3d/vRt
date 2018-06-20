@@ -14,7 +14,7 @@ int findSplit( in int left, in int right ) {
     if (commonPrefix >= 64 || nstep <= 1) { // if morton code equals or so small range
         split = (split + nsplit)>>1;
     } else { //fast search SAH split
-        [[dependency_infinite]]
+        //[[dependency_infinite]]
         do {
             nstep = (nstep + 1) >> 1, nsplit = split + nstep;
             if (cdelta(split, nsplit) > commonPrefix) { split = nsplit; }
@@ -27,7 +27,7 @@ void splitNode(in int fID, in int side) {
     // select elements, include sibling
     int prID = fID + side;
 
-    [[flatten]]
+    //[[flatten]]
     if (prID >= 0 && fID >= 0) {
         // initial box and refit status
         //bvhBoxesWork[prID] = vec4[2](100000.f.xxxx, -100000.f.xxxx); // initial AABB
@@ -36,10 +36,10 @@ void splitNode(in int fID, in int side) {
         // splitting nodes
         ivec4 _pdata = imageLoad(bvhMeta, prID)-1;
 
-        [[flatten]]
+        //[[flatten]]
         if (_pdata.x >= 0 && _pdata.y >= 0) {
 
-            [[flatten]]
+            //[[flatten]]
             if (_pdata.y != _pdata.x) {
 
                 // find split
@@ -58,7 +58,7 @@ void splitNode(in int fID, in int side) {
             } 
 
             // if leaf, add to leaf list
-            [[flatten]]
+            //[[flatten]]
             if (_pdata.y == _pdata.x) {
                 LeafIndices[cCounterInc()] = prID+1;
             }
