@@ -43,7 +43,7 @@ namespace _vt {
         vtVertexInput->_uniformBlock.primitiveOffset = info.primitiveOffset;
         vtVertexInput->_uniformBlock.topology = info.topology;
         vtVertexInput->_uniformBlock.attributeCount = info.attributeCount;
-        vtVertexInput->_uniformBlock.reserved0 = info.reserved0;
+        vtVertexInput->_uniformBlock.inputID = info.reserved0;
 
 
 

@@ -37,27 +37,18 @@ void main() {
         bvec2_wave validAddress = lessThan(addr, blocks.limit.xx);
         IFALL(all(not(validAddress))) break;
 
-        if (Radice_Idx == 0 && push_block.Shift != 0) { // copy from tmp to input if stage != 0
-            if (validAddress.x) { KeyIn[addr.x] = KeyTmp[addr.x], ValueIn[addr.x] = ValueTmp[addr.x]; }
-            if (validAddress.y) { KeyIn[addr.y] = KeyTmp[addr.y], ValueIn[addr.y] = ValueTmp[addr.y]; }
-        }
+        //if (Radice_Idx == 0 && push_block.Shift != 0) { // copy from tmp to input if stage != 0
+        //    if (validAddress.x) { KeyIn[addr.x] = KeyTmp[addr.x], ValueIn[addr.x] = ValueTmp[addr.x]; }
+        //    if (validAddress.y) { KeyIn[addr.y] = KeyTmp[addr.y], ValueIn[addr.y] = ValueTmp[addr.y]; }
+        //}
 
         if (Wave_Idx == 0) {
-            if (push_block.Shift == 0) { // invalid copying from tmp, that is none of
-                key = p2x(uvec2(
-                    BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
-                    BFE(validAddress.y ? KeyIn[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
-                    //validAddress.x ? BFE(KeyIn[addr.x], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK,
-                    //validAddress.y ? BFE(KeyIn[addr.y], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK
-                ));
-            } else {
-                key = p2x(uvec2(
-                    BFE(validAddress.x ? KeyTmp[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
-                    BFE(validAddress.y ? KeyTmp[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
-                    //validAddress.x ? BFE(KeyTmp[addr.x], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK,
-                    //validAddress.y ? BFE(KeyTmp[addr.y], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK
-                ));
-            }
+            key = p2x(uvec2(
+                BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
+                BFE(validAddress.y ? KeyIn[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
+                //validAddress.x ? BFE(KeyIn[addr.x], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK,
+                //validAddress.y ? BFE(KeyIn[addr.y], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK
+            ));
         }
         LGROUP_BARRIER
 

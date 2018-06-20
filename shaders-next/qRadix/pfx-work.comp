@@ -9,7 +9,6 @@
 // shared memory of...
 shared uint localHistogram[RADICES];
 layout (local_size_x = RADICES) in;
-const uint limit = RADICES;
 
 void main() {
       Wave_Idx = gl_LocalInvocationID.x / Wave_Size_RT;
@@ -32,11 +31,11 @@ void main() {
 
         // calculate prefix-sum of all work-groups for each radice
         if (Local_Idx < RADICES) localHistogram[Local_Idx] = awHistogram;
-
-        // calc prefix-sum
-        uint rdcAwPrefixOffset = 0;
+        uint rdcAwPrefixOffset = 0u;//prefixScan(RADICES);
         {
+            const uint limit = RADICES;
             uvec_wave ldx = Local_Idx;
+            LGROUP_BARRIER
             {
                 uint prv = ldx >= 1 ? ldx-1 : 0;
                 uint tmp = ldx >= 1 && ldx < limit ? localHistogram[prv] : 0;
@@ -56,10 +55,11 @@ void main() {
                 LGROUP_BARRIER
             }
 
-            rdcAwPrefixOffset = localHistogram[ldx];
+            uint res = localHistogram[ldx];
             LGROUP_BARRIER
+            rdcAwPrefixOffset = res;
         }
-
+        
         // add work-group prefix-sum of radice to in-group prefix-sum
         for (uint wk=0;wk<WG_COUNT;wk++) {
             if (Local_Idx < RADICES) PrefixSum[Local_Idx + RADICES * wk] += rdcAwPrefixOffset;

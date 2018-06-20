@@ -1,0 +1,28 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#include "./includes.glsl"
+
+LOCAL_SIZE_LAYOUT;
+
+void main() {
+    Local_Idx = gl_LocalInvocationID.x;
+    Wave_Idx = gl_LocalInvocationID.x / Wave_Size_RT;
+    Lane_Idx = gl_LocalInvocationID.x % Wave_Size_RT;
+    Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
+
+    // constants
+    uint wsize = uint(push_block.NumKeys);
+    uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
+    bool overflow = false;
+    
+    uint wgs = gl_NumWorkGroups.x;
+    for (uint w=0;w<wcount;w+=wgs) {
+        SB_BARRIER
+        uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + Local_Idx;
+        bool overflow = overflow || globalID >= wsize || globalID < 0;
+        if (!overflow) { KeyIn[globalID] = KeyTmp[globalID], ValueIn[globalID] = ValueTmp[globalID]; }
+    }
+
+    LGROUP_BARRIER
+}

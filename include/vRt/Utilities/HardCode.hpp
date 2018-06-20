@@ -175,5 +175,39 @@ namespace _vt {
         };
 
 
+        inline static std::map<VtVendor, std::vector<uint32_t>> copyhack = {
+            { VT_VENDOR_AMD,{
+#include "../HardCodes/amd/qRadix/copyhack.comp.inl"
+        } },
+        { VT_VENDOR_NVIDIA,{
+#include "../HardCodes/nvidia/qRadix/copyhack.comp.inl"
+        } },
+        { VT_VENDOR_INTEL,{
+#include "../HardCodes/intel/qRadix/copyhack.comp.inl"
+        } },
+        { VT_VENDOR_UNIVERSAL,{
+#include "../HardCodes/universal/qRadix/copyhack.comp.inl"
+        } },
+        };
+
     };
+
+    namespace natives {
+
+        inline static std::map<VtVendor, std::vector<uint32_t>> vertexAssembly = {
+            { VT_VENDOR_AMD,{
+#include "../HardCodes/amd/native/vinput.comp.inl"
+        } },
+        { VT_VENDOR_NVIDIA,{
+#include "../HardCodes/nvidia/native/vinput.comp.inl"
+        } },
+        { VT_VENDOR_INTEL,{
+#include "../HardCodes/intel/native/vinput.comp.inl"
+        } },
+        { VT_VENDOR_UNIVERSAL,{
+#include "../HardCodes/universal/native/vinput.comp.inl"
+        } },
+        };
+    }
+
 };

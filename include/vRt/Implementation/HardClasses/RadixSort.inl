@@ -32,7 +32,7 @@ namespace _vt {
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_stepsBuffer); // unused
 
         bfi.format = VK_FORMAT_R32_UINT;
-        bfi.bufferSize = 1024 * RADICE_AFFINE * sizeof(uint32_t);
+        bfi.bufferSize = 16 * 64 * sizeof(uint32_t);
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_histogramBuffer);
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_prefixSumBuffer);
 
@@ -49,6 +49,7 @@ namespace _vt {
         vtRadix->_histogramPipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::histogram[vendorName], vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
         vtRadix->_workPrefixPipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::workPrefix[vendorName], vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
         vtRadix->_permutePipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::permute[vendorName], vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtRadix->_copyhackPipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::copyhack[vendorName], vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
 
         auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
         vtRadix->_descriptorSet = dsc[0];

@@ -303,8 +303,8 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _stepsBuffer; // constant buffer
         std::shared_ptr<DeviceBuffer> _tmpKeysBuffer; // cache keys between stages (avoid write conflict)
         std::shared_ptr<DeviceBuffer> _tmpValuesBuffer; // cache values between stages (avoid write conflict)
-        VkPipeline _histogramPipeline, _workPrefixPipeline, _permutePipeline; // radix sort pipelines
-        VkPipelineLayout _pipelineLayout; // use unified pipeline layout
+        VkPipeline _histogramPipeline, _workPrefixPipeline, _permutePipeline, _copyhackPipeline; // radix sort pipelines
+        VkPipelineLayout _pipelineLayout; // use unified pipeline layout 
         VkDescriptorSet _descriptorSet;
 
         std::shared_ptr<Device> _parent() const { return _device; };
@@ -362,7 +362,7 @@ namespace _vt { // store in undercover namespace
         uint32_t primitiveOffset = 0;
         uint32_t topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
         uint32_t attributeCount = 8;
-        uint32_t reserved0 = 0;
+        uint32_t inputID = 0;
     };
 
     class VertexInputSet : public std::enable_shared_from_this<VertexInputSet> {

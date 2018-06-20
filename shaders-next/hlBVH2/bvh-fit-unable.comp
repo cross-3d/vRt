@@ -1,12 +1,6 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-#ifdef NVIDIA_PLATFORM
-#define WORK_SIZE_BND 1024
-#else 
-#define WORK_SIZE_BND 1024
-#endif
-
 #define BVH_CREATION
 
 #include "../include/driver.glsl"
@@ -48,74 +42,44 @@ void unifyNodeBox(const int idx){
     }
 }
 
-layout ( local_size_x = WORK_SIZE_BND ) in;
+LOCAL_SIZE_LAYOUT;
 
 // shared memory counters
-shared int _counters[8];
-#define cBuffer _counters[3]
+//shared int _counters[8];
+//#define _counters[3]
 
 // define function for increment
-initAtomicSubgroupIncFunction(_counters[0], aCounterInc, 1, int)
+//initAtomicSubgroupIncFunction(_counters[0], aCounterInc, 1, int)
 
+
+// THIS METHOD NO MORE WORKING, DUE RESTRICTRED HARDWARE LIMITATIONS IN 2018 CVE PATCHES
+// VENDORS BANNED SOME USER METHODS FOR FASTER RAY TRACING, DUE RTX MONOPOLIZATION
 void main() {
     const int gS = int(gl_WorkGroupSize.x);
-    const int wgs = 1;//int(gl_NumWorkGroups.x);
+    const int wgs = int(gl_NumWorkGroups.x);
     const int wID = int(gl_WorkGroupID.x);
     const int lID = int(Local_Idx);
     const int rng = gS*wgs;
-
-    // initial counters
-    LGROUP_BARRIER
-    if (lID < 8) { _counters[lID] = 0; }
-    LGROUP_BARRIER
-
-    // move to work list
     const int wsize = bvhBlock.leafCount;
+
     for (int w=0;w<wsize;w+=rng) {
         SB_BARRIER
         const int globalID = w + (wID * gS + lID);
         IFALL (globalID >= wsize) break;
 
-        // add to queue list parent node
-        int idx = globalID < wsize ? atomicExchange(LeafIndices[globalID], 0)-1 : -1;
-        if (idx >= 0) { Actives[aCounterInc()][cBuffer] = idx+1; }
-    }
+        //int idx = globalID < wsize ? exchange(LeafIndices[globalID], 0)-1 : -1;
+        int idx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
 
-    // sync work
-    LGROUP_BARRIER
-
-    // upcoming to root node
-    [[unroll, dependency_length(4)]]
-    for (int l=0;l<65536;l++) {
-        // check activity counter
-        const int asize = _counters[0];
-        IFALL (asize <= 0) break;
-
-        // switch buffer and reset counter
-        LGROUP_BARRIER
-        if (lID == 0) { cBuffer = 1-cBuffer; _counters[0] = 0; }
-        LGROUP_BARRIER
-
-        // unify boxes when possible
-        for (int w=0;w<asize;w+=rng) {
-            SB_BARRIER
-            
-            const int globalID = w + (wID * gS + lID);
-            IFALL (globalID >= wsize) break;
+        [[unroll, dependency_length(4)]]
+        for (int l=0;l<65536;l++) {
 
             // unify boxes for parent
-            int idx = globalID < asize ? atomicExchange(Actives[globalID][1-cBuffer], 0)-1 : -1;
-            if ( idx >= 0 ) { unifyNodeBox(idx); }
+            if ( idx >= 0 ) { unifyNodeBox(idx); } else { break; }
 
             // unify box for current and add parent
             int pid = idx >= 0 ? (imageLoad(bvhMeta, idx).z-1) : -1;
-            if ( pid >= 0 && atomicCompSwap(Flags[pid], 0, 1) == 1 ) {
-                Actives[aCounterInc()][cBuffer] = pid+1; // add to contributors list
-            }
+            idx = (pid >= 0 && atomicCompSwap(Flags[pid], 0, 1) == 1) ? pid : -1;
         }
-
-        // sync work
-        LGROUP_BARRIER
     }
 
     LGROUP_BARRIER

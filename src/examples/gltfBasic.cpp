@@ -32,7 +32,7 @@ struct VtCameraUniform {
     glm::mat4x4 camInv = glm::mat4x4(1.f);
     glm::mat4x4 projInv = glm::mat4x4(1.f);
     glm::vec4 sceneRes = glm::vec4(1.f);
-    int enable360 = 0, r0 = 0, r1 = 0, r2 = 0;
+    int enable360 = 0, variant = 0, r1 = 0, r2 = 0;
 };
 
 struct VtBvhUniformDebug {
@@ -87,7 +87,7 @@ inline auto readFromBuffer(vte::Queue deviceQueue, const vt::VtDeviceBuffer& dBu
 inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer, size_t byteSize = 1024 * 16) {
     vt::VtDeviceBufferCreateInfo dbs;
     dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    dbs.bufferSize = 1024 * 16;
+    dbs.bufferSize = byteSize;
     dbs.familyIndex = deviceQueue->familyIndex;
     dbs.format = VK_FORMAT_R16_UINT;
     vt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
@@ -213,6 +213,9 @@ void main() {
     std::string err;
     //std::string input_filename("BoomBoxWithAxes-processed.gltf");
     std::string input_filename("Chess_Set.gltf");
+    //std::string input_filename("Cube.gltf");
+    
+
     bool ret = loader.LoadASCIIFromFile(&model, &err, input_filename.c_str());
 
 
@@ -251,19 +254,16 @@ void main() {
     VkCommandBuffer bCmdBuf, rtCmdBuf;
     VtDeviceBuffer rtUniformBuffer;
 
+    // mesh list
     std::vector<std::vector<VtVertexInputSet>> vertexInputs;
-    std::vector<std::vector<VtVertexInputSet>> nodes;
-
 
     // create vertex input buffer objects
-    VtDeviceBuffer //VDataSpace, 
-        VBufferRegions, VBufferView, VAccessorSet, VAttributes;
+    VtDeviceBuffer VBufferRegions, VBufferView, VAccessorSet, VAttributes;
     {
-        //createBufferFast(deviceQueue, VDataSpace);
-        //createBufferFast(deviceQueue, VBufferRegions);
-        createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexAccessor) * model.accessors.size());
-        createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexBufferView) * model.bufferViews.size());
-        createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024);
+        createBufferFast(deviceQueue, VBufferRegions, sizeof(VtVertexRegionBinding));
+        createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexAccessor) * model.accessors.size());
+        createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexBufferView) * model.bufferViews.size());
+        createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024 * 64);
     }
 
     {
@@ -349,7 +349,8 @@ void main() {
 
     {
         // initial matrices
-        auto atMatrix = glm::lookAt(glm::vec3(0.f, 0.f, 2.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+        //auto atMatrix = glm::lookAt(glm::vec3(1.f, 1.f, 2.f), glm::vec3(0.f, 1.f, 2.f), glm::vec3(0.f, 1.f, 0.f));
+        auto atMatrix = glm::lookAt(glm::vec3(-1.f, 1.f, 1.6f)*10.f, glm::vec3(-1.f, 0.f, 2.6f)*10.f, glm::vec3(0.f, 1.f, 0.f));
         auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
 
         // create uniform buffer
@@ -360,6 +361,7 @@ void main() {
         cameraUniformData.projInv = glm::transpose(glm::inverse(pjMatrix));
         cameraUniformData.camInv = glm::transpose(glm::inverse(atMatrix));
         cameraUniformData.sceneRes = glm::vec4(1280.f, 720.f, 1.f, 1.f);
+        cameraUniformData.variant = 1;
         writeIntoBuffer<VtCameraUniform>(deviceQueue, { cameraUniformData }, rtUniformBuffer, 0);
     }
 
@@ -423,23 +425,20 @@ void main() {
     vtsi.maxPrimitives = 1024 * 256;
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
+
+
     std::vector<VtVertexAccessor> accessors = {};
-    for (auto &acs: model.accessors) {
-        accessors.push_back(VtVertexAccessor{ acs.bufferView, acs.byteOffset, _getFormat(acs) });
-    }
-
     std::vector<VtVertexBufferView> bufferViews = {};
-    for (auto &bv : model.bufferViews) {
-        bufferViews.push_back(VtVertexBufferView{ bv.buffer, bv.byteOffset, bv.byteStride, bv.byteLength });
-    }
+    for (auto &acs: model.accessors) { accessors.push_back(VtVertexAccessor{ uint32_t(acs.bufferView), uint32_t(acs.byteOffset), uint32_t(_getFormat(acs)) }); }
+    for (auto &bv : model.bufferViews) { bufferViews.push_back(VtVertexBufferView{ uint32_t(bv.buffer), uint32_t(bv.byteOffset), uint32_t(bv.byteStride), uint32_t(bv.byteLength) }); }
+    
 
 
-
-    const int NORMAL_TID = 0;
-    const int TEXCOORD_TID = 1;
-    const int TANGENT_TID = 2;
-    const int BITANGENT_TID = 3;
-    const int VCOLOR_TID = 4;
+    const uint32_t NORMAL_TID = 0;
+    const uint32_t TEXCOORD_TID = 1;
+    const uint32_t TANGENT_TID = 2;
+    const uint32_t BITANGENT_TID = 3;
+    const uint32_t VCOLOR_TID = 4;
 
     std::vector<VtVertexAttributeBinding> attributes = {};
     for (auto& msh: model.meshes) {
@@ -459,11 +458,11 @@ void main() {
                 }
 
                 if (attr.first.compare("NORMAL") == 0) {
-                    attributes.push_back({ NORMAL_TID, attr.second });
+                    attributes.push_back({ NORMAL_TID, uint32_t(attr.second) });
                 }
 
                 if (attr.first.compare("TEXCOORD_0") == 0) {
-                    attributes.push_back({ TEXCOORD_TID, attr.second });
+                    attributes.push_back({ TEXCOORD_TID, uint32_t(attr.second) });
                 }
             }
 
@@ -487,12 +486,60 @@ void main() {
         vertexInputs.push_back(primitives);
     }
 
-    //for (auto& node : model.nodes) {
-        
-    //}
 
-    
-    
+
+
+
+    std::vector<VtVertexInputSet> inputs;
+    std::vector<glm::mat4> transforms; // todo: support of transformations
+    {
+        std::shared_ptr<std::function<void(const tinygltf::Node &, glm::dmat4, int)>> vertexLoader = {};
+        vertexLoader = std::make_shared<std::function<void(const tinygltf::Node &, glm::dmat4, int)>>([&](const tinygltf::Node & node, glm::dmat4 inTransform, int recursive)->void {
+            glm::dmat4 localTransform(1.0);
+            localTransform *= (node.matrix.size() >= 16 ? glm::make_mat4(node.matrix.data()) : glm::dmat4(1.0));
+            localTransform *= (node.translation.size() >= 3 ? glm::translate(glm::make_vec3(node.translation.data())) : glm::dmat4(1.0));
+            localTransform *= (node.scale.size() >= 3 ? glm::scale(glm::make_vec3(node.scale.data())) : glm::dmat4(1.0));
+            localTransform *= (node.rotation.size() >= 4 ? glm::mat4_cast(glm::make_quat(node.rotation.data())) : glm::dmat4(1.0));
+
+            glm::dmat4 transform = inTransform * localTransform;
+            if (node.mesh >= 0) {
+                auto& mesh = vertexInputs[node.mesh]; // load mesh object (it just vector of primitives)
+                for (auto& geom : mesh) {
+                    //geom->getUniformSet()->getStructure(p).setTransform(transform); // here is bottleneck with host-GPU exchange
+                    inputs.push_back(geom);
+                    transforms.push_back(glm::transpose(transform));
+                    transforms.push_back(glm::inverse(transform));
+                }
+            }
+            if (node.children.size() > 0 && node.mesh < 0) {
+                for (int n = 0; n < node.children.size(); n++) {
+                    if (recursive >= 0) (*vertexLoader)(model.nodes[node.children[n]], transform, recursive - 1);
+                }
+            }
+        });
+
+        // matrix with scaling
+        double mscale = 0.1;
+        glm::dmat4 matrix(1.0);
+        matrix *= glm::scale(glm::dvec3(mscale, mscale, mscale));
+
+        // load scene
+        uint32_t sceneID = 0;
+        if (model.scenes.size() > 0) {
+            for (int n = 0; n < model.scenes[sceneID].nodes.size(); n++) {
+                tinygltf::Node & node = model.nodes[model.scenes[sceneID].nodes[n]];
+                (*vertexLoader)(node, glm::dmat4(matrix), 16);
+            }
+        }
+    }
+
+
+
+    writeIntoBuffer(deviceQueue, accessors, VAccessorSet, 0);
+    writeIntoBuffer(deviceQueue, bufferViews, VBufferView, 0);
+    writeIntoBuffer(deviceQueue, attributes, VAttributes, 0);
+
+
 
     // ray tracing command buffers creation
 
@@ -502,7 +549,7 @@ void main() {
         VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
         vtCmdBindAccelerator(qBCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
-        vtCmdBindVertexInputSets(qBCmdBuf, vertexInputs[0].size(), vertexInputs[0].data());
+        vtCmdBindVertexInputSets(qBCmdBuf, inputs.size(), inputs.data());
         vtCmdBuildVertexAssembly(qBCmdBuf);
         vtCmdBuildAccelerator(qBCmdBuf);
         vkEndCommandBuffer(qBCmdBuf);
@@ -659,7 +706,7 @@ void main() {
         vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
 
-        
+
         /*{ // reserved field for computing code
             std::vector<uint32_t> debugCounters(2);
             readFromBuffer(deviceQueue, { vertexAssembly->_countersBuffer }, debugCounters);
@@ -667,13 +714,13 @@ void main() {
             std::vector<VtBvhUniformDebug> debugUniform(1);
             readFromBuffer(deviceQueue, { accelerator->_bvhBlockUniform }, debugUniform);
 
-            std::vector<uint64_t> debugMortons(8);
+            std::vector<uint64_t> debugMortons(vertexAssembly->_calculatedPrimitiveCount);
             readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_mortonCodesBuffer }, debugMortons);
 
-            std::vector<uint32_t> debugMortonIdc(8);
+            std::vector<uint32_t> debugMortonIdc(vertexAssembly->_calculatedPrimitiveCount);
             readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_mortonIndicesBuffer }, debugMortonIdc);
 
-            std::vector<VtLeafDebug> debugLeafs(2);
+            std::vector<VtLeafDebug> debugLeafs(vertexAssembly->_calculatedPrimitiveCount);
             readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_leafBuffer }, debugLeafs);
 
             std::vector<uint32_t> debugBvhCounters(8);
@@ -682,17 +729,26 @@ void main() {
             std::vector<glm::vec4> debugBvhGenBoxes(256);
             readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_generalBoundaryResultBuffer }, debugBvhGenBoxes);
 
-            std::vector<glm::vec4> debugBvhBoxes(16);
+            std::vector<glm::vec4> debugBvhBoxes(vertexAssembly->_calculatedPrimitiveCount * 4);
             readFromBuffer(deviceQueue, { accelerator->_bvhBoxBuffer }, debugBvhBoxes);
 
-            std::vector<glm::ivec4> debugBvhMeta(8);
+            std::vector<glm::ivec4> debugBvhMeta(vertexAssembly->_calculatedPrimitiveCount * 2);
             readFromBuffer(deviceQueue, { accelerator->_bvhMetaBuffer }, debugBvhMeta);
 
-            std::vector<uint32_t> debugLeafIdx(8);
+            std::vector<uint32_t> debugLeafIdx(vertexAssembly->_calculatedPrimitiveCount);
             readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_leafNodeIndices }, debugLeafIdx);
 
-            std::vector<glm::vec4> debugBvhWorkBoxes(16);
+            std::vector<glm::vec4> debugBvhWorkBoxes(vertexAssembly->_calculatedPrimitiveCount * 4);
             readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_onWorkBoxes }, debugBvhWorkBoxes);
+
+            std::vector<uint32_t> debugFitFlags (vertexAssembly->_calculatedPrimitiveCount*2);
+            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_fitStatusBuffer }, debugFitFlags);
+
+
+            //std::vector<uint32_t> lhistogram(16 * 64);
+            //std::vector<uint32_t> lprefixsum(16 * 64);
+            //readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_radixSort->_histogramBuffer }, lhistogram);
+            //readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_radixSort->_prefixSumBuffer }, lprefixsum);
         }*/
         
 

@@ -148,7 +148,7 @@ namespace _vt {
         vtAccelerator->_device = _vtDevice;
 
         // planned import from descriptor
-        constexpr auto maxPrimitives = 1024u * 1024u;
+        const auto& maxPrimitives = info.maxPrimitives;
 
         // build BVH builder program
         {
@@ -170,7 +170,6 @@ namespace _vt {
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
-
                 bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 4 * 2;
                 bfi.format = VK_FORMAT_R32G32B32A32_SINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhMetaBuffer);
@@ -179,7 +178,7 @@ namespace _vt {
                 bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBoxBuffer);
 
-                bfi.bufferSize = sizeof(uint32_t) * 128;
+                bfi.bufferSize = sizeof(uint32_t) * 8 * 128;
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBlockUniform);
             };

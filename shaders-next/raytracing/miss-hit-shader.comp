@@ -12,84 +12,21 @@
 #include "../include/rayslib.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/random.glsl"
-
 #include "./submodules/environment.glsl"
-
-
-struct VtAppMaterial {
-     vec4 diffuse;
-     vec4 specular;
-     vec4 transmission;
-     vec4 emissive;
-
-     float ior;
-     float roughness;
-     float alpharef;
-     float unk0f;
-
-     uint diffuseTexture;
-     uint specularTexture;
-     uint bumpTexture;
-     uint emissiveTexture;
-
-     int flags;
-     int alphafunc;
-     int binding;
-     int bitfield;
-};
-
-
-#define SETS_DESC_SET_ID 1
-const uint MAX_TEXTURES = 64, MAX_SAMPLERS = 16;
-
-
-// textrue/sampler set
-layout ( binding = 0, set = SETS_DESC_SET_ID ) uniform texture2D textures[MAX_TEXTURES];
-layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[MAX_SAMPLERS];
-
-// material set (in main descriptor set)
-layout ( std430, binding = 2, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
-layout ( std430, binding = 3, set = SETS_DESC_SET_ID ) readonly buffer VT_COMBINED { uvec2 vtexures[]; };
-
-layout ( std430, binding = 4, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_INFO {
-    uint materialCount;
-    uint materialOffset;
-};
-
-
-int matID = -1;
-//#define material submats[matID]
-
-// custom defined miss material
-VtAppMaterial missMaterial;
-#define material missMaterial
-
-struct Textured {
-    vec4 diffuse;
-    vec4 specular;
-    vec4 bump;
-    vec4 emissive;
-} textured;
 
 #define cray rays[rayID]
 
-LOCAL_SIZE_LAYOUT;
-
 #ifdef CACHE_HIT_PAYLOAD
 shared VtHitPayload hitPayloadCache[WORK_SIZE];
+#define hitp hitPayloadCache[Local_Idx]
 #else
 VtHitPayload hitp;
 #endif
 
+
+LOCAL_SIZE_LAYOUT;
+
 void main() {
-
-    // constants
-    const float IOR = 1.400f;
-    const float diffuse_min_importance = 0.5f;
-    const float reflect_min_importance = 0.5f;
-    const vec3 max_fresnel_color = toLinear(vec3(1.f));
-    const vec3 min_fresnel_color = toLinear(vec3(1.f));
-
     int wsize = int(missHitCounter);
     int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
     bool overflow = false;
@@ -110,10 +47,6 @@ void main() {
             VtHitData hit = hits[hitID];
 #endif
 
-#ifdef CACHE_HIT_PAYLOAD
-            #define hitp hitPayloadCache[Local_Idx]
-#endif
-
             rayID = hit.rayID-1;
             hitp = hitPayload[hit.payloadID-1];
 
@@ -121,54 +54,8 @@ void main() {
             vec3 rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;
 
-            matID = -1;//hit.materialID;// - materialOffset;
-            //bool overflow = overflow || rayID < 0 || (matID >= materialCount || matID < 0);
+            int matID = -1;
             bool overflow = overflow || rayID < 0;
-
-            // static colors
-            textured.diffuse = material.diffuse;
-            textured.bump = vec4(0.f, 0.f, 1.f, 1.f);
-            textured.specular = material.specular;
-            textured.emissive = material.emissive;
-
-            // AMD not supported per-lane texture data loading, if texture index is not constant
-            vec2 texcoord = cray.cdirect.xy;//hit.attributes[TEXCOORD_TID].xy; //hit.texcoord.xy;
-            vec3 normal = -viewVec;//hit.attributes[NORMAL_TID].xyz;
-            vec3 bitang = 0.f.xxx;//hit.attributes[BITANGENT_TID].xyz;
-            vec3 tangent = 0.f.xxx;//hit.attributes[TANGENT_TID].xyz;
-
-            mat3 tbn = transpose(mat3(tangent.xyz, bitang.xyz, normal.xyz));
-            vec3 pV = normalize(tbn * (-viewVec * hit.uvt.z));
-            float hW = 0.f;
-
-            vec4 diffuse = textured.diffuse; diffuse.xyz = toLinear(max(diffuse.xyz, vec3(0.f)));
-            vec4 emission = textured.emissive; emission.xyz = toLinear(max(emission.xyz, vec3(0.f)));
-            vec4 spc = clamp01(textured.specular);
-
-            // default normal
-            hitp.normalHeight.xyz = normal.xyz;
-
-            // if normal goes wrong, restore normal
-            if ((length(hitp.normalHeight.xyz) <= 1e-5) || (length(hitp.normalHeight.xyz) >= INFINITY) || any(isnan(hitp.normalHeight.xyz)) || any(isinf(hitp.normalHeight.xyz)) || dot(hitp.normalHeight.xyz, normal.xyz) <= 1e-5) {
-                hitp.normalHeight.xyz = normal.xyz;
-            }
-
-            // convert metallic roughness to glossiness specular PBR model
-            normal.xyz = faceforward(normal.xyz, dcts(cray.cdirect.xy), normal.xyz);
-            float roughness = clamp01(spc.y), metallic = clamp01(spc.z);
-            float fresnel = clamp01(pow(abs(dot(dcts(cray.cdirect.xy), normal.xyz)), IOR - 1.f));
-
-            vec3 fresnelColor = clamp01(fmix(max_fresnel_color * 0.9f, min_fresnel_color * 0.04f, fresnel.xxx));
-            vec3 specularColor = clamp01(mix(fresnelColor, diffuse.xyz, metallic.xxx)); // use correct specular
-            diffuse.xyz *= (1.f - metallic); // dim diffuse by metallic
-            vec4 specularGlossiness = vec4(specularColor, roughness);
-
-            // normalize normal again
-            hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz);
-            hitp.emission = emission.xyzw;
-            hitp.albedo = diffuse.xyzw;
-            hitp.specularGlossiness = specularGlossiness;
-
 
             // environment
             hitp.specularGlossiness = vec4(0.f.xxx, 1.f);

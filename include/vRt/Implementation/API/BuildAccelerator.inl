@@ -20,10 +20,11 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexInputs.resize(0);
         for (auto& s : sets) { // update buffers by pushing constants
+            s->_uniformBlock.inputID = cmdBuf->_vertexInputs.size();
             vkCmdUpdateBuffer(*cmdBuf, *s->_uniformBlockBuffer, 0, sizeof(s->_uniformBlock), &s->_uniformBlock);
             fromHostCommandBarrier(*cmdBuf);
             cmdBuf->_vertexInputs.push_back(s);
-        }
+        }; 
         return result;
     }
 
@@ -51,7 +52,7 @@ namespace _vt {
         cmdFillBuffer<0u>(*cmdBuf, *vertx->_countersBuffer);
         vertx->_calculatedPrimitiveCount = 0;
 
-        uint32_t _bndc = 0;
+        uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto& iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
 
@@ -66,8 +67,10 @@ namespace _vt {
             //vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, 4096);
             cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, vertx->_countersBuffer, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(1), strided<uint32_t>(1)) });
-            vertx->_calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
+            calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         }
+
+        vertx->_calculatedPrimitiveCount = calculatedPrimitiveCount;
 
         return result;
     }
@@ -86,7 +89,7 @@ namespace _vt {
 
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting
-        cmdFillBuffer<0xFFu>(*cmdBuf, *acclb->_mortonCodesBuffer);
+        cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, *acclb->_mortonCodesBuffer);
         cmdFillBuffer<0u>(*cmdBuf, *acclb->_countersBuffer); // reset counters
         cmdFillBuffer<0u>(*cmdBuf, *acclb->_fitStatusBuffer);
         std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
@@ -98,7 +101,8 @@ namespace _vt {
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_buildPipeline, 1); // just build hlBVH2
         cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, 4096); // link leafs
-        cmdDispatch(*cmdBuf, acclb->_fitPipeline, 4096); // fit BVH nodes
+        cmdDispatch(*cmdBuf, acclb->_fitPipeline, 1);
+        //cmdDispatch(*cmdBuf, acclb->_fitPipeline, 4096); // fit BVH nodes
 
         return result;
     }

@@ -73,7 +73,7 @@ inline auto readFromBuffer(vte::Queue deviceQueue, const vt::VtDeviceBuffer& dBu
 inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer, size_t byteSize = 1024 * 16) {
     vt::VtDeviceBufferCreateInfo dbs;
     dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    dbs.bufferSize = 1024 * 16;
+    dbs.bufferSize = byteSize;
     dbs.familyIndex = deviceQueue->familyIndex;
     dbs.format = VK_FORMAT_R16_UINT;
     vt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
@@ -447,8 +447,8 @@ void main() {
         vtii.bBufferRegionBindings = VBufferRegions;
         vtii.bBufferViews = VBufferView;
         vtii.primitiveCount = 1;
-        vtii.materialID = 0;
         vtii.attributeCount = 5;
+        vtii.materialID = 0;
         vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vertexInput);
 
         // part 2
@@ -468,9 +468,9 @@ void main() {
         VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
         vtCmdBindAccelerator(qBCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
-        std::vector<VtVertexInputSet> vsets = { vertexInput , vertexInput2 };
-        //vtCmdBindVertexInputSets(qBCmdBuf, vsets.size(), vsets.data());
-        vtCmdBindVertexInputSets(qBCmdBuf, 1, &vertexInput);
+        std::vector<VtVertexInputSet> vsets = { vertexInput2, vertexInput };
+        vtCmdBindVertexInputSets(qBCmdBuf, vsets.size(), vsets.data());
+        //vtCmdBindVertexInputSets(qBCmdBuf, 1, &vertexInput);
         vtCmdBuildVertexAssembly(qBCmdBuf);
         vtCmdBuildAccelerator(qBCmdBuf);
         vkEndCommandBuffer(qBCmdBuf);

@@ -14,7 +14,7 @@ layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
     mat4x4 camInv;
     mat4x4 projInv;
     vec4 sceneRes;
-    int enable360, r0, r1, r2;
+    int enable360, variant, r1, r2;
 } cameraUniform;
 
 // planned ray generation shader example

@@ -75,7 +75,7 @@ layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM
     uint primitiveOffset;
     uint topology;
     uint attributeCount;
-    uint reserved0;
+    uint inputID;
 } vertexBlock;
 
 
