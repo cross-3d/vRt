@@ -32,18 +32,21 @@ int aCounterInc() { return _aCounterInc(cBuffer*4); }
 #define asize_inv_ _counters[cBuffer*4]
 
 #include "./submodules/bvh-build-general.glsl" // unified functions
-const int largeStageThreshold = 1;
+//const int largeStageThreshold = 1;
 
 layout ( local_size_x = WORK_SIZE_BND ) in;
 
+// I have no idea for optimize registers
 void main() {
-    const int threadID = int(Local_Idx);
-    const int groupSize = int(gl_WorkGroupSize.x);
+    //const int threadID = int(Local_Idx);
+    //const int groupSize = int(gl_WorkGroupSize.x);
+#define threadID Local_Idx
+#define groupSize gl_WorkGroupSize.x
 
     // lane-based
-    const int gS = groupSize >> 1;
-    const int iT = threadID >> 1;
-    const int sD = threadID & 1;
+    const uint gS = groupSize >> 1;
+    const uint iT = threadID >> 1;
+    const int sD = int(threadID & 1);
 
     LGROUP_BARRIER
     if (threadID < 8) { _counters[threadID] = 0; }
@@ -60,10 +63,10 @@ void main() {
     }
     LGROUP_BARRIER // stage sync
 
-    int asize = asize_inv_;
+    uint asize = asize_inv_;
 
     // building BVH
-    [[unroll]]
+    //[[unroll]]
     for (int m=0;m<65536;m++) {
 
         // swap buffers emulation
@@ -75,12 +78,12 @@ void main() {
         IFALL (asize <= 0) { break; } // remove count limiter
 
         // split nodes
-        for (int fT=0;fT<asize;fT+=gS) {
+        for (uint fT=0;fT<asize;fT+=gS) {
             // subgroup barrier
             SB_BARRIER
 
             // index of node element
-            const int uID = fT + iT; 
+            const uint uID = fT + iT; 
             
             // split prefixed elements
             IFALL (uID >= asize) break;
@@ -100,8 +103,8 @@ void main() {
 
     // copy rest actives
     IFANY (cBuffer == 0 && asize > 0) {
-        for (int fT = 0; fT<asize; fT+=groupSize) {
-            const int uID = fT + threadID; // fit for every threads, don't compact here
+        for (uint fT = 0; fT<asize; fT+=groupSize) {
+            const uint uID = fT + threadID; // fit for every threads, don't compact here
             Actives[uID][cBuffer] = Actives[uID][1-cBuffer];
         }
     }
@@ -109,7 +112,7 @@ void main() {
     // copy to external counters
     LGROUP_BARRIER
     if (threadID == 0) {
-        aCounter = asize;
+        aCounter = int(asize);
         lCounter = _counters[1];
         cCounter = _counters[2];
         aCounter2 = 0;
