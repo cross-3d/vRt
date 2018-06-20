@@ -19,6 +19,7 @@ namespace vt { // store in official namespace
         uint32_t regionID = 0;
         uint32_t byteOffset = 0;
         uint32_t byteStride = 0;
+        uint32_t byteLength = 0;
     };
 
     // attribute binding
@@ -79,10 +80,10 @@ namespace vt { // store in official namespace
 
 
     typedef enum VtType : uint32_t {
-        VT_FLOAT = 0,
-        VT_UINT32 = 1,
-        VT_UINT16 = 2,
-        VT_HALF = 3
+        VT_TYPE_FLOAT = 0,
+        VT_TYPE_UINT32 = 1,
+        VT_TYPE_UINT16 = 2,
+        VT_TYPE_HALF = 3
     } VtType;
 
     // constexpr format compositor
@@ -109,6 +110,7 @@ namespace vt { // store in official namespace
         uint32_t bufferViewID = 0;
         uint32_t byteOffset = 0;
         VtFormatDecomp format;
+        uint32_t reserved = 0;
     };
 
 

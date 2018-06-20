@@ -13,6 +13,7 @@ struct VtBufferView {
     int regionID;
     int byteOffset; // in structure offset
     int byteStride;
+    int byteLength;
 };
 
 // accessor
@@ -20,6 +21,7 @@ struct VtAccessor {
     int bufferView; // buffer-view structure
     int byteOffset; // accessor byteOffset
     uint bitfield; // VtFormat decodable
+    uint reserved;
 };
 
 // attribute binding
@@ -35,16 +37,16 @@ const ivec2 COMPONENTS = ivec2(0, 2);
 const ivec2 ATYPE = ivec2(2, 4);
 const ivec2 NORMALIZED = ivec2(6, 1);
 
-int aComponents(in VtAccessor vac) {
-    return parameteri(COMPONENTS, vac.bitfield);
+int aComponents(in uint bitfield) {
+    return parameteri(COMPONENTS, bitfield);
 }
 
-int aType(in VtAccessor vac) {
-    return parameteri(ATYPE, vac.bitfield);
+int aType(in uint bitfield) {
+    return parameteri(ATYPE, bitfield);
 }
 
-int aNormalized(in VtAccessor vac) {
-    return parameteri(NORMALIZED, vac.bitfield);
+int aNormalized(in uint bitfield) {
+    return parameteri(NORMALIZED, bitfield);
 }
 
 
@@ -82,7 +84,7 @@ uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect){
     int bufferView = accessors[accessorID].bufferView, bufferID = bufferViews[bufferView].regionID;
     uint offseT = 0u;//bufferRegions[bufferID].byteOffset;
     offseT += bufferViews[bufferView].byteOffset + accessors[accessorID].byteOffset; // calculate byte offset 
-    uint stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID])+1) << bytecorrect); // get true stride 
+    uint stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1) << bytecorrect); // get true stride 
     offseT += index * stride; // calculate structure indexed offset
     return offseT >> bytecorrect;
 }
@@ -93,7 +95,7 @@ void readByAccessor(in int accessor, in uint index, inout vec4 outp) {
     if (accessor >= 0) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         uint T = calculateByteOffset(accessor, index, 2);
-        uint C = aComponents(accessors[accessor])+1;
+        uint C = aComponents(accessors[accessor].bitfield)+1;
         if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace[bufferID],T+0));
         if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace[bufferID],T+1));
         if (C >= 3) outp.z = uintBitsToFloat(M32(bufferSpace[bufferID],T+2));
@@ -106,7 +108,7 @@ void readByAccessor(in int accessor, in uint index, inout vec3 outp) {
     if (accessor >= 0) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         uint T = calculateByteOffset(accessor, index, 2);
-        uint C = aComponents(accessors[accessor])+1;
+        uint C = aComponents(accessors[accessor].bitfield)+1;
         if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace[bufferID],T+0));
         if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace[bufferID],T+1));
         if (C >= 3) outp.z = uintBitsToFloat(M32(bufferSpace[bufferID],T+2));
@@ -118,7 +120,7 @@ void readByAccessor(in int accessor, in uint index, inout vec2 outp) {
     if (accessor >= 0) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         uint T = calculateByteOffset(accessor, index, 2);
-        uint C = aComponents(accessors[accessor])+1;
+        uint C = aComponents(accessors[accessor].bitfield)+1;
         if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace[bufferID],T+0));
         if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace[bufferID],T+1));
     }
@@ -146,7 +148,7 @@ void readByAccessor(in int accessor, in uint index, inout int outp) {
 void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
     if (accessor >= 0) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-        const bool U16 = aType(accessors[accessor]) == 2; // uint16
+        const bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
         uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
         if (U16) { outp = M16(bufferSpace[bufferID],T+0); } else { outp = M32(bufferSpace[bufferID],T+0); }
     }

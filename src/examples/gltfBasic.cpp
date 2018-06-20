@@ -109,6 +109,36 @@ inline auto getShaderDir(const uint32_t& vendorID) {
     return shaderDir;
 }
 
+
+inline auto _getFormat(const tinygltf::Accessor& accs) {
+    vt::VtFormatDecomp format = {};
+
+    uint32_t size = 1;
+    if (accs.type == TINYGLTF_TYPE_SCALAR) {
+        size = 1;
+    } else if (accs.type == TINYGLTF_TYPE_VEC2) {
+        size = 2;
+    } else if (accs.type == TINYGLTF_TYPE_VEC3) {
+        size = 3;
+    } else if (accs.type == TINYGLTF_TYPE_VEC4) {
+        size = 4;
+    } else {
+        assert(0);
+    }
+
+    uint32_t compType = vt::VT_TYPE_FLOAT;
+    if (accs.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) { compType = vt::VT_TYPE_UINT16; };
+    if (accs.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) { compType = vt::VT_TYPE_UINT32; };
+    // TODO float16 support
+
+    format.setComponents(size);
+    format.setType(compType);
+    format.setNormalized(accs.normalized);
+
+    return format;
+}
+
+
 void main() {
     using namespace vt;
 
@@ -178,10 +208,11 @@ void main() {
 
 
 
-    tinygltf::Model model;
-    tinygltf::TinyGLTF loader;
+    tinygltf::Model model = {};
+    tinygltf::TinyGLTF loader = {};
     std::string err;
-    std::string input_filename("BoomBox.gltf");
+    //std::string input_filename("BoomBoxWithAxes-processed.gltf");
+    std::string input_filename("Chess_Set.gltf");
     bool ret = loader.LoadASCIIFromFile(&model, &err, input_filename.c_str());
 
 
@@ -190,9 +221,10 @@ void main() {
     for (auto& b : model.buffers) {
         VtDeviceBuffer buf;
         createBufferFast(deviceQueue, buf, b.data.size());
+        writeIntoBuffer(deviceQueue, b.data, buf);
         VDataSpace.push_back(buf);
     }
-
+    std::vector<VkBufferView> bviews; for (auto&b : VDataSpace) { bviews.push_back(b); };
 
 
 
@@ -215,9 +247,12 @@ void main() {
     VtPipeline rtPipeline;
     VtAcceleratorSet accelerator;
     VtVertexAssemblySet vertexAssembly;
-    VtVertexInputSet vertexInput, vertexInput2; // arrayed
+    //VtVertexInputSet vertexInput, vertexInput2; // arrayed
     VkCommandBuffer bCmdBuf, rtCmdBuf;
     VtDeviceBuffer rtUniformBuffer;
+
+    std::vector<std::vector<VtVertexInputSet>> vertexInputs;
+    std::vector<std::vector<VtVertexInputSet>> nodes;
 
 
     // create vertex input buffer objects
@@ -225,10 +260,10 @@ void main() {
         VBufferRegions, VBufferView, VAccessorSet, VAttributes;
     {
         //createBufferFast(deviceQueue, VDataSpace);
-        createBufferFast(deviceQueue, VBufferRegions);
-        createBufferFast(deviceQueue, VBufferView);
-        createBufferFast(deviceQueue, VAccessorSet);
-        createBufferFast(deviceQueue, VAttributes);
+        //createBufferFast(deviceQueue, VBufferRegions);
+        createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexAccessor) * model.accessors.size());
+        createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexBufferView) * model.bufferViews.size());
+        createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024);
     }
 
     {
@@ -379,114 +414,84 @@ void main() {
 
     // create accelerator set
     VtAcceleratorSetCreateInfo acci;
-    acci.maxPrimitives = 1024;
+    acci.maxPrimitives = 1024 * 256;
     vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
 
 
     // create vertex assembly
     VtVertexAssemblySetCreateInfo vtsi;
-    vtsi.maxPrimitives = 1024;
+    vtsi.maxPrimitives = 1024 * 256;
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
-
-    /*
-    { // use two angled triangles
-        // all available accessors
-        std::vector<VtVertexAccessor> accessors = {
-            { 0, 0, VT_FORMAT_R32G32B32_SFLOAT }, // vertices
-            { 1, 0, VT_FORMAT_R32G32B32_SFLOAT }, // normals
-            { 2, 0, VT_FORMAT_R32G32B32_SFLOAT }, // texcoords
-            { 3, 0, VT_FORMAT_R32G32B32_SFLOAT }, // tangents
-            { 4, 0, VT_FORMAT_R32G32B32_SFLOAT }, // bitangents
-            { 5, 0, VT_FORMAT_R32G32B32_SFLOAT }, // colors
-        };
-        writeIntoBuffer(deviceQueue, accessors, VAccessorSet, 0);
-
-        // attribute binding with accessors
-        std::vector<VtVertexAttributeBinding> attributes = {
-            { 0, 1 }, 
-            { 1, 2 }, 
-            { 2, 3 }, 
-            { 3, 4 },
-            { 4, 5 },
-        };
-        writeIntoBuffer(deviceQueue, attributes, VAttributes, 0);
-
-        // vertice using first offsets for vertices, anothers using seros, planned add colors support
-        std::vector<VtVertexBufferView> bufferViews = {
-            { 0, 0, sizeof(glm::vec3) },
-            { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
-            { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
-            { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
-            { 0, sizeof(glm::vec3) * 6, sizeof(glm::vec3) },
-            { 0, sizeof(glm::vec3) * 12, sizeof(glm::vec3) },
-        };
-        writeIntoBuffer(deviceQueue, bufferViews, VBufferView, 0);
-
-        // test vertex data
-        std::vector<glm::vec3> vertices = {
-            glm::vec3( 1.f, -1.f, -1.f),
-            glm::vec3(-1.f, -1.f, -1.f),
-            glm::vec3( 0.f,  1.f, -1.f),
-
-            glm::vec3( 1.f, -1.f, -1.f),
-            glm::vec3(-1.f, -1.f, -1.f),
-            glm::vec3( 0.f, -1.f,  1.f),
-        };
-        std::vector<glm::vec3> colors = {
-            glm::vec3(1.f, 0.f, 0.f), 
-            glm::vec3(0.f, 1.f, 0.f), 
-            glm::vec3(0.f, 0.f, 1.f),
-
-            glm::vec3(1.f, 0.f, 0.f),
-            glm::vec3(0.f, 1.f, 0.f),
-            glm::vec3(0.f, 0.f, 1.f),
-        };
-        std::vector<glm::vec3> zeros = {
-            glm::vec3(0.f), 
-            glm::vec3(0.f), 
-            glm::vec3(0.f),
-            
-            glm::vec3(0.f),
-            glm::vec3(0.f),
-            glm::vec3(0.f),
-        };
-
-        // write data space by offsets
-        writeIntoBuffer(deviceQueue, vertices, VDataSpace, 0u);
-        writeIntoBuffer(deviceQueue, zeros, VDataSpace, sizeof(glm::vec3) * 6);
-        writeIntoBuffer(deviceQueue, colors, VDataSpace, sizeof(glm::vec3) * 12);
-    }*/
-
-    // create vertex input
-    {
-        // part 1
-        VtVertexInputCreateInfo vtii;
-        vtii.topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
-        vtii.verticeAccessor = 0;
-        vtii.indiceAccessor = -1;
-
-        std::vector<VkBufferView> bviews; for (auto&b : VDataSpace) { bviews.push_back(b); };
-
-        //auto bvi = VkBufferView(VDataSpace);
-        vtii.pSourceBuffers = bviews.data();
-        vtii.sourceBufferCount = bviews.size();
-        vtii.bBufferAccessors = VAccessorSet;
-        vtii.bBufferAttributeBindings = VAttributes;
-        vtii.bBufferRegionBindings = VBufferRegions;
-        vtii.bBufferViews = VBufferView;
-        vtii.primitiveCount = 1;
-        vtii.materialID = 0;
-        vtii.attributeCount = 5;
-        vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vertexInput);
-
-        // part 2
-        //vtii.primitiveCount = 1;
-        //vtii.primitiveOffset = 1;
-        //vtii.materialID = 1;
-        //vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vertexInput2);
+    std::vector<VtVertexAccessor> accessors = {};
+    for (auto &acs: model.accessors) {
+        accessors.push_back(VtVertexAccessor{ acs.bufferView, acs.byteOffset, _getFormat(acs) });
     }
 
+    std::vector<VtVertexBufferView> bufferViews = {};
+    for (auto &bv : model.bufferViews) {
+        bufferViews.push_back(VtVertexBufferView{ bv.buffer, bv.byteOffset, bv.byteStride, bv.byteLength });
+    }
+
+
+
+    const int NORMAL_TID = 0;
+    const int TEXCOORD_TID = 1;
+    const int TANGENT_TID = 2;
+    const int BITANGENT_TID = 3;
+    const int VCOLOR_TID = 4;
+
+    std::vector<VtVertexAttributeBinding> attributes = {};
+    for (auto& msh: model.meshes) {
+        std::vector<VtVertexInputSet> primitives;
+        for (auto& prim : msh.primitives) {
+            VtVertexInputSet primitive;
+
+            uint32_t attribOffset = attributes.size();
+            VtVertexInputCreateInfo vtii = {};
+            vtii.verticeAccessor = 0;
+            vtii.indiceAccessor = -1;
+            vtii.topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
+
+            for (auto& attr: prim.attributes) { //attr
+                if (attr.first.compare("POSITION") == 0) {
+                    vtii.verticeAccessor = attr.second;
+                }
+
+                if (attr.first.compare("NORMAL") == 0) {
+                    attributes.push_back({ NORMAL_TID, attr.second });
+                }
+
+                if (attr.first.compare("TEXCOORD_0") == 0) {
+                    attributes.push_back({ TEXCOORD_TID, attr.second });
+                }
+            }
+
+            tinygltf::Accessor &idcAccessor = model.accessors[prim.indices];
+            vtii.indiceAccessor = prim.indices;
+            vtii.attributeCount = prim.attributes.size();
+            vtii.primitiveCount = idcAccessor.count / 3;
+            vtii.materialID = prim.material;
+            vtii.pSourceBuffers = bviews.data();
+            vtii.sourceBufferCount = bviews.size();
+            vtii.bBufferAccessors = VAccessorSet;
+            vtii.bBufferAttributeBindings = VAttributes;
+            vtii.attributeByteOffset = attribOffset * sizeof(VtVertexAttributeBinding);
+            vtii.bBufferRegionBindings = VBufferRegions;
+            vtii.bBufferViews = VBufferView;
+            vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &primitive);
+
+            primitives.push_back(primitive);
+        }
+
+        vertexInputs.push_back(primitives);
+    }
+
+    //for (auto& node : model.nodes) {
+        
+    //}
+
+    
     
 
     // ray tracing command buffers creation
@@ -497,9 +502,7 @@ void main() {
         VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
         vtCmdBindAccelerator(qBCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
-        std::vector<VtVertexInputSet> vsets = { vertexInput , vertexInput2 };
-        //vtCmdBindVertexInputSets(qBCmdBuf, vsets.size(), vsets.data());
-        vtCmdBindVertexInputSets(qBCmdBuf, 1, &vertexInput);
+        vtCmdBindVertexInputSets(qBCmdBuf, vertexInputs[0].size(), vertexInputs[0].data());
         vtCmdBuildVertexAssembly(qBCmdBuf);
         vtCmdBuildAccelerator(qBCmdBuf);
         vkEndCommandBuffer(qBCmdBuf);
