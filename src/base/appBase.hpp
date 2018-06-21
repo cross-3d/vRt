@@ -156,7 +156,7 @@ namespace NSM
             // app info
             vk::ApplicationInfo appinfo;
             appinfo.pApplicationName = "VKTest";
-            appinfo.applicationVersion = VK_MAKE_VERSION(1, 1, 0);
+            appinfo.applicationVersion = NULL;
             appinfo.apiVersion = VK_API_VERSION_1_1;
 
             // create instance info

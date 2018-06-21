@@ -5,6 +5,7 @@
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
 #define ENABLE_VSTORAGE_DATA
+#define DMA_HIT
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
@@ -36,7 +37,12 @@ void main() {
         IFALL(overflow) break;
         int hitID = SSC(overflow) ? -1 : vtClosestId(offset + globalID);
         
+#ifdef DMA_HIT
+        #define hit hits[hitID]
+#else
         VtHitData hit = hits[hitID];
+#endif
+
         IF (not(overflow)) { // verify intersection
             const int triID = floatBitsToInt(hit.uvt.w)-1;
             const int itri = triID*3;
@@ -50,7 +56,9 @@ void main() {
             if (triID >= 0) {
                 hit.vdat = vec4(normalize(cross(vT[1]-vT[0], vT[2]-vT[0])), 1.f);
                 interpolateMeshData(hit);
+#ifndef DMA_HIT
                 hits[hitID] = hit;
+#endif
             }
         }
     }

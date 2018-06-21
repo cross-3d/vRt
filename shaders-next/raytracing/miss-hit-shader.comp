@@ -5,7 +5,7 @@
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
 //#define CACHE_HIT_PAYLOAD
-//#define DMA_HIT // unpreferred
+#define DMA_HIT // unpreferred
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
@@ -22,7 +22,6 @@ shared VtHitPayload hitPayloadCache[WORK_SIZE];
 #else
 VtHitPayload hitp;
 #endif
-
 
 LOCAL_SIZE_LAYOUT;
 
@@ -47,15 +46,11 @@ void main() {
             VtHitData hit = hits[hitID];
 #endif
 
-            rayID = hit.rayID-1;
-            hitp = hitPayload[hit.payloadID-1];
+            int rayID = hit.rayID-1;
 
             vec3 viewVec = dcts(cray.cdirect.xy);
             vec3 rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;
-
-            int matID = -1;
-            bool overflow = overflow || rayID < 0;
 
             // environment
             hitp.specularGlossiness = vec4(0.f.xxx, 1.f);
@@ -67,7 +62,7 @@ void main() {
             hitp.emission = vec4(vec3(0.05f, 0.05f, 0.2f), 1.f);
 
             // additional validation of hit (hit point interpolated offset test)
-            if (!overflow) {
+            if (overflow && hit.rayID > 0) {
                 int pid = hitID;
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT

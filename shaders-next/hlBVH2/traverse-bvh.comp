@@ -7,6 +7,7 @@
 #define DISCARD_SHARED_CACHING
 #define ENABLE_TRAVERSE_DATA
 #define ENABLE_VSTORAGE_DATA
+#define DMA_HIT
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
@@ -43,8 +44,14 @@ void main() {
             const int triID = floatBitsToInt(geometrySpace.lastIntersection.w)-1;
 
             // save hit
-            int hid = it; 
+            int hid = it;
+
+#ifdef DMA_HIT
+            #define hit hits[hid]
+#else
             VtHitData hit;
+#endif
+
             hit.rayID = it+1;
             hit.uvt = geometrySpace.lastIntersection;
             hit.payloadID = 0;
@@ -61,7 +68,9 @@ void main() {
                 vtVerifyMissedHit(hid); 
             }
 
+#ifndef DMA_HIT
             hits[hid] = hit;
+#endif
         }
     }
 
