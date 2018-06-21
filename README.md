@@ -12,6 +12,10 @@
 - Fixed issues of previous projects 
 - Reduced overheads, include dispatch calls 
 
+## Silver box...
+- Around 96 million rays per second (more than old project)
+- Around (up to) 120Hz in Sponza scene (RX Vega 64, 1280x720, without rebuilding BVH, primary rays, no sorting)
+
 ## Repositories:
 - https://github.com/world8th/vRt (GitHub, owned by Microsoft)
 - https://gitlab.com/world8th/vRt (GitLab, merging)
