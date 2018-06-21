@@ -363,7 +363,12 @@ namespace _vt { // store in undercover namespace
         uint32_t topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
         uint32_t attributeCount = 8;
         uint32_t inputID = 0;
+
+        uint32_t materialAccessor = 0;
+        uint32_t reserved0 = 0, reserved1 = 0, reserved2 = 0;
     };
+
+
 
     class VertexInputSet : public std::enable_shared_from_this<VertexInputSet> {
     public:

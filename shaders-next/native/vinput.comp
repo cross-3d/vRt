@@ -17,30 +17,33 @@ LOCAL_SIZE_LAYOUT;
 initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
 
 void main(){
-    const int wsize = int(vertexBlock.primitiveCount);
-    const int gS = int(gl_WorkGroupSize.x);
-    const int wgs = int(gl_NumWorkGroups.x);
-    const int wID = int(gl_WorkGroupID.x);
-    const int lID = int(Local_Idx);
-    const int rng = gS*wgs;
-    const int trp = 3;
+    const uint wsize = uint(vertexBlock.primitiveCount);
+    const uint gS = uint(gl_WorkGroupSize.x);
+    const uint wgs = uint(gl_NumWorkGroups.x);
+    const uint wID = uint(gl_WorkGroupID.x);
+    const uint lID = uint(Local_Idx);
+    const uint rng = gS*wgs;
+    const uint trp = 3;
 
     // for faster geometry loading, just add counter in single thread
-    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(tcounter[0], wsize); }
+    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(tcounter[0], int(wsize)); }
     
     // process vertex assembly
-    for (int w=0;w<wsize;w+=rng) {
-        int globalID = w + wID * gS + lID;
+    for (uint w=0;w<wsize;w+=rng) {
+        uint globalID = w + wID * gS + lID;
         IFALL (globalID >= wsize) break;
         if (globalID < wsize && globalID >= 0) {
 
             // constant material ID from vertex instance 
-            int matID = int(vertexBlock.materialID);
-            int ordr = tcounter[1] + int(globalID), tidc = ordr;//, tidc = tcounterInc(1);
+            uint matID = uint(vertexBlock.materialID);
+            uint ordr = tcounter[1] + globalID, tidc = ordr;//, tidc = tcounterInc(1);
+
+            // read material accessor
+            readByAccessorIndice(int(vertexBlock.materialAccessor), tidc, matID);
 
             // planned to support quad based geometry
-            vorders[tidc] = ordr;
-            materials[tidc] = matID;
+            vorders[tidc] = int(ordr);
+            materials[tidc] = int(matID);
             
             // planned to add support of vertex and geometry shaders
             [[unroll]]

@@ -85,7 +85,7 @@ namespace vt { // store in official namespace
         uint32_t primitiveOffset = 0;
         VtTopologyType topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
         uint32_t attributeCount = 8;
-        uint32_t reserved0 = 0;
+        uint32_t materialAccessor = 0;
 
         // vertex data sources
         const VkBufferView * pSourceBuffers = nullptr;

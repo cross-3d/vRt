@@ -14,7 +14,7 @@ namespace _vt {
         vtVertexInput->_vertexAssembly = info.vertexAssemblyPipeline._vtVertexAssembly;
 
         std::vector<vk::PushConstantRange> constRanges = {
-            vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(4))
+            vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(12))
         };
         std::vector<vk::DescriptorSetLayout> dsLayouts = {
             vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
@@ -26,7 +26,7 @@ namespace _vt {
         VtDeviceBufferCreateInfo bfi;
         bfi.familyIndex = _vtDevice->_mainFamilyIndex;
         bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
-        bfi.bufferSize = sizeof(uint32_t) * 8;
+        bfi.bufferSize = strided<uint32_t>(12);
         bfi.format = VK_FORMAT_UNDEFINED;
 
         // planned add external buffer support
@@ -43,7 +43,9 @@ namespace _vt {
         vtVertexInput->_uniformBlock.primitiveOffset = info.primitiveOffset;
         vtVertexInput->_uniformBlock.topology = info.topology;
         vtVertexInput->_uniformBlock.attributeCount = info.attributeCount;
-        vtVertexInput->_uniformBlock.inputID = info.reserved0;
+        vtVertexInput->_uniformBlock.inputID = 0;
+
+        vtVertexInput->_uniformBlock.materialAccessor = info.materialAccessor;
 
 
 
