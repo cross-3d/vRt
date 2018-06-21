@@ -41,20 +41,20 @@ void main() {
 
         IF (not(overflow)) { // verify intersection
             const int triID = floatBitsToInt(geometrySpace.lastIntersection.w)-1;
-            bool_ vintersect = lessF(geometrySpace.lastIntersection.z, INFINITY-0.001f) & bool_(triID >= 0);
-            
+
             // save hit
-            int hid = it; VtHitData hit = hits[hid];
+            int hid = it; 
+            VtHitData hit;
             hit.rayID = it+1;
             hit.uvt = geometrySpace.lastIntersection;
-            hit.payloadID = hid+1;
+            hit.payloadID = 0;
             hit.materialID = materials[triID];
             hit.next = 0;
             hit.attribID = 0;
 
             // identify intersection
             imageStore(rayLink, it, uvec4(hid+1, imageLoad(rayLink, it).y, 0u.xx));
-            IF (vintersect) {
+            IF (triID >= 0) {
                 //atomicIncAttribCount()+1;
                 hit.attribID = vtVerifyClosestHit(hid)+1; // better link directly, because extra atomics (even with subgroups) also hits to performances
             } else { 

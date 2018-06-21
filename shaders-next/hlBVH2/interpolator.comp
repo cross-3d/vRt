@@ -39,20 +39,17 @@ void main() {
         VtHitData hit = hits[hitID];
         IF (not(overflow)) { // verify intersection
             const int triID = floatBitsToInt(hit.uvt.w)-1;
-            const int itri = triID*3;//tri*9;
+            const int itri = triID*3;
             const mat3 vT = transpose(mat3(
                 TLOAD(lvtx, itri+0).xyz,
                 TLOAD(lvtx, itri+1).xyz,
                 TLOAD(lvtx, itri+2).xyz
             ));
-            const vec3 vs = vec3(1.0f - hit.uvt.x - hit.uvt.y, hit.uvt.xy);
-            const vec3 hitOrigin = vs * vT;
-
+            
             // interpolate hit
-            IF (lessF(hit.uvt.z, INFINITY-0.001f) & bool_(triID >= 0)) {
-                const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
-                hit.vdat = vec4(normalize(cross(e1, e2)), 1.f);
-                interpolateMeshData(hit, vs);
+            if (triID >= 0) {
+                hit.vdat = vec4(normalize(cross(vT[1]-vT[0], vT[2]-vT[0])), 1.f);
+                interpolateMeshData(hit);
                 hits[hitID] = hit;
             }
         }

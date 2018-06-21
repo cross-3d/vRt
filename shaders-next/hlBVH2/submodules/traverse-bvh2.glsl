@@ -159,7 +159,7 @@ void traverseBvh2(in bool_ valid) {
     traverseState.bitStack = 0ul;
 #endif
 
-    geometrySpace.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO);
+    geometrySpace.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);//eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO);
     
 #ifdef USE_FAST_INTERSECTION
     geometrySpace.dir = vec4(direct, 1.f);

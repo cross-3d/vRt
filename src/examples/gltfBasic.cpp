@@ -127,8 +127,8 @@ inline auto _getFormat(const tinygltf::Accessor& accs) {
     }
 
     uint32_t compType = vt::VT_TYPE_FLOAT;
-    if (accs.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) { compType = vt::VT_TYPE_UINT16; };
-    if (accs.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) { compType = vt::VT_TYPE_UINT32; };
+    if (accs.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT || accs.componentType == TINYGLTF_COMPONENT_TYPE_SHORT) { compType = vt::VT_TYPE_UINT16; };
+    if (accs.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT || accs.componentType == TINYGLTF_COMPONENT_TYPE_INT) { compType = vt::VT_TYPE_UINT32; };
     // TODO float16 support
 
     format.setComponents(size);
@@ -211,8 +211,8 @@ void main() {
     tinygltf::Model model = {};
     tinygltf::TinyGLTF loader = {};
     std::string err;
-    //std::string input_filename("BoomBoxWithAxes-processed.gltf");
-    std::string input_filename("Chess_Set.gltf");
+    std::string input_filename("sponza/sponza.gltf");
+    //std::string input_filename("Chess_Set.gltf");
     //std::string input_filename("Cube.gltf");
     
 
@@ -263,7 +263,7 @@ void main() {
         createBufferFast(deviceQueue, VBufferRegions, sizeof(VtVertexRegionBinding));
         createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexAccessor) * model.accessors.size());
         createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexBufferView) * model.bufferViews.size());
-        createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024 * 64);
+        createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024 * 1024);
     }
 
     {
@@ -349,8 +349,9 @@ void main() {
 
     {
         // initial matrices
-        //auto atMatrix = glm::lookAt(glm::vec3(1.f, 1.f, 2.f), glm::vec3(0.f, 1.f, 2.f), glm::vec3(0.f, 1.f, 0.f));
-        auto atMatrix = glm::lookAt(glm::vec3(-1.f, 1.f, 1.6f)*10.f, glm::vec3(-1.f, 0.f, 2.6f)*10.f, glm::vec3(0.f, 1.f, 0.f));
+        float scale = 10.0f;
+        auto atMatrix = glm::lookAt(glm::vec3(-1.f, 0.5f, 4.6f)*scale, glm::vec3(-1.f, 0.5f, 1.6f)*scale, glm::vec3(0.f, 1.f, 0.f));
+        //auto atMatrix = glm::lookAt(glm::vec3(1.f, 0.f, 1.6f)*scale, glm::vec3(0.f, 0.f, 0.0f)*scale, glm::vec3(0.f, 1.f, 0.f));
         auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
 
         // create uniform buffer
@@ -416,13 +417,13 @@ void main() {
 
     // create accelerator set
     VtAcceleratorSetCreateInfo acci;
-    acci.maxPrimitives = 1024 * 256;
+    acci.maxPrimitives = 1024 * 1024;
     vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
 
 
     // create vertex assembly
     VtVertexAssemblySetCreateInfo vtsi;
-    vtsi.maxPrimitives = 1024 * 256;
+    vtsi.maxPrimitives = 1024 * 1024;
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
 
@@ -692,6 +693,8 @@ void main() {
     // dispatch ray tracing
     //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
+
+    
 
     // rendering presentation 
     int32_t currSemaphore = -1; uint32_t currentBuffer = 0;

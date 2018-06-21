@@ -169,11 +169,11 @@ const int _BVH_WIDTH = 2048;
 #ifdef ENABLE_VSTORAGE_DATA
 #ifdef ENABLE_VERTEX_INTERPOLATOR
 // barycentric map (for corrections tangents in POM)
-void interpolateMeshData(inout VtHitData ht, in vec3 vs) {
+void interpolateMeshData(inout VtHitData ht) {
     const int tri = floatBitsToInt(ht.uvt.w)-1;
-    //const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
+    const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
-    const bool_ validInterpolant = greaterEqualF(ht.uvt.z, 0.0f) & lessF(ht.uvt.z, INFINITY) & bool_(tri >= 0) & bool_(materials[tri] == ht.materialID);
+    const bool validInterpolant = ht.attribID > 0 && materials[tri] == ht.materialID;
     IFANY (validInterpolant) {
         [[unroll]]
         for (int i=0;i<ATTRIB_EXTENT;i++) {

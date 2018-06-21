@@ -55,17 +55,18 @@ namespace _vt {
         vtDevice->_pipelineCache = VkPipelineCache(_device.createPipelineCache(vk::PipelineCacheCreateInfo()));
 
         // make descriptor pool
+        size_t mult = 8;
         std::vector<vk::DescriptorPoolSize> dps = {
-            vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 8),
-            vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 32),
-            vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 32),
-            vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 256),
-            vk::DescriptorPoolSize(vk::DescriptorType::eSampler, 32),
-            vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 256),
-            vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 4),
-            vk::DescriptorPoolSize(vk::DescriptorType::eUniformTexelBuffer, 8),
+            vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 8 * mult),
+            vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 32 * mult),
+            vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 32 * mult),
+            vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 256 * mult),
+            vk::DescriptorPoolSize(vk::DescriptorType::eSampler, 32 * mult),
+            vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 256 * mult),
+            vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 4 * mult),
+            vk::DescriptorPoolSize(vk::DescriptorType::eUniformTexelBuffer, 8 * mult),
         };
-        vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(128).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size())));
+        vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(1024).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size())));
         vtDevice->_mainFamilyIndex = vtExtension.mainQueueFamily;
         vtDevice->_shadersPath = vtExtension.shaderPath;
 
