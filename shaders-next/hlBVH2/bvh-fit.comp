@@ -89,7 +89,7 @@ void main() {
         IFALL (globalID >= wsize) break;
 
         // add to queue list parent node
-        int idx = globalID < wsize ? exchange(LeafIndices[globalID], 0)-1 : -1;
+        int idx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
         if (idx >= 0) { Actives[aCounterInc()][cBuffer] = idx+1; }
     }
 
@@ -113,7 +113,7 @@ void main() {
             IFALL (globalID >= wsize) break;
 
             // unify boxes for parent
-            int idx = globalID < asize ? atomicExchange(Actives[globalID][1-cBuffer], 0)-1 : -1;
+            int idx = globalID < asize ? Actives[globalID][1-cBuffer]-1 : -1;
             if ( idx >= 0 ) { unifyNodeBox(idx); }
 
             // unify box for current and add parent
