@@ -49,7 +49,7 @@ void splitNode(inout int fID, inout int side) {
                 
                 // resolve branch
                 int hd = lCounterInc();
-                imageStore(bvhMeta, prID, ivec4(hd.xx+ivec2(0,1)+(1).xx, _pdata.zw+1));
+                imageStore(bvhMeta, prID, ivec4(hd.xx+ivec2(1,2), _pdata.zw+1));
                 imageStore(bvhMeta, hd+0, ivec4(transplit.xy, prID, -1)+1);
                 imageStore(bvhMeta, hd+1, ivec4(transplit.zw, prID, -1)+1);
 

@@ -16,14 +16,19 @@
 #include "../include/vertex.glsl"
 #include "./submodules/includes.glsl"
 
-void unifyNodeBox(const int idx){
+// optimize by shareds
+//shared mat4 _lrbox[WORK_SIZE_BND];
+//#define lrbox _lrbox[Local_Idx]
+//shared ivec4 _comp[WORK_SIZE_BND]; 
+//#define comp _comp[Local_Idx]
+
+void unifyNodeBox(inout int idx){
     // initial for unify box
-    ivec4 comp = imageLoad(bvhMeta, idx)-1; // meta of contributable
+    ivec2 comp = imageLoad(bvhMeta, idx).xy-1; // meta of contributable
     if (comp.x != comp.y && comp.x >= 0) {
-        int lft = comp.x, rgh = comp.x+1, sibid = lft >> 1;
 
         // get contributors boxes
-        mat4 lrbox = mat4(bvhBoxesWork[lft][0], bvhBoxesWork[rgh][0], bvhBoxesWork[lft][1], bvhBoxesWork[rgh][1]);
+        mat4 lrbox = mat4(bvhBoxesWork[comp.x][0], bvhBoxesWork[comp.y][0], bvhBoxesWork[comp.x][1], bvhBoxesWork[comp.y][1]);
 
         // contribute to current node
         bvhBoxesWork[idx] = vec4[2](min(lrbox[0], lrbox[1]), max(lrbox[2], lrbox[3]));
@@ -32,19 +37,19 @@ void unifyNodeBox(const int idx){
         lrbox = transpose(lrbox);
 
         // transposed save
-    #ifdef USE_F32_BVH
+#ifdef USE_F32_BVH
         fvec4_ resulting[4] = { fvec4_(lrbox[0]), fvec4_(lrbox[1]), fvec4_(lrbox[2]), fvec4_(lrbox[3]) };
-    #else
+#else
         uvec4 resulting[4] = {
             uvec4( packHalf16x4( fma(fvec4_(-1e-3f.xx, 1e-3f.xx), fvec4_(0.5f.xxxx), fvec4_(lrbox[0])) ), 0u, 0u),
             uvec4( packHalf16x4( fma(fvec4_(-1e-3f.xx, 1e-3f.xx), fvec4_(0.5f.xxxx), fvec4_(lrbox[1])) ), 0u, 0u),
             uvec4( packHalf16x4( fma(fvec4_(-1e-3f.xx, 1e-3f.xx), fvec4_(0.5f.xxxx), fvec4_(lrbox[2])) ), 0u, 0u),
             uvec4( packHalf16x4( fma(fvec4_(-1e-3f.xx, 1e-3f.xx), fvec4_(0.5f.xxxx), fvec4_(lrbox[3])) ), 0u, 0u)
         };
-    #endif
+#endif
 
         // store boxes for outputs
-        bvhBoxesResulting[sibid] = resulting;
+        bvhBoxesResulting[comp.x >> 1] = resulting;
     }
 }
 
@@ -53,31 +58,38 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 // shared memory counters
 shared int _counters[8];
 #define cBuffer _counters[3]
-
+#define asize _counters[7]
+#define wsize bvhBlock.leafCount
 // define function for increment
 initAtomicSubgroupIncFunction(_counters[0], aCounterInc, 1, int)
 
+
+#define lID Local_Idx
+#define wID gl_WorkGroupID.x
+#define gS gl_WorkGroupSize.x
+#define rng gS
+
+//const int wgs = 1;
 void main() {
-    const int gS = int(gl_WorkGroupSize.x);
-    const int wgs = 1;//int(gl_NumWorkGroups.x);
-    const int wID = int(gl_WorkGroupID.x);
-    const int lID = int(Local_Idx);
-    const int rng = gS*wgs;
+    //const int gS = int(gl_WorkGroupSize.x);
+    //const int wgs = 1;//int(gl_NumWorkGroups.x);
+    //const int wID = int(gl_WorkGroupID.x);
+    //const int lID = int(Local_Idx);
+    //const int rng = gS*wgs;
 
     // initial counters
-    LGROUP_BARRIER
     if (lID < 8) { _counters[lID] = 0; }
     LGROUP_BARRIER
 
     // move to work list
-    const int wsize = bvhBlock.leafCount;
-    for (int w=0;w<wsize;w+=rng) {
+    //const int wsize = bvhBlock.leafCount;
+    for (uint w=0;w<wsize;w+=rng) {
         SB_BARRIER
-        const int globalID = w + (wID * gS + lID);
+        const uint globalID = w + (wID * gS + lID);
         IFALL (globalID >= wsize) break;
 
         // add to queue list parent node
-        int idx = globalID < wsize ? atomicExchange(LeafIndices[globalID], 0)-1 : -1;
+        int idx = globalID < wsize ? exchange(LeafIndices[globalID], 0)-1 : -1;
         if (idx >= 0) { Actives[aCounterInc()][cBuffer] = idx+1; }
     }
 
@@ -85,22 +97,19 @@ void main() {
     LGROUP_BARRIER
 
     // upcoming to root node
-    [[unroll, dependency_length(4)]]
+    //[[unroll, dependency_length(4)]]
     for (int l=0;l<65536;l++) {
         // check activity counter
-        const int asize = _counters[0];
+        if (lID == 0) { asize = _counters[0]; cBuffer = 1-cBuffer; _counters[0] = 0; }
+        LGROUP_BARRIER
+
         IFALL (asize <= 0) break;
 
-        // switch buffer and reset counter
-        LGROUP_BARRIER
-        if (lID == 0) { cBuffer = 1-cBuffer; _counters[0] = 0; }
-        LGROUP_BARRIER
-
         // unify boxes when possible
-        for (int w=0;w<asize;w+=rng) {
+        for (uint w=0;w<asize;w+=rng) {
             SB_BARRIER
             
-            const int globalID = w + (wID * gS + lID);
+            const uint globalID = w + (wID * gS + lID);
             IFALL (globalID >= wsize) break;
 
             // unify boxes for parent
@@ -108,7 +117,7 @@ void main() {
             if ( idx >= 0 ) { unifyNodeBox(idx); }
 
             // unify box for current and add parent
-            int pid = idx >= 0 ? (imageLoad(bvhMeta, idx).z-1) : -1;
+            int pid = idx >= 0 ? imageLoad(bvhMeta, idx).z-1 : -1;
             if ( pid >= 0 && atomicCompSwap(Flags[pid], 0, 1) == 1 ) {
                 Actives[aCounterInc()][cBuffer] = pid+1; // add to contributors list
             }
@@ -117,6 +126,4 @@ void main() {
         // sync work
         LGROUP_BARRIER
     }
-
-    LGROUP_BARRIER
 }
