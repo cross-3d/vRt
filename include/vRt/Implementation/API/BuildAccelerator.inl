@@ -22,7 +22,8 @@ namespace _vt {
         for (auto& s : sets) { // update buffers by pushing constants
             s->_uniformBlock.inputID = cmdBuf->_vertexInputs.size();
             vkCmdUpdateBuffer(*cmdBuf, *s->_uniformBlockBuffer, 0, sizeof(s->_uniformBlock), &s->_uniformBlock);
-            fromHostCommandBarrier(*cmdBuf);
+            commandBarrier(*cmdBuf);
+            //fromHostCommandBarrier(*cmdBuf);
             cmdBuf->_vertexInputs.push_back(s);
         }; 
         return result;
@@ -40,6 +41,12 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexSet = vasSet;
         imageBarrier(*cmdBuf, vasSet->_attributeTexelBuffer);
+        return result;
+    }
+
+    VtResult cmdVertexAssemblyBarrier(VkCommandBuffer cmdBuf, std::shared_ptr<VertexAssemblySet>& vasSet) {
+        VtResult result = VK_SUCCESS;
+        imageBarrier(cmdBuf, vasSet->_attributeTexelBuffer);
         return result;
     }
 

@@ -33,7 +33,8 @@ namespace _vt {
 
         // upload constants to material sets
         vkCmdUpdateBuffer(*cmdBuf, *matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
-        fromHostCommandBarrier(*cmdBuf);
+        commandBarrier(*cmdBuf);
+        //fromHostCommandBarrier(*cmdBuf);
         cmdBuf->_materialSet = matrl;
 
         return result;
@@ -71,7 +72,9 @@ namespace _vt {
             rtset->_cuniform.iteration = i;
 
             // update uniform buffer of ray tracing steps
-            vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform); fromHostCommandBarrier(*cmdBuf);
+            vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform); 
+            //fromHostCommandBarrier(*cmdBuf);
+            commandBarrier(*cmdBuf);
 
             // reset counters of ray tracing
             cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
@@ -85,7 +88,9 @@ namespace _vt {
                 cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, 4096); // traverse BVH
                 cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), strided<uint32_t>(3), strided<uint32_t>(1)) });
                 cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, 4096); // interpolate intersections
-                vkCmdUpdateBuffer(*cmdBuf, *rtset->_countersBuffer, strided<uint32_t>(2), sizeof(uint32_t), &uzero); fromHostCommandBarrier(*cmdBuf);
+                vkCmdUpdateBuffer(*cmdBuf, *rtset->_countersBuffer, strided<uint32_t>(2), sizeof(uint32_t), &uzero);
+                commandBarrier(*cmdBuf);
+                //fromHostCommandBarrier(*cmdBuf);
             }
 
             // handling hits

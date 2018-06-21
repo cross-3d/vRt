@@ -76,6 +76,11 @@ namespace vt {
         return bindVertexAssembly(commandBuffer, vertexAssembly);
     };
 
+    inline VtResult vtCmdVertexAssemblyBarrier(VkCommandBuffer commandBuffer, VtVertexAssemblySet vertexAssembly) {
+        return cmdVertexAssemblyBarrier(commandBuffer, vertexAssembly);
+    };
+
+
 
     inline VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer /*,  */) {
         return buildVertexSet(commandBuffer);
