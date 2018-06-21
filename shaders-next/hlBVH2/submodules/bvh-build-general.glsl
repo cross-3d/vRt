@@ -1,4 +1,4 @@
-int cdelta( in int a, in int b ){
+int cdelta( inout int a, inout int b ){
     uvec2 acode = Mortoncodes[a], bcode = Mortoncodes[b];
 #if defined(INTEL_PLATFORM)
     int pfx = 32 + nlz(acode^bcode);
@@ -8,7 +8,7 @@ int cdelta( in int a, in int b ){
     return pfx + (pfx < 64 ? 0 : nlz(a^b));
 }
 
-int findSplit( in int left, in int right ) {
+int findSplit( inout int left, inout int right ) {
     int split = left, nstep = right - left, nsplit = split + nstep;
     int commonPrefix = cdelta(split, nsplit);
     if (commonPrefix >= 64 || nstep <= 1) { // if morton code equals or so small range
@@ -23,7 +23,7 @@ int findSplit( in int left, in int right ) {
     return clamp(split, left, right-1);
 }
 
-void splitNode(in int fID, in int side) {
+void splitNode(inout int fID, inout int side) {
     // select elements, include sibling
     int prID = fID + side;
 

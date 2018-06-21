@@ -30,11 +30,19 @@ initAtomicSubgroupIncFunction(_counters[2], cCounterDualInc, 2, int)
 int aCounterInc() { return _aCounterInc(cBuffer*4); }
 #define asize_ _counters[(1-cBuffer)*4]
 #define asize_inv_ _counters[cBuffer*4]
+#define asize _counters[7]
 
 #include "./submodules/bvh-build-general.glsl" // unified functions
 //const int largeStageThreshold = 1;
 
 layout ( local_size_x = WORK_SIZE_BND ) in;
+
+// rest shareds
+//shared uint _store[3][WORK_SIZE_BND];
+//#define gS _store[0][Local_Idx]
+//#define iT _store[1][Local_Idx]
+//#define uID _store[2][Local_Idx]
+
 
 // I have no idea for optimize registers
 void main() {
@@ -44,9 +52,10 @@ void main() {
 #define groupSize gl_WorkGroupSize.x
 
     // lane-based
-    const uint gS = groupSize >> 1;
-    const uint iT = threadID >> 1;
-    const int sD = int(threadID & 1);
+    //const uint gS = groupSize >> 1, iT = threadID >> 1;
+    uint gS = 0u, iT = 0u, uID = 0u;
+    gS = groupSize >> 1, iT = threadID >> 1;
+    int sD = int(threadID & 1);
 
     LGROUP_BARRIER
     if (threadID < 8) { _counters[threadID] = 0; }
@@ -60,10 +69,9 @@ void main() {
         //bvhMeta[hid+0] = ivec4(1, bvhBlock.leafCount, 0, 0);
         //bvhMeta[hid+1] = ivec4(0, 0, 0, 0);
         Actives[aCounterInc()][cBuffer] = hid+1;
+        asize = asize_inv_;
     }
-    LGROUP_BARRIER // stage sync
-
-    uint asize = asize_inv_;
+    
     LGROUP_BARRIER
 
     // building BVH
@@ -84,17 +92,18 @@ void main() {
             SB_BARRIER
 
             // index of node element
-            const uint uID = fT + iT; 
+            //const uint uID = fT + iT;
+            uID = fT + iT;
             
             // split prefixed elements
             IFALL (uID >= asize) break;
 
             // get spared prefix
-            const int fID = Actives[uID][1-cBuffer]-1;
+            int fID = Actives[uID][1-cBuffer]-1;
             if (sD == 0) Actives[uID][1-cBuffer] = 0;
 
             // split sibling nodes
-            [[flatten]]
+            //[[flatten]]
             if (uID < asize && fID >= 0) { splitNode(fID, sD); }
         }
 
@@ -103,17 +112,18 @@ void main() {
     }
 
     // copy rest actives
-    IFANY (cBuffer == 0 && asize > 0) {
+    /*IFANY (cBuffer == 0 && asize > 0) {
         for (uint fT = 0; fT<asize; fT+=groupSize) {
-            const uint uID = fT + threadID; // fit for every threads, don't compact here
+            //const uint uID = fT + threadID; // fit for every threads, don't compact here
+            uID = fT + threadID;
             Actives[uID][cBuffer] = Actives[uID][1-cBuffer];
         }
-    }
+    }*/
 
     // copy to external counters
-    LGROUP_BARRIER
+    //LGROUP_BARRIER
     if (threadID == 0) {
-        aCounter = int(asize);
+        aCounter = asize;
         lCounter = _counters[1];
         cCounter = _counters[2];
         aCounter2 = 0;
