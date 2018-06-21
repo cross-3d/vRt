@@ -85,9 +85,9 @@ namespace _vt {
 
             { // run traverse processing
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
-                cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, 4096); // traverse BVH
+                cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, INTENSIVITY); // traverse BVH
                 cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), strided<uint32_t>(3), strided<uint32_t>(1)) });
-                cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, 4096); // interpolate intersections
+                cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, INTENSIVITY); // interpolate intersections
                 vkCmdUpdateBuffer(*cmdBuf, *rtset->_countersBuffer, strided<uint32_t>(2), sizeof(uint32_t), &uzero);
                 commandBarrier(*cmdBuf);
                 //fromHostCommandBarrier(*cmdBuf);
@@ -96,8 +96,8 @@ namespace _vt {
             // handling hits
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             if (rtppl->_closestHitPipeline) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline, 4096);
-            if (rtppl->_missHitPipeline) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline, 4096);
-            if (rtppl->_resolvePipeline) cmdDispatch(*cmdBuf, rtppl->_resolvePipeline, 4096);
+            if (rtppl->_missHitPipeline) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline, INTENSIVITY);
+            if (rtppl->_resolvePipeline) cmdDispatch(*cmdBuf, rtppl->_resolvePipeline, INTENSIVITY);
         }
 
         return result;

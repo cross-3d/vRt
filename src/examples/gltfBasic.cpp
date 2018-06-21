@@ -224,7 +224,7 @@ void main() {
     for (auto& b : model.buffers) {
         VtDeviceBuffer buf;
         createBufferFast(deviceQueue, buf, b.data.size());
-        writeIntoBuffer(deviceQueue, b.data, buf);
+        if (b.data.size() > 0) writeIntoBuffer(deviceQueue, b.data, buf);
         VDataSpace.push_back(buf);
     }
     std::vector<VkBufferView> bviews; for (auto&b : VDataSpace) { bviews.push_back(b); };
@@ -350,7 +350,7 @@ void main() {
     {
         // initial matrices
         float scale = 10.0f;
-        auto atMatrix = glm::lookAt(glm::vec3(-1.f, 0.5f, 4.6f)*scale, glm::vec3(-1.f, 0.5f, 1.6f)*scale, glm::vec3(0.f, 1.f, 0.f));
+        auto atMatrix = glm::lookAt(glm::vec3(-1.f, 10.5f, 4.6f)*scale, glm::vec3(-1.f, 10.5f, 1.6f)*scale, glm::vec3(0.f, 1.f, 0.f));
         //auto atMatrix = glm::lookAt(glm::vec3(1.f, 0.f, 1.6f)*scale, glm::vec3(0.f, 0.f, 0.0f)*scale, glm::vec3(0.f, 1.f, 0.f));
         auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
 
@@ -688,7 +688,7 @@ void main() {
 
 
     // dispatch building accelerators and vertex internal data
-    //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+    vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
 
     // dispatch ray tracing
     //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
@@ -705,7 +705,7 @@ void main() {
         glfwPollEvents();
 
 
-        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+        //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
         vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
 

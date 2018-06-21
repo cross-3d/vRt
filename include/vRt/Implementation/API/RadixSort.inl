@@ -22,7 +22,7 @@ namespace _vt {
             cmdDispatch(*cmdBuf, radix->_histogramPipeline, WG_COUNT, RADICE_AFFINE);
             cmdDispatch(*cmdBuf, radix->_workPrefixPipeline);
             cmdDispatch(*cmdBuf, radix->_permutePipeline, WG_COUNT, RADICE_AFFINE);
-            cmdDispatch(*cmdBuf, radix->_copyhackPipeline, 4096);
+            cmdDispatch(*cmdBuf, radix->_copyhackPipeline, INTENSIVITY);
         }
         return result;
     }

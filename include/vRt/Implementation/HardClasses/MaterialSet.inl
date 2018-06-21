@@ -13,7 +13,6 @@ namespace _vt {
         vtMaterialSet->_device = _vtDevice;
 
         // planned variable size
-        auto rayCount = 4096 * 4096;
         {
             vtMaterialSet->_materialCount = info.materialCount;
 

@@ -24,6 +24,7 @@
 
 namespace _vt {
     constexpr auto DEFAULT_FENCE_TIMEOUT = 100000000000ll;
+    constexpr auto INTENSIVITY = 3840ull;
 
     template <typename T>
     inline auto sgn(T val) { return (T(0) < val) - (val < T(0)); }

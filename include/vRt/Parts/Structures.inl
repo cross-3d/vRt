@@ -42,7 +42,7 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
-        size_t maxRays = 4096ull * 2048ull;
+        size_t maxRays = 1920ull * 1200ull;
     };
 
     struct VtRayTracingPipelineCreateInfo {

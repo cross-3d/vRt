@@ -72,7 +72,7 @@ namespace _vt {
 
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             //vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
-            cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, 4096);
+            cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY);
             cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, vertx->_countersBuffer, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(1), strided<uint32_t>(1)) });
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         }
@@ -103,13 +103,13 @@ namespace _vt {
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 128); // calculate general box of BVH
         cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
-        cmdDispatch(*cmdBuf, acclb->_leafPipeline, 4096); // calculate node boxes and morton codes
+        cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes
         radixSort(cmdBuf, acclb->_sortDescriptorSet, vertx->_calculatedPrimitiveCount);
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_buildPipeline, 1); // just build hlBVH2
-        cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, 4096); // link leafs
+        cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
         cmdDispatch(*cmdBuf, acclb->_fitPipeline, 1);
-        //cmdDispatch(*cmdBuf, acclb->_fitPipeline, 4096); // fit BVH nodes
+        //cmdDispatch(*cmdBuf, acclb->_fitPipeline, INTENSIVITY); // fit BVH nodes
 
         return result;
     }
