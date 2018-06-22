@@ -81,6 +81,9 @@ namespace vt {
     };
 
 
+    inline VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, uint32_t inputSet) {
+        return updateVertexSet(commandBuffer, inputSet);
+    };
 
     inline VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer /*,  */) {
         return buildVertexSet(commandBuffer);

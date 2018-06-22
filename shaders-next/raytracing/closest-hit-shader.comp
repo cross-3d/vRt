@@ -197,7 +197,7 @@ void main() {
             }
 
             // additional validation of hit (hit point interpolated offset test)
-            if (!overflow) {
+            if (!overflow && hit.rayID > 0) {
                 int pid = hitID;
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT

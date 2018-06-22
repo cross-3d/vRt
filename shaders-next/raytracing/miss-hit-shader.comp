@@ -62,7 +62,7 @@ void main() {
             hitp.emission = vec4(vec3(0.05f, 0.05f, 0.2f), 1.f);
 
             // additional validation of hit (hit point interpolated offset test)
-            if (overflow && hit.rayID > 0) {
+            if (!overflow && hit.rayID > 0) {
                 int pid = hitID;
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT

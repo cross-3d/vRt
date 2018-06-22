@@ -62,6 +62,8 @@ namespace vt { // store in official namespace
     // bind accelerator structure for building/ray tracing
     extern inline VtResult vtCmdBindVertexAssembly(VtCommandBuffer commandBuffer, VtVertexAssemblySet vertexAssembly);
 
+    // update vertex assembly without needs to full rebuilding vertex set 
+    extern inline VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, uint32_t inputSet = 0);
 
     // pre-build vertex input in accelerator structure
     extern inline VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer /*,  */);

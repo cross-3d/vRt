@@ -26,7 +26,7 @@ void main(){
     const uint trp = 3;
 
     // for faster geometry loading, just add counter in single thread
-    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(tcounter[0], int(wsize)); }
+    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && vertexBlock.updateOnly == 0) { atomicAdd(tcounter[0], int(wsize)); }
     
     // process vertex assembly
     for (uint w=0;w<wsize;w+=rng) {

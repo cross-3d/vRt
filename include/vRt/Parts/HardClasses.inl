@@ -365,7 +365,8 @@ namespace _vt { // store in undercover namespace
         uint32_t inputID = 0;
 
         uint32_t materialAccessor = 0;
-        uint32_t reserved0 = 0, reserved1 = 0, reserved2 = 0;
+        uint32_t updateOnly = 0;
+        uint32_t reserved1 = 0, reserved2 = 0;
     };
 
 

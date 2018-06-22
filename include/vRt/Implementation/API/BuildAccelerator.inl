@@ -70,23 +70,24 @@ namespace _vt {
             uint32_t _bnd = _bndc++;
             auto iV = iV_.lock();
 
-            
-            
+            // native descriptor sets
             auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
 
+            // user defined descriptor sets
             auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
             for (auto &s : _bsets) { _sets.push_back(s); }
 
+            // bind descriptor sets
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
 
-
+            // update constants
             iV->_uniformBlock.inputID = _bnd;
+            iV->_uniformBlock.updateOnly = false;
             vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
-            commandBarrier(*cmdBuf); //fromHostCommandBarrier(*cmdBuf);
-            //vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            commandBarrier(*cmdBuf);
 
-
+            // assembly of part 
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY);
             cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, vertx->_countersBuffer, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(1), strided<uint32_t>(1)) });
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
@@ -96,6 +97,59 @@ namespace _vt {
 
         return result;
     }
+
+
+    // update region of vertex set by bound input set
+    VtResult updateVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t inputSet = 0) {
+        VtResult result = VK_SUCCESS;
+
+        // useless to updating
+        if (cmdBuf->_vertexInputs.size() <= 0) return result;
+
+        auto device = cmdBuf->_parent();
+        auto vertbd = device->_vertexAssembler;
+        auto vertx = cmdBuf->_vertexSet.lock();
+        
+        // by idea, don't need it
+        //imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
+
+        uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
+        for (auto& iV_ : cmdBuf->_vertexInputs) {
+            uint32_t _bnd = _bndc++;
+            if (_bnd > inputSet) break;
+            auto iV = iV_.lock();
+
+            if (_bnd == inputSet) {
+                // set counter ptr to 
+                vkCmdUpdateBuffer(*cmdBuf, *vertx->_countersBuffer, sizeof(uint32_t), sizeof(uint32_t), &calculatedPrimitiveCount);
+                commandBarrier(*cmdBuf);
+
+                // native descriptor sets
+                auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
+                std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
+
+                // user defined descriptor sets
+                auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
+                for (auto &s : _bsets) { _sets.push_back(s); }
+
+                // bind descriptor sets
+                vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+
+                // update constants
+                iV->_uniformBlock.inputID = _bnd;
+                iV->_uniformBlock.updateOnly = true;
+                vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+                commandBarrier(*cmdBuf);
+
+                // assembly of part 
+                cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY);
+            }
+            calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
+        }
+
+        return result;
+    }
+
 
 
     VtResult buildAccelerator(std::shared_ptr<CommandBuffer>& cmdBuf) {
