@@ -280,8 +280,7 @@ namespace _vt {
     template<class T>
     inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, const std::vector<T>& data, vk::Buffer dstBuffer, VkDeviceSize offset = 0) {
         vk::CommandBuffer(cmd).updateBuffer(dstBuffer, offset, data);
-        commandBarrier(cmd);
-        //fromHostCommandBarrier(cmd);
+        fromHostCommandBarrier(cmd);
         return VK_SUCCESS;
     }
 
@@ -290,8 +289,7 @@ namespace _vt {
     template<uint32_t Rv>
     inline VkResult cmdFillBuffer(VkCommandBuffer cmd, VkBuffer dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
         vk::CommandBuffer(cmd).fillBuffer(vk::Buffer(dstBuffer), offset, size, Rv);
-        commandBarrier(cmd);
-        //fromHostCommandBarrier(cmd);
+        fromHostCommandBarrier(cmd);
         return VK_SUCCESS;
     }
 

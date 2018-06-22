@@ -20,9 +20,8 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexInputs.resize(0);
         for (auto& s : sets) { // update buffers by pushing constants
-            s->_uniformBlock.inputID = cmdBuf->_vertexInputs.size();
-            vkCmdUpdateBuffer(*cmdBuf, *s->_uniformBlockBuffer, 0, sizeof(s->_uniformBlock), &s->_uniformBlock);
-            commandBarrier(*cmdBuf);
+            //s->_uniformBlock.inputID = cmdBuf->_vertexInputs.size();
+            //vkCmdUpdateBuffer(*cmdBuf, *s->_uniformBlockBuffer, 0, sizeof(s->_uniformBlock), &s->_uniformBlock);
             //fromHostCommandBarrier(*cmdBuf);
             cmdBuf->_vertexInputs.push_back(s);
         }; 
@@ -40,7 +39,7 @@ namespace _vt {
     VtResult bindVertexAssembly(std::shared_ptr<CommandBuffer>& cmdBuf, std::shared_ptr<VertexAssemblySet>& vasSet) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexSet = vasSet;
-        imageBarrier(*cmdBuf, vasSet->_attributeTexelBuffer);
+        //imageBarrier(*cmdBuf, vasSet->_attributeTexelBuffer);
         return result;
     }
 
@@ -53,17 +52,26 @@ namespace _vt {
 
     VtResult buildVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf) {
         VtResult result = VK_SUCCESS;
+
+        // useless to building
+        if (cmdBuf->_vertexInputs.size() <= 0) return result;
+        
+
         auto device = cmdBuf->_parent();
         auto vertbd = device->_vertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
+
+        imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
         cmdFillBuffer<0u>(*cmdBuf, *vertx->_countersBuffer);
         vertx->_calculatedPrimitiveCount = 0;
 
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto& iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
-
             auto iV = iV_.lock();
+
+            
+            
             auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
 
@@ -71,7 +79,14 @@ namespace _vt {
             for (auto &s : _bsets) { _sets.push_back(s); }
 
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+
+
+            iV->_uniformBlock.inputID = _bnd;
+            vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            commandBarrier(*cmdBuf); //fromHostCommandBarrier(*cmdBuf);
             //vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+
+
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY);
             cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, vertx->_countersBuffer, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(1), strided<uint32_t>(1)) });
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
@@ -89,6 +104,11 @@ namespace _vt {
         auto acclb = device->_acceleratorBuilder;
         auto accel = cmdBuf->_acceleratorSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
+
+        // build vertex if possible
+        if (vertx && cmdBuf->_vertexInputs.size() > 0) {
+            buildVertexSet(cmdBuf);
+        }
 
         // copy vertex assembly counter values
         cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 0), strided<uint32_t>(1)) });

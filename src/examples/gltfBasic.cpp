@@ -251,7 +251,7 @@ void main() {
     VtAcceleratorSet accelerator;
     VtVertexAssemblySet vertexAssembly;
     //VtVertexInputSet vertexInput, vertexInput2; // arrayed
-    VkCommandBuffer bCmdBuf, rtCmdBuf;
+    VkCommandBuffer bCmdBuf, rtCmdBuf, vxCmdBuf;
     VtDeviceBuffer rtUniformBuffer;
 
     // mesh list
@@ -350,7 +350,7 @@ void main() {
     {
         // initial matrices
         float scale = 10.0f;
-        auto atMatrix = glm::lookAt(glm::vec3(-1.f, 10.5f, 4.6f)*scale, glm::vec3(-1.f, 10.5f, 1.6f)*scale, glm::vec3(0.f, 1.f, 0.f));
+        auto atMatrix = glm::lookAt(glm::vec3(-1.f, 10.5f, 1.6f)*scale, glm::vec3(0.f, 10.5f, 1.6f)*scale, glm::vec3(0.f, 1.f, 0.f));
         //auto atMatrix = glm::lookAt(glm::vec3(1.f, 0.f, 1.6f)*scale, glm::vec3(0.f, 0.f, 0.0f)*scale, glm::vec3(0.f, 1.f, 0.f));
         auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
 
@@ -546,12 +546,24 @@ void main() {
 
     {
         // make accelerator and vertex builder command
+        vxCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
+        VtCommandBuffer qVxCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxCmdBuf, &qVxCmdBuf);
+        //vtCmdBindAccelerator(qVxCmdBuf, accelerator);
+        vtCmdBindVertexAssembly(qVxCmdBuf, vertexAssembly);
+        vtCmdBindVertexInputSets(qVxCmdBuf, inputs.size(), inputs.data());
+        vtCmdBuildVertexAssembly(qVxCmdBuf);
+        //vtCmdBuildAccelerator(qVxCmdBuf);
+        vkEndCommandBuffer(qVxCmdBuf);
+    }
+
+    {
+        // make accelerator and vertex builder command
         bCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
         vtCmdBindAccelerator(qBCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
         vtCmdBindVertexInputSets(qBCmdBuf, inputs.size(), inputs.data());
-        vtCmdBuildVertexAssembly(qBCmdBuf);
+        //vtCmdBuildVertexAssembly(qBCmdBuf);
         vtCmdBuildAccelerator(qBCmdBuf);
         vkEndCommandBuffer(qBCmdBuf);
     }
@@ -687,7 +699,12 @@ void main() {
     }
 
 
-    // dispatch building accelerators and vertex internal data
+    
+
+    // dispatch building vertex internal data
+    //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
+
+    // dispatch building accelerators
     vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
 
     // dispatch ray tracing
@@ -704,7 +721,7 @@ void main() {
     while (!glfwWindowShouldClose(appfw->window())) {
         glfwPollEvents();
 
-
+        //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
         //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
         vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
