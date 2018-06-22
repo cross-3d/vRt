@@ -84,10 +84,9 @@ layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM
 
 
 
-uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect){
-    int bufferView = accessors[accessorID].bufferView, bufferID = bufferViews[bufferView].regionID;
-    uint offseT = 0u;//bufferRegions[bufferID].byteOffset;
-    offseT += bufferViews[bufferView].byteOffset + accessors[accessorID].byteOffset; // calculate byte offset 
+uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) {
+    int bufferView = accessors[accessorID].bufferView;
+    uint offseT = bufferViews[bufferView].byteOffset + accessors[accessorID].byteOffset; // calculate byte offset 
     uint stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1) << bytecorrect); // get true stride 
     offseT += index * stride; // calculate structure indexed offset
     return offseT >> bytecorrect;

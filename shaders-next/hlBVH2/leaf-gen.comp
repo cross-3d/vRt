@@ -30,7 +30,7 @@ void main() {
         const int globalID = w + (wID * gS + lID);
         IFALL (globalID >= wsize) break;
 
-        const int tri = clamp(globalID, 0,  bvhBlock.primitiveCount-1);
+        const int tri = bvhBlock.primitiveOffset+clamp(globalID, 0,  bvhBlock.primitiveCount-1);
 
         const int itri = tri*3;//tri*9;
         mat3x4 triverts = mat3x4(

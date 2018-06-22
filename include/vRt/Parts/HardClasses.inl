@@ -190,6 +190,17 @@ namespace _vt { // store in undercover namespace
     };
 
 
+
+    
+
+    struct VtBvhBlock {
+        VtMat4 transform;
+        VtMat4 transformInv;
+        VtMat4 projection;
+        VtMat4 projectionInv;
+        int leafCount, primitiveCount, entryID, primitiveOffset;
+    };
+
     // accelerator store set
     class AcceleratorSet : public std::enable_shared_from_this<AcceleratorSet> {
     public:
@@ -199,8 +210,8 @@ namespace _vt { // store in undercover namespace
 
         // vertex and bvh export 
         std::shared_ptr<DeviceBuffer> _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
-        uint32_t _entryID = 0;
-
+        uint32_t _entryID = 0, _primitiveCount = -1, _primitiveOffset = 0;
+        VtBvhBlock _bvhBlockData;
 
         // build descriptor set 
         VkDescriptorSet _buildDescriptorSet;
@@ -208,8 +219,6 @@ namespace _vt { // store in undercover namespace
 
         // internal buffers
         std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
-
-
 
         operator VkDescriptorSet() const { return _descriptorSet; };
         std::shared_ptr<Device> _parent() const { return _device; };

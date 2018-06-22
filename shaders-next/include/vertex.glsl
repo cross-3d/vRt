@@ -49,7 +49,7 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
     mat4x4 transformInv;
     mat4x4 projection;
     mat4x4 projectionInv;
-    int leafCount, primitiveCount, entryID, r2;
+    int leafCount, primitiveCount, entryID, primitiveOffset;
 } bvhBlock;
 
 #define BVH_ENTRY bvhBlock.entryID
@@ -76,25 +76,24 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
 #define _SWIZV xyz
 
 const int WARPED_WIDTH = 2048;
-//const ivec2 mit[3] = {ivec2(0,0), ivec2(1,0), ivec2(0,1)};
-const ivec2 mit[3] = {ivec2( 0,1), ivec2(1,1), ivec2(1, 0)};
-//const vec2 mitf[3] = { vec2(-1,1),  vec2(1,1),  vec2(1,-1)};
+const ivec2 mit[3] = {ivec2(0,1), ivec2(1,1), ivec2(1,0)};
 
-ivec2 mosaicIdc(in ivec2 mosaicCoord, const int idc) {
+ivec2 mosaicIdc(in ivec2 mosaicCoord, const uint idc) {
+    mosaicCoord += mit[idc];
 #ifdef VERTEX_FILLING
     mosaicCoord.x %= int(imageSize(attrib_texture_out).x);
 #endif
-    return mosaicCoord + mit[idc];
+    return mosaicCoord;
 }
 
 ivec2 gatherMosaic(in ivec2 uniformCoord) {
     return ivec2(uniformCoord.x * 3 + uniformCoord.y % 3, uniformCoord.y);
 }
 
-vec4 fetchMosaic(in sampler2D vertices, in ivec2 mosaicCoord, const uint idc) {
+//vec4 fetchMosaic(in sampler2D vertices, in ivec2 mosaicCoord, const uint idc) {
     //return texelFetch(vertices, mosaicCoord + mit[idc], 0);
-    return textureLod(vertices, (vec2(mosaicCoord + mit[idc]) + 0.49999f) / textureSize(vertices, 0), 0); // supper native warping
-}
+    //return textureLod(vertices, (vec2(mosaicIdc(mosaicCoord, idc)) + 0.49999f) / textureSize(vertices, 0), 0); // supper native warping
+//}
 
 ivec2 getUniformCoord(in int indice) {
     return ivec2(indice % WARPED_WIDTH, indice / WARPED_WIDTH);
@@ -195,7 +194,7 @@ void interpolateMeshData(inout VtHitData ht) {
 
 #ifdef VERTEX_FILLING
 void storeAttribute(in ivec3 cdata, in vec4 fval) {
-    ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(int(cdata.x*ATTRIB_EXTENT+cdata.y)));
+    ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(cdata.x*ATTRIB_EXTENT+cdata.y));
     ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_, cdata.z), floatBitsToUint(fval));
 }
 

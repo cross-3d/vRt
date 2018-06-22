@@ -80,7 +80,8 @@ namespace _vt {
 
         // planned import from descriptor
         const auto& maxPrimitives = info.maxPrimitives;
-
+        vtAccelerator->_primitiveCount = info.primitiveCount;
+        vtAccelerator->_primitiveOffset = info.primitiveOffset;
         
         {
 

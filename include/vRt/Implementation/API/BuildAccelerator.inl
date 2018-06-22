@@ -164,10 +164,28 @@ namespace _vt {
             buildVertexSet(cmdBuf);
         }
 
+        const VtMat4 initialMat = {
+            { 1.f, 0.f, 0.f, 0.f },
+            { 0.f, 1.f, 0.f, 0.f },
+            { 0.f, 0.f, 1.f, 0.f },
+            { 0.f, 0.f, 0.f, 1.f },
+        };
+
         // copy vertex assembly counter values
-        cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 0), strided<uint32_t>(1)) });
-        cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 1), strided<uint32_t>(1)) });
-        vkCmdUpdateBuffer(*cmdBuf, *accel->_bvhBlockUniform, strided<uint32_t>(64 + 2), sizeof(uint32_t), &accel->_entryID);
+        //cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 0), strided<uint32_t>(1)) });
+        //cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 1), strided<uint32_t>(1)) });
+        //vkCmdUpdateBuffer(*cmdBuf, *accel->_bvhBlockUniform, strided<uint32_t>(64 + 2), sizeof(uint32_t), &accel->_entryID);
+
+        accel->_bvhBlockData.primitiveOffset = accel->_primitiveOffset;
+        accel->_bvhBlockData.leafCount = (accel->_primitiveCount != -1 ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount);
+        accel->_bvhBlockData.primitiveCount = (accel->_primitiveCount != -1 ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount);
+        accel->_bvhBlockData.entryID = accel->_entryID;
+        accel->_bvhBlockData.projection = initialMat;
+        accel->_bvhBlockData.projectionInv = initialMat;
+        accel->_bvhBlockData.transform = initialMat;
+        accel->_bvhBlockData.transformInv = initialMat;
+
+        vkCmdUpdateBuffer(*cmdBuf, *accel->_bvhBlockUniform, 0, sizeof(accel->_bvhBlockData), &accel->_bvhBlockData);
         commandBarrier(*cmdBuf);
 
         // building hlBVH2 process

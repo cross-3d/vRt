@@ -161,7 +161,7 @@ namespace vt { // store in official namespace
         size_t maxPrimitives = 1024u * 1024u;
         VkBuffer bvhMetaBuffer = nullptr;
         VkBuffer bvhBoxBuffer = nullptr;
-        uint32_t entryID = 0;
+        uint32_t entryID = 0, primitiveCount = -1, primitiveOffset = 0;
 
         //VtVertexAssemblySet vertexAssembly;
     };

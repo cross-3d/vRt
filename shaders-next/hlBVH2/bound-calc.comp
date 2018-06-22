@@ -26,7 +26,7 @@ bool validPrimitive(const mat3x4 triverts){
 }
 
 bbox getMinMaxPrimitive(in int idx) {
-    const int tri = clamp(idx, 0, bvhBlock.primitiveCount-1);
+    const int tri = bvhBlock.primitiveOffset+clamp(idx, 0, bvhBlock.primitiveCount-1);
     //const int itri = tri*9;
     const int itri = tri*3;
 

@@ -34,6 +34,10 @@ namespace vt { // store in official namespace
     struct VtVec2 { float x, y; };
     struct VtUVec2 { uint32_t x, y; };
 
+
+    struct VtMat4 { VtVec4 m0, m1, m2, m3; };
+
+
     // in future planned custom ray structures support
     // in current moment we will using 32-byte standard structuring
     struct VtRay {
