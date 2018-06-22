@@ -146,6 +146,7 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         auto& vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
         vtAccelerator->_device = _vtDevice;
+        vtAccelerator->_entryID = tiled(info.entryID, 2u)*2u; // unpreferred to make entry ID non power of 2
 
         // planned import from descriptor
         const auto& maxPrimitives = info.maxPrimitives;
@@ -170,13 +171,17 @@ namespace _vt {
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
-                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 4 * 2;
-                bfi.format = VK_FORMAT_R32G32B32A32_SINT;
-                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhMetaBuffer);
+                if (!info.bvhMetaBuffer) {
+                    bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 4 * 2;
+                    bfi.format = VK_FORMAT_R32G32B32A32_SINT;
+                    createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhMetaBuffer);
+                }
 
-                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16 * 2;
-                bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-                createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBoxBuffer);
+                if (!info.bvhBoxBuffer) {
+                    bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16 * 2;
+                    bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                    createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBoxBuffer);
+                }
 
                 bfi.bufferSize = sizeof(uint32_t) * 8 * 128;
                 bfi.format = VK_FORMAT_UNDEFINED;
@@ -184,11 +189,14 @@ namespace _vt {
             };
 
             {
+                auto metaView = info.bvhMetaBuffer ? vk::BufferView(info.bvhMetaBuffer) : vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView);
+                auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 0, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
+
                 auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {
-                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView)),
-                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView(&vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView)),
-                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo())),
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&metaView),
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView(&metaView),
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&boxBuffer),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_bvhBlockUniform->_descriptorInfo())),
                 };
                 vk::Device(*_vtDevice).updateDescriptorSets(writes, {});

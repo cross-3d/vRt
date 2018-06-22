@@ -199,6 +199,7 @@ namespace _vt { // store in undercover namespace
 
         // vertex and bvh export 
         std::shared_ptr<DeviceBuffer> _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
+        uint32_t _entryID = 0;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
         std::shared_ptr<Device> _parent() const { return _device; };

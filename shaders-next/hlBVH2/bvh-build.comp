@@ -58,7 +58,9 @@ void main() {
     int sD = int(threadID & 1);
 
     LGROUP_BARRIER
-    if (threadID < 8) { _counters[threadID] = 0; }
+    if (threadID < 8) { 
+        _counters[threadID] = threadID == 1 ? bvhBlock.entryID : 0;
+    }
     LGROUP_BARRIER
 
     // create initial (root) node

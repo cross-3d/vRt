@@ -167,6 +167,8 @@ namespace _vt {
         // copy vertex assembly counter values
         cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 0), strided<uint32_t>(1)) });
         cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 1), strided<uint32_t>(1)) });
+        vkCmdUpdateBuffer(*cmdBuf, *accel->_bvhBlockUniform, strided<uint32_t>(64 + 2), sizeof(uint32_t), &accel->_entryID);
+        commandBarrier(*cmdBuf);
 
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting

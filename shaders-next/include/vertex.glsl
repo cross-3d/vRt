@@ -49,10 +49,9 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
     mat4x4 transformInv;
     mat4x4 projection;
     mat4x4 projectionInv;
-    int leafCount, primitiveCount, r1, r2;
+    int leafCount, primitiveCount, entryID, r2;
 } bvhBlock;
 #endif
-
 
 // BVH Zone in ray tracing system
 #if (defined(ENABLE_VSTORAGE_DATA) && !defined(BVH_CREATION) && !defined(VERTEX_FILLING))
