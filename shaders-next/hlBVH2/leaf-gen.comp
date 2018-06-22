@@ -14,7 +14,7 @@
 #include "../include/morton.glsl"
 #include "./submodules/includes.glsl"
 
-initAtomicSubgroupIncFunction(nCounter, atomicIncLeaf, 1, int)
+//initAtomicSubgroupIncFunction(nCounter, atomicIncLeaf, 1, int)
 
 LOCAL_SIZE_LAYOUT;
 
