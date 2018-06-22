@@ -59,7 +59,7 @@ void main() {
 
     LGROUP_BARRIER
     if (threadID < 8) { 
-        _counters[threadID] = threadID == 1 ? bvhBlock.entryID : 0;
+        _counters[threadID] = 0;
     }
     LGROUP_BARRIER
 
@@ -81,10 +81,9 @@ void main() {
     for (int m=0;m<65536;m++) {
 
         // swap buffers emulation
-        if (threadID == 0) { cBuffer = 1-cBuffer; asize_inv_ = 0; }
+        if (threadID == 0) { cBuffer = 1-cBuffer; asize_inv_ = 0; asize = asize_; }
         LGROUP_BARRIER
-
-        asize = asize_;
+        
         //IFALL (asize >= (gS*largeStageThreshold) || asize <= 0) { break; }
         IFALL (asize <= 0) { break; } // remove count limiter
 

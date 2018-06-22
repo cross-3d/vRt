@@ -159,7 +159,7 @@ namespace vt { // store in official namespace
         const void* pNext = nullptr;
 
         size_t maxPrimitives = 1024u * 1024u;
-        VkBufferView bvhMetaBuffer = nullptr;
+        VkBuffer bvhMetaBuffer = nullptr;
         VkBuffer bvhBoxBuffer = nullptr;
         uint32_t entryID = 0;
 

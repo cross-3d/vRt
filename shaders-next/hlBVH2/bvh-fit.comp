@@ -100,7 +100,7 @@ void main() {
     //[[unroll, dependency_length(4)]]
     for (int l=0;l<65536;l++) {
         // check activity counter
-        if (lID == 0) { asize = _counters[0]; cBuffer = 1-cBuffer; _counters[0] = 0; }
+        if (lID == 0) { asize = exchange(_counters[0], 0); cBuffer = 1-cBuffer; }
         LGROUP_BARRIER
 
         IFALL (asize <= 0) break;

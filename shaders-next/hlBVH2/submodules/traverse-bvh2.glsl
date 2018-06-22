@@ -154,7 +154,7 @@ void traverseBvh2(in bool_ valid, in int eht) {
     traverseState.defTriangleID = -1;
     traverseState.distMult = dirlen;
     traverseState.diffOffset = 0.f;
-    traverseState.idx = SSC(valid) ? BVH_ENTRY : -1;
+    traverseState.idx = SSC(valid) ? 0 : -1;
 #ifdef USE_STACKLESS_BVH
     traverseState.bitStack = 0ul;
 #endif

@@ -172,15 +172,16 @@ namespace _vt {
 
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting
-        cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, *acclb->_mortonCodesBuffer);
-        cmdFillBuffer<0u>(*cmdBuf, *acclb->_countersBuffer); // reset counters
-        cmdFillBuffer<0u>(*cmdBuf, *acclb->_fitStatusBuffer);
-        std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
+        auto& bounder = accel;
+        cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, *bounder->_mortonCodesBuffer);
+        cmdFillBuffer<0u>(*cmdBuf, *bounder->_countersBuffer); // reset counters
+        cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);
+        std::vector<VkDescriptorSet> _sets = { bounder->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 128); // calculate general box of BVH
         cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
         cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes
-        radixSort(cmdBuf, acclb->_sortDescriptorSet, vertx->_calculatedPrimitiveCount);
+        radixSort(cmdBuf, bounder->_sortDescriptorSet, vertx->_calculatedPrimitiveCount);
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_buildPipeline, 1); // just build hlBVH2
         cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs

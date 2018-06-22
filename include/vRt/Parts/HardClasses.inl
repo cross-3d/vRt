@@ -201,6 +201,16 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
         uint32_t _entryID = 0;
 
+
+        // build descriptor set 
+        VkDescriptorSet _buildDescriptorSet;
+        VkDescriptorSet _sortDescriptorSet;
+
+        // internal buffers
+        std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
+
+
+
         operator VkDescriptorSet() const { return _descriptorSet; };
         std::shared_ptr<Device> _parent() const { return _device; };
     };
@@ -223,12 +233,15 @@ namespace _vt { // store in undercover namespace
         // static pipeline layout for stages 
         VkPipelineLayout _buildPipelineLayout, _traversePipelineLayout;
 
+
         // build descriptor set 
-        VkDescriptorSet _buildDescriptorSet;
-        VkDescriptorSet _sortDescriptorSet;
+        //VkDescriptorSet _buildDescriptorSet;
+        //VkDescriptorSet _sortDescriptorSet;
 
         // internal buffers
-        std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
+        //std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
+
+
 
         operator VkPipeline() const { return _dullPipeline; };
         std::shared_ptr<Device> _parent() const { return _device.lock(); };

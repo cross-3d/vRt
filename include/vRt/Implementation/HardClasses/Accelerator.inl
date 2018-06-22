@@ -30,8 +30,8 @@ namespace _vt {
 
                 // create pipeline layout
                 vtAccelerator->_buildPipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
-                auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-                vtAccelerator->_buildDescriptorSet = dsc[0];
+                //auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                //vtAccelerator->_buildDescriptorSet = dsc[0];
             };
 
             {
@@ -48,7 +48,43 @@ namespace _vt {
                 vtAccelerator->_traversePipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
             };
 
+
+
+            // create pipelines (planned to unify between accelerator instances)
             {
+                vtAccelerator->_shorthandPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::shorthand[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_boundingPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::outerBox[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_buildPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::builder[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_fitPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::fitBox[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_leafPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::genLeafs[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_leafLinkPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::linkLeafs[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_intersectionPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::traverse[vendorName], vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_interpolatorPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::interpolator[vendorName], vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
+            };
+        };
+
+
+
+
+        return result;
+    };
+
+
+
+
+    inline VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
+        VtResult result = VK_SUCCESS;
+        auto& vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
+        vtAccelerator->_device = _vtDevice;
+        vtAccelerator->_entryID = (info.entryID>>1u)<<1u; // unpreferred to make entry ID non power of 2
+
+        // planned import from descriptor
+        const auto& maxPrimitives = info.maxPrimitives;
+
+        
+        {
+
+            { // solve building BVH conflicts by creation in accelerator set
                 VtDeviceBufferCreateInfo bfi;
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
@@ -91,6 +127,14 @@ namespace _vt {
             };
 
             {
+                std::vector<vk::DescriptorSetLayout> dsLayouts = {
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2work"])
+                };
+
+                // create pipeline layout
+                auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                vtAccelerator->_buildDescriptorSet = dsc[0];
+
                 auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_buildDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(8).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_countersBuffer->_descriptorInfo())),
@@ -106,65 +150,24 @@ namespace _vt {
                 vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
             };
 
-            // create pipelines (planned to unify between accelerator instances)
+            // write radix sort descriptor sets
             {
-                vtAccelerator->_shorthandPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::shorthand[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_boundingPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::outerBox[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_buildPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::builder[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_fitPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::fitBox[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_leafPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::genLeafs[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_leafLinkPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::linkLeafs[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_intersectionPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::traverse[vendorName], vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_interpolatorPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::interpolator[vendorName], vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
-            };
-        };
-
-
-        // write radix sort descriptor sets
-        {
-            std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["radixSortBind"]),
-            };
-            auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-            vtAccelerator->_sortDescriptorSet = dsc[0];
-
-            auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_sortDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
-            std::vector<vk::WriteDescriptorSet> writes = {
-                vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonCodesBuffer->_descriptorInfo())), //unused
-                vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonIndicesBuffer->_descriptorInfo()))
-            };
-            vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
-        };
-
-        return result;
-    };
-
-
-
-
-    inline VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
-        VtResult result = VK_SUCCESS;
-        auto& vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
-        vtAccelerator->_device = _vtDevice;
-        vtAccelerator->_entryID = tiled(info.entryID, 2u)*2u; // unpreferred to make entry ID non power of 2
-
-        // planned import from descriptor
-        const auto& maxPrimitives = info.maxPrimitives;
-
-        // build BVH builder program
-        {
-            {
-                std::vector<vk::PushConstantRange> constRanges = {
-                    vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2))
-                };
                 std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"])
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["radixSortBind"]),
                 };
-
-                // create descriptor set
                 auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-                vtAccelerator->_descriptorSet = dsc[0];
+                vtAccelerator->_sortDescriptorSet = dsc[0];
+
+                auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_sortDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+                std::vector<vk::WriteDescriptorSet> writes = {
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonCodesBuffer->_descriptorInfo())), //unused
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonIndicesBuffer->_descriptorInfo()))
+                };
+                vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
             };
+
+
+
 
             {
                 VtDeviceBufferCreateInfo bfi;
@@ -188,9 +191,39 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBlockUniform);
             };
 
+            { // build BVH builder program
+                std::vector<vk::PushConstantRange> constRanges = {
+                    vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2))
+                };
+                std::vector<vk::DescriptorSetLayout> dsLayouts = {
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"])
+                };
+
+                // create descriptor set
+                auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                vtAccelerator->_descriptorSet = dsc[0];
+            };
+
             {
-                auto metaView = info.bvhMetaBuffer ? vk::BufferView(info.bvhMetaBuffer) : vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView);
-                auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 0, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
+                VkBufferView bvhMetaView;
+                if (info.bvhMetaBuffer) {
+                    VkBufferViewCreateInfo bvi;
+                    bvi.pNext = nullptr;
+                    bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+                    bvi.flags = {};
+                    bvi.buffer = info.bvhMetaBuffer;
+                    bvi.format = VK_FORMAT_R32G32B32A32_SINT;
+                    bvi.offset = 4 * sizeof(int32_t) * vtAccelerator->_entryID;
+                    bvi.range = VK_WHOLE_SIZE;
+                    if (vkCreateBufferView(_vtDevice->_device, &bvi, nullptr, &bvhMetaView) == VK_SUCCESS) {
+                        result = VK_SUCCESS;
+                    } else {
+                        result = VK_INCOMPLETE;
+                    };
+                }
+
+                auto metaView = info.bvhMetaBuffer ? vk::BufferView(bvhMetaView) : vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView);
+                auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 16 * sizeof(int32_t) * vtAccelerator->_entryID, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
 
                 auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {

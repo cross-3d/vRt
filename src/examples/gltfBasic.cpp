@@ -418,7 +418,7 @@ void main() {
     // create accelerator set
     VtAcceleratorSetCreateInfo acci;
     acci.maxPrimitives = 1024 * 1024;
-    acci.entryID = 0;
+    acci.entryID = 16;
     vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
 
 
