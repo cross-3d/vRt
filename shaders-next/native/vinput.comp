@@ -14,7 +14,7 @@
 
 LOCAL_SIZE_LAYOUT;
 
-initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
+//initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
 
 void main(){
     const uint wsize = uint(vertexBlock.primitiveCount);
@@ -26,7 +26,7 @@ void main(){
     const uint trp = 3;
 
     // for faster geometry loading, just add counter in single thread
-    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && vertexBlock.updateOnly == 0) { atomicAdd(tcounter[0], int(wsize)); }
+    //if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && vertexBlock.updateOnly == 0) { atomicAdd(tcounter[0], int(wsize)); }
     
     // process vertex assembly
     for (uint w=0;w<wsize;w+=rng) {
@@ -36,7 +36,7 @@ void main(){
 
             // constant material ID from vertex instance 
             uint matID = uint(vertexBlock.materialID);
-            uint ordr = tcounter[1] + globalID, tidc = ordr;//, tidc = tcounterInc(1);
+            uint ordr = vertexBlock.readOffset + globalID, tidc = ordr;//, tidc = tcounterInc(1);
 
             // read material accessor
             readByAccessorIndice(int(vertexBlock.materialAccessor), tidc, matID);

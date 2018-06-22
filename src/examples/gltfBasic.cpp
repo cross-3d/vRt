@@ -350,7 +350,7 @@ void main() {
     {
         // initial matrices
         float scale = 10.0f;
-        auto atMatrix = glm::lookAt(glm::vec3(-1.f, 10.5f, 1.6f)*scale, glm::vec3(0.f, 10.5f, 1.6f)*scale, glm::vec3(0.f, 1.f, 0.f));
+        auto atMatrix = glm::lookAt(glm::vec3(0.f, 10.5f, 1.6f)*scale, glm::vec3(-1.f, 10.5f, 1.6f)*scale, glm::vec3(0.f, 1.f, 0.f));
         //auto atMatrix = glm::lookAt(glm::vec3(1.f, 0.f, 1.6f)*scale, glm::vec3(0.f, 0.f, 0.0f)*scale, glm::vec3(0.f, 1.f, 0.f));
         auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
 

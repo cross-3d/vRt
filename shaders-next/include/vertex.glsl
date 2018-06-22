@@ -20,7 +20,7 @@
     #endif
 
     #ifdef VERTEX_FILLING
-    layout ( binding = 0, set = VTX_SET, std430   ) buffer tcounterB { int tcounter[2]; };
+    //layout ( binding = 0, set = VTX_SET, std430   ) buffer tcounterB { int tcounter[2]; };
     layout ( binding = 1, set = VTX_SET, std430   ) buffer materialsB { int materials[]; };
     layout ( binding = 2, set = VTX_SET, std430   ) buffer vordersB { int vorders[]; };
     #else

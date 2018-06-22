@@ -78,8 +78,9 @@ layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM
     uint inputID;
 
     uint materialAccessor;
-    uint updateOnly;
-    uint reserved1, reserved2;
+    uint updateOnly; // planned bitfields support
+    uint readOffset;
+    uint reserved2;
 } vertexBlock;
 
 

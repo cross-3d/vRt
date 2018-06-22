@@ -62,7 +62,7 @@ namespace _vt {
         auto vertx = cmdBuf->_vertexSet.lock();
 
         imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
-        cmdFillBuffer<0u>(*cmdBuf, *vertx->_countersBuffer);
+        //cmdFillBuffer<0u>(*cmdBuf, *vertx->_countersBuffer);
         vertx->_calculatedPrimitiveCount = 0;
 
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
@@ -84,12 +84,13 @@ namespace _vt {
             // update constants
             iV->_uniformBlock.inputID = _bnd;
             iV->_uniformBlock.updateOnly = false;
+            iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
             vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
             commandBarrier(*cmdBuf);
 
             // assembly of part 
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY);
-            cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, vertx->_countersBuffer, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(1), strided<uint32_t>(1)) });
+            //cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, vertx->_countersBuffer, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(1), strided<uint32_t>(1)) });
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         }
 
@@ -121,8 +122,8 @@ namespace _vt {
 
             if (_bnd == inputSet) {
                 // set counter ptr to 
-                vkCmdUpdateBuffer(*cmdBuf, *vertx->_countersBuffer, sizeof(uint32_t), sizeof(uint32_t), &calculatedPrimitiveCount);
-                commandBarrier(*cmdBuf);
+                //vkCmdUpdateBuffer(*cmdBuf, *vertx->_countersBuffer, sizeof(uint32_t), sizeof(uint32_t), &calculatedPrimitiveCount);
+                //commandBarrier(*cmdBuf);
 
                 // native descriptor sets
                 auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
@@ -138,6 +139,7 @@ namespace _vt {
                 // update constants
                 iV->_uniformBlock.inputID = _bnd;
                 iV->_uniformBlock.updateOnly = true;
+                iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
                 vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
                 commandBarrier(*cmdBuf);
 
