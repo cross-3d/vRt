@@ -29,16 +29,17 @@ layout ( binding = 7, set = 0, std430 )  buffer LeafIndicesB {
     int LeafIndices[];
 };
 
+
 layout ( binding = 8, set = 0, std430 )  buffer CountersB {
     int aCounter;
     int lCounter;
     int cCounter;
     int nCounter;
 
-    int aCounter2;
-    int lCounter2;
-    int cCounter2;
-    int nCounter2;
+    //int aCounter2;
+    //int lCounter2;
+    //int cCounter2;
+    //int nCounter2;
 };
 
 

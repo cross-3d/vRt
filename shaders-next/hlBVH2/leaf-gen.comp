@@ -44,7 +44,6 @@ void main() {
             divW(mult4(bvhBlock.transform, triverts[1])), 
             divW(mult4(bvhBlock.transform, triverts[2]))
         );
-        
 
 #ifdef VTX_TRANSPLIT
         // transpose VTX

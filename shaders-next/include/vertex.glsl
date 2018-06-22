@@ -51,6 +51,9 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
     mat4x4 projectionInv;
     int leafCount, primitiveCount, entryID, r2;
 } bvhBlock;
+
+#define BVH_ENTRY bvhBlock.entryID
+#define BVH_ENTRY_HALF (bvhBlock.entryID>>1)
 #endif
 
 // BVH Zone in ray tracing system
