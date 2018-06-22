@@ -90,7 +90,7 @@ namespace _vt {
 
             // handling hits
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            if (rtppl->_closestHitPipeline) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline, 4096);
+            if (rtppl->_closestHitPipeline) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline, INTENSIVITY);
             if (rtppl->_missHitPipeline) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline, INTENSIVITY);
             if (rtppl->_resolvePipeline) cmdDispatch(*cmdBuf, rtppl->_resolvePipeline, INTENSIVITY);
         }

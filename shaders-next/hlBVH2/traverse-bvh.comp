@@ -38,13 +38,12 @@ void main() {
 
         // do BVH traversing 
         currentRayTmp = rays[it]; // fix SPIR-V error
-        traverseBvh2(not(overflow));
+        int hid = vtFetchHitIdc(it);
+        traverseBvh2(not(overflow), hid);
 
         IF (not(overflow)) { // verify intersection
             const int triID = floatBitsToInt(geometrySpace.lastIntersection.w)-1;
-
-            // save hit
-            int hid = it;
+            if (hid < 0) hid = it;
 
 #ifdef DMA_HIT
             #define hit hits[hid]

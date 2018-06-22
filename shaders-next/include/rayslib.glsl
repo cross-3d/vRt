@@ -79,7 +79,7 @@ int makeAttribID(in int hAttribID, in int sub) {
 int vtEmitRays(in VtRay ray, in uvec2 c2d) {
     int rayID = atomicIncRayCount();
     rays[rayID] = ray; 
-    imageStore(rayLink, rayID, uvec4(0xFFFFFFFFu, p2x(c2d), 0u.xx));
+    imageStore(rayLink, rayID, uvec4(0u, p2x(c2d), 0u.xx));
     return rayID;
 }
 

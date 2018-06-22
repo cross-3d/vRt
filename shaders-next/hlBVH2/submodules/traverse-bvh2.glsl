@@ -123,11 +123,11 @@ void doIntersection() {
 }
 
 //void traverseBvh2(in bool_ valid, inout _RAY_TYPE rayIn) {
-void traverseBvh2(in bool_ valid) {
+void traverseBvh2(in bool_ valid, in int eht) {
     //currentRayTmp = rayIn;
     vec3 origin = currentRayTmp.origin.xyz;
     vec3 direct = dcts(currentRayTmp.cdirect.xy);
-    int eht = -1;
+    //int eht = -1;
 
     // reset stack
     stackPtr = 0, pagePtr = 0;
@@ -159,7 +159,7 @@ void traverseBvh2(in bool_ valid) {
     traverseState.bitStack = 0ul;
 #endif
 
-    geometrySpace.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);//eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO);
+    geometrySpace.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO);
     
 #ifdef USE_FAST_INTERSECTION
     geometrySpace.dir = vec4(direct, 1.f);
