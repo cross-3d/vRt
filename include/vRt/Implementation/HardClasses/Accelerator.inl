@@ -214,7 +214,7 @@ namespace _vt {
                     bvi.flags = {};
                     bvi.buffer = info.bvhMetaBuffer;
                     bvi.format = VK_FORMAT_R32G32B32A32_SINT;
-                    bvi.offset = 4 * sizeof(int32_t) * vtAccelerator->_entryID;
+                    bvi.offset = 4 * sizeof(int32_t) * info.bvhMetaOffset;
                     bvi.range = VK_WHOLE_SIZE;
                     if (vkCreateBufferView(_vtDevice->_device, &bvi, nullptr, &bvhMetaView) == VK_SUCCESS) {
                         result = VK_SUCCESS;
@@ -224,7 +224,7 @@ namespace _vt {
                 }
 
                 auto metaView = info.bvhMetaBuffer ? vk::BufferView(bvhMetaView) : vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView);
-                auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 16 * sizeof(int32_t) * vtAccelerator->_entryID, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
+                auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 16 * sizeof(int32_t) * info.bvhBoxOffset, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
 
                 auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {

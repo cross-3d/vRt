@@ -162,6 +162,7 @@ namespace vt { // store in official namespace
         VkBuffer bvhMetaBuffer = nullptr;
         VkBuffer bvhBoxBuffer = nullptr;
         uint32_t entryID = 0, primitiveCount = -1, primitiveOffset = 0;
+        uint32_t bvhMetaOffset = 0, bvhBoxOffset = 0;
 
         //VtVertexAssemblySet vertexAssembly;
     };

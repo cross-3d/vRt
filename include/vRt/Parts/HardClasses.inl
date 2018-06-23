@@ -198,7 +198,7 @@ namespace _vt { // store in undercover namespace
         VtMat4 transformInv;
         VtMat4 projection;
         VtMat4 projectionInv;
-        int leafCount, primitiveCount, entryID, primitiveOffset;
+        int leafCount = 0, primitiveCount = 0, entryID = 0, primitiveOffset = 0;
     };
 
     // accelerator store set

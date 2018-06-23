@@ -179,8 +179,8 @@ namespace _vt {
         //vkCmdUpdateBuffer(*cmdBuf, *accel->_bvhBlockUniform, strided<uint32_t>(64 + 2), sizeof(uint32_t), &accel->_entryID);
 
         accel->_bvhBlockData.primitiveOffset = accel->_primitiveOffset;
-        accel->_bvhBlockData.leafCount = (accel->_primitiveCount != -1 ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount);
-        accel->_bvhBlockData.primitiveCount = (accel->_primitiveCount != -1 ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount);
+        accel->_bvhBlockData.primitiveCount = (accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount;
+        accel->_bvhBlockData.leafCount = accel->_bvhBlockData.primitiveCount;
         accel->_bvhBlockData.entryID = accel->_entryID;
         accel->_bvhBlockData.projection = initialMat;
         accel->_bvhBlockData.projectionInv = initialMat;
@@ -201,7 +201,7 @@ namespace _vt {
         cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 128); // calculate general box of BVH
         cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
         cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes
-        radixSort(cmdBuf, bounder->_sortDescriptorSet, vertx->_calculatedPrimitiveCount);
+        radixSort(cmdBuf, bounder->_sortDescriptorSet, accel->_bvhBlockData.leafCount);
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_buildPipeline, 1); // just build hlBVH2
         cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
