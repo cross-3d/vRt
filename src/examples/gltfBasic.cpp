@@ -347,23 +347,29 @@ void main() {
         });
     }
 
-    {
-        // initial matrices
-        float scale = 10.0f;
-        auto atMatrix = glm::lookAt(glm::vec3(0.f, 10.5f, 1.6f)*scale, glm::vec3(-1.f, 10.5f, 1.6f)*scale, glm::vec3(0.f, 1.f, 0.f));
-        //auto atMatrix = glm::lookAt(glm::vec3(1.f, 0.f, 1.6f)*scale, glm::vec3(0.f, 0.f, 0.0f)*scale, glm::vec3(0.f, 1.f, 0.f));
-        auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
 
+
+    glm::vec3 eyePos = glm::vec3(0.f, 10.5f, 1.6f);
+    glm::vec3 viewVector = glm::vec3(1.f, 0.f, 0.f);
+    glm::vec3 moveVector = glm::vec3(1.f, 0.f, 0.f);
+
+    // initial matrices
+    float scale = 10.0f;
+    auto atMatrix = glm::lookAt(eyePos*scale, (eyePos+viewVector)*scale, glm::vec3(0.f, 1.f, 0.f));
+    //auto atMatrix = glm::lookAt(glm::vec3(1.f, 0.f, 1.6f)*scale, glm::vec3(0.f, 0.f, 0.0f)*scale, glm::vec3(0.f, 1.f, 0.f));
+    auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
+
+    // set first uniform buffer data
+    VtCameraUniform cameraUniformData;
+    cameraUniformData.projInv = glm::transpose(glm::inverse(pjMatrix));
+    cameraUniformData.camInv = glm::transpose(glm::inverse(atMatrix));
+    cameraUniformData.sceneRes = glm::vec4(1280.f, 720.f, 1.f, 1.f);
+    cameraUniformData.variant = 1;
+
+    {
         // create uniform buffer
         createBufferFast(deviceQueue, rtUniformBuffer, vte::strided<VtCameraUniform>(1));
-
-        // set first uniform buffer data
-        VtCameraUniform cameraUniformData;
-        cameraUniformData.projInv = glm::transpose(glm::inverse(pjMatrix));
-        cameraUniformData.camInv = glm::transpose(glm::inverse(atMatrix));
-        cameraUniformData.sceneRes = glm::vec4(1280.f, 720.f, 1.f, 1.f);
-        cameraUniformData.variant = 1;
-        writeIntoBuffer<VtCameraUniform>(deviceQueue, { cameraUniformData }, rtUniformBuffer, 0);
+        //writeIntoBuffer<VtCameraUniform>(deviceQueue, { cameraUniformData }, rtUniformBuffer, 0);
     }
 
     { 
@@ -573,6 +579,7 @@ void main() {
         // make ray tracing command buffer
         rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
+        //vkCmdUpdateBuffer(qRtCmdBuf, rtUniformBuffer, 0, sizeof(VtCameraUniform), &cameraUniformData);
         vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipeline);
         vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), materialSet);
         vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
@@ -700,7 +707,8 @@ void main() {
     }
 
 
-    
+
+
 
     // dispatch building vertex internal data
     //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
@@ -719,8 +727,25 @@ void main() {
     auto tIdle = std::chrono::high_resolution_clock::now();
     auto tPast = std::chrono::high_resolution_clock::now();
     auto tPastFramerateStreamF = 60.0;
+    auto tDiffF = 0.0;
+
     while (!glfwWindowShouldClose(appfw->window())) {
         glfwPollEvents();
+
+
+        
+        eyePos += float(tDiffF) * glm::normalize(moveVector)*0.001f;
+        
+
+        // spamming by update uniform value
+        auto atMatrix = glm::lookAt(eyePos*scale, (eyePos + viewVector)*scale, glm::vec3(0.f, 1.f, 0.f));
+        cameraUniformData.camInv = glm::transpose(glm::inverse(atMatrix));
+
+        // update start position
+        vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+            vkCmdUpdateBuffer(cmdBuf, rtUniformBuffer, 0, sizeof(VtCameraUniform), &cameraUniformData);
+        });
+
 
         //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
         //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
@@ -830,7 +855,7 @@ void main() {
         auto tDiff = tNow - tPast; tPast = tNow;
 
         std::stringstream tDiffStream;
-        auto tDiffF = double(tDiff.count()) * 1e-6;
+        tDiffF = double(tDiff.count()) * 1e-6;
         tDiffStream << std::fixed << std::setprecision(2) << tDiffF;
 
         std::stringstream tFramerateStream;
