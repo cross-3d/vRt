@@ -62,6 +62,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<AcceleratorHLBVH2> _acceleratorBuilder; // planned to rename
         std::shared_ptr<VertexAssemblyPipeline> _vertexAssembler;
         std::shared_ptr<BufferTraffic> _bufferTraffic;
+        VkPipeline _dullBarrier;
         //std::shared_ptr<CopyProgram> _copyProgram;
 
         // descriptor layout map in ray tracing system
@@ -162,7 +163,7 @@ namespace _vt { // store in undercover namespace
 
         // vertex and bvh export 
         std::shared_ptr<DeviceImage> _attributeTexelBuffer;
-        std::shared_ptr<DeviceBuffer> _verticeBuffer, _materialBuffer, _orderBuffer, _countersBuffer;
+        std::shared_ptr<DeviceBuffer> _verticeBuffer, _verticeBufferIn, _materialBuffer, _orderBuffer, _countersBuffer;
 
         // input of vertex source data
         std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs;

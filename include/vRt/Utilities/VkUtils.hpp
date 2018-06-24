@@ -90,6 +90,26 @@ namespace _vt {
 
 
     // general command buffer barrier
+    inline void commandBarrierAll(const VkCommandBuffer& cmdBuffer) {
+        VkMemoryBarrier memoryBarrier;
+        memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        memoryBarrier.pNext = nullptr;
+        memoryBarrier.srcAccessMask = VK_ACCESS_FLAG_BITS_MAX_ENUM;
+        memoryBarrier.dstAccessMask = VK_ACCESS_FLAG_BITS_MAX_ENUM;
+
+        vkCmdPipelineBarrier(
+            cmdBuffer,
+            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+            {}, //VK_DEPENDENCY_BY_REGION_BIT,
+            1, &memoryBarrier,
+            0, nullptr,
+            0, nullptr);
+    };
+
+
+
+    // general command buffer barrier
     inline void commandBarrier(const VkCommandBuffer& cmdBuffer) {
         VkMemoryBarrier memoryBarrier;
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -101,7 +121,7 @@ namespace _vt {
             cmdBuffer,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, 
-            VK_DEPENDENCY_BY_REGION_BIT,
+            {}, //VK_DEPENDENCY_BY_REGION_BIT,
             1, &memoryBarrier,
             0, nullptr,
             0, nullptr);
@@ -120,7 +140,7 @@ namespace _vt {
             cmdBuffer,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_HOST_BIT,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, 
-            VK_DEPENDENCY_BY_REGION_BIT,
+            {}, //VK_DEPENDENCY_BY_REGION_BIT,
             1, &memoryBarrier,
             0, nullptr,
             0, nullptr);
@@ -139,7 +159,7 @@ namespace _vt {
             cmdBuffer,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_HOST_BIT, 
-            VK_DEPENDENCY_BY_REGION_BIT,
+            {}, //VK_DEPENDENCY_BY_REGION_BIT,
             1, &memoryBarrier,
             0, nullptr,
             0, nullptr);
@@ -280,7 +300,7 @@ namespace _vt {
     template<class T>
     inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, const std::vector<T>& data, vk::Buffer dstBuffer, VkDeviceSize offset = 0) {
         vk::CommandBuffer(cmd).updateBuffer(dstBuffer, offset, data);
-        fromHostCommandBarrier(cmd);
+        //fromHostCommandBarrier(cmd);
         return VK_SUCCESS;
     }
 
@@ -289,7 +309,7 @@ namespace _vt {
     template<uint32_t Rv>
     inline VkResult cmdFillBuffer(VkCommandBuffer cmd, VkBuffer dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
         vk::CommandBuffer(cmd).fillBuffer(vk::Buffer(dstBuffer), offset, size, Rv);
-        fromHostCommandBarrier(cmd);
+        //fromHostCommandBarrier(cmd);
         return VK_SUCCESS;
     }
 

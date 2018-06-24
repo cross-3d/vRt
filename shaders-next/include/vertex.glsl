@@ -30,12 +30,15 @@
     #endif
 
     #if (defined(VERTEX_FILLING) || defined(VTX_TRANSPLIT))
-    layout ( binding = 3, set = VTX_SET, rgba32f  ) uniform imageBuffer lvtx;
-    #define TLOAD(img,t) imageLoad(img,t)
+    layout ( binding = 3, set = VTX_SET, rgba32f  ) uniform imageBuffer lvtxIn;
+    layout ( binding = 5, set = VTX_SET           ) uniform imageBuffer lvtx;
     #else
-    layout ( binding = 5, set = VTX_SET           ) uniform samplerBuffer lvtx;
-    #define TLOAD(img,t) texelFetch(img,t)
+    layout ( binding = 3, set = VTX_SET           ) readonly uniform imageBuffer lvtxIn;
+    layout ( binding = 5, set = VTX_SET, rgba32f  ) readonly uniform imageBuffer lvtx;
     #endif
+
+    //#define TLOAD_I(img,t) imageLoad(img,t)
+    #define TLOAD(img,t) imageLoad(img,t)
 
     layout ( binding = 4, set = VTX_SET, rgba32ui ) uniform uimage2D attrib_texture_out;
     
@@ -105,15 +108,17 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 #ifndef VERTEX_FILLING
 #ifndef BVH_CREATION
 #ifdef ENABLE_VSTORAGE_DATA
+
+#ifndef USE_FAST_INTERSECTION
 float intersectTriangle(const vec3 orig, const mat3 M, const int axis, const int tri, inout vec2 UV, in bool valid) {
     float T = INFINITY;
     IFANY (valid) {
         // gather patterns
         const int itri = tri*3;//tri*9;
         const mat3 ABC = mat3(
-            TLOAD(lvtx, itri+0).xyz-orig.xxx,
-            TLOAD(lvtx, itri+1).xyz-orig.yyy,
-            TLOAD(lvtx, itri+2).xyz-orig.zzz
+            TLOAD(lvtxIn, itri+0).xyz-orig.xxx,
+            TLOAD(lvtxIn, itri+1).xyz-orig.yyy,
+            TLOAD(lvtxIn, itri+2).xyz-orig.zzz
         )*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
@@ -128,14 +133,17 @@ float intersectTriangle(const vec3 orig, const mat3 M, const int axis, const int
     }
     return T;
 }
+#endif
 
+#ifdef USE_FAST_INTERSECTION
 float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout vec2 uv, in bool _valid) {
     const int itri = tri*3;//tri*9;
-    const mat3 vT = transpose(mat3(
-        TLOAD(lvtx, itri+0).xyz,
-        TLOAD(lvtx, itri+1).xyz,
-        TLOAD(lvtx, itri+2).xyz
-    ));
+    //const mat3 vT = transpose(mat3(
+    const mat3 vT = mat3(
+        TLOAD(lvtxIn, itri+0).xyz,
+        TLOAD(lvtxIn, itri+1).xyz,
+        TLOAD(lvtxIn, itri+2).xyz
+    );//));
     const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
     const vec3 h = cross(dir, e2);
     const float a = dot(e1,h);
@@ -157,6 +165,8 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
     if (!_valid) T = INFINITY;
     return T;
 }
+#endif
+
 #endif
 #endif
 #endif
@@ -199,7 +209,7 @@ void storeAttribute(in ivec3 cdata, in vec4 fval) {
 }
 
 void storePosition(in ivec2 cdata, in vec4 fval){
-    imageStore(lvtx, cdata.x*3+cdata.y, fval);
+    imageStore(lvtxIn, cdata.x*3+cdata.y, fval);
 }
 #endif
 

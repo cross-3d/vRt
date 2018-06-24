@@ -1,7 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-#define VTX_TRANSPLIT
+//#define VTX_TRANSPLIT
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 #define LEAF_GEN
@@ -34,9 +34,9 @@ void main() {
 
         const int itri = tri*3;//tri*9;
         mat3x4 triverts = mat3x4(
-            vec4(TLOAD(lvtx, itri+0).xyz, 1.f),
-            vec4(TLOAD(lvtx, itri+1).xyz, 1.f),
-            vec4(TLOAD(lvtx, itri+2).xyz, 1.f)
+            vec4(TLOAD(lvtxIn, itri+0).xyz, 1.f),
+            vec4(TLOAD(lvtxIn, itri+1).xyz, 1.f),
+            vec4(TLOAD(lvtxIn, itri+2).xyz, 1.f)
         );
 
         triverts = mat3x4(
@@ -45,12 +45,15 @@ void main() {
             divW(mult4(bvhBlock.transform, triverts[2]))
         );
 
+// (+) death mark 
+// FUCKING BULL-SHIT? 
+// TODO: separate input and outputs
 #ifdef VTX_TRANSPLIT
         // transpose VTX
         mat3x3 vtxL = transpose(mat3(
-            TLOAD(lvtx, itri+0).xyz,
-            TLOAD(lvtx, itri+1).xyz,
-            TLOAD(lvtx, itri+2).xyz
+            TLOAD(lvtxIn, itri+0).xyz,
+            TLOAD(lvtxIn, itri+1).xyz,
+            TLOAD(lvtxIn, itri+2).xyz
         ));
 
         { // transpose type

@@ -135,7 +135,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // order buffer (unused)
                 vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // writable vertices
                 vk::DescriptorSetLayoutBinding(4 , vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eCompute), // writable attributes
-                vk::DescriptorSetLayoutBinding(5 , vk::DescriptorType::eUniformTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // readonly vertices
+                vk::DescriptorSetLayoutBinding(5 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // readonly vertices
                 vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute), // readonly attributes
             };
             vtDevice->_descriptorLayoutMap["vertexData"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
@@ -196,6 +196,12 @@ namespace _vt {
         createRadixSort(vtDevice, vtExtension, vtDevice->_radixSort);
         createVertexAssemblyPipeline(vtDevice, simfo, vtDevice->_vertexAssembler);
         createAcceleratorHLBVH2(vtDevice, vtExtension, vtDevice->_acceleratorBuilder);
+
+        // create dull barrier pipeline
+        auto rng = vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2));
+        auto ppl = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, 0, nullptr, 0, nullptr));
+        vtDevice->_dullBarrier = createComputeMemory(VkDevice(*_vtDevice), natives::dullBarrier[vtDevice->_vendorName], ppl, VkPipelineCache(*_vtDevice));
+
         return result;
     };
 

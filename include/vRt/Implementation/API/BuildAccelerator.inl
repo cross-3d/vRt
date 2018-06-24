@@ -20,11 +20,8 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexInputs.resize(0);
         for (auto& s : sets) { // update buffers by pushing constants
-            //s->_uniformBlock.inputID = cmdBuf->_vertexInputs.size();
-            //vkCmdUpdateBuffer(*cmdBuf, *s->_uniformBlockBuffer, 0, sizeof(s->_uniformBlock), &s->_uniformBlock);
-            //fromHostCommandBarrier(*cmdBuf);
             cmdBuf->_vertexInputs.push_back(s);
-        }; 
+        };
         return result;
     }
 
@@ -39,7 +36,6 @@ namespace _vt {
     VtResult bindVertexAssembly(std::shared_ptr<CommandBuffer>& cmdBuf, std::shared_ptr<VertexAssemblySet>& vasSet) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexSet = vasSet;
-        //imageBarrier(*cmdBuf, vasSet->_attributeTexelBuffer);
         return result;
     }
 
@@ -50,19 +46,25 @@ namespace _vt {
     }
 
 
+
+
+    VtResult cmdBarrierAggregated(std::shared_ptr<CommandBuffer>& cmdBuf) {
+        auto device = cmdBuf->_parent();
+        cmdDispatch(*cmdBuf, device->_dullBarrier);
+        return VK_SUCCESS;
+    }
+
     VtResult buildVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf) {
         VtResult result = VK_SUCCESS;
 
         // useless to building
         if (cmdBuf->_vertexInputs.size() <= 0) return result;
-        
 
         auto device = cmdBuf->_parent();
         auto vertbd = device->_vertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
 
         imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
-        //cmdFillBuffer<0u>(*cmdBuf, *vertx->_countersBuffer);
         vertx->_calculatedPrimitiveCount = 0;
 
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
@@ -78,30 +80,25 @@ namespace _vt {
             auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
             for (auto &s : _bsets) { _sets.push_back(s); }
 
-            // bind descriptor sets
-            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
-
             // update constants
             iV->_uniformBlock.inputID = _bnd;
             iV->_uniformBlock.updateOnly = false;
             iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
+            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
             vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
             commandBarrier(*cmdBuf);
 
             // assembly of part 
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY);
-            //cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, vertx->_countersBuffer, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(1), strided<uint32_t>(1)) });
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         }
 
         vertx->_calculatedPrimitiveCount = calculatedPrimitiveCount;
-
         return result;
     }
 
-
     // update region of vertex set by bound input set
-    VtResult updateVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t inputSet = 0) {
+    VtResult updateVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t inputSet = 0, bool multiple = false) {
         VtResult result = VK_SUCCESS;
 
         // useless to updating
@@ -110,20 +107,14 @@ namespace _vt {
         auto device = cmdBuf->_parent();
         auto vertbd = device->_vertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
-        
-        // by idea, don't need it
-        //imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
 
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto& iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
-            if (_bnd > inputSet) break;
+            if (_bnd > inputSet && !multiple) break;
             auto iV = iV_.lock();
 
-            if (_bnd == inputSet) {
-                // set counter ptr to 
-                //vkCmdUpdateBuffer(*cmdBuf, *vertx->_countersBuffer, sizeof(uint32_t), sizeof(uint32_t), &calculatedPrimitiveCount);
-                //commandBarrier(*cmdBuf);
+            if (_bnd == inputSet || multiple) {
 
                 // native descriptor sets
                 auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
@@ -133,13 +124,11 @@ namespace _vt {
                 auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
                 for (auto &s : _bsets) { _sets.push_back(s); }
 
-                // bind descriptor sets
-                vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
-
                 // update constants
                 iV->_uniformBlock.inputID = _bnd;
                 iV->_uniformBlock.updateOnly = true;
                 iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
+                vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
                 vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
                 commandBarrier(*cmdBuf);
 
@@ -152,8 +141,6 @@ namespace _vt {
         return result;
     }
 
-
-
     VtResult buildAccelerator(std::shared_ptr<CommandBuffer>& cmdBuf) {
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
@@ -163,7 +150,8 @@ namespace _vt {
 
         // build vertex if possible
         if (vertx && cmdBuf->_vertexInputs.size() > 0) {
-            buildVertexSet(cmdBuf);
+            //buildVertexSet(cmdBuf);
+            updateVertexSet(cmdBuf);
         }
 
         const VtMat4 initialMat = {
@@ -173,11 +161,7 @@ namespace _vt {
             { 0.f, 0.f, 0.f, 1.f },
         };
 
-        // copy vertex assembly counter values
-        //cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 0), strided<uint32_t>(1)) });
-        //cmdCopyBuffer(*cmdBuf, vertx->_countersBuffer, accel->_bvhBlockUniform, { vk::BufferCopy(strided<uint32_t>(0), strided<uint32_t>(64 + 1), strided<uint32_t>(1)) });
-        //vkCmdUpdateBuffer(*cmdBuf, *accel->_bvhBlockUniform, strided<uint32_t>(64 + 2), sizeof(uint32_t), &accel->_entryID);
-
+        //cmdBarrierAggregated(cmdBuf);
         accel->_bvhBlockData.primitiveOffset = accel->_primitiveOffset;
         accel->_bvhBlockData.primitiveCount = (accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount;
         accel->_bvhBlockData.leafCount = accel->_bvhBlockData.primitiveCount;
@@ -186,9 +170,7 @@ namespace _vt {
         accel->_bvhBlockData.projectionInv = initialMat;
         accel->_bvhBlockData.transform = initialMat;
         accel->_bvhBlockData.transformInv = initialMat;
-
         vkCmdUpdateBuffer(*cmdBuf, *accel->_bvhBlockUniform, 0, sizeof(accel->_bvhBlockData), &accel->_bvhBlockData);
-        commandBarrier(*cmdBuf);
 
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting
@@ -196,6 +178,8 @@ namespace _vt {
         cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, *bounder->_mortonCodesBuffer);
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_countersBuffer); // reset counters
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);
+        commandBarrier(*cmdBuf);
+
         std::vector<VkDescriptorSet> _sets = { bounder->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 128); // calculate general box of BVH

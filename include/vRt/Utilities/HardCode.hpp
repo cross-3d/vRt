@@ -208,6 +208,23 @@ namespace _vt {
 #include "../HardCodes/universal/native/vinput.comp.inl"
         } },
         };
+
+
+        inline static std::map<VtVendor, std::vector<uint32_t>> dullBarrier = {
+            { VT_VENDOR_AMD,{
+#include "../HardCodes/amd/native/dull.comp.inl"
+        } },
+        { VT_VENDOR_NVIDIA,{
+#include "../HardCodes/nvidia/native/dull.comp.inl"
+        } },
+        { VT_VENDOR_INTEL,{
+#include "../HardCodes/intel/native/dull.comp.inl"
+        } },
+        { VT_VENDOR_UNIVERSAL,{
+#include "../HardCodes/universal/native/dull.comp.inl"
+        } },
+        };
+
     }
 
 };

@@ -569,7 +569,7 @@ void main() {
         VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
         vtCmdBindAccelerator(qBCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
-        vtCmdBindVertexInputSets(qBCmdBuf, inputs.size(), inputs.data());
+        //vtCmdBindVertexInputSets(qBCmdBuf, inputs.size(), inputs.data());
         //vtCmdBuildVertexAssembly(qBCmdBuf);
         vtCmdBuildAccelerator(qBCmdBuf);
         vkEndCommandBuffer(qBCmdBuf);
@@ -711,10 +711,10 @@ void main() {
 
 
     // dispatch building vertex internal data
-    //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
+    vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
 
     // dispatch building accelerators
-    vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+    //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
 
     // dispatch ray tracing
     //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
@@ -748,7 +748,7 @@ void main() {
 
 
         //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
-        //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
         vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
 

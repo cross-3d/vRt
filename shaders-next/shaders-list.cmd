@@ -34,6 +34,7 @@ start /b /wait glslangValidator %CFLAGSV% %INDIR%%RNDR%miss-hit-shader.comp    -
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%RNDR%resolve-shader.comp     -o %OUTDIR%%RNDR%resolve-shader.comp.spv
 
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%vinput.comp       -x -o %HRDDIR%%NTVE%vinput.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%dull.comp         -x -o %HRDDIR%%NTVE%dull.comp.inl
 
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bound-calc.comp   -x -o %HRDDIR%%HLBV%bound-calc.comp.inl
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-build.comp    -x -o %HRDDIR%%HLBV%bvh-build.comp.inl 
