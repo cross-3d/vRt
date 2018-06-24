@@ -48,9 +48,9 @@ void main() {
             const int itri = triID*3;
             //const mat3 vT = transpose(mat3(
             const mat3 vT = mat3(
-                TLOAD(lvtx, itri+0).xyz,
-                TLOAD(lvtx, itri+1).xyz,
-                TLOAD(lvtx, itri+2).xyz
+                TLOAD(lvtxIn, itri+0).xyz,
+                TLOAD(lvtxIn, itri+1).xyz,
+                TLOAD(lvtxIn, itri+2).xyz
             );//));
             
             // interpolate hit
