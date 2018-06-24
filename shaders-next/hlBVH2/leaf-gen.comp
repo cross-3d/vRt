@@ -82,8 +82,8 @@ void main() {
             //int to = atomicIncLeaf();
             int to = globalID; //atomicIncLeaf();
 
-            bounding.mn -= 1e-5f.xxxx;
-            bounding.mx += 1e-5f.xxxx;
+            bounding.mn -= 1e-4f.xxxx;
+            bounding.mx += 1e-4f.xxxx;
 
             // gen leaf
             HlbvhNode outLeaf = Leafs[to];

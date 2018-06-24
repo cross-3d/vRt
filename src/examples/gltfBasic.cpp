@@ -460,6 +460,7 @@ void main() {
             vtii.indiceAccessor = -1;
             vtii.topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
 
+
             for (auto& attr: prim.attributes) { //attr
                 if (attr.first.compare("POSITION") == 0) {
                     vtii.verticeAccessor = attr.second;
@@ -474,9 +475,11 @@ void main() {
                 }
             }
 
+
+
             tinygltf::Accessor &idcAccessor = model.accessors[prim.indices];
             vtii.indiceAccessor = prim.indices;
-            vtii.attributeCount = prim.attributes.size();
+            vtii.attributeCount = attributes.size() - attribOffset;
             vtii.primitiveCount = idcAccessor.count / 3;
             vtii.materialID = prim.material;
             vtii.pSourceBuffers = bviews.data();

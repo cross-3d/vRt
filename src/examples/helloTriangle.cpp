@@ -470,8 +470,8 @@ void main() {
         vtCmdBindAccelerator(qBCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
         std::vector<VtVertexInputSet> vsets = { vertexInput2, vertexInput };
-        vtCmdBindVertexInputSets(qBCmdBuf, vsets.size(), vsets.data());
-        //vtCmdBindVertexInputSets(qBCmdBuf, 1, &vertexInput);
+        //vtCmdBindVertexInputSets(qBCmdBuf, vsets.size(), vsets.data());
+        vtCmdBindVertexInputSets(qBCmdBuf, 1, &vertexInput);
         vtCmdBuildVertexAssembly(qBCmdBuf);
         vtCmdBuildAccelerator(qBCmdBuf);
         vkEndCommandBuffer(qBCmdBuf);

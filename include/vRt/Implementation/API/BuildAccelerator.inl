@@ -66,6 +66,8 @@ namespace _vt {
 
         imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
         vertx->_calculatedPrimitiveCount = 0;
+        
+        
 
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto& iV_ : cmdBuf->_vertexInputs) {
