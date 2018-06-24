@@ -27,7 +27,7 @@ void splitNode(inout int fID, inout int side) {
     // select elements, include sibling
     int prID = fID + side;
 
-    //[[flatten]]
+    [[flatten]]
     if (prID >= 0 && fID >= 0) {
         // initial box and refit status
         //bvhBoxesWork[prID] = vec4[2](100000.f.xxxx, -100000.f.xxxx); // initial AABB
@@ -36,10 +36,10 @@ void splitNode(inout int fID, inout int side) {
         // splitting nodes
         ivec4 _pdata = imageLoad(bvhMeta, prID)-1;
 
-        //[[flatten]]
+        [[flatten]]
         if (_pdata.x >= 0 && _pdata.y >= 0) {
 
-            //[[flatten]]
+            [[flatten]]
             if (_pdata.y != _pdata.x) {
 
                 // find split
@@ -55,11 +55,11 @@ void splitNode(inout int fID, inout int side) {
 
                 // add prefix to next task
                 Actives[aCounterInc()][cBuffer] = hd+1;
-            } 
+            } else {
 
             // if leaf, add to leaf list
             //[[flatten]]
-            if (_pdata.y == _pdata.x) {
+            //if (_pdata.y == _pdata.x) {
                 LeafIndices[cCounterInc()] = prID+1;
             }
         }

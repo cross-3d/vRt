@@ -19,35 +19,34 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    const int wsize =  bvhBlock.primitiveCount;
-    const int gS = int(gl_WorkGroupSize.x);
-    const int wgs = int(gl_NumWorkGroups.x);
-    const int wID = int(gl_WorkGroupID.x);
-    const int lID = int(Local_Idx);
-    const int rng = gS*wgs;
-    for (int w=0;w<wsize;w+=rng) {
+    //const int wsize =  bvhBlock.primitiveCount;
+    //const int gS = int(gl_WorkGroupSize.x);
+    //const int wgs = int(gl_NumWorkGroups.x);
+    //const int wID = int(gl_WorkGroupID.x);
+    //const int lID = int(Local_Idx);
+#define wsize bvhBlock.primitiveCount
+#define gS gl_WorkGroupSize.x
+#define wgs gl_NumWorkGroups.x
+#define wID gl_WorkGroupID.x
+#define lID Local_Idx
+
+    const uint rng = gS*wgs;
+    for (uint w=0;w<wsize;w+=rng) {
         SB_BARRIER
-        const int globalID = w + (wID * gS + lID);
+        const uint globalID = w + (wID * gS + lID);
         IFALL (globalID >= wsize) break;
 
-        const int tri = bvhBlock.primitiveOffset+clamp(globalID, 0,  bvhBlock.primitiveCount-1);
-
-        const int itri = tri*3;//tri*9;
-        mat3x4 triverts = mat3x4(
-            vec4(TLOAD(lvtxIn, itri+0).xyz, 1.f),
-            vec4(TLOAD(lvtxIn, itri+1).xyz, 1.f),
-            vec4(TLOAD(lvtxIn, itri+2).xyz, 1.f)
-        );
-
-        triverts = mat3x4(
-            divW(mult4(bvhBlock.transform, triverts[0])), 
-            divW(mult4(bvhBlock.transform, triverts[1])), 
-            divW(mult4(bvhBlock.transform, triverts[2]))
+        const uint tri = bvhBlock.primitiveOffset+clamp(globalID, 0, bvhBlock.primitiveCount-1); int itri = int(tri*3);
+        const mat3x4 triverts = mat3x4(
+            divW(mult4(bvhBlock.transform, vec4(TLOAD(lvtxIn, itri+0).xyz, 1.f))),
+            divW(mult4(bvhBlock.transform, vec4(TLOAD(lvtxIn, itri+1).xyz, 1.f))),
+            divW(mult4(bvhBlock.transform, vec4(TLOAD(lvtxIn, itri+2).xyz, 1.f)))
         );
 
 // (+) death mark 
 // FUCKING BULL-SHIT? 
 // TODO: separate input and outputs
+
 #ifdef VTX_TRANSPLIT
         // transpose VTX
         mat3x3 vtxL = transpose(mat3(
@@ -63,9 +62,6 @@ void main() {
         }
 #endif
 
-        // get bounding
-        bbox bounding = calcTriBox(triverts);
-
         // view based 
         vec4 bcenter = (triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f;
 
@@ -76,25 +72,21 @@ void main() {
 #else
         encodeMorton3_64(clamp(uvec3(floor(fma(bcenter.xyz, 0.5f.xxx, 0.5f.xxx)*2097152.0f)), uvec3(0), uvec3(0x1FFFFF)));
 #endif
-        
+
+#define to globalID
+
+        // gen leaf
+        HlbvhNode outLeaf = Leafs[to];
+        outLeaf.lbox = calcTriBox(triverts);
+        outLeaf.pdata.xy = ivec2(to);
+        outLeaf.pdata.zw = ivec2(-1, tri+1);
+
+        // store leaf data
+        [[flatten]]
         if (globalID < wsize && globalID >= 0) {
-            // allocate index
-            //int to = atomicIncLeaf();
-            int to = globalID; //atomicIncLeaf();
-
-            bounding.mn -= 1e-4f.xxxx;
-            bounding.mx += 1e-4f.xxxx;
-
-            // gen leaf
-            HlbvhNode outLeaf = Leafs[to];
-            outLeaf.lbox = bounding;
-            outLeaf.pdata.xy = ivec2(to);
-            outLeaf.pdata.zw = ivec2(-1, tri+1);
-
-            // store leaf data
             Leafs[to] = outLeaf;
             Mortoncodes[to] = mortonCode;
-            MortoncodesIndices[to] = to+1;
+            MortoncodesIndices[to] = int(to+1);
         }
     }
 

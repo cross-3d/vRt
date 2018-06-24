@@ -58,7 +58,7 @@ bbox calcTriBox(in mat3x4 triverts) {
     bbox result;
     result.mn = min3_wrap(triverts[0], triverts[1], triverts[2]);
     result.mx = max3_wrap(triverts[0], triverts[1], triverts[2]);
-    result.mn -= 1e-5f;
-    result.mx += 1e-5f;
+    result.mn -= 1e-4f;
+    result.mx += 1e-4f;
     return result;
 }

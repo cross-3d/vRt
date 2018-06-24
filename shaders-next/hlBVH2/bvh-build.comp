@@ -104,7 +104,7 @@ void main() {
             if (sD == 0) Actives[uID][1-cBuffer] = 0;
 
             // split sibling nodes
-            //[[flatten]]
+            [[flatten]]
             if (uID < asize && fID >= 0) { splitNode(fID, sD); }
         }
 
