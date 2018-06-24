@@ -102,7 +102,8 @@ get_filename_component(VULKAN_DIR ${Vulkan_LIBRARY} DIRECTORY )
 set (DEP_DIR "${PROJECT_SOURCE_DIR}")
 set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/src/lib"     "${VULKAN_DIR}")
 set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/base/" "${DEP_DIR}/src/base/imgui" "${PROJECT_SOURCE_DIR}")
-set (LIBS glfw3 ${Vulkan_LIBRARY})
+#set (LIBS glfw3 ${Vulkan_LIBRARY})
+set (LIBS glfw3)
 
 # if OptiX was has
 if (OptiX_INSTALL_DIR AND ENABLE_OPTIX_DENOISER) 
