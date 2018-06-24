@@ -115,7 +115,7 @@ endif()
 endif()
 
 if (MSVC)
-    set (CMAKE_CXX_FLAGS "/std:c++latest")
+    set (CMAKE_CXX_FLAGS "/std:c++latest /EHsc")
 else()
     set (CMAKE_CXX_FLAGS "-std=c++2a")
     set (CMAKE_C_FLAGS "-std=c1x")
