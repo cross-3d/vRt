@@ -115,7 +115,8 @@ namespace NSM
     public:
 
         vk::Instance createInstance() {
-
+            volkInitialize();
+            
             // get required extensions
             unsigned int glfwExtensionCount = 0;
             const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -169,7 +170,7 @@ namespace NSM
 
             // create instance
             instance = vk::createInstance(cinstanceinfo);
-            //volkLoadInstance(instance);
+            volkLoadInstance(instance);
 
             // get physical device for application
             return instance;
@@ -261,6 +262,50 @@ namespace NSM
                     .setPpEnabledExtensionNames(deviceExtensions.data()).setEnabledExtensionCount(deviceExtensions.size())
                     .setPpEnabledLayerNames(deviceValidationLayers.data()).setEnabledLayerCount(deviceValidationLayers.size()));
 
+                // load API calls for context
+                volkLoadDevice(devicePtr->logical);
+
+                // load API calls for mapping
+                VolkDeviceTable vktable;
+                volkLoadDeviceTable(&vktable, devicePtr->logical);
+
+                // init dispatch loader
+                devicePtr->dldid = vk::DispatchLoaderDynamic(instance, devicePtr->logical);
+
+                // getting queues by family
+                // don't get it now
+                //for (int i = 0; i < queues.size(); i++) { queues[i]->queue = devicePtr->logical.getQueue(queues[i]->familyIndex, 0); }
+
+                // mapping volk with VMA functions
+                VmaVulkanFunctions vfuncs;
+                vfuncs.vkAllocateMemory = vktable.vkAllocateMemory;
+                vfuncs.vkBindBufferMemory = vktable.vkBindBufferMemory;
+                vfuncs.vkBindImageMemory = vktable.vkBindImageMemory;
+                vfuncs.vkCreateBuffer = vktable.vkCreateBuffer;
+                vfuncs.vkCreateImage = vktable.vkCreateImage;
+                vfuncs.vkDestroyBuffer = vktable.vkDestroyBuffer;
+                vfuncs.vkDestroyImage = vktable.vkDestroyImage;
+                vfuncs.vkFreeMemory = vktable.vkFreeMemory;
+                vfuncs.vkGetBufferMemoryRequirements = vktable.vkGetBufferMemoryRequirements;
+                vfuncs.vkGetBufferMemoryRequirements2KHR = vktable.vkGetBufferMemoryRequirements2KHR;
+                vfuncs.vkGetImageMemoryRequirements = vktable.vkGetImageMemoryRequirements;
+                vfuncs.vkGetImageMemoryRequirements2KHR = vktable.vkGetImageMemoryRequirements2KHR;
+                vfuncs.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
+                vfuncs.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
+                vfuncs.vkMapMemory = vktable.vkMapMemory;
+                vfuncs.vkUnmapMemory = vktable.vkUnmapMemory;
+
+                // create allocator
+                VmaAllocatorCreateInfo allocatorInfo = {};
+                allocatorInfo.pVulkanFunctions = &vfuncs;
+                allocatorInfo.physicalDevice = devicePtr->physical;
+                allocatorInfo.device = devicePtr->logical;
+                allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb
+                allocatorInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT || VMA_ALLOCATION_CREATE_MAPPED_BIT;
+                allocatorInfo.pAllocationCallbacks = nullptr;
+                allocatorInfo.pHeapSizeLimit = nullptr;
+                vmaCreateAllocator(&allocatorInfo, &devicePtr->allocator);
+
                 // init dispatch loader
                 devicePtr->dldid = vk::DispatchLoaderDynamic(instance, devicePtr->logical);
 
@@ -299,9 +344,10 @@ namespace NSM
                 vt::VtArtificalDeviceExtension dbi;
                 dbi.mainQueueFamily = deviceQueuePtr->familyIndex;
                 dbi.shaderPath = shaderPath;
+                dbi.allocator = devicePtr->allocator;
                 vt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
 
-                devicePtr->allocator = deviceQueuePtr->device->rtDev->_allocator;
+                //devicePtr->allocator = deviceQueuePtr->device->rtDev->_allocator;
             }
 
 
