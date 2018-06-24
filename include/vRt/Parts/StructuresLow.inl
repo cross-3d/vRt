@@ -66,8 +66,8 @@ namespace vt { // store in official namespace
         VtVirtualCombinedImage& setSamplerID(uint32_t samplerID = 0) { _combination.samplerID = samplerID + 1u; }
 
         // component getters
-        uint32_t getTextureID() const { return _combination.textureID - 1u; }
-        uint32_t getSamplerID() const { return _combination.samplerID - 1u; }
+        uint32_t getTextureID() const { return uint32_t(_combination.textureID) - 1u; }
+        uint32_t getSamplerID() const { return uint32_t(_combination.samplerID) - 1u; }
 
         // casting operator
         operator uint64_t() const { return _combined; };
