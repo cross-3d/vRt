@@ -71,7 +71,7 @@ void main() {
         //bvhMeta[hid+0] = ivec4(1, bvhBlock.leafCount, 0, 0);
         //bvhMeta[hid+1] = ivec4(0, 0, 0, 0);
         Actives[aCounterInc()][cBuffer] = hid+1;
-        asize = asize_inv_;
+        //asize = asize_inv_;
     }
     
     LGROUP_BARRIER

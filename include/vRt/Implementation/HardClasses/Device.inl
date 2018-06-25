@@ -72,7 +72,7 @@ namespace _vt {
 
         // make traffic buffers 
         VtDeviceBufferCreateInfo dbfi;
-        dbfi.bufferSize = tiled(vtExtension.sharedCacheSize, sizeof(uint32_t));
+        dbfi.bufferSize = strided<uint32_t>(vtExtension.sharedCacheSize);
         dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
         dbfi.familyIndex = vtExtension.mainQueueFamily;
 

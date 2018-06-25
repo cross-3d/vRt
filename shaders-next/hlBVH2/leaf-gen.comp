@@ -78,7 +78,7 @@ void main() {
         HlbvhNode outLeaf = Leafs[to];
         outLeaf.lbox = calcTriBox(triverts);
         outLeaf.pdata.xy = ivec2(to);
-        outLeaf.pdata.zw = ivec2(-1, tri+1);
+        outLeaf.pdata.zw = ivec2(0, tri+1);
 
         // store leaf data
         [[flatten]]

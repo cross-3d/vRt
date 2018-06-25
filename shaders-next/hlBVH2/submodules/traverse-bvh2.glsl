@@ -184,7 +184,7 @@ void traverseBvh2(in bool_ valid, in int eht) {
 
     // test intersection with main box
     float near = -INFINITY, far = INFINITY;
-    const vec2 bndsf2 = vec2(-(1.f+1e-4f), (1.f+1e-4f));
+    const vec2 bndsf2 = vec2(-1.0005f, 1.0005f);
     IF (not(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2, bndsf2, bndsf2), near, far))) { 
         traverseState.idx = -1;
     }

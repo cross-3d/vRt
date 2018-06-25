@@ -153,7 +153,7 @@ namespace _vt {
         // build vertex if possible
         if (vertx && cmdBuf->_vertexInputs.size() > 0) {
             //buildVertexSet(cmdBuf);
-            updateVertexSet(cmdBuf);
+            //updateVertexSet(cmdBuf);
         }
 
         const VtMat4 initialMat = {

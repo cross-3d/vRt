@@ -630,8 +630,8 @@ void main() {
         vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
 
-        
-        /*{ // reserved field for computing code
+        /*
+        { // reserved field for computing code
             std::vector<uint32_t> debugCounters(2);
             readFromBuffer(deviceQueue, { vertexAssembly->_countersBuffer }, debugCounters);
 
@@ -639,19 +639,19 @@ void main() {
             readFromBuffer(deviceQueue, { accelerator->_bvhBlockUniform }, debugUniform);
 
             std::vector<uint64_t> debugMortons(8);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_mortonCodesBuffer }, debugMortons);
+            readFromBuffer(deviceQueue, { accelerator->_mortonCodesBuffer }, debugMortons);
 
             std::vector<uint32_t> debugMortonIdc(8);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_mortonIndicesBuffer }, debugMortonIdc);
+            readFromBuffer(deviceQueue, { accelerator->_mortonIndicesBuffer }, debugMortonIdc);
 
             std::vector<VtLeafDebug> debugLeafs(2);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_leafBuffer }, debugLeafs);
+            readFromBuffer(deviceQueue, { accelerator->_leafBuffer }, debugLeafs);
 
             std::vector<uint32_t> debugBvhCounters(8);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_countersBuffer }, debugBvhCounters);
+            readFromBuffer(deviceQueue, { accelerator->_countersBuffer }, debugBvhCounters);
 
             std::vector<glm::vec4> debugBvhGenBoxes(256);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_generalBoundaryResultBuffer }, debugBvhGenBoxes);
+            readFromBuffer(deviceQueue, { accelerator->_generalBoundaryResultBuffer }, debugBvhGenBoxes);
 
             std::vector<glm::vec4> debugBvhBoxes(16);
             readFromBuffer(deviceQueue, { accelerator->_bvhBoxBuffer }, debugBvhBoxes);
@@ -660,10 +660,10 @@ void main() {
             readFromBuffer(deviceQueue, { accelerator->_bvhMetaBuffer }, debugBvhMeta);
 
             std::vector<uint32_t> debugLeafIdx(8);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_leafNodeIndices }, debugLeafIdx);
+            readFromBuffer(deviceQueue, { accelerator->_leafNodeIndices }, debugLeafIdx);
 
             std::vector<glm::vec4> debugBvhWorkBoxes(16);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_onWorkBoxes }, debugBvhWorkBoxes);
+            readFromBuffer(deviceQueue, { accelerator->_onWorkBoxes }, debugBvhWorkBoxes);
         }*/
         
 

@@ -56,9 +56,7 @@ layout ( binding = 3, set = 1, rgba32i ) uniform iimageBuffer bvhMeta;
 
 bbox calcTriBox(in mat3x4 triverts) {
     bbox result;
-    result.mn = min3_wrap(triverts[0], triverts[1], triverts[2]);
-    result.mx = max3_wrap(triverts[0], triverts[1], triverts[2]);
-    result.mn -= 1e-4f;
-    result.mx += 1e-4f;
+    result.mn = min3_wrap(triverts[0], triverts[1], triverts[2]) - 5e-4f;
+    result.mx = max3_wrap(triverts[0], triverts[1], triverts[2]) + 5e-4f;
     return result;
 }
