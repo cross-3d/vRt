@@ -44,7 +44,6 @@ void main() {
         );
 
 // (+) death mark 
-// FUCKING BULL-SHIT? 
 // TODO: separate input and outputs
 
 #ifdef VTX_TRANSPLIT
