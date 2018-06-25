@@ -41,11 +41,12 @@ void main() {
     WriteColor(ray.dcolor, 1.f.xxxx);
     //WriteColor(ray.dcolor, vec4(dir.xyz * 0.5f + 0.5f, 1.f));
     RayActived(ray, true_);
+    
     ray.origin.xyz = orig.xyz;
     ray.cdirect = lcts(dir.xyz);
 
     // filtering off rays by resolution
-    if (xy.x < wh.x && xy.y < wh.y) { vtEmitRays(ray, Global_Idx.xy); }
+    if (xy.x < wh.x && xy.y < wh.y) { vtEmitRays(ray, Global_Idx.xy, 0); }
 
     LGROUP_BARRIER;
 }

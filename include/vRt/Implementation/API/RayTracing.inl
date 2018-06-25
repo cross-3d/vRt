@@ -92,7 +92,14 @@ namespace _vt {
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             if (rtppl->_closestHitPipeline) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline, INTENSIVITY);
             if (rtppl->_missHitPipeline) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline, INTENSIVITY);
-            if (rtppl->_resolvePipeline) cmdDispatch(*cmdBuf, rtppl->_resolvePipeline, INTENSIVITY);
+
+            for (int i = 0; i < 4; i++) {
+                rtset->_cuniform.rayGroup = i;
+                vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                commandBarrier(*cmdBuf);
+
+                if (rtppl->_resolvePipelines[i]) cmdDispatch(*cmdBuf, rtppl->_resolvePipelines[i], INTENSIVITY);
+            }
         }
 
         return result;

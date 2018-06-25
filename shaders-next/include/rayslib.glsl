@@ -27,10 +27,12 @@ layout ( std430, binding = 2, set = 0 ) buffer VT_CLOSEST_HITS {int closestHits[
 layout ( std430, binding = 3, set = 0 ) buffer VT_MISS_HITS {int missHits[];};
 layout ( std430, binding = 4, set = 0 ) buffer VT_HIT_PAYLOAD { VtHitPayload hitPayload[]; };
 layout ( std430, binding = 5, set = 0 ) buffer VT_RAY_INDICES {int rayIndices[];};
+//layout ( r32ui, binding = 5, set = 0 ) uniform uimageBuffer rayIndices[4];
 
 // system canvas info
 layout ( std430, binding = 6, set = 0 ) readonly buffer VT_CANVAS_INFO {
     ivec2 size; int iteration, closestHitOffset;
+    int rayGroup, maxRayCount, r1, r2;
 } stageUniform;
 
 // counters
@@ -44,6 +46,9 @@ layout ( std430, binding = 7, set = 0 ) buffer arcounterB {
     int payloadHitCounter;
     int blockSpaceCounter; // 9th line counter
     int attribCounter;
+
+    // filter rays by types
+    int rayTypedCounter[4];
 };
 
 // imported from satellite (blocky indicing)
@@ -69,17 +74,24 @@ initAtomicSubgroupIncFunction(closestHitCounterCurrent, atomicIncClosestHitCount
 initAtomicSubgroupIncFunction(missHitCounter, atomicIncMissHitCount, 1, int)
 initAtomicSubgroupIncFunction(payloadHitCounter, atomicIncPayloadHitCount, 1, int)
 initAtomicSubgroupIncFunction(blockSpaceCounter, atomicIncblockSpaceCount, 1, int)
+initAtomicSubgroupIncFunctionTarget(rayTypedCounter[WHERE], atomicIncRayTypedCount, 1, int)
 
 
 int makeAttribID(in int hAttribID, in int sub) {
     return (hAttribID-1)*ATTRIB_EXTENT + sub;
 }
 
+//initAtomicSubgroupIncFunction(blockSpaceCounter, atomicIncblockSpaceCount, 1, int)
+
 // alpha version of low level ray emitter
-int vtEmitRays(in VtRay ray, in uvec2 c2d) {
+int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint type) {
     int rayID = atomicIncRayCount();
+    RayType(ray, int(type));
     rays[rayID] = ray; 
     imageStore(rayLink, rayID, uvec4(0u, p2x(c2d), 0u.xx));
+    //imageStore(rayIndices[type], atomicIncRayTypedCount(type), uint(rayID+1).xxxx);
+    int gID = atomicIncRayTypedCount(type);
+    if (gID < stageUniform.maxRayCount) rayIndices[gID*4+type] = (rayID+1);
     return rayID;
 }
 

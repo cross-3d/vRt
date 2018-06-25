@@ -59,10 +59,11 @@ namespace vt { // store in official namespace
         //std::string_view missShader = "raytracing/miss-hit-shader.comp.spv";
         //std::string_view resolveShader = "raytracing/resolve-shader.comp.spv";
 
+        
         VkPipelineShaderStageCreateInfo generationModule;
         VkPipelineShaderStageCreateInfo closestModule;
         VkPipelineShaderStageCreateInfo missModule;
-        VkPipelineShaderStageCreateInfo resolveModule;
+        VkPipelineShaderStageCreateInfo resolveModules[4];
     };
 
 

@@ -17,7 +17,10 @@ namespace _vt {
         if (info.closestModule.module) vtPipeline->_closestHitPipeline = createCompute(VkDevice(*_vtDevice), info.closestModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
         if (info.missModule.module) vtPipeline->_missHitPipeline = createCompute(VkDevice(*_vtDevice), info.missModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
         if (info.generationModule.module) vtPipeline->_generationPipeline = createCompute(VkDevice(*_vtDevice), info.generationModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        if (info.resolveModule.module) vtPipeline->_resolvePipeline = createCompute(VkDevice(*_vtDevice), info.resolveModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+
+        for (int i = 0; i < 4; i++) {
+            if (info.resolveModules[i].module) vtPipeline->_resolvePipelines[i] = createCompute(VkDevice(*_vtDevice), info.resolveModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        }
 
         return result;
     }
@@ -34,6 +37,7 @@ namespace _vt {
         {
             const auto& rayCount = info.maxRays;
             const auto& maxAttribCount = 8;
+            vtRTSet->_cuniform.maxRayCount = rayCount;
 
             {
                 VtDeviceBufferCreateInfo bfi;
@@ -46,9 +50,9 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayBuffer);
 
 
-                bfi.bufferSize = rayCount * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 4 * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayIndiceBuffer);
+                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupIndicesBuffer);
 
 
                 bfi.bufferSize = rayCount * 16ull * sizeof(uint32_t);
@@ -66,7 +70,7 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_missedHitIndiceBuffer);
 
 
-                bfi.bufferSize = 8ull * sizeof(uint32_t);
+                bfi.bufferSize = 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_countersBuffer);
 
@@ -86,7 +90,7 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_traverseCache);
 
 
-                bfi.bufferSize = 8ull * sizeof(uint32_t);
+                bfi.bufferSize = sizeof(VtStageUniform);
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_constBuffer);
 
@@ -108,7 +112,6 @@ namespace _vt {
                 auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtRTSet->_descriptorSet = dsc[0];
 
-
                 vk::Sampler attributeSampler = vk::Device(*_vtDevice).createSampler(vk::SamplerCreateInfo()
                     .setAddressModeU(vk::SamplerAddressMode::eRepeat)
                     .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
@@ -126,7 +129,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_closestHitIndiceBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_missedHitIndiceBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_hitPayloadBuffer->_descriptorInfo())),
-                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_rayIndiceBuffer->_descriptorInfo())),
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_groupIndicesBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(6).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_constBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(8).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_blockBuffer->_descriptorInfo())),
                 };

@@ -117,7 +117,7 @@ namespace _vt { // store in undercover namespace
 
 
 
-    struct VtStageUniform { int width = 1, height = 1, iteration = 0, closestHitOffset = 0; };
+    struct VtStageUniform { int width = 1, height = 1, iteration = 0, closestHitOffset = 0; int rayGroup = 0, maxRayCount = 0, r1 = 0, r2 = 0;};
 
     class RayTracingSet : public std::enable_shared_from_this<RayTracingSet> {
     public:
@@ -126,7 +126,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _device;
 
         // in-set buffers
-        std::shared_ptr<DeviceBuffer> _rayBuffer, _rayIndiceBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer, _rayLinkPayload, _attribBuffer;
+        std::shared_ptr<DeviceBuffer> _rayBuffer, _groupIndicesBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer, _rayLinkPayload, _attribBuffer;
         VtStageUniform _cuniform;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
@@ -144,7 +144,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout, when pipeline was created
 
         // 
-        VkPipeline _generationPipeline, _closestHitPipeline, _missHitPipeline, _resolvePipeline;
+        VkPipeline _generationPipeline, _closestHitPipeline, _missHitPipeline, _resolvePipelines[4];
 
         // material and accelerator descriptor sets, that sets to "1" is dedicated by another natives
         std::vector<VkDescriptorSet> _userDefinedDescriptorSets; // beyond than 1 only

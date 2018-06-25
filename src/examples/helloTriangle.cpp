@@ -336,7 +336,9 @@ void main() {
         rtpi.closestModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/closest-hit-shader.comp.spv"));
         rtpi.missModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/miss-hit-shader.comp.spv"));
         rtpi.generationModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/generation-shader.comp.spv"));
-        rtpi.resolveModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/resolve-shader.comp.spv"));
+        for (int i = 0; i < 4; i++) {
+            rtpi.resolveModules[i] = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/resolve-shader.comp.spv"));
+        }
         rtpi.pipelineLayout = rtPipelineLayout;
         vtCreateRayTracingPipeline(deviceQueue->device->rtDev, &rtpi, &rtPipeline);
     }
