@@ -767,19 +767,19 @@ void main() {
             readFromBuffer(deviceQueue, { accelerator->_bvhBlockUniform }, debugUniform);
 
             std::vector<uint64_t> debugMortons(vertexAssembly->_calculatedPrimitiveCount);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_mortonCodesBuffer }, debugMortons);
+            readFromBuffer(deviceQueue, { accelerator->_mortonCodesBuffer }, debugMortons);
 
             std::vector<uint32_t> debugMortonIdc(vertexAssembly->_calculatedPrimitiveCount);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_mortonIndicesBuffer }, debugMortonIdc);
+            readFromBuffer(deviceQueue, { accelerator->_mortonIndicesBuffer }, debugMortonIdc);
 
             std::vector<VtLeafDebug> debugLeafs(vertexAssembly->_calculatedPrimitiveCount);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_leafBuffer }, debugLeafs);
+            readFromBuffer(deviceQueue, { accelerator->_leafBuffer }, debugLeafs);
 
             std::vector<uint32_t> debugBvhCounters(8);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_countersBuffer }, debugBvhCounters);
+            readFromBuffer(deviceQueue, { accelerator->_countersBuffer }, debugBvhCounters);
 
             std::vector<glm::vec4> debugBvhGenBoxes(256);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_generalBoundaryResultBuffer }, debugBvhGenBoxes);
+            readFromBuffer(deviceQueue, { accelerator->_generalBoundaryResultBuffer }, debugBvhGenBoxes);
 
             std::vector<glm::vec4> debugBvhBoxes(vertexAssembly->_calculatedPrimitiveCount * 4);
             readFromBuffer(deviceQueue, { accelerator->_bvhBoxBuffer }, debugBvhBoxes);
@@ -788,13 +788,13 @@ void main() {
             readFromBuffer(deviceQueue, { accelerator->_bvhMetaBuffer }, debugBvhMeta);
 
             std::vector<uint32_t> debugLeafIdx(vertexAssembly->_calculatedPrimitiveCount);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_leafNodeIndices }, debugLeafIdx);
+            readFromBuffer(deviceQueue, { accelerator->_leafNodeIndices }, debugLeafIdx);
 
             std::vector<glm::vec4> debugBvhWorkBoxes(vertexAssembly->_calculatedPrimitiveCount * 4);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_onWorkBoxes }, debugBvhWorkBoxes);
+            readFromBuffer(deviceQueue, { accelerator->_onWorkBoxes }, debugBvhWorkBoxes);
 
             std::vector<uint32_t> debugFitFlags (vertexAssembly->_calculatedPrimitiveCount*2);
-            readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_acceleratorBuilder->_fitStatusBuffer }, debugFitFlags);
+            readFromBuffer(deviceQueue, { accelerator->_fitStatusBuffer }, debugFitFlags);
 
 
             //std::vector<uint32_t> lhistogram(16 * 64);

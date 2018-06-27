@@ -4,7 +4,7 @@ set NTVE=native\
 set VRTX=vertex\
 set RNDR=rayTracing\
 set HLBV=hlBVH2\
-set RDXI=qRadix\
+set RDXI=radix\
 set OUTP=output\
 
 set CMPPROF=-fshader-stage=compute

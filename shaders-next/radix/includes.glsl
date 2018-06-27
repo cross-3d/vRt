@@ -16,12 +16,17 @@ uint Wave_Idx = 0;
 #include "../include/ballotlib.glsl"
 
 
-// radices 4-bit
-#define BITS_PER_PASS 4
-#define RADICES 16
-#define RADICES_MASK 0xF
+// QLC optimized
+//#define BITS_PER_PASS 4
+//#define RADICES 16
+//#define RADICES_MASK 0xF
+
+// MLC optimized
+#define BITS_PER_PASS 2
+#define RADICES 4
+#define RADICES_MASK 0x3
+
 #define AFFINITION 1
-//#define AFFINITION 16 // hyper-threaded powers
 
 // general work groups
 #define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)

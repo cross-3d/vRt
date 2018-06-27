@@ -129,64 +129,64 @@ namespace _vt {
     namespace qradix {
         inline static std::map<VtVendor, std::vector<uint32_t>> permute = {
             { VT_VENDOR_AMD,{
-#include "../HardCodes/amd/qRadix/permute.comp.inl"
+#include "../HardCodes/amd/radix/permute.comp.inl"
         } },
         { VT_VENDOR_NVIDIA,{
-#include "../HardCodes/nvidia/qRadix/permute.comp.inl"
+#include "../HardCodes/nvidia/radix/permute.comp.inl"
         } },
         { VT_VENDOR_INTEL,{
-#include "../HardCodes/intel/qRadix/permute.comp.inl"
+#include "../HardCodes/intel/radix/permute.comp.inl"
         } },
         { VT_VENDOR_UNIVERSAL,{
-#include "../HardCodes/universal/qRadix/permute.comp.inl"
+#include "../HardCodes/universal/radix/permute.comp.inl"
         } },
         };
 
 
         inline static std::map<VtVendor, std::vector<uint32_t>> workPrefix = {
             { VT_VENDOR_AMD,{
-#include "../HardCodes/amd/qRadix/pfx-work.comp.inl"
+#include "../HardCodes/amd/radix/pfx-work.comp.inl"
         } },
         { VT_VENDOR_NVIDIA,{
-#include "../HardCodes/nvidia/qRadix/pfx-work.comp.inl"
+#include "../HardCodes/nvidia/radix/pfx-work.comp.inl"
         } },
         { VT_VENDOR_INTEL,{
-#include "../HardCodes/intel/qRadix/pfx-work.comp.inl"
+#include "../HardCodes/intel/radix/pfx-work.comp.inl"
         } },
         { VT_VENDOR_UNIVERSAL,{
-#include "../HardCodes/universal/qRadix/pfx-work.comp.inl"
+#include "../HardCodes/universal/radix/pfx-work.comp.inl"
         } },
         };
 
 
         inline static std::map<VtVendor, std::vector<uint32_t>> histogram = {
             { VT_VENDOR_AMD,{
-#include "../HardCodes/amd/qRadix/histogram.comp.inl"
+#include "../HardCodes/amd/radix/histogram.comp.inl"
         } },
         { VT_VENDOR_NVIDIA,{
-#include "../HardCodes/nvidia/qRadix/histogram.comp.inl"
+#include "../HardCodes/nvidia/radix/histogram.comp.inl"
         } },
         { VT_VENDOR_INTEL,{
-#include "../HardCodes/intel/qRadix/histogram.comp.inl"
+#include "../HardCodes/intel/radix/histogram.comp.inl"
         } },
         { VT_VENDOR_UNIVERSAL,{
-#include "../HardCodes/universal/qRadix/histogram.comp.inl"
+#include "../HardCodes/universal/radix/histogram.comp.inl"
         } },
         };
 
 
         inline static std::map<VtVendor, std::vector<uint32_t>> copyhack = {
             { VT_VENDOR_AMD,{
-#include "../HardCodes/amd/qRadix/copyhack.comp.inl"
+#include "../HardCodes/amd/radix/copyhack.comp.inl"
         } },
         { VT_VENDOR_NVIDIA,{
-#include "../HardCodes/nvidia/qRadix/copyhack.comp.inl"
+#include "../HardCodes/nvidia/radix/copyhack.comp.inl"
         } },
         { VT_VENDOR_INTEL,{
-#include "../HardCodes/intel/qRadix/copyhack.comp.inl"
+#include "../HardCodes/intel/radix/copyhack.comp.inl"
         } },
         { VT_VENDOR_UNIVERSAL,{
-#include "../HardCodes/universal/qRadix/copyhack.comp.inl"
+#include "../HardCodes/universal/radix/copyhack.comp.inl"
         } },
         };
 
