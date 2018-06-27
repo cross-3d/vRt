@@ -211,9 +211,9 @@ void main() {
     tinygltf::Model model = {};
     tinygltf::TinyGLTF loader = {};
     std::string err;
-    std::string input_filename("sponza/sponza.gltf");
-    //std::string input_filename("Chess_Set.gltf");
-    //std::string input_filename("Cube.gltf");
+    std::string input_filename("models/sponza/sponza.gltf");
+    //std::string input_filename("models/Chess_Set.gltf");
+    //std::string input_filename("models/Cube.gltf");
     
 
     bool ret = loader.LoadASCIIFromFile(&model, &err, input_filename.c_str());
