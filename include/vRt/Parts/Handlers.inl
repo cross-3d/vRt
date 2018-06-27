@@ -164,6 +164,11 @@ namespace vt { // store in official namespace
 
         operator bool() const { return !!_vtDevice; };
         auto* operator->() { return _vtDevice.get(); };
+
+        // getter of descriptor layout from device VtDevice
+        auto getDescriptorLayout(const std::string_view& name) const {
+            return _vtDevice->_descriptorLayoutMap[std::string(name)];
+        };
     };
 
 };
