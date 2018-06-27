@@ -115,6 +115,7 @@ vec3 getNormalMapping(in vec2 texcoordi) {
     vec3 normal = vec3(0.f,0.f,1.f);
     IF (equalF(tc.x, tc.y) & equalF(tc.x, tc.z)) {
         vec2 txs = 1.f/textureSize(sampler2D(textures[tbinding], samplers[0]), 0);
+        //vec2 txs = 1.f/textureSize(textures[tbinding], 0);
         vec4 tx4 = vec4(-txs.xy, txs.xy)*0.5f;
         vec4 txu = vec4(-1.f,-1.f,1.f,1.f)*0.5f;
 

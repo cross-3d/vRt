@@ -28,7 +28,7 @@
 
 // non uniform (for bindless textures)
 #extension GL_EXT_nonuniform_qualifier : enable
-
+//#extension GL_EXT_samplerless_texture_functions : enable
 
 // ray tracing options
 //#define EXPERIMENTAL_DOF // no dynamic control supported
