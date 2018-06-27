@@ -98,7 +98,7 @@ namespace _vt {
                 vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                 commandBarrier(*cmdBuf);
 
-                if (rtppl->_resolvePipelines[i]) cmdDispatch(*cmdBuf, rtppl->_resolvePipelines[i], INTENSIVITY);
+                if (rtppl->_groupPipelines[i]) cmdDispatch(*cmdBuf, rtppl->_groupPipelines[i], INTENSIVITY);
             }
         }
 

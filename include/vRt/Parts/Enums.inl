@@ -60,7 +60,7 @@ namespace vt { // store in official namespace
         VT_ENTRY_USAGE_CLOSEST = 0x00000001,
         VT_ENTRY_USAGE_MISS = 0x00000002,
         VT_ENTRY_USAGE_GENERATION = 0x00000004,
-        VT_ENTRY_USAGE_RESOLVE = 0x00000008,
+        VT_ENTRY_USAGE_GROUP = 0x00000008,
     } VtEntryUsageFlags;
 
     typedef enum VtPipelineLayoutType : uint32_t {

@@ -26,8 +26,7 @@ layout ( std430, binding = 1, set = 0 ) buffer VT_HITS {VtHitData hits[];};
 layout ( std430, binding = 2, set = 0 ) buffer VT_CLOSEST_HITS {int closestHits[];};
 layout ( std430, binding = 3, set = 0 ) buffer VT_MISS_HITS {int missHits[];};
 layout ( std430, binding = 4, set = 0 ) buffer VT_HIT_PAYLOAD { VtHitPayload hitPayload[]; };
-layout ( std430, binding = 5, set = 0 ) buffer VT_RAY_INDICES {int rayIndices[];};
-//layout ( r32ui, binding = 5, set = 0 ) uniform uimageBuffer rayIndices[4];
+layout ( std430, binding = 5, set = 0 ) buffer VT_RAY_INDICES {int rayGroupIndices[];};
 
 // system canvas info
 layout ( std430, binding = 6, set = 0 ) readonly buffer VT_CANVAS_INFO {
@@ -84,14 +83,15 @@ int makeAttribID(in int hAttribID, in int sub) {
 //initAtomicSubgroupIncFunction(blockSpaceCounter, atomicIncblockSpaceCount, 1, int)
 
 // alpha version of low level ray emitter
-int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint type) {
+int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint group) {
+    const uint type = group;
     int rayID = atomicIncRayCount();
     RayType(ray, int(type));
     rays[rayID] = ray; 
     imageStore(rayLink, rayID, uvec4(0u, p2x(c2d), 0u.xx));
-    //imageStore(rayIndices[type], atomicIncRayTypedCount(type), uint(rayID+1).xxxx);
+    //imageStore(rayGroupIndices[type], atomicIncRayTypedCount(type), uint(rayID+1).xxxx);
     int gID = atomicIncRayTypedCount(type);
-    if (gID < stageUniform.maxRayCount) rayIndices[gID*4+type] = (rayID+1);
+    if (gID < stageUniform.maxRayCount) rayGroupIndices[gID*4+type] = (rayID+1);
     return rayID;
 }
 

@@ -26,7 +26,7 @@ void main() {
     for (int w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
-        int rayID = rayIndices[globalID*4+stageUniform.rayGroup]-1;
+        int rayID = rayGroupIndices[globalID*4+stageUniform.rayGroup]-1;
         bool overflow = overflow || globalID >= wsize || globalID < 0 || rayID < 0;
 
         // get ray by id

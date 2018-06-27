@@ -52,18 +52,10 @@ namespace vt { // store in official namespace
         // ray tracing based pipeline layout
         VtPipelineLayout pipelineLayout;
 
-        // TODO: entry points support (default = "main")
-        // shader paths to ray tracing stages shaders 
-        //std::string_view generationShader = "raytracing/generation-shader.comp.spv";
-        //std::string_view closestShader = "raytracing/closest-hit-shader.comp.spv";
-        //std::string_view missShader = "raytracing/miss-hit-shader.comp.spv";
-        //std::string_view resolveShader = "raytracing/resolve-shader.comp.spv";
-
-        
-        VkPipelineShaderStageCreateInfo generationModule;
-        VkPipelineShaderStageCreateInfo closestModule;
-        VkPipelineShaderStageCreateInfo missModule;
-        VkPipelineShaderStageCreateInfo resolveModules[4];
+        VkPipelineShaderStageCreateInfo generationModule = {};
+        VkPipelineShaderStageCreateInfo closestModule = {};
+        VkPipelineShaderStageCreateInfo missModule = {};
+        VkPipelineShaderStageCreateInfo groupModules[4] = {};
     };
 
 

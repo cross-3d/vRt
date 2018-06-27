@@ -19,7 +19,7 @@ namespace _vt {
         if (info.generationModule.module) vtPipeline->_generationPipeline = createCompute(VkDevice(*_vtDevice), info.generationModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
 
         for (int i = 0; i < 4; i++) {
-            if (info.resolveModules[i].module) vtPipeline->_resolvePipelines[i] = createCompute(VkDevice(*_vtDevice), info.resolveModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+            if (info.groupModules[i].module) vtPipeline->_groupPipelines[i] = createCompute(VkDevice(*_vtDevice), info.groupModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
         }
 
         return result;
