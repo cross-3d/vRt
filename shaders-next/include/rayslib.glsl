@@ -35,7 +35,7 @@ layout ( std430, binding = 6, set = 0 ) readonly buffer VT_CANVAS_INFO {
 } stageUniform;
 
 // counters
-layout ( std430, binding = 7, set = 0 ) buffer arcounterB { 
+layout ( std430, binding = 7, set = 0 ) buffer VT_RT_COUNTERS { 
     int rayCounter;
     int hitCounter;
     int closestHitCounterCurrent;
@@ -45,9 +45,6 @@ layout ( std430, binding = 7, set = 0 ) buffer arcounterB {
     int payloadHitCounter;
     int blockSpaceCounter; // 9th line counter
     int attribCounter;
-
-    // filter rays by types
-    int rayTypedCounter[4];
 };
 
 // imported from satellite (blocky indicing)
@@ -65,6 +62,18 @@ layout ( std430, binding = 8, set = 0 ) buffer VT_9_LINE { highp uint ispace[][R
 layout ( rgba32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
 layout ( rgba32f,  binding = 11, set = 0 ) uniform imageBuffer attributes;
 
+
+layout ( std430, binding = 12, set = 0 ) buffer VT_GROUPS_COUNTERS { 
+    // filter rays by types
+    int rayTypedCounter[4];
+    int closestHitTypedCounter[4];
+    int missHitTypedCounter[4];
+};
+//layout ( std430, binding = 13, set = 0 ) buffer VT_CLOSEST_GROUPS {int closestGroups[];};
+//layout ( std430, binding = 14, set = 0 ) buffer VT_MISS_GROUPS {int missGroups[];};
+
+
+
 // atomic counters with subgroups
 initAtomicSubgroupIncFunction(attribCounter, atomicIncAttribCount, 1, int)
 initAtomicSubgroupIncFunction(rayCounter, atomicIncRayCount, 1, int)
@@ -74,6 +83,8 @@ initAtomicSubgroupIncFunction(missHitCounter, atomicIncMissHitCount, 1, int)
 initAtomicSubgroupIncFunction(payloadHitCounter, atomicIncPayloadHitCount, 1, int)
 initAtomicSubgroupIncFunction(blockSpaceCounter, atomicIncblockSpaceCount, 1, int)
 initAtomicSubgroupIncFunctionTarget(rayTypedCounter[WHERE], atomicIncRayTypedCount, 1, int)
+initAtomicSubgroupIncFunctionTarget(closestHitTypedCounter[WHERE], atomicIncClosestHitTypedCount, 1, int)
+initAtomicSubgroupIncFunctionTarget(missHitTypedCounter[WHERE], atomicIncMissHitTypedCount, 1, int)
 
 
 int makeAttribID(in int hAttribID, in int sub) {
@@ -111,26 +122,27 @@ VtRay vtFetchRay(in int lidx) {
     return rays[lidx];
 }
 
-int vtVerifyClosestHit(in int closestId){
-    int id = atomicIncClosestHitCount();
-    closestHits[id] = closestId+1;
+
+int vtVerifyClosestHit(in int closestId, in int g){
+    int id = g < 0 ? atomicIncClosestHitCount() : atomicIncClosestHitTypedCount(g);
+    closestHits[id*5+(g+1)] = closestId+1;
     return id;
 }
 
-int vtVerifyMissedHit(in int missId){
-    int id = atomicIncMissHitCount();
-    missHits[id] = missId+1;
+int vtVerifyMissedHit(in int missId, in int g){
+    int id = g < 0 ? atomicIncMissHitCount() : atomicIncMissHitTypedCount(g);
+    missHits[id*5+(g+1)] = missId+1;
     return id;
 }
 
+int vtClosestId(in int id, in int g) {return closestHits[id*5+(g+1)]-1; }
+int vtMissId(in int id, in int g){ return missHits[id*5+(g+1)]-1; }
 
-int vtClosestId(in int id){
-    return closestHits[id]-1;
-}
 
-int vtMissId(in int id){
-    return missHits[id]-1;
-}
+int vtVerifyClosestHit(in int closestId){ return vtVerifyClosestHit(closestId, -1); }
+int vtVerifyMissedHit(in int missId){ return vtVerifyMissedHit(missId, -1); }
+int vtClosestId(in int id){ return vtClosestId(id, -1); }
+int vtMissId(in int id){ return vtMissId(id, -1); }
 
 
 #endif

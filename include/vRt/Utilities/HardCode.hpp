@@ -225,6 +225,22 @@ namespace _vt {
         } },
         };
 
+
+        inline static std::map<VtVendor, std::vector<uint32_t>> triplet = {
+    { VT_VENDOR_AMD,{
+#include "../HardCodes/amd/native/triplet.comp.inl"
+        } },
+        { VT_VENDOR_NVIDIA,{
+#include "../HardCodes/nvidia/native/triplet.comp.inl"
+        } },
+        { VT_VENDOR_INTEL,{
+#include "../HardCodes/intel/native/triplet.comp.inl"
+        } },
+        { VT_VENDOR_UNIVERSAL,{
+#include "../HardCodes/universal/native/triplet.comp.inl"
+        } },
+        };
+
     }
 
 };

@@ -98,6 +98,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(9, vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // traverse cache (just have no idea to bind)
                 vk::DescriptorSetLayoutBinding(10, vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // ray<->hit binding payload 
                 vk::DescriptorSetLayoutBinding(11, vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute),
+                vk::DescriptorSetLayoutBinding(12, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // group counters 
             };
             vtDevice->_descriptorLayoutMap["rayTracing"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         }
@@ -186,7 +187,7 @@ namespace _vt {
 
         const auto& vendorName = _vtDevice->_vendorName;
 
-        //createPipelineLayout
+        // 
         VtVertexAssemblyPipelineCreateInfo simfo;
         simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, vt::natives::vertexAssembly[vendorName]);
         simfo.maxPrimitives = vtExtension.maxPrimitives;

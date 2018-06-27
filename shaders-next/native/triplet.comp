@@ -1,0 +1,62 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#define ENABLE_VERTEX_INTERPOLATOR
+#define USE_SINGLE_THREAD_RAY_MANAGMENT
+#define SIMPLIFIED_RAY_MANAGMENT
+#define ENABLE_VSTORAGE_DATA
+#define DMA_HIT
+
+#include "../include/driver.glsl"
+#include "../include/structs.glsl"
+#include "../include/rayslib.glsl"
+#include "../include/structs.glsl"
+#include "../include/morton.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+
+LOCAL_SIZE_LAYOUT;
+
+#define hit hits[hitID]
+
+void main() {
+    {
+        int wsize = int(closestHitCounter);
+        int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
+        int wgs = int(gl_NumWorkGroups);
+        for (int w=0;w<wcount;w+=wgs) {
+            SB_BARRIER
+            int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
+            bool_ overflow = bool_(globalID >= wsize);
+            IFALL(overflow) break;
+
+            [[unroll]]
+            for (int i=0;i<4;i++) {
+                int hitID = vtClosestId(globalID);
+                [[flatten]]
+                if (RayType(rays[hit.rayID-1]) == i && !SSC(overflow)) vtVerifyClosestHit(hitID, i);
+            }
+        }
+        LGROUP_BARRIER;
+    }
+
+    {
+        int wsize = int(missHitCounter);
+        int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
+        int wgs = int(gl_NumWorkGroups);
+        for (int w=0;w<wcount;w+=wgs) {
+            SB_BARRIER
+            int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
+            bool_ overflow = bool_(globalID >= wsize);
+            IFALL(overflow) break;
+
+            [[unroll]]
+            for (int i=0;i<4;i++) {
+                int hitID = vtMissId(globalID);
+                [[flatten]]
+                if (RayType(rays[hit.rayID-1]) == i && !SSC(overflow)) vtVerifyMissedHit(hitID, i);
+            }
+        }
+        LGROUP_BARRIER;
+    }
+}

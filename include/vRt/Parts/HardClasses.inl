@@ -126,7 +126,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _device;
 
         // in-set buffers
-        std::shared_ptr<DeviceBuffer> _rayBuffer, _groupIndicesBuffer, _hitBuffer, _countersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer, _rayLinkPayload, _attribBuffer;
+        std::shared_ptr<DeviceBuffer> _rayBuffer, _groupIndicesBuffer, _hitBuffer, _countersBuffer, _groupCountersBuffer, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer, _rayLinkPayload, _attribBuffer;
         VtStageUniform _cuniform;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
@@ -144,7 +144,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout, when pipeline was created
 
         // 
-        VkPipeline _generationPipeline, _closestHitPipeline, _missHitPipeline, _groupPipelines[4];
+        VkPipeline _generationPipeline, _tripletPipeline, _closestHitPipeline[4], _missHitPipeline[4], _groupPipelines[4];
 
         // material and accelerator descriptor sets, that sets to "1" is dedicated by another natives
         std::vector<VkDescriptorSet> _userDefinedDescriptorSets; // beyond than 1 only

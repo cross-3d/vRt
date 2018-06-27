@@ -59,16 +59,16 @@ namespace _vt {
         std::vector<VkDescriptorSet> _rtSets = { rtset->_descriptorSet, matrl->_descriptorSet };
         for (auto &s : cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
 
-
         // reset counters of ray tracing
         cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
+        cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupCountersBuffer);
 
         // update material set
         vkCmdUpdateBuffer(*cmdBuf, *matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
 
         // ray trace command
-        for (int i = 0; i < 1; i++) { // TODO make support of steps
-            rtset->_cuniform.iteration = i;
+        for (int it = 0; it < 1; it++) { // TODO make support of steps
+            rtset->_cuniform.iteration = it;
 
             // update uniform buffer of ray tracing steps
             vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform); 
@@ -90,14 +90,15 @@ namespace _vt {
 
             // handling hits
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            if (rtppl->_closestHitPipeline) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline, INTENSIVITY);
-            if (rtppl->_missHitPipeline) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline, INTENSIVITY);
+            cmdDispatch(*cmdBuf, rtppl->_tripletPipeline, INTENSIVITY);
 
             for (int i = 0; i < 4; i++) {
                 rtset->_cuniform.rayGroup = i;
                 vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                 commandBarrier(*cmdBuf);
 
+                if (rtppl->_closestHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY);
+                if (rtppl->_missHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[i], INTENSIVITY);
                 if (rtppl->_groupPipelines[i]) cmdDispatch(*cmdBuf, rtppl->_groupPipelines[i], INTENSIVITY);
             }
         }
