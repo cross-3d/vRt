@@ -72,7 +72,7 @@ namespace _vt {
 
             // update uniform buffer of ray tracing steps
             vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform); 
-            commandBarrier(*cmdBuf);
+            //commandBarrier(*cmdBuf);
 
             // run rays generation
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
@@ -85,7 +85,7 @@ namespace _vt {
                 cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), strided<uint32_t>(3), strided<uint32_t>(1)) });
                 cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, INTENSIVITY); // interpolate intersections
                 vkCmdUpdateBuffer(*cmdBuf, *rtset->_countersBuffer, strided<uint32_t>(2), sizeof(uint32_t), &uzero);
-                commandBarrier(*cmdBuf);
+                //commandBarrier(*cmdBuf);
             }
 
             // handling hits
@@ -95,8 +95,6 @@ namespace _vt {
             for (int i = 0; i < 4; i++) {
                 rtset->_cuniform.rayGroup = i;
                 vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                commandBarrier(*cmdBuf);
-
                 if (rtppl->_closestHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY);
                 if (rtppl->_missHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[i], INTENSIVITY);
                 if (rtppl->_groupPipelines[i]) cmdDispatch(*cmdBuf, rtppl->_groupPipelines[i], INTENSIVITY);

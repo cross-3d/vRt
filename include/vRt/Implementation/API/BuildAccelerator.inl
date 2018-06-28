@@ -67,8 +67,6 @@ namespace _vt {
         imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
         vertx->_calculatedPrimitiveCount = 0;
         
-        
-
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto& iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
@@ -88,14 +86,14 @@ namespace _vt {
             iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
             vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
-            commandBarrier(*cmdBuf);
+            //commandBarrier(*cmdBuf);
 
             // assembly of part 
-            cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY);
+            cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY, 1, 1, false);
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         }
-
         vertx->_calculatedPrimitiveCount = calculatedPrimitiveCount;
+        commandBarrier(*cmdBuf);
         return result;
     }
 
@@ -132,14 +130,11 @@ namespace _vt {
                 iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
                 vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
-                commandBarrier(*cmdBuf);
-
-                // assembly of part 
-                cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY);
+                cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY, 1, 1, false);
             }
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         }
-
+        commandBarrier(*cmdBuf);
         return result;
     }
 
@@ -180,7 +175,7 @@ namespace _vt {
         cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, *bounder->_mortonCodesBuffer);
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_countersBuffer); // reset counters
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);
-        commandBarrier(*cmdBuf);
+        //commandBarrier(*cmdBuf);
 
         std::vector<VkDescriptorSet> _sets = { bounder->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);

@@ -282,10 +282,12 @@ namespace _vt {
 
 
     // add dispatch in command buffer (with default pipeline barrier)
-    inline VkResult cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1) {
+    inline VkResult cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1, bool barrier = true) {
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
         vkCmdDispatch(cmd, x, y, z);
-        commandBarrier(cmd); // put shader barrier
+        if (barrier) {
+            commandBarrier(cmd); // put shader barrier
+        }
         return VK_SUCCESS;
     }
 

@@ -66,7 +66,7 @@ namespace _vt {
 
         {
             std::vector<vk::PushConstantRange> constRanges = {
-                vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(4))
+                vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(12))
             };
             std::vector<vk::DescriptorSetLayout> dsLayouts = {
                 vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
