@@ -90,16 +90,17 @@ namespace _vt {
 
             // handling hits
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            cmdDispatch(*cmdBuf, rtppl->_tripletPipeline, INTENSIVITY);
+            //cmdDispatch(*cmdBuf, rtppl->_tripletPipeline, INTENSIVITY);
 
             for (int i = 0; i < 4; i++) {
                 rtset->_cuniform.rayGroup = i;
                 vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                if (rtppl->_closestHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY);
-                if (rtppl->_missHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[i], INTENSIVITY);
+                if (rtppl->_closestHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY, 1, 1, false);
+                if (rtppl->_missHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[i], INTENSIVITY); else commandBarrier(*cmdBuf);
                 if (rtppl->_groupPipelines[i]) cmdDispatch(*cmdBuf, rtppl->_groupPipelines[i], INTENSIVITY);
             }
         }
+        //commandBarrier(*cmdBuf);
 
         return result;
     }
