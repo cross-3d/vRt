@@ -7,9 +7,9 @@
     #define UNPACK_LROW(m) uintBitsToFloat(m)
 #else
     #ifdef AMD_F16_BVH
-        #define UNPACK_LROW(m) unpackFloat16x4(m.xy)
+        #define UNPACK_LROW(m) unpackFloat4x16(m.xy)
     #else
-        #define UNPACK_LROW(m) unpackHalf16x4(m.xy)
+        #define UNPACK_LROW(m) unpackHalf4x16(m.xy)
     #endif
 #endif
 
@@ -17,9 +17,9 @@
     #define UNPACK_RCRC(m) vec4(0.f)
 #else
     #ifdef AMD_F16_BVH
-        #define UNPACK_RCRC(m) unpackFloat16x4(m.zw)
+        #define UNPACK_RCRC(m) unpackFloat4x16(m.zw)
     #else
-        #define UNPACK_RCRC(m) unpackHalf16x4(m.zw)
+        #define UNPACK_RCRC(m) unpackHalf4x16(m.zw)
     #endif
 #endif
 
@@ -28,9 +28,9 @@
     #define UNPACK_HF(m) vec4(0.f)
 #else
     #ifdef AMD_F16_BVH
-        #define UNPACK_HF(m) unpackFloat16x4(m)
+        #define UNPACK_HF(m) unpackFloat4x16(m)
     #else
-        #define UNPACK_HF(m) unpackHalf16x4(m)
+        #define UNPACK_HF(m) unpackHalf4x16(m)
     #endif
 #endif
 

@@ -25,13 +25,6 @@ const float E = 2.7182818284590452353602874713526624977572f;
 #define fmat3x4_ f16mat3x4
 #define fmat3x2_ f16mat3x2
 #define fmat4x3_ f16mat4x3
-    #ifdef USE_F32_BVH
-    #define UNPACKF_(a)a
-    #define PACKF_(a)a
-    #else
-    #define UNPACKF_(a)a
-    #define PACKF_(a)fvec4_(a)
-    #endif
 #else 
 #define ftype_ float
 #define fvec2_ vec2
@@ -42,13 +35,6 @@ const float E = 2.7182818284590452353602874713526624977572f;
 #define fmat3x4_ mat3x4
 #define fmat3x2_ mat3x2
 #define fmat4x3_ mat4x3
-    #ifdef USE_F32_BVH
-    #define UNPACKF_(a)a
-    #define PACKF_(a)a
-    #else
-    #define UNPACKF_ unpackHalf
-    #define PACKF_ packHalf2
-    #endif
 #endif
 
 /*

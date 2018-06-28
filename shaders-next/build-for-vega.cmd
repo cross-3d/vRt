@@ -3,7 +3,7 @@
 set PATH=C:\Users\elvir\msvc\glslang\bin;%PATH%
 
 cd %~dp0
-  set CFLAGSV= --target-env vulkan1.1 -d --aml -DAMD_PLATFORM -DUSE_F32_BVH -DENABLE_AMD_INSTRUCTION_SET 
+  set CFLAGSV= --target-env vulkan1.1 -d --aml -DAMD_PLATFORM -DENABLE_AMD_INSTRUCTION_SET -DAMD_F16_BVH 
 
 set INDIR=.\
 set OUTDIR=..\build\shaders\amd\

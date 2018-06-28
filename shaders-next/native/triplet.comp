@@ -29,14 +29,14 @@ void main() {
         for (int w=0;w<wcount;w+=wgs) {
             SB_BARRIER
             int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
-            bool_ overflow = bool_(globalID >= wsize);
+            bool overflow = globalID >= wsize;
             IFALL(overflow) break;
 
             [[unroll]]
             for (int i=0;i<4;i++) {
                 int hitID = vtClosestId(globalID);
                 [[flatten]]
-                if (RayType(rays[hit.rayID-1]) == i && !SSC(overflow)) vtVerifyClosestHit(hitID, i);
+                if (RayType(rays[hit.rayID-1]) == i && !overflow) vtVerifyClosestHit(hitID, i);
             }
         }
         LGROUP_BARRIER;
@@ -51,14 +51,14 @@ void main() {
         for (int w=0;w<wcount;w+=wgs) {
             SB_BARRIER
             int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
-            bool_ overflow = bool_(globalID >= wsize);
+            bool overflow = globalID >= wsize;
             IFALL(overflow) break;
 
             [[unroll]]
             for (int i=0;i<4;i++) {
                 int hitID = vtMissId(globalID);
                 [[flatten]]
-                if (RayType(rays[hit.rayID-1]) == i && !SSC(overflow)) vtVerifyMissedHit(hitID, i);
+                if (RayType(rays[hit.rayID-1]) == i && !overflow) vtVerifyMissedHit(hitID, i);
             }
         }
         LGROUP_BARRIER;

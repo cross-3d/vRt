@@ -40,12 +40,7 @@ void unifyNodeBox(inout int idx){
 #ifdef USE_F32_BVH
         fvec4_ resulting[4] = { fvec4_(lrbox[0]), fvec4_(lrbox[1]), fvec4_(lrbox[2]), fvec4_(lrbox[3]) };
 #else
-        uvec4 resulting[4] = {
-            uvec4( packHalf16x4( fma(fvec4_(-1e-3f.xx, 1e-3f.xx), fvec4_(0.5f.xxxx), fvec4_(lrbox[0])) ), 0u, 0u),
-            uvec4( packHalf16x4( fma(fvec4_(-1e-3f.xx, 1e-3f.xx), fvec4_(0.5f.xxxx), fvec4_(lrbox[1])) ), 0u, 0u),
-            uvec4( packHalf16x4( fma(fvec4_(-1e-3f.xx, 1e-3f.xx), fvec4_(0.5f.xxxx), fvec4_(lrbox[2])) ), 0u, 0u),
-            uvec4( packHalf16x4( fma(fvec4_(-1e-3f.xx, 1e-3f.xx), fvec4_(0.5f.xxxx), fvec4_(lrbox[3])) ), 0u, 0u)
-        };
+        uvec2 resulting[4] = { packHalf4x16(lrbox[0]), packHalf4x16(lrbox[1]), packHalf4x16(lrbox[2]), packHalf4x16(lrbox[3]) };
 #endif
 
         // store boxes for outputs
