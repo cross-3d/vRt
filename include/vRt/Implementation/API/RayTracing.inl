@@ -35,7 +35,7 @@ namespace _vt {
     }
 
 
-    VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t x = 1, uint32_t y = 1) {
+    VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
         VtResult result = VK_SUCCESS;
 
         auto device = cmdBuf->_parent();
@@ -63,20 +63,20 @@ namespace _vt {
         cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
         cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupCountersBuffer);
 
-        // update material set
+        // initial consts
         vkCmdUpdateBuffer(*cmdBuf, *matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
+        vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+
+        // run rays generation
+        vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
+        if (rtppl->_generationPipeline) cmdDispatch(*cmdBuf, rtppl->_generationPipeline, tiled(x, 8u), tiled(y, 8u));
 
         // ray trace command
-        for (int it = 0; it < 1; it++) { // TODO make support of steps
-            rtset->_cuniform.iteration = it;
-
+        for (int it = 0; it < B; it++) { // TODO make support of steps
             // update uniform buffer of ray tracing steps
+            rtset->_cuniform.iteration = it;
             vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform); 
             //commandBarrier(*cmdBuf);
-
-            // run rays generation
-            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            if (rtppl->_generationPipeline) cmdDispatch(*cmdBuf, rtppl->_generationPipeline, tiled(x, 8u), tiled(y, 8u));
 
             { // run traverse processing
                 std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };

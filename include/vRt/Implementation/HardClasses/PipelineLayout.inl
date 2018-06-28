@@ -29,11 +29,12 @@ namespace _vt {
 
         vtPipelineLayoutCreateInfo.setLayoutCount = dsLayouts.size();
         vtPipelineLayoutCreateInfo.pSetLayouts = (VkDescriptorSetLayout*)(dsLayouts.data());
+        /*
         if (type == VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT) {
             vk::PushConstantRange rng(vk::ShaderStageFlagBits::eCompute, 0, strided<uint32_t>(12));
             vtPipelineLayoutCreateInfo.pPushConstantRanges = &VkPushConstantRange(rng);
             vtPipelineLayoutCreateInfo.pushConstantRangeCount = 1;
-        }
+        }*/
 
         vtPipelineLayout->_pipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo(vtPipelineLayoutCreateInfo));
 

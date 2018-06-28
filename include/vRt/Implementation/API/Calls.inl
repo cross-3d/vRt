@@ -64,8 +64,8 @@ namespace vt {
         return bindPipeline(commandBuffer, pipelineBindPoint, vtPipeline);
     };
 
-    inline VtResult vtCmdDispatchRayTracing(VtCommandBuffer commandBuffer, uint32_t x, uint32_t y) {
-        return dispatchRayTracing(commandBuffer, x, y);
+    inline VtResult vtCmdDispatchRayTracing(VtCommandBuffer commandBuffer, uint32_t x, uint32_t y, uint32_t B) {
+        return dispatchRayTracing(commandBuffer, x, y, B);
     };
 
     inline VtResult vtCmdBindAccelerator(VtCommandBuffer commandBuffer, VtAcceleratorSet accelerator) {
