@@ -63,14 +63,18 @@ layout ( rgba32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
 layout ( rgba32f,  binding = 11, set = 0 ) uniform imageBuffer attributes;
 
 
-layout ( std430, binding = 12, set = 0 ) buffer VT_GROUPS_COUNTERS { 
-    // filter rays by types
+layout ( std430, binding = 12, set = 0 ) buffer VT_GROUPS_COUNTERS {
     int rayTypedCounter[4];
     int closestHitTypedCounter[4];
     int missHitTypedCounter[4];
 };
-//layout ( std430, binding = 13, set = 0 ) buffer VT_CLOSEST_GROUPS {int closestGroups[];};
-//layout ( std430, binding = 14, set = 0 ) buffer VT_MISS_GROUPS {int missGroups[];};
+
+layout ( std430, binding = 13, set = 0 ) readonly buffer VT_RAY_INDICES_READ {int rayGroupIndicesRead[];};
+layout ( std430, binding = 14, set = 0 ) readonly buffer VT_GROUPS_COUNTERS_READ {
+    int rayTypedCounterRead[4];
+    int closestHitTypedCounterRead[4];
+    int missHitTypedCounterRead[4];
+};
 
 
 
@@ -111,7 +115,6 @@ int vtFetchHitIdc(in int lidx) {
     return int(imageLoad(rayLink, lidx).x)-1;
 }
 
-
 uvec2 vtFetchIndex(in int lidx){
     uint c2dp = imageLoad(rayLink, lidx).y;
     return up2x(c2dp);
@@ -137,7 +140,6 @@ int vtVerifyMissedHit(in int missId, in int g){
 
 int vtClosestId(in int id, in int g) {return closestHits[id*5+(g+1)]-1; }
 int vtMissId(in int id, in int g){ return missHits[id*5+(g+1)]-1; }
-
 
 int vtVerifyClosestHit(in int closestId){ return vtVerifyClosestHit(closestId, -1); }
 int vtVerifyMissedHit(in int missId){ return vtVerifyMissedHit(missId, -1); }

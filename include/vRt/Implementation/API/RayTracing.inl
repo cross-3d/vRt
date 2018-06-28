@@ -46,6 +46,8 @@ namespace _vt {
         auto rtppl = cmdBuf->_rayTracingPipeline.lock();
         auto rtset = cmdBuf->_rayTracingSet.lock();
 
+        auto rayCount = x * y;
+
         rtset->_cuniform.width = x;
         rtset->_cuniform.height = y;
         rtset->_cuniform.iteration = 0;
@@ -72,35 +74,44 @@ namespace _vt {
         if (rtppl->_generationPipeline) cmdDispatch(*cmdBuf, rtppl->_generationPipeline, tiled(x, 8u), tiled(y, 8u));
 
         // ray trace command
-        for (int it = 0; it < B; it++) { // TODO make support of steps
+        for (int it = 0; it < B; it++) {
             // update uniform buffer of ray tracing steps
             rtset->_cuniform.iteration = it;
             vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform); 
-            //commandBarrier(*cmdBuf);
 
-            { // run traverse processing
+            { // run traverse processing (single accelerator supported at now)
                 std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
                 cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, INTENSIVITY); // traverse BVH
                 cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), strided<uint32_t>(3), strided<uint32_t>(1)) });
                 cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, INTENSIVITY); // interpolate intersections
-                vkCmdUpdateBuffer(*cmdBuf, *rtset->_countersBuffer, strided<uint32_t>(2), sizeof(uint32_t), &uzero);
-                //commandBarrier(*cmdBuf);
             }
 
-            // handling hits
+            // reload to caches and reset counters
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            //cmdDispatch(*cmdBuf, rtppl->_tripletPipeline, INTENSIVITY);
+            cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 16 * sizeof(uint32_t)) });
+            cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, rayCount * sizeof(uint32_t) * 4) });
+            cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
+            cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupCountersBuffer);
 
+            // handling hits in groups
             for (int i = 0; i < 4; i++) {
                 rtset->_cuniform.rayGroup = i;
                 vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                 if (rtppl->_closestHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY, 1, 1, false);
-                if (rtppl->_missHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[i], INTENSIVITY); else commandBarrier(*cmdBuf);
+                if (rtppl->_missHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[i], INTENSIVITY, 1, 1, false);
+                if (rtppl->_missHitPipeline[i] || rtppl->_closestHitPipeline[i]) {
+                    commandBarrier(*cmdBuf);
+                }
+            }
+
+            // use resolve shader for resolve ray output or pushing secondaries
+            for (int i = 0; i < 4; i++) {
+                rtset->_cuniform.rayGroup = i;
+                vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                 if (rtppl->_groupPipelines[i]) cmdDispatch(*cmdBuf, rtppl->_groupPipelines[i], INTENSIVITY);
             }
         }
-        //commandBarrier(*cmdBuf);
 
         return result;
     }

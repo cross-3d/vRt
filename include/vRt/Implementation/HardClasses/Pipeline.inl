@@ -58,6 +58,11 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupIndicesBuffer);
 
 
+                bfi.bufferSize = rayCount * 4 * sizeof(uint32_t);
+                bfi.format = VK_FORMAT_R32_UINT;
+                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupIndicesBufferRead);
+
+
                 bfi.bufferSize = rayCount * 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_hitBuffer);
@@ -81,6 +86,11 @@ namespace _vt {
                 bfi.bufferSize = 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupCountersBuffer);
+
+
+                bfi.bufferSize = 16ull * sizeof(uint32_t);
+                bfi.format = VK_FORMAT_R32_UINT;
+                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupCountersBufferRead);
 
 
                 bfi.bufferSize = rayCount * 64ull * sizeof(uint32_t);
@@ -141,6 +151,8 @@ namespace _vt {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(7).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_countersBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(8).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_blockBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(12).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_groupCountersBuffer->_descriptorInfo())),
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(13).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_groupIndicesBufferRead->_descriptorInfo())),
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(14).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_groupCountersBufferRead->_descriptorInfo())),
                 };
                 vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
             };
