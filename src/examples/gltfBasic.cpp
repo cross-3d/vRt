@@ -753,8 +753,8 @@ void main() {
         });
 
 
-        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
-        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+        //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
+        //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
         vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
 

@@ -17,14 +17,14 @@ uint Wave_Idx = 0;
 
 
 // QLC optimized
-//#define BITS_PER_PASS 4
-//#define RADICES 16
-//#define RADICES_MASK 0xF
+#define BITS_PER_PASS 4
+#define RADICES 16
+#define RADICES_MASK 0xF
 
 // MLC optimized
-#define BITS_PER_PASS 2
-#define RADICES 4
-#define RADICES_MASK 0x3
+//#define BITS_PER_PASS 2
+//#define RADICES 4
+//#define RADICES_MASK 0x3
 
 #define AFFINITION 1
 

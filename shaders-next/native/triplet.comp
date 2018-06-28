@@ -20,6 +20,7 @@ LOCAL_SIZE_LAYOUT;
 #define hit hits[hitID]
 
 void main() {
+    /*
     {
         int wsize = int(closestHitCounter);
         int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
@@ -63,4 +64,32 @@ void main() {
         }
         LGROUP_BARRIER;
     }
+    */
+
+    /*{
+        int wsize = int(stageUniform.size.x * stageUniform.size.y);
+        int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
+        int wgs = int(gl_NumWorkGroups);
+
+        [[unroll, dependency_length(4)]]
+        for (int w=0;w<wcount;w+=wgs) {
+            SB_BARRIER
+            int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
+            bool overflow = globalID >= wsize;
+            IFALL(overflow) break;
+
+            [[unroll]]
+            for (int i=0;i<4;i++) {
+                //int hitID = vtClosestId(globalID);
+                int hitID = globalID;
+                [[flatten]]
+                if (RayType(rays[hit.rayID-1]) == i && !overflow) {
+                    if (hit.uvt.z < INFINITY-(1e-5f)) { vtVerifyClosestHit(hitID, i); } 
+                    else                              { vtVerifyMissedHit (hitID, i); }
+                }
+            }
+        }
+        LGROUP_BARRIER;
+    }*/
+
 }

@@ -12,8 +12,8 @@ namespace _vt {
         auto& vtRadix = (_vtRadix = std::make_shared<RadixSort>());
         vtRadix->_device = _vtDevice;
 
-        //constexpr auto STEPS = 8u, WG_COUNT = 64u, RADICE_AFFINE = 16u; // QLC
-        constexpr auto STEPS = 16u, WG_COUNT = 64u, RADICE_AFFINE = 4u; // MLC
+        constexpr auto STEPS = 8u, WG_COUNT = 64u, RADICE_AFFINE = 16u; // QLC
+        //constexpr auto STEPS = 16u, WG_COUNT = 64u, RADICE_AFFINE = 4u; // MLC
         const auto& vendorName = _vtDevice->_vendorName;
 
         VtDeviceBufferCreateInfo bfi;

@@ -63,8 +63,15 @@ void main() {
             IF (triID >= 0) {
                 //atomicIncAttribCount()+1;
                 hit.attribID = vtVerifyClosestHit(hid)+1; // better link directly, because extra atomics (even with subgroups) also hits to performances
-            } else { 
-                vtVerifyMissedHit(hid); 
+            } else {
+                //vtVerifyMissedHit(hid); 
+
+                const int rID = RayType(rays[hit.rayID-1]);
+                [[unroll]]
+                for (int i=0;i<4;i++) {
+                    [[flatten]]
+                    if (rID == i) vtVerifyMissedHit(hid, i);
+                }
             }
 
 #ifndef DMA_HIT
