@@ -133,16 +133,16 @@ int vtVerifyClosestHit(in int closestId, in int g){
 }
 
 int vtVerifyMissedHit(in int missId, in int g){
-    int id = g < 0 ? atomicIncMissHitCount() : atomicIncMissHitTypedCount(g);
+    //int id = g < 0 ? atomicIncMissHitCount() : atomicIncMissHitTypedCount(g);
+    int id = atomicIncMissHitTypedCount(g);
     missHits[id*5+(g+1)] = missId+1;
     return id;
 }
 
 int vtClosestId(in int id, in int g) {return closestHits[id*5+(g+1)]-1; }
 int vtMissId(in int id, in int g){ return missHits[id*5+(g+1)]-1; }
-
-int vtVerifyClosestHit(in int closestId){ return vtVerifyClosestHit(closestId, -1); }
-int vtVerifyMissedHit(in int missId){ return vtVerifyMissedHit(missId, -1); }
+int vtVerifyClosestHit(in int closestId) { int id = atomicIncClosestHitCount(); closestHits[id*5] = closestId+1; return id; }
+int vtVerifyMissedHit(in int missId) { int id = atomicIncMissHitCount(); missHits[id*5] = missId+1; return id; }
 int vtClosestId(in int id){ return vtClosestId(id, -1); }
 int vtMissId(in int id){ return vtMissId(id, -1); }
 
