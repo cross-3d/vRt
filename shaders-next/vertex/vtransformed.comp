@@ -78,7 +78,7 @@ void main(){
                 // load vertex data
                 {
                     vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); 
-                    readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice); vertice.w = 1.f;
+                    readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
                     vertice = mult4(vTransforms[vertexBlock.inputID].transform, vertice);
                     storePosition(ivec2(tidc, i), vec4(vertice.xyz, 1.f));
                 }
