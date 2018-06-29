@@ -30,8 +30,8 @@ bbox getMinMaxPrimitive(in int idx) {
     //const int itri = tri*9;
     const int itri = tri*3;
 
-    //const mat4 transform = bvhBlock.transform;
-    const mat4 transform = mat4(1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f);
+    const mat4 transform = bvhBlock.transform;
+    //const mat4 transform = mat4(1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f);
 
     const mat3x4 triverts = mat3x4(
         divW(mult4(transform, vec4(TLOAD(lvtx, itri+0).xyz, 1.f))), 
