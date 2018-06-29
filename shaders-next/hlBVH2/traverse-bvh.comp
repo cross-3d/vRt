@@ -50,33 +50,28 @@ void main() {
 #else
             VtHitData hit;
 #endif
-
             hit.rayID = it+1;
             hit.uvt = geometrySpace.lastIntersection;
             hit.payloadID = 0;
             hit.materialID = materials[triID];
             hit.next = 0;
             hit.attribID = 0;
+#ifndef DMA_HIT
+            hits[hid] = hit;
+#endif
 
             // identify intersection
             imageStore(rayLink, it, uvec4(hid+1, imageLoad(rayLink, it).y, 0u.xx));
             IF (triID >= 0) {
-                //atomicIncAttribCount()+1;
-                hit.attribID = vtVerifyClosestHit(hid)+1; // better link directly, because extra atomics (even with subgroups) also hits to performances
+                hits[hid].attribID = vtVerifyClosestHit(hid)+1; // better link directly, because extra atomics (even with subgroups) also hits to performances
             } else {
-                //vtVerifyMissedHit(hid); 
-
-                const int rID = RayType(rays[hit.rayID-1]);
+                const int rID = RayType(rays[it]);
                 [[unroll]]
                 for (int i=0;i<4;i++) {
                     [[flatten]]
                     if (rID == i) vtVerifyMissedHit(hid, i);
                 }
             }
-
-#ifndef DMA_HIT
-            hits[hid] = hit;
-#endif
         }
     }
 
