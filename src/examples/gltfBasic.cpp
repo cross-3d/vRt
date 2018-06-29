@@ -211,8 +211,8 @@ void main() {
     tinygltf::Model model = {};
     tinygltf::TinyGLTF loader = {};
     std::string err;
-    //std::string input_filename("models/sponza/sponza.gltf");
-    std::string input_filename("models/Chess_Set.gltf");
+    std::string input_filename("models/sponza/sponza.gltf");
+    //std::string input_filename("models/Chess_Set.gltf");
     //std::string input_filename("models/Cube.gltf");
     
 
@@ -348,13 +348,12 @@ void main() {
     }
 
 
-
-    glm::vec3 eyePos = glm::vec3(0.f, 10.5f, -40.6f);
-    glm::vec3 viewVector = glm::vec3(0.f, 0.f, 1.f);
-    glm::vec3 moveVector = glm::vec3(0.f, 0.f, 1.f);
+    glm::vec3 eyePos = glm::vec3(0.f, 10.5f, -40.6f).zyx;
+    glm::vec3 viewVector = glm::vec3(0.f, 0.f, 1.f).zyx;
+    glm::vec3 moveVector = glm::vec3(0.f, 0.f, 1.f).zyx;
 
     // initial matrices
-    auto scale = 1.0f * glm::vec3(1.f, 1.f, 1.f);
+    auto scale = 10.0f * glm::vec3(1.f, 1.f, 1.f);
     auto atMatrix = glm::lookAt(eyePos*scale, (eyePos+viewVector)*scale, glm::vec3(0.f, 1.f, 0.f));
     auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
 
