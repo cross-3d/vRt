@@ -25,6 +25,7 @@
 #extension GL_KHR_shader_subgroup_shuffle          : enable
 #extension GL_KHR_shader_subgroup_shuffle_relative : enable
 #extension GL_KHR_shader_subgroup_clustered        : enable
+#extension GL_KHX_shader_explicit_arithmetic_types : enable
 
 // non uniform (for bindless textures)
 #extension GL_EXT_nonuniform_qualifier : enable
