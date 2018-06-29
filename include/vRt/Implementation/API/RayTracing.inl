@@ -64,6 +64,7 @@ namespace _vt {
         // reset counters of ray tracing
         cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
         cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupCountersBuffer);
+        cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupIndicesBuffer); // reset writtable indices for avoid errors in stages
 
         // initial consts
         vkCmdUpdateBuffer(*cmdBuf, *matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
