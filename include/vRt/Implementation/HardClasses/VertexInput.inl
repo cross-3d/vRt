@@ -30,8 +30,9 @@ namespace _vt {
         bfi.format = VK_FORMAT_UNDEFINED;
 
         // planned add external buffer support
-        createDeviceBuffer(_vtDevice, bfi, vtVertexInput->_uniformBlockBuffer);
+        //createDeviceBuffer(_vtDevice, bfi, vtVertexInput->_uniformBlockBuffer);
         //_vtDevice->_deviceBuffersPtrs.push_back(vtVertexInput->_uniformBlockBuffer); // pin buffer with device
+        vtVertexInput->_uniformBlockBuffer = _vtDevice->_bufferTraffic->_uniformVIBuffer;
 
         // fill uniforms 
         vtVertexInput->_uniformBlock.primitiveCount = info.primitiveCount;

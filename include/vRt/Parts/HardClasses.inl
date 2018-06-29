@@ -41,6 +41,10 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<Device> _device;
         std::shared_ptr<HostToDeviceBuffer> _uploadBuffer; // from host
         std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
+
+        std::shared_ptr<DeviceBuffer> _uniformVIBuffer;
+
+
         std::shared_ptr<Device> _parent() const { return _device.lock(); };
     };
 
@@ -386,7 +390,7 @@ namespace _vt { // store in undercover namespace
         uint32_t primitiveOffset = 0;
         uint32_t topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
         uint32_t attributeCount = 8;
-        uint32_t inputID = 0;
+        uint32_t inputID = 0; // useless now
 
         uint32_t materialAccessor = 0;
         uint32_t updateOnly = 0;

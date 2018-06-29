@@ -60,13 +60,8 @@ layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR {VtAccessor 
 layout ( binding = 4, set = 1, std430 ) readonly buffer VT_ATTRIB {VtAttributeBinding attributes[]; };
 
 
-// uniform input of vertex loader
-#ifdef USE_PUSH_CONSTANT
-layout ( push_constant ) uniform VT_UNIFORM 
-#else
-layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM
-#endif
-{
+
+struct VtVIUniform {
     uint primitiveCount;
     uint verticeAccessor;
     uint indiceAccessor;
@@ -75,13 +70,18 @@ layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM
     uint primitiveOffset;
     uint topology;
     uint attributeCount;
-    uint inputID;
+    uint inputID; // no more usable
 
     uint materialAccessor;
     uint updateOnly; // planned bitfields support
     uint readOffset;
     uint reserved2;
-} vertexBlock;
+};
+
+// uniform input of vertex loader
+layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
+layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
+#define vertexBlock _vertexBlock[cblock.inputID]
 
 
 

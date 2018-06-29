@@ -83,6 +83,9 @@ namespace _vt {
         createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_uploadBuffer);
         createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_downloadBuffer);
 
+        dbfi.format = VK_FORMAT_UNDEFINED;
+        dbfi.bufferSize = strided<VtUniformBlock>(1024);
+        createDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_uniformVIBuffer);
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {

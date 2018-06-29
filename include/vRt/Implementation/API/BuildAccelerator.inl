@@ -85,10 +85,8 @@ namespace _vt {
             iV->_uniformBlock.updateOnly = false;
             iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
-            vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
-            //commandBarrier(*cmdBuf);
-
-            // assembly of part 
+            vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY, 1, 1, false);
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         }
@@ -130,6 +128,7 @@ namespace _vt {
                 iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
                 vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+                vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
                 cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY, 1, 1, false);
             }
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
