@@ -159,7 +159,7 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
     const vec3 s = orig - vT[0], q = cross(s, e1);
     uv = f * vec2(dot(s,h),dot(dir,q));
 
-    if (uv.x <= -1e-5 || uv.y <= -1e-5 || (uv.x+uv.y) >= (1.f+1e-5)) { _valid = false; }
+    if (uv.x <= -1e-6 || uv.y <= -1e-6 || (uv.x+uv.y) >= (1.f+1e-6)) { _valid = false; }
 
     float T = f * dot(e2,q);
     if (T >= INFINITY || T < 0.f) { _valid = false; } 

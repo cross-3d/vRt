@@ -214,7 +214,7 @@ void main() {
     //std::string input_filename("models/sponza/sponza.gltf");
     //std::string input_filename("models/Chess_Set.gltf");
     //std::string input_filename("models/Cube.gltf");
-    std::string input_filename("models/BoomBox.gltf");
+    std::string input_filename("models/scene.gltf");
 
     bool ret = loader.LoadASCIIFromFile(&model, &err, input_filename.c_str());
 
@@ -338,9 +338,9 @@ void main() {
 
 
     //glm::vec3 eyePos = glm::vec3(0.f, 10.5f, -40.6f).zyx;
-    glm::vec3 eyePos = glm::vec3(0.f, 0.0f, -10.6f).zyx;
-    glm::vec3 viewVector = glm::vec3(0.f, 0.f, 1.f).zyx;
-    glm::vec3 moveVector = glm::vec3(0.f, 0.f, 1.f).zyx;
+    glm::vec3 eyePos = glm::vec3(0.f, 0.0f, 10.6f);
+    glm::vec3 viewVector = glm::vec3(0.f, 0.f, -1.f);
+    glm::vec3 moveVector = glm::vec3(0.f, 0.f, -1.f);
 
     // initial matrices
     auto scale = 1.0f * glm::vec3(1.f, 1.f, 1.f);
@@ -585,7 +585,7 @@ void main() {
         });
 
         // matrix with scaling
-        double mscale = 100.0;
+        double mscale = 1.0;
         glm::dmat4 matrix(1.0);
         matrix *= glm::scale(glm::dvec3(mscale, mscale, mscale));
 
