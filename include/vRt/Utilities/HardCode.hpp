@@ -35,35 +35,43 @@ namespace _vt {
         } },
         };
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> outerBox = {
-            { VT_VENDOR_AMD,{
-#include "../HardCodes/amd/hlBVH2/bound-calc.comp.inl"
-        } },
-        { VT_VENDOR_NVIDIA,{
-#include "../HardCodes/nvidia/hlBVH2/bound-calc.comp.inl"
-        } },
-        { VT_VENDOR_INTEL,{
-#include "../HardCodes/intel/hlBVH2/bound-calc.comp.inl"
-        } },
-        { VT_VENDOR_UNIVERSAL,{
-#include "../HardCodes/universal/hlBVH2/bound-calc.comp.inl"
-        } },
+
+
+        namespace triangle {
+
+            inline static std::map<VtVendor, std::vector<uint32_t>> outerBox = {
+                { VT_VENDOR_AMD,{
+    #include "../HardCodes/amd/hlBVH2/triangle/bound-calc.comp.inl"
+            } },
+            { VT_VENDOR_NVIDIA,{
+    #include "../HardCodes/nvidia/hlBVH2/triangle/bound-calc.comp.inl"
+            } },
+            { VT_VENDOR_INTEL,{
+    #include "../HardCodes/intel/hlBVH2/triangle/bound-calc.comp.inl"
+            } },
+            { VT_VENDOR_UNIVERSAL,{
+    #include "../HardCodes/universal/hlBVH2/triangle/bound-calc.comp.inl"
+            } },
+            };
+
+            inline static std::map<VtVendor, std::vector<uint32_t>> genLeafs = {
+                { VT_VENDOR_AMD,{
+    #include "../HardCodes/amd/hlBVH2/triangle/leaf-gen.comp.inl"
+            } },
+            { VT_VENDOR_NVIDIA,{
+    #include "../HardCodes/nvidia/hlBVH2/triangle/leaf-gen.comp.inl"
+            } },
+            { VT_VENDOR_INTEL,{
+    #include "../HardCodes/intel/hlBVH2/triangle/leaf-gen.comp.inl"
+            } },
+            { VT_VENDOR_UNIVERSAL,{
+    #include "../HardCodes/universal/hlBVH2/triangle/leaf-gen.comp.inl"
+            } },
+            };
+
         };
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> genLeafs = {
-            { VT_VENDOR_AMD,{
-#include "../HardCodes/amd/hlBVH2/leaf-gen.comp.inl"
-        } },
-        { VT_VENDOR_NVIDIA,{
-#include "../HardCodes/nvidia/hlBVH2/leaf-gen.comp.inl"
-        } },
-        { VT_VENDOR_INTEL,{
-#include "../HardCodes/intel/hlBVH2/leaf-gen.comp.inl"
-        } },
-        { VT_VENDOR_UNIVERSAL,{
-#include "../HardCodes/universal/hlBVH2/leaf-gen.comp.inl"
-        } },
-        };
+
 
         inline static std::map<VtVendor, std::vector<uint32_t>> linkLeafs = {
             { VT_VENDOR_AMD,{

@@ -6,13 +6,13 @@
 #define BVH_CREATION
 #define LEAF_GEN
 
-#include "../include/driver.glsl"
-#include "../include/mathlib.glsl"
-#include "../include/ballotlib.glsl"
-#include "../include/structs.glsl"
-#include "../include/vertex.glsl"
-#include "../include/morton.glsl"
-#include "./submodules/includes.glsl"
+#include "../../include/driver.glsl"
+#include "../../include/mathlib.glsl"
+#include "../../include/ballotlib.glsl"
+#include "../../include/structs.glsl"
+#include "../../include/vertex.glsl"
+#include "../../include/morton.glsl"
+#include "../submodules/includes.glsl"
 
 //initAtomicSubgroupIncFunction(nCounter, atomicIncLeaf, 1, int)
 

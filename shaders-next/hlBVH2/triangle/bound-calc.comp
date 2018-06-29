@@ -10,12 +10,12 @@
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 
-#include "../include/driver.glsl"
-#include "../include/ballotlib.glsl"
-#include "../include/structs.glsl"
-#include "../include/vertex.glsl"
-#include "../include/mathlib.glsl"
-#include "./submodules/includes.glsl"
+#include "../../include/driver.glsl"
+#include "../../include/ballotlib.glsl"
+#include "../../include/structs.glsl"
+#include "../../include/vertex.glsl"
+#include "../../include/mathlib.glsl"
+#include "../submodules/includes.glsl"
 
 
 layout ( std430, binding = 9, set = 0 )  buffer minmaxB {vec4 minmax[]; };

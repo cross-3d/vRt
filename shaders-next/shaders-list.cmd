@@ -20,6 +20,8 @@ mkdir %OUTDIR%%RDXI%
 mkdir %OUTDIR%%OUTP%
 mkdir %OUTDIR%%GENG%
 
+mkdir %HRDDIR%%HLBV%\\AABB\\
+mkdir %HRDDIR%%HLBV%\\triangle\\
 mkdir %HRDDIR%%HLBV%
 mkdir %HRDDIR%%RDXI%
 mkdir %HRDDIR%%NTVE%
@@ -38,10 +40,11 @@ start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%vinput.comp       -x -o %
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%dull.comp         -x -o %HRDDIR%%NTVE%dull.comp.inl
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%triplet.comp      -x -o %HRDDIR%%NTVE%triplet.comp.inl
 
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bound-calc.comp   -x -o %HRDDIR%%HLBV%bound-calc.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%\\triangle\\bound-calc.comp   -x -o %HRDDIR%%HLBV%\\triangle\\bound-calc.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%\\triangle\\leaf-gen.comp     -x -o %HRDDIR%%HLBV%\\triangle\\leaf-gen.comp.inl
+
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-build.comp    -x -o %HRDDIR%%HLBV%bvh-build.comp.inl 
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-fit.comp      -x -o %HRDDIR%%HLBV%bvh-fit.comp.inl
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%leaf-gen.comp     -x -o %HRDDIR%%HLBV%leaf-gen.comp.inl
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%leaf-link.comp    -x -o %HRDDIR%%HLBV%leaf-link.comp.inl
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%shorthand.comp    -x -o %HRDDIR%%HLBV%shorthand.comp.inl
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%traverse-bvh.comp -x -o %HRDDIR%%HLBV%traverse-bvh.comp.inl 
