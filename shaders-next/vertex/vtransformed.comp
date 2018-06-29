@@ -1,0 +1,89 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+
+#define VERTEX_FILLING
+//#define USE_PUSH_CONSTANT
+
+#include "../include/driver.glsl"
+#include "../include/structs.glsl"
+#include "../include/vertex.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+#include "../include/vertex-input.glsl"
+
+LOCAL_SIZE_LAYOUT;
+
+//initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
+
+
+// attribute formating
+const int NORMAL_TID = 0;
+const int TEXCOORD_TID = 1;
+const int TANGENT_TID = 2;
+const int BITANGENT_TID = 3;
+const int VCOLOR_TID = 4;
+
+struct Transforms {
+    mat4 transform, transformNrm;
+};
+layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { Transforms vTransforms[]; };
+
+void main(){
+    const uint wsize = uint(vertexBlock.primitiveCount);
+    const uint gS = uint(gl_WorkGroupSize.x);
+    const uint wgs = uint(gl_NumWorkGroups.x);
+    const uint wID = uint(gl_WorkGroupID.x);
+    const uint lID = uint(Local_Idx);
+    const uint rng = gS*wgs;
+    const uint trp = 3;
+
+    // for faster geometry loading, just add counter in single thread
+    //if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && vertexBlock.updateOnly == 0) { atomicAdd(tcounter[0], int(wsize)); }
+    
+    // process vertex assembly
+    for (uint w=0;w<wsize;w+=rng) {
+        uint globalID = w + wID * gS + lID;
+        IFALL (globalID >= wsize) break;
+        if (globalID < wsize && globalID >= 0) {
+
+            // constant material ID from vertex instance 
+            uint matID = uint(vertexBlock.materialID);
+            uint ordr = vertexBlock.readOffset + globalID, tidc = ordr;//, tidc = tcounterInc(1);
+
+            // read material accessor
+            readByAccessorIndice(int(vertexBlock.materialAccessor), tidc, matID);
+
+            // planned to support quad based geometry
+            vorders[tidc] = int(ordr);
+            materials[tidc] = int(matID);
+            
+            // planned to add support of vertex and geometry shaders
+            [[unroll]]
+            for (int i=0;i<3;i++) {
+                // aggregated indices
+                uint indiceID = (vertexBlock.primitiveOffset + globalID) * trp + i;
+                readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
+                storeAttribute(ivec3(tidc, 0, i), vec4(0.f.xxx, 0.f));
+
+                // load attrib data
+                [[unroll]]
+                for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
+                    vec4 attribValue = vec4(0.f);
+                    readByAccessor(attributes[a].accessorID, indiceID, attribValue);
+                    if (a == NORMAL_TID) { attribValue = mult4(vTransforms[vertexBlock.inputID].transformNrm, attribValue); }
+                    storeAttribute(ivec3(tidc, attributes[a].attributeID, i), attribValue);
+                }}
+
+                // load vertex data
+                {
+                    vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); 
+                    readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice); vertice.w = 1.f;
+                    vertice = mult4(vTransforms[vertexBlock.inputID].transform, vertice);
+                    storePosition(ivec2(tidc, i), vec4(vertice.xyz, 1.f));
+                }
+            }
+            
+        }
+    }
+}

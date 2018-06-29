@@ -211,10 +211,10 @@ void main() {
     tinygltf::Model model = {};
     tinygltf::TinyGLTF loader = {};
     std::string err;
-    std::string input_filename("models/sponza/sponza.gltf");
+    //std::string input_filename("models/sponza/sponza.gltf");
     //std::string input_filename("models/Chess_Set.gltf");
     //std::string input_filename("models/Cube.gltf");
-    
+    std::string input_filename("models/BoomBox.gltf");
 
     bool ret = loader.LoadASCIIFromFile(&model, &err, input_filename.c_str());
 
@@ -242,12 +242,13 @@ void main() {
     VkSampler dullSampler;
     VtDeviceBuffer materialDescs;
     VtDeviceBuffer materialCombImages;
-    VkDescriptorSet usrDescSet;
+    VkDescriptorSet usrDescSet, vtxDescSet;
     std::vector<vk::DescriptorSetLayout> customedLayouts;
     VtMaterialSet materialSet;
     VtRayTracingSet raytracingSet;
-    VtPipelineLayout rtPipelineLayout;
+    VtPipelineLayout rtPipelineLayout, rtVPipelineLayout;
     VtPipeline rtPipeline;
+    VtVertexAssemblyPipeline vtxPipeline;
     VtAcceleratorSet accelerator;
     VtVertexAssemblySet vertexAssembly;
     //VtVertexInputSet vertexInput, vertexInput2; // arrayed
@@ -258,12 +259,13 @@ void main() {
     std::vector<std::vector<VtVertexInputSet>> vertexInputs;
 
     // create vertex input buffer objects
-    VtDeviceBuffer VBufferRegions, VBufferView, VAccessorSet, VAttributes;
+    VtDeviceBuffer VBufferRegions, VBufferView, VAccessorSet, VAttributes, VTransforms;
     {
         createBufferFast(deviceQueue, VBufferRegions, sizeof(VtVertexRegionBinding));
         createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexAccessor) * model.accessors.size());
         createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexBufferView) * model.bufferViews.size());
         createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024 * 1024);
+        createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4) * 1024 * 1024);
     }
 
     {
@@ -315,20 +317,7 @@ void main() {
         writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, { initialMaterialDesc }, materialCombImages,  0);
     }
 
-    {
-        // custom bindings for ray tracing systems
-        const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
-            vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // constants for generation shader
-            vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute), // env map for miss shader
-            vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eCompute) // env map for miss shader
-        };
-        customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
 
-        // create descriptor set, based on layout
-        // TODO: fill descriptor set by inputs
-        auto dsc = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setPSetLayouts(customedLayouts.data()).setDescriptorSetCount(customedLayouts.size()));
-        usrDescSet = dsc[0];
-    }
 
     {
         // create env image
@@ -348,12 +337,13 @@ void main() {
     }
 
 
-    glm::vec3 eyePos = glm::vec3(0.f, 10.5f, -40.6f).zyx;
+    //glm::vec3 eyePos = glm::vec3(0.f, 10.5f, -40.6f).zyx;
+    glm::vec3 eyePos = glm::vec3(0.f, 0.0f, -10.6f).zyx;
     glm::vec3 viewVector = glm::vec3(0.f, 0.f, 1.f).zyx;
     glm::vec3 moveVector = glm::vec3(0.f, 0.f, 1.f).zyx;
 
     // initial matrices
-    auto scale = 10.0f * glm::vec3(1.f, 1.f, 1.f);
+    auto scale = 1.0f * glm::vec3(1.f, 1.f, 1.f);
     auto atMatrix = glm::lookAt(eyePos*scale, (eyePos+viewVector)*scale, glm::vec3(0.f, 1.f, 0.f));
     auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
 
@@ -368,6 +358,23 @@ void main() {
         // create uniform buffer
         createBufferFast(deviceQueue, rtUniformBuffer, vte::strided<VtCameraUniform>(1));
         //writeIntoBuffer<VtCameraUniform>(deviceQueue, { cameraUniformData }, rtUniformBuffer, 0);
+    }
+
+
+
+    {
+        // custom bindings for ray tracing systems
+        const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
+            vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // constants for generation shader
+            vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute), // env map for miss shader
+            vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eCompute) // env map for miss shader
+        };
+        customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
+
+        // create descriptor set, based on layout
+        // TODO: fill descriptor set by inputs
+        auto dsc = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setPSetLayouts(customedLayouts.data()).setDescriptorSetCount(customedLayouts.size()));
+        usrDescSet = dsc[0];
     }
 
     { 
@@ -388,6 +395,52 @@ void main() {
         vpi.setLayoutCount = customedLayouts.size();
         vtCreateRayTracingPipelineLayout(deviceQueue->device->rtDev, &(VkPipelineLayoutCreateInfo)vpi, &rtPipelineLayout);
     }
+
+
+
+    {
+        // custom bindings for ray tracing systems
+        const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
+            vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute),
+        };
+        customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
+
+        // create descriptor set, based on layout
+        // TODO: fill descriptor set by inputs
+        auto dsc = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setPSetLayouts(customedLayouts.data()).setDescriptorSetCount(customedLayouts.size()));
+        vtxDescSet = dsc[0];
+    }
+
+    {
+        // write ray tracing user defined descriptor set
+        auto _write_tmpl = vk::WriteDescriptorSet(vtxDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+        std::vector<vk::WriteDescriptorSet> writes = {
+            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&vk::DescriptorBufferInfo(VTransforms->_descriptorInfo())),
+        };
+        vk::Device(deviceQueue->device->rtDev).updateDescriptorSets(writes, {});
+    }
+
+    {
+        // create pipeline layout for ray tracing
+        vk::PipelineLayoutCreateInfo vpi;
+        vpi.pSetLayouts = customedLayouts.data();
+        vpi.setLayoutCount = customedLayouts.size();
+        vtCreateVertexAssemblyPipelineLayout(deviceQueue->device->rtDev, &(VkPipelineLayoutCreateInfo)vpi, &rtVPipelineLayout);
+    }
+
+    {
+        // create ray tracing pipeline
+        VtVertexAssemblyPipelineCreateInfo vtpi;
+        vtpi.vertexAssemblyModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "vertex/vtransformed.comp.spv"));
+        vtpi.pipelineLayout = rtVPipelineLayout;
+        vtCreateVertexAssemblyPipeline(deviceQueue->device->rtDev, &vtpi, &vtxPipeline);
+    }
+
+
+
+
+
+
 
     {
         // create ray tracing set
@@ -490,6 +543,7 @@ void main() {
             vtii.attributeByteOffset = attribOffset * sizeof(VtVertexAttributeBinding);
             vtii.bBufferRegionBindings = VBufferRegions;
             vtii.bBufferViews = VBufferView;
+            vtii.vertexAssemblyPipeline = vtxPipeline;
             vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &primitive);
 
             primitives.push_back(primitive);
@@ -531,7 +585,7 @@ void main() {
         });
 
         // matrix with scaling
-        double mscale = 0.1;
+        double mscale = 100.0;
         glm::dmat4 matrix(1.0);
         matrix *= glm::scale(glm::dvec3(mscale, mscale, mscale));
 
@@ -545,8 +599,8 @@ void main() {
         }
     }
 
-
-
+    
+    writeIntoBuffer(deviceQueue, transforms, VTransforms, 0);
     writeIntoBuffer(deviceQueue, accessors, VAccessorSet, 0);
     writeIntoBuffer(deviceQueue, bufferViews, VBufferView, 0);
     writeIntoBuffer(deviceQueue, attributes, VAttributes, 0);
@@ -560,6 +614,7 @@ void main() {
         vxCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qVxCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxCmdBuf, &qVxCmdBuf);
         //vtCmdBindAccelerator(qVxCmdBuf, accelerator);
+        vtCmdBindDescriptorSets(qVxCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
         vtCmdBindVertexAssembly(qVxCmdBuf, vertexAssembly);
         vtCmdBindVertexInputSets(qVxCmdBuf, inputs.size(), inputs.data());
         vtCmdBuildVertexAssembly(qVxCmdBuf);

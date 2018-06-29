@@ -21,6 +21,9 @@ namespace vt { // store in official namespace
     // create ray tracing pipelineLayout 
     extern inline VtResult vtCreateRayTracingPipelineLayout(VtDevice device, const VkPipelineLayoutCreateInfo * vtRayTracingPipelineLayoutCreateInfo, VtPipelineLayout * vtPipelineLayout);
 
+    // create vertex assembly pipeline
+    extern inline VtResult vtCreateVertexAssemblyPipeline(VtDevice device, const VtVertexAssemblyPipelineCreateInfo * vtVertexAssemblyPipelineCreateInfo, VtVertexAssemblyPipeline * vertexAssemblyPipeline);
+
     // create vertex assembly pipelineLayout
     extern inline VtResult vtCreateVertexAssemblyPipelineLayout(VtDevice device, const VkPipelineLayoutCreateInfo * vtRayTracingPipelineLayoutCreateInfo, VtPipelineLayout * vtPipelineLayout);
 
