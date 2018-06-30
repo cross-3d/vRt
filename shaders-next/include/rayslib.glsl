@@ -31,7 +31,7 @@ layout ( std430, binding = 5, set = 0 ) buffer VT_RAY_INDICES {int rayGroupIndic
 // system canvas info
 layout ( std430, binding = 6, set = 0 ) readonly buffer VT_CANVAS_INFO {
     ivec2 size; int iteration, closestHitOffset;
-    int rayGroup, maxRayCount, r1, r2;
+    int currentGroup, maxRayCount, r1, r2;
 } stageUniform;
 
 // counters
@@ -101,7 +101,8 @@ int makeAttribID(in int hAttribID, in int sub) {
 int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint group) {
     const uint type = group;
     int rayID = atomicIncRayCount();
-    RayType(ray, int(type));
+    parameteri(RAY_TYPE, ray.dcolor.y, int(type));
+    
     rays[rayID] = ray; 
     imageStore(rayLink, rayID, uvec4(0u, p2x(c2d), 0u.xx));
     //imageStore(rayGroupIndices[type], atomicIncRayTypedCount(type), uint(rayID+1).xxxx);

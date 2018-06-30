@@ -80,6 +80,9 @@ namespace vt { // store in official namespace
         uint32_t attributeCount = 8;
         uint32_t materialAccessor = 0;
 
+        // default hit group
+        uint32_t hitGroup = 0;
+
         // vertex data sources
         const VkBufferView * pSourceBuffers = nullptr;
         uint32_t sourceBufferCount = 0;

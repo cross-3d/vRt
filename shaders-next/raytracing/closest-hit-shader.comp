@@ -81,7 +81,7 @@ void main() {
     const vec3 max_fresnel_color = toLinear(vec3(1.f));
     const vec3 min_fresnel_color = toLinear(vec3(1.f));
 
-    int wsize = int(closestHitTypedCounterRead[stageUniform.rayGroup]);
+    int wsize = int(closestHitTypedCounterRead[stageUniform.currentGroup]);
     int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
     bool overflow = false;
     int wgs = int(gl_NumWorkGroups);
@@ -91,7 +91,7 @@ void main() {
         SB_BARRIER
         int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
         bool overflow = overflow || globalID >= wsize || globalID < 0;
-        int hitID = overflow ? -1 : vtClosestId(globalID, stageUniform.rayGroup);
+        int hitID = overflow ? -1 : vtClosestId(globalID, stageUniform.currentGroup);
         IFALL(overflow) break;
         {
 #ifdef DMA_HIT

@@ -167,7 +167,7 @@ namespace _vt { // store in undercover namespace
 
         // vertex and bvh export 
         std::shared_ptr<DeviceImage> _attributeTexelBuffer;
-        std::shared_ptr<DeviceBuffer> _verticeBuffer, _verticeBufferIn, _materialBuffer, _orderBuffer, _countersBuffer;
+        std::shared_ptr<DeviceBuffer> _verticeBuffer, _verticeBufferIn, _materialBuffer, _bitfieldBuffer, _countersBuffer;
 
         // input of vertex source data
         std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs;
@@ -390,7 +390,7 @@ namespace _vt { // store in undercover namespace
         uint32_t primitiveOffset = 0;
         uint32_t topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
         uint32_t attributeCount = 8;
-        uint32_t inputID = 0; // useless now
+        uint32_t hitGroup = 0;
 
         uint32_t materialAccessor = 0;
         uint32_t updateOnly = 0;

@@ -44,8 +44,9 @@ namespace _vt {
         vtVertexInput->_uniformBlock.primitiveOffset = info.primitiveOffset;
         vtVertexInput->_uniformBlock.topology = info.topology;
         vtVertexInput->_uniformBlock.attributeCount = info.attributeCount;
-        vtVertexInput->_uniformBlock.inputID = 0;
+        vtVertexInput->_uniformBlock.hitGroup = info.hitGroup;
 
+        
         vtVertexInput->_uniformBlock.materialAccessor = info.materialAccessor;
 
 

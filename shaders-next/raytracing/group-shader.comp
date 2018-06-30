@@ -17,7 +17,7 @@ LOCAL_SIZE_LAYOUT;
 // 
 void main() {
     //const int wsize = int(rayCounter);
-    const int wsize = rayTypedCounterRead[stageUniform.rayGroup];
+    const int wsize = rayTypedCounterRead[stageUniform.currentGroup];
     const int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
     const int wgs = int(gl_NumWorkGroups);
     const int rayID = -1;
@@ -26,7 +26,7 @@ void main() {
     for (int w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
-        int rayID = rayGroupIndicesRead[globalID*4+stageUniform.rayGroup]-1;
+        int rayID = rayGroupIndicesRead[globalID*4+stageUniform.currentGroup]-1;
         bool overflow = overflow || globalID >= wsize || globalID < 0 || rayID < 0;
 
         // get ray by id

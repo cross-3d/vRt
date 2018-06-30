@@ -70,7 +70,7 @@ struct VtVIUniform {
     uint primitiveOffset;
     uint topology;
     uint attributeCount;
-    uint inputID; // no more usable
+    uint hitGroup;
 
     uint materialAccessor;
     uint updateOnly; // planned bitfields support

@@ -42,7 +42,9 @@ void main(){
             readByAccessorIndice(int(vertexBlock.materialAccessor), tidc, matID);
 
             // planned to support quad based geometry
-            vorders[tidc] = int(ordr);
+            vbitfields[tidc] = 0u; //VTX_TYPE
+            parameteri(VTX_TYPE, vbitfields[tidc], int(vertexBlock.hitGroup));
+
             materials[tidc] = int(matID);
             
             // planned to add support of vertex and geometry shaders

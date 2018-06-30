@@ -62,7 +62,8 @@ void main() {
 #endif
             }
 
-            const int rID = RayType(rays[hit.rayID-1]);
+            //const int rID = parameteri(RAY_TYPE, rays[hit.rayID-1].dcolor.y);
+            const int rID = parameteri(VTX_TYPE, uint(vbitfields[triID]));
             [[unroll]]
             for (int i=0;i<4;i++) {
                 [[flatten]]

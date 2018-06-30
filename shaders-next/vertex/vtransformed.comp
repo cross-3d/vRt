@@ -55,7 +55,9 @@ void main(){
             readByAccessorIndice(int(vertexBlock.materialAccessor), tidc, matID);
 
             // planned to support quad based geometry
-            vorders[tidc] = int(ordr);
+            vbitfields[tidc] = 0u;
+            parameteri(VTX_TYPE, vbitfields[tidc], int(vertexBlock.hitGroup));
+
             materials[tidc] = int(matID);
             
             // planned to add support of vertex and geometry shaders
@@ -71,7 +73,7 @@ void main(){
                 for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
                     vec4 attribValue = vec4(0.f);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-                    if (a == NORMAL_TID) { attribValue = mult4(vTransforms[vertexBlock.inputID].transformNrm, attribValue); }
+                    if (a == NORMAL_TID) { attribValue = mult4(vTransforms[cblock.inputID].transformNrm, attribValue); }
                     storeAttribute(ivec3(tidc, attributes[a].attributeID, i), attribValue);
                 }}
 
@@ -79,7 +81,7 @@ void main(){
                 {
                     vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); 
                     readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
-                    vertice = mult4(vTransforms[vertexBlock.inputID].transform, vertice);
+                    vertice = mult4(vTransforms[cblock.inputID].transform, vertice);
                     storePosition(ivec2(tidc, i), vec4(vertice.xyz, 1.f));
                 }
             }

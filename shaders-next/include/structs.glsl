@@ -66,7 +66,7 @@ struct VtRay {
 
 
 // write color, but don't write (save) last element
-uvec2 WriteColor(inout uvec2 rwby, in vec4 color){
+uvec2 writeColor(inout uvec2 rwby, in vec4 color){
     uint btw = BFE_HW(rwby.y, 16, 16);
     uvec2 clr = f32_f16(color);
     rwby = uvec2(clr.x, BFI_HW(clr.y, btw, 16, 16));
@@ -79,39 +79,34 @@ uvec2 WriteColor(inout uvec2 rwby, in vec4 color){
 //const int ATTRIB_EXTENT = 8;
 const int ATTRIB_EXTENT = 5;
 
-// attribute formating
-//const int NORMAL_TID = 0;
-//const int TEXCOORD_TID = 1;
-//const int TANGENT_TID = 2;
-//const int BITANGENT_TID = 3;
-//const int VCOLOR_TID = 4;
-
 struct VtHitData {
-    vec4 uvt; // UV, distance, triangle (base data)
-    vec4 vdat; // additional field (vertex normal, etc.)
-    
-    int rayID, payloadID, materialID, next;
-    int attribID, r0, r1, r2;
-    
-    //vec4 attributes[ATTRIB_EXTENT];
+    int next; uint bitfield; int r0, r1;
+    int attribID, rayID, payloadID, materialID;
+    vec4 uvt, vdat; // UV, distance, triangle (base data), normal
 };
 
 
 
 
-
+// 16-bit offset of rays
 const int B16FT = 16;
-const ivec2 ACTIVED = ivec2(B16FT+0, 1);
-const ivec2 TYPE = ivec2(B16FT+1, 2);
-const ivec2 TARGET_LIGHT = ivec2(B16FT+3, 5);
-const ivec2 BOUNCE = ivec2(B16FT+8, 3);
-const ivec2 DBOUNCE = ivec2(B16FT+11, 3);
-const ivec2 RAY_DL = ivec2(B16FT+14, 1);
+
+// ray bitfield
+const ivec2 RAY_ACTIVED = ivec2(B16FT+0, 1);
+const ivec2 RAY_TYPE = ivec2(B16FT+1, 2);
+const ivec2 RAY_TARGET_LIGHT = ivec2(B16FT+3, 5);
+const ivec2 RAY_BOUNCE = ivec2(B16FT+8, 3);
+const ivec2 RAY_DBOUNCE = ivec2(B16FT+11, 3);
+const ivec2 RAY_RAY_DL = ivec2(B16FT+14, 1);
+
+// vertex bitfield
+const ivec2 VTX_TYPE = ivec2(0, 4);
+const ivec2 VTX_FRONT_FACE = ivec2(4, 1); // 0 is enabled, 1 is disabled
+const ivec2 VTX_BACK_FACE = ivec2(5, 1); // 0 is enabled, 1 is disabled
 
 
 
-
-int parameteri(const ivec2 parameter, inout uint bitfield) {
+int parameteri(const ivec2 parameter, in uint bitfield) {
     return int(BFE_HW(bitfield, parameter.x, parameter.y));
 }
 
@@ -119,7 +114,7 @@ void parameteri(const ivec2 parameter, inout uint bitfield, in int value) {
     bitfield = BFI_HW(bitfield, uint(value), parameter.x, parameter.y);
 }
 
-bool_ parameterb(const ivec2 parameter, inout uint bitfield) {
+bool_ parameterb(const ivec2 parameter, in uint bitfield) {
     return bool_(BFE_HW(bitfield, parameter.x, 1));
 }
 
@@ -128,7 +123,7 @@ void parameterb(const ivec2 parameter, inout uint bitfield, in bool_ value) {
 }
 
 
-int parameteri(const ivec2 parameter, inout float bitfield) {
+int parameteri(const ivec2 parameter, in float bitfield) {
     return int(BFE_HW(floatBitsToUint(bitfield), parameter.x, parameter.y));
 }
 
@@ -136,77 +131,13 @@ void parameteri(const ivec2 parameter, inout float bitfield, in int value) {
     bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), uint(value), parameter.x, parameter.y));
 }
 
-bool_ parameterb(const ivec2 parameter, inout float bitfield) {
+bool_ parameterb(const ivec2 parameter, in float bitfield) {
     return bool_(BFE_HW(floatBitsToUint(bitfield), parameter.x, 1));
 }
 
 void parameterb(const ivec2 parameter, inout float bitfield, in bool_ value) {
     bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), uint(value), parameter.x, 1));
 }
-
-
-#define RAY_BITFIELD_ ray.dcolor.y
-
-
-bool_ RayActived(inout VtRay ray) {
-    return parameterb(ACTIVED, RAY_BITFIELD_);
-}
-
-void RayActived(inout VtRay ray, in bool_ actived) {
-    parameterb(ACTIVED, RAY_BITFIELD_, actived);
-}
-
-
-
-
-int RayType(inout VtRay ray) {
-    return parameteri(TYPE, RAY_BITFIELD_);
-}
-
-void RayType(inout VtRay ray, in int type) {
-    parameteri(TYPE, RAY_BITFIELD_, type);
-}
-
-
-
-// restore law about direct light and caustics
-bool_ RayDL(inout VtRay ray) {
-    return parameterb(RAY_DL, RAY_BITFIELD_);
-}
-
-void RayDL(inout VtRay ray, in bool_ dl) {
-    parameterb(RAY_DL, RAY_BITFIELD_, dl);
-}
-
-
-
-int RayTargetLight(inout VtRay ray) {
-    return parameteri(TARGET_LIGHT, RAY_BITFIELD_);
-}
-
-void RayTargetLight(inout VtRay ray, in int tl) {
-    parameteri(TARGET_LIGHT, RAY_BITFIELD_, tl);
-}
-
-
-int RayBounce(inout VtRay ray) {
-    return int(uint(parameteri(BOUNCE, RAY_BITFIELD_)));
-}
-
-void RayBounce(inout VtRay ray, in int bn) {
-    parameteri(BOUNCE, RAY_BITFIELD_, int(uint(bn)));
-}
-
-
-int RayDiffBounce(inout VtRay ray) {
-    return int(uint(parameteri(DBOUNCE, RAY_BITFIELD_)));
-}
-
-void RayDiffBounce(inout VtRay ray, in int bn) {
-    parameteri(DBOUNCE, RAY_BITFIELD_, int(uint(bn)));
-}
-
-
 
 
 struct bbox {

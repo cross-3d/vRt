@@ -22,11 +22,11 @@
     #ifdef VERTEX_FILLING
     //layout ( binding = 0, set = VTX_SET, std430   ) buffer tcounterB { int tcounter[2]; };
     layout ( binding = 1, set = VTX_SET, std430   ) buffer materialsB { int materials[]; };
-    layout ( binding = 2, set = VTX_SET, std430   ) buffer vordersB { int vorders[]; };
+    layout ( binding = 2, set = VTX_SET, std430   ) buffer bitfieldsB { uint vbitfields[]; };
     #else
     //layout ( binding = 0, set = VTX_SET, std430   ) readonly buffer tcounterB { int tcounter[2]; };
     layout ( binding = 1, set = VTX_SET, std430   ) readonly buffer materialsB { int materials[]; };
-    layout ( binding = 2, set = VTX_SET, std430   ) readonly buffer vordersB { int vorders[]; };
+    layout ( binding = 2, set = VTX_SET, std430   ) readonly buffer bitfieldsB { int vbitfields[]; };
     #endif
 
     #if (defined(VERTEX_FILLING) || defined(VTX_TRANSPLIT))

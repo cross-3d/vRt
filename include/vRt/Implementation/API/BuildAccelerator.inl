@@ -81,7 +81,6 @@ namespace _vt {
             for (auto &s : _bsets) { _sets.push_back(s); }
 
             // update constants
-            iV->_uniformBlock.inputID = _bnd;
             iV->_uniformBlock.updateOnly = false;
             iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
@@ -123,7 +122,6 @@ namespace _vt {
                 for (auto &s : _bsets) { _sets.push_back(s); }
 
                 // update constants
-                iV->_uniformBlock.inputID = _bnd;
                 iV->_uniformBlock.updateOnly = true;
                 iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets

@@ -38,9 +38,9 @@ void main() {
     }
 
     ray.dcolor = uvec2(0u.xx);
-    WriteColor(ray.dcolor, 1.f.xxxx);
-    //WriteColor(ray.dcolor, vec4(dir.xyz * 0.5f + 0.5f, 1.f));
-    RayActived(ray, true_);
+    writeColor(ray.dcolor, 1.f.xxxx);
+    //writeColor(ray.dcolor, vec4(dir.xyz * 0.5f + 0.5f, 1.f));
+    parameterb(RAY_ACTIVED, ray.dcolor.y, true_);
     
     ray.origin.xyz = orig.xyz;
     ray.cdirect = lcts(dir.xyz);

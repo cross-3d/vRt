@@ -36,8 +36,8 @@ namespace _vt {
 
             // vertex data buffers
             bfi.bufferSize = maxPrimitives * sizeof(uint32_t);
-            bfi.format = VK_FORMAT_UNDEFINED;
-            createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_orderBuffer);
+            bfi.format = VK_FORMAT_R32_UINT;
+            createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_bitfieldBuffer);
 
             bfi.bufferSize = maxPrimitives * sizeof(uint32_t);
             bfi.format = VK_FORMAT_UNDEFINED;
@@ -86,7 +86,7 @@ namespace _vt {
             std::vector<vk::WriteDescriptorSet> writes = {
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexAssembly->_countersBuffer->_descriptorInfo())),
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexAssembly->_materialBuffer->_descriptorInfo())),
-                vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexAssembly->_orderBuffer->_descriptorInfo())),
+                vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexAssembly->_bitfieldBuffer->_descriptorInfo())),
 
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtVertexAssembly->_verticeBuffer->_bufferView)),
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo(&vk::DescriptorImageInfo(vtVertexAssembly->_attributeTexelBuffer->_descriptorInfo())),
