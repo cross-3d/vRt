@@ -767,8 +767,6 @@ void main() {
 
 
 
-
-
     // dispatch building vertex internal data
     vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
 
@@ -779,7 +777,6 @@ void main() {
     //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
 
-    
 
     // rendering presentation 
     int32_t currSemaphore = -1; uint32_t currentBuffer = 0;
