@@ -120,9 +120,6 @@ namespace _vt { // store in undercover namespace
     };
 
 
-
-    struct VtStageUniform { int width = 1, height = 1, iteration = 0, closestHitOffset = 0; int rayGroup = 0, maxRayCount = 0, r1 = 0, r2 = 0;};
-
     class RayTracingSet : public std::enable_shared_from_this<RayTracingSet> {
     public:
         friend Device;
@@ -198,13 +195,6 @@ namespace _vt { // store in undercover namespace
 
     
 
-    struct VtBvhBlock {
-        VtMat4 transform;
-        VtMat4 transformInv;
-        VtMat4 projection;
-        VtMat4 projectionInv;
-        int leafCount = 0, primitiveCount = 0, entryID = 0, primitiveOffset = 0;
-    };
 
     // accelerator store set
     class AcceleratorSet : public std::enable_shared_from_this<AcceleratorSet> {
@@ -381,22 +371,6 @@ namespace _vt { // store in undercover namespace
 
 
 
-    struct VtUniformBlock {
-        uint32_t primitiveCount = 0;
-        uint32_t verticeAccessor = 0;
-        uint32_t indiceAccessor = 0xFFFFFFFFu;
-        uint32_t materialID = 0;
-
-        uint32_t primitiveOffset = 0;
-        uint32_t topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
-        uint32_t attributeCount = 8;
-        uint32_t hitGroup = 0;
-
-        uint32_t materialAccessor = 0;
-        uint32_t updateOnly = 0;
-        uint32_t readOffset = 0;
-        uint32_t reserved2 = 0;
-    };
 
 
 
@@ -424,6 +398,12 @@ namespace _vt { // store in undercover namespace
 
         std::shared_ptr<Device> _parent() const { return _device; };
         operator VkDescriptorSet() const { return _descriptorSet; };
+
+        VtUniformBlock& uniform() { return _uniformBlock; };
+        VtUniformBlock uniform() const { return _uniformBlock; };
+
+        //operator VtUniformBlock&() { return _uniformBlock; };
+        //operator VtUniformBlock() const { return _uniformBlock; };
     };
 
 

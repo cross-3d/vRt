@@ -54,6 +54,9 @@ namespace vt { // store in official namespace
         operator VkDescriptorSet() const { return *_vtVertexInputSet; };
         operator bool() const { return !!_vtVertexInputSet; };
         auto* operator->() { return _vtVertexInputSet.get(); };
+
+        VtUniformBlock& uniform() { return _vtVertexInputSet->uniform(); };
+        VtUniformBlock uniform() const { return _vtVertexInputSet->uniform(); };
     };
 
 
