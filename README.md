@@ -41,18 +41,16 @@ We still working on forming of ray tracing API.
 
 ## VERY Relative Calendar (VRC):
 
-#### June/July 2018 ("Early Vulkanism")
-- Development of new vertex input model
-- Debugging and experimenting stage
+#### July 2018 ("Early Vulkanism")
 - Development of better implementation 
 - Improve API and interfaces
 - Support for NVidia (GTX 9, 10, Titan series) and AMD (RX Vega) hardware
+- First implementations in bigger framework and engines (The Forge, Unreal Engine 5, Blender 2.90)
 
 #### August 2018 ("First Life"), hope
 - Coming to alpha stage
 - Finish to fix common bugs and issues 
-- First implementations in bigger framework and engines (The Forge, Unreal Engine 5, Blender 2.90)
-- Write real-time application with ray tracing 
+- Write bigger real-time application with ray tracing 
 
 #### Beyond... 
 - Make custom GLSL/HLSL compiler for unified compatibility 
