@@ -53,7 +53,7 @@ void main() {
             hit.rayID = it+1;
             hit.uvt = geometrySpace.lastIntersection;
             hit.payloadID = 0;
-            hit.materialID = materials[triID];
+            hit.materialID = vmaterials[triID];
             hit.next = 0;
             hit.attribID = 0;
 #ifndef DMA_HIT

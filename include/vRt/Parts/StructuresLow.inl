@@ -118,6 +118,7 @@ namespace vt { // store in official namespace
     };
 
 
+    struct VtPrimitiveBitfield { uint32_t hitGroup : 2, frontFace : 1, backFace : 1; };
 
     struct VtUniformBlock {
         uint32_t primitiveCount = 0;
@@ -128,7 +129,11 @@ namespace vt { // store in official namespace
         uint32_t primitiveOffset = 0;
         uint32_t topology = 0;//VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
         uint32_t attributeCount = 8;
-        uint32_t hitGroup = 0;
+
+        union {
+            uint32_t bitfield = 0u;
+            VtPrimitiveBitfield bitfieldDetail;
+        };
 
         uint32_t materialAccessor = 0;
         uint32_t updateOnly = 0;

@@ -56,9 +56,9 @@ void main(){
             readByAccessorIndice(int(vertexBlock.materialAccessor), rofft, matID);
 
             // planned to support quad based geometry
-            materials[wofft] = int(matID);
-            vbitfields[wofft] = 0u;
-            parameteri(VTX_TYPE, vbitfields[wofft], int(vertexBlock.hitGroup));
+            vmaterials[wofft] = int(matID);
+            vbitfields[wofft] = vertexBlock.bitfield;
+            //parameteri(VTX_TYPE, vbitfields[wofft], int(vertexBlock.hitGroup));
             
             // planned to add support of vertex and geometry shaders
             [[unroll]]

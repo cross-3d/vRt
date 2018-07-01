@@ -81,7 +81,10 @@ namespace vt { // store in official namespace
         uint32_t materialAccessor = 0;
 
         // default hit group
-        uint32_t hitGroup = 0;
+        union {
+            uint32_t bitfield = 0u;
+            VtPrimitiveBitfield bitfieldDetail;
+        };
 
         // vertex data sources
         const VkBufferView * pSourceBuffers = nullptr;

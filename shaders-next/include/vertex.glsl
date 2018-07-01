@@ -21,11 +21,11 @@
 
     #ifdef VERTEX_FILLING
     //layout ( binding = 0, set = VTX_SET, std430   ) buffer tcounterB { int tcounter[2]; };
-    layout ( binding = 1, set = VTX_SET, std430   ) buffer materialsB { int materials[]; };
+    layout ( binding = 1, set = VTX_SET, std430   ) buffer materialsB { int vmaterials[]; };
     layout ( binding = 2, set = VTX_SET, std430   ) buffer bitfieldsB { uint vbitfields[]; };
     #else
     //layout ( binding = 0, set = VTX_SET, std430   ) readonly buffer tcounterB { int tcounter[2]; };
-    layout ( binding = 1, set = VTX_SET, std430   ) readonly buffer materialsB { int materials[]; };
+    layout ( binding = 1, set = VTX_SET, std430   ) readonly buffer materialsB { int vmaterials[]; };
     layout ( binding = 2, set = VTX_SET, std430   ) readonly buffer bitfieldsB { int vbitfields[]; };
     #endif
 
@@ -185,7 +185,7 @@ void interpolateMeshData(inout VtHitData ht) {
     const int tri = floatBitsToInt(ht.uvt.w)-1;
     const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
-    const bool validInterpolant = ht.attribID > 0 && materials[tri] == ht.materialID;
+    const bool validInterpolant = ht.attribID > 0 && vmaterials[tri] == ht.materialID;
     IFANY (validInterpolant) {
         [[unroll]]
         for (int i=0;i<ATTRIB_EXTENT;i++) {

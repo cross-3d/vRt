@@ -100,9 +100,9 @@ const ivec2 RAY_DBOUNCE = ivec2(B16FT+11, 3);
 const ivec2 RAY_RAY_DL = ivec2(B16FT+14, 1);
 
 // vertex bitfield
-const ivec2 VTX_TYPE = ivec2(0, 4);
-const ivec2 VTX_FRONT_FACE = ivec2(4, 1); // 0 is enabled, 1 is disabled
-const ivec2 VTX_BACK_FACE = ivec2(5, 1); // 0 is enabled, 1 is disabled
+const ivec2 VTX_TYPE = ivec2(0, 2);
+const ivec2 VTX_FRONT_FACE = ivec2(2, 1); // 0 is enabled, 1 is disabled
+const ivec2 VTX_BACK_FACE = ivec2(3, 1); // 0 is enabled, 1 is disabled
 
 
 
