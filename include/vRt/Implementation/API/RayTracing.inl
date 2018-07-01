@@ -26,7 +26,6 @@ namespace _vt {
         return result;
     }
 
-
     // update material data in command
     VtResult bindMaterialSet(std::shared_ptr<CommandBuffer>& cmdBuf, VtEntryUsageFlags usageIn, std::shared_ptr<MaterialSet> matrl) {
         VtResult result = VK_SUCCESS;
