@@ -68,6 +68,7 @@ namespace _vt {
         vertx->_calculatedPrimitiveCount = 0;
         
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
+        commandBarrier(*cmdBuf);
         for (auto& iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
             auto iV = iV_.lock();
@@ -107,6 +108,7 @@ namespace _vt {
         auto vertx = cmdBuf->_vertexSet.lock();
 
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
+        commandBarrier(*cmdBuf);
         for (auto& iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
             if (_bnd > inputSet && !multiple) break;
