@@ -95,22 +95,36 @@ namespace _vt {
             cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
             cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupCountersBuffer);
 
-            // handling hits in groups
-            for (int i = 0; i < 4; i++) {
-                rtset->_cuniform.rayGroup = i;
-                vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                if (rtppl->_closestHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY, 1, 1, false);
-                if (rtppl->_missHitPipeline[i]) cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[i], INTENSIVITY, 1, 1, false);
-                if (rtppl->_missHitPipeline[i] || rtppl->_closestHitPipeline[i]) {
-                    commandBarrier(*cmdBuf);
+
+            // handling misses in groups
+            for (int i = 0; i < 1; i++) {
+                if (rtppl->_missHitPipeline[i]) {
+                    rtset->_cuniform.rayGroup = i;
+                    vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                    cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[i], INTENSIVITY, 1, 1, false);
                 }
             }
+            if (rtppl->_missHitPipeline[0]) {
+                commandBarrier(*cmdBuf);
+            }
+
+            // handling hits in groups
+            for (int i = 0; i < 4; i++) {
+                if (rtppl->_closestHitPipeline[i]) {
+                    rtset->_cuniform.rayGroup = i;
+                    vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                    cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY, 1, 1, false);
+                }
+            }
+            commandBarrier(*cmdBuf);
 
             // use resolve shader for resolve ray output or pushing secondaries
             for (int i = 0; i < 4; i++) {
-                rtset->_cuniform.rayGroup = i;
-                vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                if (rtppl->_groupPipelines[i]) cmdDispatch(*cmdBuf, rtppl->_groupPipelines[i], INTENSIVITY);
+                if (rtppl->_groupPipelines[i]) {
+                    rtset->_cuniform.rayGroup = i;
+                    vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                    cmdDispatch(*cmdBuf, rtppl->_groupPipelines[i], INTENSIVITY);
+                }
             }
         }
 

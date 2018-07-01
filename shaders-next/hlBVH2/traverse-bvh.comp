@@ -65,7 +65,7 @@ void main() {
             IF (triID >= 0) {
                 hits[hid].attribID = vtVerifyClosestHit(hid)+1; // better link directly, because extra atomics (even with subgroups) also hits to performances
             } else {
-                const int rID = parameteri(RAY_TYPE, rays[it].dcolor.y);
+                const int rID = 0;//parameteri(RAY_TYPE, rays[it].dcolor.y);
                 [[unroll]]
                 for (int i=0;i<4;i++) {
                     [[flatten]]

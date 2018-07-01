@@ -54,7 +54,7 @@ namespace vt { // store in official namespace
 
         VkPipelineShaderStageCreateInfo generationModule = {};
         VkPipelineShaderStageCreateInfo closestModule[4] = {};
-        VkPipelineShaderStageCreateInfo missModule[4] = {};
+        VkPipelineShaderStageCreateInfo missModule[1] = {};
         VkPipelineShaderStageCreateInfo groupModules[4] = {};
     };
 

@@ -16,12 +16,23 @@ namespace _vt {
         const auto& vendorName = _vtDevice->_vendorName;
 
         // TODO: make unified triplet
-        vtPipeline->_tripletPipeline = createComputeMemory(VkDevice(*_vtDevice), natives::triplet[_vtDevice->_vendorName], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        //vtPipeline->_tripletPipeline = createComputeMemory(VkDevice(*_vtDevice), natives::triplet[_vtDevice->_vendorName], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
 
+        // generation shaders
         if (info.generationModule.module) vtPipeline->_generationPipeline = createCompute(VkDevice(*_vtDevice), info.generationModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+
+        // missing shaders
+        for (int i = 0; i < 1; i++) {
+            if (info.missModule[i].module) vtPipeline->_missHitPipeline[i] = createCompute(VkDevice(*_vtDevice), info.missModule[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        }
+
+        // hit shaders
         for (int i = 0; i < 4; i++) {
             if (info.closestModule[i].module) vtPipeline->_closestHitPipeline[i] = createCompute(VkDevice(*_vtDevice), info.closestModule[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
-            if (info.missModule[i].module) vtPipeline->_missHitPipeline[i] = createCompute(VkDevice(*_vtDevice), info.missModule[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        }
+
+        // ray groups shaders
+        for (int i = 0; i < 4; i++) {
             if (info.groupModules[i].module) vtPipeline->_groupPipelines[i] = createCompute(VkDevice(*_vtDevice), info.groupModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
         }
 
