@@ -85,8 +85,8 @@ namespace vt {
         return updateVertexSet(commandBuffer, inputSet);
     };
 
-    inline VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer /*,  */) {
-        return buildVertexSet(commandBuffer);
+    inline VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb) {
+        return buildVertexSet(commandBuffer, cb);
     };
 
     inline VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer /*,  */) {

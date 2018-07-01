@@ -54,7 +54,7 @@ namespace _vt {
         return VK_SUCCESS;
     }
 
-    VtResult buildVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf) {
+    VtResult buildVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
         VtResult result = VK_SUCCESS;
 
         // useless to building
@@ -82,7 +82,8 @@ namespace _vt {
 
             // update constants
             iV->_uniformBlock.updateOnly = false;
-            iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
+            iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount;
+            if (cb) cb(*cmdBuf, int(_bnd), iV->_uniformBlock);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
             vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
             vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
@@ -123,7 +124,7 @@ namespace _vt {
 
                 // update constants
                 iV->_uniformBlock.updateOnly = true;
-                iV->_uniformBlock.readOffset = calculatedPrimitiveCount;
+                iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount;
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
                 vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, 0, sizeof(iV->_uniformBlock), &iV->_uniformBlock);
                 vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);

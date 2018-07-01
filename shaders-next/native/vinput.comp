@@ -14,8 +14,6 @@
 
 LOCAL_SIZE_LAYOUT;
 
-//initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
-
 void main(){
     const uint wsize = uint(vertexBlock.primitiveCount);
     const uint gS = uint(gl_WorkGroupSize.x);
@@ -36,38 +34,38 @@ void main(){
 
             // constant material ID from vertex instance 
             uint matID = uint(vertexBlock.materialID);
-            uint ordr = vertexBlock.readOffset + globalID, tidc = ordr;//, tidc = tcounterInc(1);
+            uint rofft = uint(vertexBlock.readOffset) + globalID;
+            uint wofft = uint(vertexBlock.primitiveOffset) + globalID;
 
             // read material accessor
-            readByAccessorIndice(int(vertexBlock.materialAccessor), tidc, matID);
+            readByAccessorIndice(int(vertexBlock.materialAccessor), rofft, matID);
 
             // planned to support quad based geometry
-            vbitfields[tidc] = 0u; //VTX_TYPE
-            parameteri(VTX_TYPE, vbitfields[tidc], int(vertexBlock.hitGroup));
-
-            materials[tidc] = int(matID);
+            materials[wofft] = int(matID);
+            vbitfields[wofft] = 0u;
+            parameteri(VTX_TYPE, vbitfields[wofft], int(vertexBlock.hitGroup));
             
             // planned to add support of vertex and geometry shaders
             [[unroll]]
             for (int i=0;i<3;i++) {
                 // aggregated indices
-                uint indiceID = (vertexBlock.primitiveOffset + globalID) * trp + i;
+                uint indiceID = rofft * trp + i;
                 readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
-                storeAttribute(ivec3(tidc, 0, i), vec4(0.f.xxx, 0.f));
+                storeAttribute(ivec3(wofft, 0, i), vec4(0.f.xxx, 0.f));
 
                 // load attrib data
                 [[unroll]]
                 for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
-                    vec4 attribValue = vec4(0.f); 
+                    vec4 attribValue = vec4(0.f);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-                    storeAttribute(ivec3(tidc, attributes[a].attributeID, i), attribValue);
+                    storeAttribute(ivec3(wofft, attributes[a].attributeID, i), attribValue);
                 }}
 
                 // load vertex data
                 {
                     vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); 
                     readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
-                    storePosition(ivec2(tidc, i), vec4(vertice.xyz, 1.f));
+                    storePosition(ivec2(wofft, i), vec4(vertice.xyz, 1.f));
                 }
             }
             
