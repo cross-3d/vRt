@@ -41,18 +41,19 @@ We still working on forming of ray tracing API.
 
 ## VERY Relative Calendar (VRC):
 
-#### July 2018 ("Early Vulkanism")
+#### July 2018 ("Hydrogen")
 - Development of better implementation 
 - Improve API and interfaces
 - Support for NVidia (GTX 9, 10, Titan series) and AMD (RX Vega) hardware
-- First implementations in bigger framework and engines (The Forge, Unreal Engine 5, Blender 2.90)
 
-#### August 2018 ("First Life"), hope
-- Coming to alpha stage
-- Finish to fix common bugs and issues 
+#### 2018 Q4 ("Lithium")
+- Coming to (pre-)alpha stage
+- Finish to fix (un)common bugs and issues 
 - Write bigger real-time application with ray tracing 
+- Make support of all Vulkan API 1.1 (or newer) supported platforms
 
-#### Beyond... 
+#### Beyond...  
+- First implementations in bigger framework and engines (The Forge, Unreal Engine 5, Blender 2.90)
 - Make custom GLSL/HLSL compiler for unified compatibility 
 - Coming to beta stage
 - Compatibility with Nvidia RTX, PowerVR Wizard Ray Tracing, Intel Larrabee 2019
