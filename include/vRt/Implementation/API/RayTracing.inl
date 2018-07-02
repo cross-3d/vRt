@@ -46,11 +46,11 @@ namespace _vt {
         auto rtset = cmdBuf->_rayTracingSet.lock();
 
         auto rayCount = x * y;
-
         rtset->_cuniform.width = x;
         rtset->_cuniform.height = y;
         rtset->_cuniform.iteration = 0;
         rtset->_cuniform.closestHitOffset = 0;
+        rtset->_cuniform.currentGroup = 0;
 
         const uint32_t WG_COUNT = 64;
         const uint32_t RADICE_AFFINE = 16;
@@ -60,18 +60,23 @@ namespace _vt {
         std::vector<VkDescriptorSet> _rtSets = { rtset->_descriptorSet, matrl->_descriptorSet };
         for (auto &s : cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
 
-        // reset counters of ray tracing
-        cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
-        cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupCountersBuffer);
-        cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupIndicesBuffer); // reset writtable indices for avoid errors in stages
-
         // initial consts
         vkCmdUpdateBuffer(*cmdBuf, *matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
-        vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
 
-        // run rays generation
-        vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-        if (rtppl->_generationPipeline) cmdDispatch(*cmdBuf, rtppl->_generationPipeline, tiled(x, 8u), tiled(y, 8u));
+        // cleaning indices and counters
+        auto cmdClean = [&](){
+            cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
+            cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupCountersBuffer);
+            cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupIndicesBuffer);
+        };
+
+        // run rays generation (if have)
+        if (rtppl->_generationPipeline) {
+            cmdClean();
+            vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
+            cmdDispatch(*cmdBuf, rtppl->_generationPipeline, tiled(x, 8u), tiled(y, 8u));
+        };
 
         // ray trace command
         for (int it = 0; it < B; it++) {
@@ -79,7 +84,7 @@ namespace _vt {
             rtset->_cuniform.iteration = it;
             vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform); 
 
-            { // run traverse processing (single accelerator supported at now)
+            if (vertx && vertx->_calculatedPrimitiveCount > 0) { // run traverse processing (single accelerator supported at now)
                 std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
                 cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, INTENSIVITY); // traverse BVH
@@ -91,26 +96,18 @@ namespace _vt {
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 16 * sizeof(uint32_t)) });
             cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, rayCount * sizeof(uint32_t) * 4) });
-            cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
-            cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupCountersBuffer);
-
+            cmdClean();
 
             // handling misses in groups
-            for (int i = 0; i < 1; i++) {
-                if (rtppl->_missHitPipeline[i]) {
-                    rtset->_cuniform.rayGroup = i;
-                    vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                    cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[i], INTENSIVITY, 1, 1, false);
-                }
-            }
             if (rtppl->_missHitPipeline[0]) {
-                commandBarrier(*cmdBuf);
+                vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY);
             }
 
             // handling hits in groups
             for (int i = 0; i < 4; i++) {
                 if (rtppl->_closestHitPipeline[i]) {
-                    rtset->_cuniform.rayGroup = i;
+                    rtset->_cuniform.currentGroup = i;
                     vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                     cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY, 1, 1, false);
                 }
@@ -120,7 +117,7 @@ namespace _vt {
             // use resolve shader for resolve ray output or pushing secondaries
             for (int i = 0; i < 4; i++) {
                 if (rtppl->_groupPipelines[i]) {
-                    rtset->_cuniform.rayGroup = i;
+                    rtset->_cuniform.currentGroup = i;
                     vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                     cmdDispatch(*cmdBuf, rtppl->_groupPipelines[i], INTENSIVITY);
                 }
