@@ -464,13 +464,15 @@ void main() {
     {
         // create ray tracing pipeline
         VtRayTracingPipelineCreateInfo rtpi;
-        
-        rtpi.generationModule = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/generation-shader.comp.spv"));
-        for (int i = 0; i < 1;i++) {
-            rtpi.closestModule[i] = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/closest-hit-shader.comp.spv"));
-            rtpi.missModule[i] = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/miss-hit-shader.comp.spv"));
-            rtpi.groupModules[i] = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/group-shader.comp.spv"));
-        }
+        rtpi.pGenerationModule = &vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/generation-shader.comp.spv"));
+        rtpi.pClosestModules = &vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/closest-hit-shader.comp.spv"));
+        rtpi.pMissModules = &vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/miss-hit-shader.comp.spv"));
+        rtpi.pGroupModules = &vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/group-shader.comp.spv"));
+
+        rtpi.closestModuleCount = 1;
+        rtpi.missModuleCount = 1;
+        rtpi.groupModuleCount = 1;
+
         rtpi.pipelineLayout = rtPipelineLayout;
         vtCreateRayTracingPipeline(deviceQueue->device->rtDev, &rtpi, &rtPipeline);
     }

@@ -145,7 +145,8 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout, when pipeline was created
 
         // 
-        VkPipeline _generationPipeline, _tripletPipeline, _closestHitPipeline[4], _missHitPipeline[1], _groupPipelines[4];
+        //VkPipeline _generationPipeline, _tripletPipeline, _closestHitPipeline[4], _missHitPipeline[1], _groupPipelines[4];
+        std::vector<VkPipeline> _generationPipeline, _closestHitPipeline, _missHitPipeline, _groupPipelines;
 
         // material and accelerator descriptor sets, that sets to "1" is dedicated by another natives
         std::vector<VkDescriptorSet> _userDefinedDescriptorSets; // beyond than 1 only

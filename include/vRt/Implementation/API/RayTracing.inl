@@ -71,11 +71,11 @@ namespace _vt {
         };
 
         // run rays generation (if have)
-        if (rtppl->_generationPipeline) {
+        if (rtppl->_generationPipeline.size() > 0 && rtppl->_generationPipeline[0]) {
             cmdClean();
             vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            cmdDispatch(*cmdBuf, rtppl->_generationPipeline, tiled(x, 8u), tiled(y, 8u));
+            cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, 8u), tiled(y, 8u));
         };
 
         // ray trace command
@@ -94,7 +94,7 @@ namespace _vt {
             }
 
             // reload to caches and reset counters (if has group shaders)
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < std::min(4ull, rtppl->_groupPipelines.size()); i++) {
                 if (rtppl->_groupPipelines[i]) {
                     vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
                     cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 16 * sizeof(uint32_t)) });
@@ -112,7 +112,7 @@ namespace _vt {
                 }
 
                 // handling hits in groups
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < std::min(4ull, rtppl->_closestHitPipeline.size()); i++) {
                     if (rtppl->_closestHitPipeline[i]) {
                         rtset->_cuniform.currentGroup = i;
                         vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
@@ -122,7 +122,7 @@ namespace _vt {
             }
 
             // use resolve shader for resolve ray output or pushing secondaries
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < std::min(4ull, rtppl->_groupPipelines.size()); i++) {
                 if (rtppl->_groupPipelines[i]) {
                     rtset->_cuniform.currentGroup = i;
                     vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);

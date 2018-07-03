@@ -52,10 +52,14 @@ namespace vt { // store in official namespace
         // ray tracing based pipeline layout
         VtPipelineLayout pipelineLayout;
 
-        VkPipelineShaderStageCreateInfo generationModule = {};
-        VkPipelineShaderStageCreateInfo closestModule[4] = {};
-        VkPipelineShaderStageCreateInfo missModule[1] = {};
-        VkPipelineShaderStageCreateInfo groupModules[4] = {};
+        const VkPipelineShaderStageCreateInfo * pGenerationModule = nullptr;
+        const VkPipelineShaderStageCreateInfo * pClosestModules = nullptr;
+        const VkPipelineShaderStageCreateInfo * pMissModules = nullptr;
+        const VkPipelineShaderStageCreateInfo * pGroupModules = nullptr;
+
+        uint32_t closestModuleCount = 0;
+        uint32_t missModuleCount = 0;
+        uint32_t groupModuleCount = 0;
     };
 
 

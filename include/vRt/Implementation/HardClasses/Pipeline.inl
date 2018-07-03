@@ -15,25 +15,32 @@ namespace _vt {
         vtPipeline->_pipelineLayout = info.pipelineLayout;
         const auto& vendorName = _vtDevice->_vendorName;
 
-        // TODO: make unified triplet
-        //vtPipeline->_tripletPipeline = createComputeMemory(VkDevice(*_vtDevice), natives::triplet[_vtDevice->_vendorName], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
-
         // generation shaders
-        if (info.generationModule.module) vtPipeline->_generationPipeline = createCompute(VkDevice(*_vtDevice), info.generationModule, *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        if (info.pGenerationModule) {
+            if (info.pGenerationModule[0].module) {
+                vtPipeline->_generationPipeline.push_back(createCompute(VkDevice(*_vtDevice), info.pGenerationModule[0], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice)));
+            }
+        }
 
         // missing shaders
-        for (int i = 0; i < 1; i++) {
-            if (info.missModule[i].module) vtPipeline->_missHitPipeline[i] = createCompute(VkDevice(*_vtDevice), info.missModule[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        if (info.pMissModules) {
+            for (int i = 0; i < std::min(1u, info.missModuleCount); i++) {
+                if (info.pMissModules[i].module) vtPipeline->_missHitPipeline.push_back(createCompute(VkDevice(*_vtDevice), info.pMissModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice)));
+            }
         }
 
         // hit shaders
-        for (int i = 0; i < 4; i++) {
-            if (info.closestModule[i].module) vtPipeline->_closestHitPipeline[i] = createCompute(VkDevice(*_vtDevice), info.closestModule[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        if (info.pClosestModules) {
+            for (int i = 0; i < std::min(4u, info.closestModuleCount); i++) {
+                if (info.pClosestModules[i].module) vtPipeline->_closestHitPipeline.push_back(createCompute(VkDevice(*_vtDevice), info.pClosestModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice)));
+            }
         }
 
         // ray groups shaders
-        for (int i = 0; i < 4; i++) {
-            if (info.groupModules[i].module) vtPipeline->_groupPipelines[i] = createCompute(VkDevice(*_vtDevice), info.groupModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        if (info.pGroupModules) {
+            for (int i = 0; i < std::min(4u, info.groupModuleCount); i++) {
+                if (info.pGroupModules[i].module) vtPipeline->_groupPipelines.push_back(createCompute(VkDevice(*_vtDevice), info.pGroupModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice)));
+            }
         }
 
         return result;
