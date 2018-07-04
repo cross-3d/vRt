@@ -5,7 +5,7 @@
 
 #include "../include/driver.glsl"
 
-precision highp float;
+precision mediump float;
 precision highp int;
 
 #include "../include/structs.glsl"

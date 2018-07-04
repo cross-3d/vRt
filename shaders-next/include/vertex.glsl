@@ -64,7 +64,7 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
     layout ( binding = 1, set = 1 ) uniform isamplerBuffer bvhMeta;
 
     #ifdef USE_F32_BVH
-    layout ( binding = 2, set = 1, std430 ) readonly buffer bvhBoxesB { highp vec4 bvhBoxes[][4]; };
+    layout ( binding = 2, set = 1, std430 ) readonly buffer bvhBoxesB { mediump vec4 bvhBoxes[][4]; };
     #else
     layout ( binding = 2, set = 1, std430 ) readonly buffer bvhBoxesB { uvec2 bvhBoxes[][4]; }; 
     #endif

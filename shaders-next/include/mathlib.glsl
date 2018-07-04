@@ -49,8 +49,9 @@ const float E = 2.7182818284590452353602874713526624977572f;
 #endif
 */
 
-highp uint M16(in usamplerBuffer m, in uint i) { 
-    return (i&1) == 0 ? texelFetch(m, int(i) >> 1).x : texelFetch(m, int(i) >> 1).y;
+highp uint M16(in usamplerBuffer m, in uint i) {
+    const int ic = int(i) >> 1;
+    return (i&1) == 0 ? texelFetch(m, ic).x : texelFetch(m, ic).y;
 }
 
 #if defined(ENABLE_AMD_INT16)
@@ -63,8 +64,7 @@ uint M32(in usamplerBuffer m, in uint i) {
 uint M32(in usamplerBuffer m, in uint i) { 
     //uint _i2 = (i)<<1u; // division of index
     //return bitfieldInsert(M16(m,_i2), M16(m,_i2|1), 16, 16); // use bitfield insert hack
-    //return packUint2x16(texelFetch(m, int(i)).xy);
-    highp uvec2 u16 = texelFetch(m, int(i)).xy;
+    const highp uvec2 u16 = texelFetch(m, int(i)).xy;
     return bitfieldInsert(u16.x, u16.y, 16, 16);
 }
 #endif
@@ -432,14 +432,14 @@ vec2 fast32swap(in vec2 b64, in bool_ nswp) {
 // single float 32-bit box intersection
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
-bool_ intersectCubeF32Single(const highp vec3 origin, const highp vec3 dr, inout bvec3_ sgn, const highp mat3x2 tMinMaxMem, inout float near, inout float far) {
-    highp mat3x2 tMinMax = mat3x2(
+bool_ intersectCubeF32Single(const mediump vec3 origin, const mediump vec3 dr, inout bvec3_ sgn, const mediump mat3x2 tMinMaxMem, inout float near, inout float far) {
+    mediump mat3x2 tMinMax = mat3x2(
         fma(SSC(sgn.x) ? tMinMaxMem[0] : tMinMaxMem[0].yx, dr.xx, origin.xx),
         fma(SSC(sgn.y) ? tMinMaxMem[1] : tMinMaxMem[1].yx, dr.yy, origin.yy),
         fma(SSC(sgn.z) ? tMinMaxMem[2] : tMinMaxMem[2].yx, dr.zz, origin.zz)
     );
 
-    highp float 
+    mediump float 
         tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y),
         tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x);
 
@@ -465,7 +465,7 @@ bool_ intersectCubeF32Single(const highp vec3 origin, const highp vec3 dr, inout
 #ifdef AMD_F16_BVH
 bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, inout bvec3_ sgn, in fmat3x4_ tMinMax, in fmat3x4_ tCorrections, inout vec2 near, inout vec2 far) {
 #else
-bvec2_ intersectCubeDual(in highp fvec3_ origin, inout highp fvec3_ dr, inout bvec3_ sgn, in highp fmat3x4_ tMinMax, in highp fmat3x4_ tCorrections, inout vec2 near, inout vec2 far) {
+bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, inout bvec3_ sgn, in highp fmat3x4_ tMinMax, in highp fmat3x4_ tCorrections, inout vec2 near, inout vec2 far) {
 #endif
     tMinMax = fmat3x4_(
         fma(SSC(sgn.x) ? tMinMax[0] : tMinMax[0].zwxy, dr.xxxx, origin.xxxx),
@@ -476,7 +476,7 @@ bvec2_ intersectCubeDual(in highp fvec3_ origin, inout highp fvec3_ dr, inout bv
 #ifdef AMD_F16_BVH
     fvec2_
 #else
-    highp fvec2_ 
+    mediump fvec2_ 
 #endif
 
     tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw),

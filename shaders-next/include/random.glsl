@@ -14,7 +14,7 @@ vec2 float2Construct( in uvec2 m ) {
     return clamp01(vec2(floatConstruct(m.x), floatConstruct(m.y)));
 }
 
-highp vec2 half2Construct ( in uint m ) {
+mediump vec2 half2Construct ( in uint m ) {
 #ifdef ENABLE_AMD_INSTRUCTION_SET
     return clamp01(vec2(fract(unpackFloat2x16((m & 0x03FF03FFu) | (0x3C003C00u)))));
 #else
