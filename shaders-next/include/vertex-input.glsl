@@ -68,14 +68,14 @@ struct VtVIUniform {
     uint materialID;
 
     uint primitiveOffset;
-    uint topology;
+    uint reserved0;
     uint attributeCount;
     uint bitfield;
 
     uint materialAccessor;
-    uint updateOnly; // planned bitfields support
+    uint updateOnly; // planned to merge into bitfields
     uint readOffset;
-    uint reserved2;
+    uint reserved1;
 };
 
 // uniform input of vertex loader
