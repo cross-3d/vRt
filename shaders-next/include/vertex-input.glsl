@@ -53,7 +53,7 @@ int aNormalized(in uint bitfield) {
 
 // input data of vertex instance
 //layout ( binding = 0, set = 1, std430 ) readonly buffer bufferSpaceB {INDEX16 bufferSpace[]; };
-layout ( binding = 0, set = 1 ) uniform usamplerBuffer bufferSpace[8]; // vertex model v1.2
+layout ( binding = 0, set = 1 ) uniform usamplerBuffer bufferSpace[8]; // vertex model v1.3
 //layout ( binding = 1, set = 1, std430 ) readonly buffer VT_BUFFER_REGION {VtBufferRegion bufferRegions[]; };
 layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
 layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR {VtAccessor accessors[]; };
@@ -85,7 +85,7 @@ layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
 
 
 
-uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) {
+uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) { //bytecorrect -= 1;
     int bufferView = accessors[accessorID].bufferView;
     uint offseT = bufferViews[bufferView].byteOffset + accessors[accessorID].byteOffset; // calculate byte offset 
     uint stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1) << bytecorrect); // get true stride 

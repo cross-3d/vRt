@@ -49,17 +49,23 @@ const float E = 2.7182818284590452353602874713526624977572f;
 #endif
 */
 
+highp uint M16(in usamplerBuffer m, in uint i) { 
+    return (i&1) == 0 ? texelFetch(m, int(i) >> 1).x : texelFetch(m, int(i) >> 1).y;
+}
+
 #if defined(ENABLE_AMD_INT16)
-highp uint M16(in usamplerBuffer m, in uint i) { return texelFetch(m, int(i)).x; }
 uint M32(in usamplerBuffer m, in uint i) { 
-    uint _i2 = (i)<<1u; // division of index
-    return packUint2x16(u16vec2(M16(m,_i2),M16(m,_i2|1))); // use regular uint16_t for packing
+    //uint _i2 = (i)<<1u; // division of index
+    //return packUint2x16(u16vec2(M16(m,_i2),M16(m,_i2|1))); // use regular uint16_t for packing
+    return packUint2x16(u16vec2(texelFetch(m, int(i)).xy));
 }
 #else
-highp uint M16(in usamplerBuffer m, in uint i) { return texelFetch(m, int(i)).x; }
 uint M32(in usamplerBuffer m, in uint i) { 
-    uint _i2 = (i)<<1u; // division of index
-    return bitfieldInsert(M16(m,_i2), M16(m,_i2|1), 16, 16); // use bitfield insert hack
+    //uint _i2 = (i)<<1u; // division of index
+    //return bitfieldInsert(M16(m,_i2), M16(m,_i2|1), 16, 16); // use bitfield insert hack
+    //return packUint2x16(texelFetch(m, int(i)).xy);
+    highp uvec2 u16 = texelFetch(m, int(i)).xy;
+    return bitfieldInsert(u16.x, u16.y, 16, 16);
 }
 #endif
 
