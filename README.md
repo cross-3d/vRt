@@ -55,7 +55,7 @@ We still working on forming of ray tracing API.
 #### Beyond...  
 - First implementations in bigger framework and engines (The Forge, Unreal Engine 5, Blender 2.90)
 - Make custom GLSL/HLSL compiler for unified compatibility 
-- Coming to beta stage
-- Compatibility with Nvidia RTX, PowerVR Wizard Ray Tracing, Intel Larrabee 2019
+- Coming to beta stage 
+- Compatibility with Nvidia RTX (Volta/Turing), PowerVR Wizard Ray Tracing (GR6500), AMD Radeon RXL (Navi, next-gen), Intel Larrabee 2019
 - Compatibility with mobile platform 
-- Compatibility with Apple OS
+- Compatibility with Apple OS 
