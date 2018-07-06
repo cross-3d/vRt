@@ -42,7 +42,7 @@ void main() {
         traverseBvh2(not(overflow), hid);
 
         IF (not(overflow)) { // verify intersection
-            const int triID = floatBitsToInt(geometrySpace.lastIntersection.w)-1;
+            const int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
             if (hid < 0) hid = it;
 
 #ifdef DMA_HIT
@@ -51,7 +51,7 @@ void main() {
             VtHitData hit;
 #endif
             hit.rayID = it+1;
-            hit.uvt = geometrySpace.lastIntersection;
+            hit.uvt = primitiveState.lastIntersection;
             hit.payloadID = 0;
             hit.materialID = vmaterials[triID];
             hit.next = 0;

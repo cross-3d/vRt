@@ -10,6 +10,9 @@
 #extension GL_AMD_gcn_shader : enable
 #extension GL_AMD_gpu_shader_half_float : enable
 #extension GL_AMD_gpu_shader_int16 : enable
+#extension GL_KHX_shader_explicit_arithmetic_types : enable
+#extension GL_EXT_shader_16bit_storage : enable
+#extension GL_EXT_shader_8bit_storage : enable // nothing to implement?
 #endif
 
 // ARB and ext
@@ -25,11 +28,11 @@
 #extension GL_KHR_shader_subgroup_shuffle          : enable
 #extension GL_KHR_shader_subgroup_shuffle_relative : enable
 #extension GL_KHR_shader_subgroup_clustered        : enable
-#extension GL_KHX_shader_explicit_arithmetic_types : enable
 
-// non uniform (for bindless textures)
+// texture extensions
 #extension GL_EXT_nonuniform_qualifier : enable
-//#extension GL_EXT_samplerless_texture_functions : enable
+#extension GL_EXT_samplerless_texture_functions : enable
+
 
 // ray tracing options
 //#define EXPERIMENTAL_DOF // no dynamic control supported

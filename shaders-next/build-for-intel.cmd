@@ -3,7 +3,7 @@
 set PATH=C:\Users\elvir\msvc\glslang\bin;%PATH%
 
 cd %~dp0
-  set CFLAGSV= --target-env vulkan1.1 -d --aml -DINTEL_PLATFORM -DUSE_F32_BVH -DPLAIN_BINDLESS_TEXTURE_FETCH
+  set CFLAGSV= --target-env vulkan1.1 -V130 -d -t --aml --nsf -DINTEL_PLATFORM -DUSE_F32_BVH -DPLAIN_BINDLESS_TEXTURE_FETCH
   
 set INDIR=.\
 set OUTDIR=..\build\shaders\intel\
