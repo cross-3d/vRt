@@ -36,7 +36,7 @@ struct PrimitiveState {
 
 
 #ifndef USE_STACKLESS_BVH
-const int localStackSize = 8, extStackSize = 32;
+const int localStackSize = 8, extStackSize = 32, computedStackSize = localStackSize+extStackSize;
 shared int localStack[WORK_SIZE][8];
 #define lstack localStack[Local_Idx]
 
@@ -51,27 +51,25 @@ void storeStack(in int rsl) {
     if (idx < localStackSize) { lstack[idx] = rsl; } else { imageStore(texelPages, traverseState.cacheID*extStackSize+(idx-localStackSize), rsl.xxxx); } 
 }
 
-bool stackIsFull() { return traverseState.stackPtr >= (localStackSize + extStackSize); }
+bool stackIsFull() { return traverseState.stackPtr >= computedStackSize; }
 bool stackIsEmpty() { return traverseState.stackPtr <= 0; }
 #endif
 
 void doIntersection() {
-    const bool near = traverseState.defTriangleID >= 0;
     vec2 uv = vec2(0.f.xx); const float d = 
 #ifdef USE_FAST_INTERSECTION
-        intersectTriangle(currentRayTmp.origin.xyz, primitiveState.dir.xyz, traverseState.defTriangleID, uv.xy, near);
+        intersectTriangle(currentRayTmp.origin.xyz, primitiveState.dir.xyz, traverseState.defTriangleID, uv.xy, traverseState.defTriangleID >= 0);
 #else
-        intersectTriangle(currentRayTmp.origin.xyz, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID, uv.xy, near);
+        intersectTriangle(currentRayTmp.origin.xyz, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID, uv.xy, traverseState.defTriangleID >= 0);
 #endif
 #define nearhit primitiveState.lastIntersection.z
 
-    [[flatten]]
-    IF (lessF(d, nearhit)) { traverseState.cutOut = d * traverseState.distMult - traverseState.diffOffset; }
+    //[[flatten]]
+    if (d < nearhit) { traverseState.cutOut = d * traverseState.distMult - traverseState.diffOffset; }
 
-    [[flatten]]
-    if (near && d < INFINITY && d <= nearhit) primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID+1));
-
-    traverseState.defTriangleID = -1; // reset triangle ID 
+    //[[flatten]]
+    if (d < INFINITY && d <= nearhit) { primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID+1)); } traverseState.defTriangleID=-1;
+    //if (d < INFINITY && d <= nearhit) { primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(exchange(traverseState.defTriangleID,-1)+1)); }
 }
 
 void traverseBvh2(in bool_ valid, in int eht) {
