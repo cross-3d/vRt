@@ -233,7 +233,7 @@ namespace _vt { // store in undercover namespace
         VkPipeline _intersectionPipeline, _interpolatorPipeline;
 
         // build BVH stages (few stages, in sequences)
-        VkPipeline _boundingPipeline, _shorthandPipeline, _leafPipeline, /*...radix sort between*/ _buildPipeline, _fitPipeline, _leafLinkPipeline;
+        VkPipeline _boundingPipeline, _shorthandPipeline, _leafPipeline, /*...radix sort between*/ _buildPipeline, _buildPipelineFirst, _fitPipeline, _leafLinkPipeline;
 
         // static pipeline layout for stages 
         VkPipelineLayout _buildPipelineLayout, _traversePipelineLayout;

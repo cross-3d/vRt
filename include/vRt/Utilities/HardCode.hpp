@@ -5,6 +5,21 @@
 namespace _vt {
     namespace hlbvh2 {
 
+        inline static std::map<VtVendor, std::vector<uint32_t>> builderFirst = {
+            { VT_VENDOR_AMD,{
+#include "../HardCodes/amd/hlBVH2/bvh-build-first.comp.inl"
+        } },
+        { VT_VENDOR_NVIDIA,{
+#include "../HardCodes/nvidia/hlBVH2/bvh-build-first.comp.inl"
+        } },
+        { VT_VENDOR_INTEL,{
+#include "../HardCodes/intel/hlBVH2/bvh-build-first.comp.inl"
+        } },
+        { VT_VENDOR_UNIVERSAL,{
+#include "../HardCodes/universal/hlBVH2/bvh-build-first.comp.inl"
+        } },
+        };
+
         inline static std::map<VtVendor, std::vector<uint32_t>> builder = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/hlBVH2/bvh-build.comp.inl"

@@ -23,31 +23,21 @@ shared int _counters[8];
 
 // define function for increment
 initAtomicSubgroupIncFunctionTarget(_counters[WHERE], _aCounterInc, 1, int)
-initAtomicSubgroupIncFunction(_counters[1], lCounterInc, 2, int)
-initAtomicSubgroupIncFunction(_counters[2], cCounterInc, 1, int)
-initAtomicSubgroupIncFunction(_counters[2], cCounterDualInc, 2, int)
+initAtomicSubgroupIncFunction(lCounter, lCounterInc, 2, int)
+initAtomicSubgroupIncFunction(cCounter, cCounterInc, 1, int)
 
-int aCounterInc() { return _aCounterInc(cBuffer*4); }
+int aCounterInc(){return _aCounterInc(cBuffer*4);}
+uint wID(in uint t){return t*gl_NumWorkGroups.x+gl_WorkGroupID.x;}
+
 #define asize_ _counters[(1-cBuffer)*4]
 #define asize_inv_ _counters[cBuffer*4]
 #define asize _counters[7]
 
 #include "./submodules/bvh-build-general.glsl" // unified functions
-//const int largeStageThreshold = 1;
-
 layout ( local_size_x = WORK_SIZE_BND ) in;
-
-// rest shareds
-//shared uint _store[3][WORK_SIZE_BND];
-//#define gS _store[0][Local_Idx]
-//#define iT _store[1][Local_Idx]
-//#define uID _store[2][Local_Idx]
-
 
 // I have no idea for optimize registers
 void main() {
-    //const int threadID = int(Local_Idx);
-    //const int groupSize = int(gl_WorkGroupSize.x);
 #define threadID Local_Idx
 #define groupSize gl_WorkGroupSize.x
 
@@ -58,13 +48,12 @@ void main() {
     int sD = int(threadID & 1);
 
     LGROUP_BARRIER
-    if (threadID < 8) { 
-        _counters[threadID] = 0;
-    }
+    if (threadID < 8) { _counters[threadID] = 0; }
     LGROUP_BARRIER
 
     // create initial (root) node
     if (threadID == 0) {
+#ifdef FIRST_STEP
         int hid = lCounterInc();
         imageStore(bvhMeta, hid+0, ivec4(1, bvhBlock.leafCount, 0, 0));
         imageStore(bvhMeta, hid+1, ivec4(0, 0, 0, 0));
@@ -72,13 +61,20 @@ void main() {
         //bvhMeta[hid+1] = ivec4(0, 0, 0, 0);
         Actives[aCounterInc()][cBuffer] = hid+1;
         //asize = asize_inv_;
+#else
+        asize_inv_ = aCounter[  cBuffer]/int(gl_NumWorkGroups.x>>1), 
+        asize_     = aCounter[1-cBuffer]/int(gl_NumWorkGroups.x>>1);
+#endif
     }
     
-    LGROUP_BARRIER
-
     // building BVH
     //[[unroll]]
     for (int m=0;m<65536;m++) {
+        LGROUP_BARRIER
+
+#ifdef FIRST_STEP // limit by few elements
+        if (m >= 2) { break; }
+#endif
 
         // swap buffers emulation
         if (threadID == 0) { cBuffer = 1-cBuffer; asize_inv_ = 0; asize = asize_; }
@@ -94,43 +90,24 @@ void main() {
 
             // index of node element
             //const uint uID = fT + iT;
-            uID = fT + iT;
-            
+            uID = (fT + iT);
+
             // split prefixed elements
             IFALL (uID >= asize) break;
 
             // get spared prefix
-            int fID = Actives[uID][1-cBuffer]-1;
-            if (sD == 0) Actives[uID][1-cBuffer] = 0;
+            int fID = Actives[wID(uID)][1-cBuffer]-1;
+            if (sD == 0) Actives[wID(uID)][1-cBuffer] = 0;
 
             // split sibling nodes
             [[flatten]]
             if (uID < asize && fID >= 0) { splitNode(fID, sD); }
         }
-
-        // stage sync
-        LGROUP_BARRIER
-    }
-
-    // copy rest actives
-    /*IFANY (cBuffer == 0 && asize > 0) {
-        for (uint fT = 0; fT<asize; fT+=groupSize) {
-            //const uint uID = fT + threadID; // fit for every threads, don't compact here
-            uID = fT + threadID;
-            Actives[uID][cBuffer] = Actives[uID][1-cBuffer];
-        }
-    }*/
-
-    // copy to external counters
-    //LGROUP_BARRIER
-    /*
-    if (threadID == 0) {
-        aCounter = asize;
-        lCounter = _counters[1];
-        cCounter = _counters[2];
-        aCounter2 = 0;
     }
 
     LGROUP_BARRIER
-    */
+
+#ifdef FIRST_STEP
+    if (threadID == 0) { aCounter[cBuffer] = asize_inv_, aCounter[1-cBuffer] = asize_; }
+#endif
 }

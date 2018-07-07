@@ -43,6 +43,7 @@ start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%triplet.comp      -x -o %
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%\\triangle\\bound-calc.comp   -x -o %HRDDIR%%HLBV%\\triangle\\bound-calc.comp.inl
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%\\triangle\\leaf-gen.comp     -x -o %HRDDIR%%HLBV%\\triangle\\leaf-gen.comp.inl
 
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-build.comp    -x -o %HRDDIR%%HLBV%bvh-build-first.comp.inl -DFIRST_STEP
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-build.comp    -x -o %HRDDIR%%HLBV%bvh-build.comp.inl 
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-fit.comp      -x -o %HRDDIR%%HLBV%bvh-fit.comp.inl
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%leaf-link.comp    -x -o %HRDDIR%%HLBV%leaf-link.comp.inl

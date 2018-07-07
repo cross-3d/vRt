@@ -191,6 +191,7 @@ namespace _vt {
         // planned to use secondary buffer for radix sorting
         auto& bounder = accel;
         cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, *bounder->_mortonCodesBuffer);
+        cmdFillBuffer<0u>(*cmdBuf, *bounder->_currentNodeIndices);
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_countersBuffer); // reset counters
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);
         //commandBarrier(*cmdBuf);
@@ -202,9 +203,10 @@ namespace _vt {
         cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes
         radixSort(cmdBuf, bounder->_sortDescriptorSet, accel->_bvhBlockData.leafCount);
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
-        cmdDispatch(*cmdBuf, acclb->_buildPipeline, 1); // just build hlBVH2
+        cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
+        cmdDispatch(*cmdBuf, acclb->_buildPipeline, 4); // parallelize by another threads
         cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
-        cmdDispatch(*cmdBuf, acclb->_fitPipeline, 1);
+        cmdDispatch(*cmdBuf, acclb->_fitPipeline, 4);
         //cmdDispatch(*cmdBuf, acclb->_fitPipeline, INTENSIVITY); // fit BVH nodes
 
         return result;

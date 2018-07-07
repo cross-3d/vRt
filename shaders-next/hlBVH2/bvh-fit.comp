@@ -51,38 +51,28 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 shared int _counters[8];
 #define cBuffer _counters[3]
 #define asize _counters[7]
-#define wsize bvhBlock.leafCount
+//#define wsize (bvhBlock.leafCount/gl_NumWorkGroups.x)
 // define function for increment
 initAtomicSubgroupIncFunction(_counters[0], aCounterInc, 1, int)
-
+uint wID(in uint t){return t*gl_NumWorkGroups.x+gl_WorkGroupID.x;}
 
 #define lID Local_Idx
-#define wID gl_WorkGroupID.x
 #define gS gl_WorkGroupSize.x
 #define rng gS
 
-//const int wgs = 1;
 void main() {
-    //const int gS = int(gl_WorkGroupSize.x);
-    //const int wgs = 1;//int(gl_NumWorkGroups.x);
-    //const int wID = int(gl_WorkGroupID.x);
-    //const int lID = int(Local_Idx);
-    //const int rng = gS*wgs;
-
     // initial counters
     if (lID < 8) { _counters[lID] = 0; }
     LGROUP_BARRIER
 
     // move to work list
-    //const int wsize = bvhBlock.leafCount;
+    const uint wsize = (bvhBlock.leafCount/gl_NumWorkGroups.x);
     for (uint w=0;w<wsize;w+=rng) {
         SB_BARRIER
-        const uint globalID = w + (wID * gS + lID);
-        IFALL (globalID >= wsize) break;
-
-        // add to queue list parent node
-        int idx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
-        if (idx >= 0) { Actives[aCounterInc()][cBuffer] = idx+1; }
+        const uint globalID = wID(w + lID);
+        IFALL (globalID >= bvhBlock.leafCount) break; // add to queue list parent node
+        int idx = globalID < bvhBlock.leafCount ? LeafIndices[globalID]-1 : -1;
+        if (idx >= 0) { Actives[wID(aCounterInc())][cBuffer] = idx+1; }
     }
 
     // sync work
@@ -101,17 +91,16 @@ void main() {
         for (uint w=0;w<asize;w+=rng) {
             SB_BARRIER
             
-            const uint globalID = w + (wID * gS + lID);
-            IFALL (globalID >= wsize) break;
-
             // unify boxes for parent
-            int idx = globalID < asize ? Actives[globalID][1-cBuffer]-1 : -1;
+            const uint globalID = w + lID;
+            IFALL (globalID >= asize) break;
+            int idx = globalID < asize ? Actives[wID(globalID)][1-cBuffer]-1 : -1;
             if ( idx >= 0 ) { unifyNodeBox(idx); }
 
             // unify box for current and add parent
             int pid = idx >= 0 ? imageLoad(bvhMeta, idx).z-1 : -1;
             if ( pid >= 0 && atomicCompSwap(Flags[pid], 0, 1) == 1 ) {
-                Actives[aCounterInc()][cBuffer] = pid+1; // add to contributors list
+                Actives[wID(aCounterInc())][cBuffer] = pid+1; // add to contributors list
             }
         }
 

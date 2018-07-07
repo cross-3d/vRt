@@ -54,7 +54,7 @@ void splitNode(inout int fID, inout int side) {
                 imageStore(bvhMeta, hd+1, ivec4(transplit.zw, prID, -1)+1);
 
                 // add prefix to next task
-                Actives[aCounterInc()][cBuffer] = hd+1;
+                Actives[wID(aCounterInc())][cBuffer] = hd+1;
             } else {
 
             // if leaf, add to leaf list
