@@ -27,7 +27,7 @@ void main() {
     int wsize = rayCounter;
     int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
     int wgs = int(gl_NumWorkGroups);
-    cacheID = int(gl_GlobalInvocationID.x);
+    traverseState.cacheID = int(gl_GlobalInvocationID.x);
 
     LGROUP_BARRIER;
     for (int w=0;w<wcount;w+=wgs) {
@@ -65,13 +65,7 @@ void main() {
             IF (triID >= 0) {
                 hits[hid].attribID = vtVerifyClosestHit(hid)+1; // better link directly, because extra atomics (even with subgroups) also hits to performances
             } else {
-                const int rID = 0;//parameteri(RAY_TYPE, rays[it].dcolor.y);
-                //[[unroll]]
-                //for (int i=0;i<4;i++) {
-                    //[[flatten]]
-                    //if (rID == i) vtVerifyMissedHit(hid, i);
-                //}
-                vtVerifyMissedHit(hid, rID);
+                const int rID = 0; vtVerifyMissedHit(hid, rID);
             }
         }
     }

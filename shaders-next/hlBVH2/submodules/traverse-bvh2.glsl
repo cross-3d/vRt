@@ -11,95 +11,15 @@
 
 
 const int max_iteraction = 8192;
-//const int stackPageCount = 8;
-//const int localStackSize = 4;
-//const int stackPageCount = 4;
-//const int localStackSize = 8;
-
-// dedicated BVH stack
-//struct NodeCache { ivec4 stackPages[stackPageCount]; };
-//layout ( std430, binding = _CACHE_BINDING, set = 0 ) buffer nodeCache { NodeCache nodeCache[]; };
 layout ( r32i, binding = _CACHE_BINDING, set = 0 )  uniform iimageBuffer texelPages;
 
-
-// 128-bit payload
-//int stackPtr = 0, pagePtr = 0, cacheID = 0, _r0 = -1;
-int stackPtr = 0, cacheID = 0;
-
-#ifndef USE_STACKLESS_BVH
-/*
-shared ivec4 localStack[WORK_SIZE][2];
-#define lstack localStack[Local_Idx]
-//ivec4 lstack = ivec4(-1,-1,-1,-1);
-
-int loadStack(){
-    // load previous stack page
-    if ((--stackPtr) < 0) {
-        int page = --pagePtr;
-        if (page >= 0 && page < stackPageCount) {
-            stackPtr = localStackSize-1;
-            lstack = ivec4[2](imageLoad(texelPages, (cacheID*stackPageCount + page)*2+0), imageLoad(texelPages, (cacheID*stackPageCount + page)*2+1));
-            //lstack = imageLoad(texelPages, (cacheID*stackPageCount + page));
-        }
-    }
-
-    // fast-stack
-    //int val = exchange(lstack.x, -1); lstack = lstack.yzwx;
-    int val = exchange(lstack[0].x, -1); lstack = ivec4[2](ivec4(lstack[0].yzw, lstack[1].x), ivec4(lstack[1].yzw, lstack[0].x));
-    return val;
-}
-
-void storeStack(in int val) {
-    // store stack to global page, and empty list
-    if ((stackPtr++) >= localStackSize) {
-        int page = pagePtr++;
-        if (page >= 0 && page < stackPageCount) { 
-            stackPtr = 1;
-            //imageStore(texelPages, (cacheID*stackPageCount + page), lstack);
-            imageStore(texelPages, (cacheID*stackPageCount + page)*2+0, lstack[0]); imageStore(texelPages, (cacheID*stackPageCount + page)*2+1, lstack[1]);
-        }
-    }
-
-    // fast-stack
-    //lstack = lstack.wxyz; lstack.x = val;
-    lstack = ivec4[2](ivec4(lstack[1].w, lstack[0].xyz), ivec4(lstack[0].w, lstack[1].xyz)); lstack[0].x = val;
-}
-
-bool stackIsFull() { return stackPtr >= localStackSize && pagePtr >= stackPageCount; }
-bool stackIsEmpty() { return stackPtr <= 0 && pagePtr < 0; }
-*/
-
-const int localStackSize = 8, extStackSize = 32;
-
-shared int localStack[WORK_SIZE][8];
-#define lstack localStack[Local_Idx]
-
-int loadStack() {
-    int rsl = -1, idx = --stackPtr;
-    if (idx < localStackSize) { rsl = lstack[idx]; } else { rsl = imageLoad(texelPages, cacheID*extStackSize+(idx-localStackSize)).x; }
-    return rsl;
-}
-
-void storeStack(in int rsl) {
-    int idx = stackPtr++;
-    if (idx < localStackSize) { lstack[idx] = rsl; } else { imageStore(texelPages, cacheID*extStackSize+(idx-localStackSize), rsl.xxxx); } 
-}
-
-bool stackIsFull() { return stackPtr >= (localStackSize + extStackSize); }
-bool stackIsEmpty() { return stackPtr <= 0; }
-#endif
-
-
-
-//shared _RAY_TYPE rayCache[WORK_SIZE];
-//#define currentRayTmp rayCache[Local_Idx]
 _RAY_TYPE currentRayTmp;
 
 struct BvhTraverseState {
     int idx, defTriangleID;
     float distMult, diffOffset;
-    float cutOut, _0, _1, _2;
-    fvec4_ minusOrig, directInv; 
+    float cutOut; int stackPtr, cacheID, _2;
+    fvec4_ minusOrig, directInv;
     bvec4_ boxSide;
 
 #ifdef USE_STACKLESS_BVH
@@ -116,6 +36,27 @@ struct PrimitiveState {
 #endif
 } primitiveState;
 
+
+#ifndef USE_STACKLESS_BVH
+const int localStackSize = 8, extStackSize = 32;
+shared int localStack[WORK_SIZE][8];
+#define lstack localStack[Local_Idx]
+
+int loadStack() {
+    int rsl = -1, idx = --traverseState.stackPtr;
+    if (idx < localStackSize) { rsl = lstack[idx]; } else { rsl = imageLoad(texelPages, traverseState.cacheID*extStackSize+(idx-localStackSize)).x; }
+    return rsl;
+}
+
+void storeStack(in int rsl) {
+    int idx = traverseState.stackPtr++;
+    if (idx < localStackSize) { lstack[idx] = rsl; } else { imageStore(texelPages, traverseState.cacheID*extStackSize+(idx-localStackSize), rsl.xxxx); } 
+}
+
+bool stackIsFull() { return traverseState.stackPtr >= (localStackSize + extStackSize); }
+bool stackIsEmpty() { return traverseState.stackPtr <= 0; }
+#endif
+
 void doIntersection() {
     const bool near = traverseState.defTriangleID >= 0;
     vec2 uv = vec2(0.f.xx); const float d = 
@@ -124,7 +65,6 @@ void doIntersection() {
 #else
         intersectTriangle(currentRayTmp.origin.xyz, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID, uv.xy, near);
 #endif
-    //const float nearhit = primitiveState.lastIntersection.z;
 #define nearhit primitiveState.lastIntersection.z
 
     [[flatten]]
@@ -136,17 +76,9 @@ void doIntersection() {
     traverseState.defTriangleID = -1; // reset triangle ID 
 }
 
-//void traverseBvh2(in bool_ valid, inout _RAY_TYPE rayIn) {
 void traverseBvh2(in bool_ valid, in int eht) {
-    //currentRayTmp = rayIn;
     vec3 origin = currentRayTmp.origin.xyz;
     vec3 direct = dcts(currentRayTmp.cdirect.xy);
-    //int eht = -1;
-
-    // reset stack
-    //stackPtr = 0, pagePtr = 0, lstack = ivec4[2]((-1).xxxx, (-1).xxxx);
-    stackPtr = 0;
-    //lstack = (-1).xxxx;
 
     // test constants
     vec3 
@@ -154,12 +86,8 @@ void traverseBvh2(in bool_ valid, in int eht) {
         torigTo = divW(mult4( bvhBlock.transform, vec4(origin+direct, 1.0f))).xyz,
         dirproj = torigTo+torig;
 
-    // get vector length and normalize
-    float dirlen = length(dirproj);
-    dirproj = normalize(dirproj);
-
-    // invert vector for box intersection
-    dirproj = 1.f.xxx / vec3(precIssue(dirproj.x), precIssue(dirproj.y), precIssue(dirproj.z));
+    // make vector for box intersection
+    float dirlen = length(dirproj); dirproj /= dirlen, dirproj = 1.f.xxx / vec3(precIssue(dirproj.x), precIssue(dirproj.y), precIssue(dirproj.z));
 
     // limitation of distance
     bvec3_ bsgn = (bvec3_(sign(dirproj)*ftype_(1.0001f))+true_)>>true_;
@@ -168,7 +96,6 @@ void traverseBvh2(in bool_ valid, in int eht) {
     traverseState.defTriangleID = -1;
     traverseState.distMult = dirlen;
     traverseState.diffOffset = 0.f;
-    traverseState.idx = SSC(valid) ? BVH_ENTRY : -1;
 #ifdef USE_STACKLESS_BVH
     traverseState.bitStack = 0ul;
 #endif
@@ -199,15 +126,11 @@ void traverseBvh2(in bool_ valid, in int eht) {
     // test intersection with main box
     float near = -INFINITY, far = INFINITY;
     const vec2 bndsf2 = vec2(-1.0005f, 1.0005f);
-    IF (not(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2, bndsf2, bndsf2), near, far))) { 
-        traverseState.idx = -1;
-    }
-
-    float toffset = max(near, 0.f);
-    traverseState.diffOffset = toffset;
-
+    traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2, bndsf2, bndsf2), near, far)) ? (SSC(valid) ? BVH_ENTRY : -1) : -1;
+    traverseState.stackPtr = 0;
+    traverseState.diffOffset = max(near, 0.f);
     traverseState.directInv.xyz = fvec3_(dirproj);
-    traverseState.minusOrig.xyz = fma(fvec3_(torig), fvec3_(dirproj), -fvec3_(toffset).xxx);
+    traverseState.minusOrig.xyz = fma(fvec3_(torig), fvec3_(dirproj), -fvec3_(traverseState.diffOffset).xxx);
     traverseState.boxSide.xyz = bsgn;
     traverseState.cutOut = primitiveState.lastIntersection.z * traverseState.distMult - traverseState.diffOffset; 
     
@@ -262,22 +185,16 @@ void traverseBvh2(in bool_ valid, in int eht) {
 
                     cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
                 }
-
-            } 
+            }
             
             // if leaf, defer for intersection 
-            if (cnode.x == cnode.y) {
-                if (traverseState.defTriangleID < 0) {
-                    traverseState.defTriangleID = cnode.x;
-                } else {
-                    _continue = true;
-                }
+            if (cnode.x == cnode.y && traverseState.defTriangleID < 0) {
+                traverseState.defTriangleID = cnode.x;
             }
 
-#ifdef USE_STACKLESS_BVH
-            // stackless 
             if (!_continue) {
-                // go to parents so far as possible 
+#ifdef USE_STACKLESS_BVH
+                // stackless
                 for (int bi=0;bi<64;bi++) {
                     if ((traverseState.bitStack&1ul)!=0ul || traverseState.bitStack==0ul) break;
                     traverseState.bitStack >>= 1;
@@ -291,8 +208,7 @@ void traverseBvh2(in bool_ valid, in int eht) {
                     traverseState.idx = -1;
                 }
 #else
-            // stacked 
-            if (!_continue) {
+                // stacked 
                 if (!stackIsEmpty()) {
                     traverseState.idx = loadStack();
                 } else {
