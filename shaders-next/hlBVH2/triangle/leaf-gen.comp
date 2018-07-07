@@ -75,7 +75,7 @@ void main() {
 #define to globalID
 
         // gen leaf
-        HlbvhNode outLeaf = Leafs[to];
+        leaf_t outLeaf = Leafs[to];
         outLeaf.lbox = calcTriBox(triverts);
         outLeaf.pdata.xy = ivec2(to);
         outLeaf.pdata.zw = ivec2(0, tri+1);

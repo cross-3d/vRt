@@ -10,7 +10,7 @@ layout ( binding = 1, set = 0, std430 )  buffer MortoncodesIndicesB {
 };
 
 layout ( binding = 3, set = 0, std430 )  buffer LeafsB {
-    HlbvhNode Leafs[];
+    leaf_t Leafs[];
 };
 
 layout ( binding = 4, set = 0, std430 )  buffer bvhBoxesWorkB { 
@@ -54,8 +54,8 @@ layout ( binding = 2, set = 1, std430 ) buffer bvhBoxesResultingB { uvec2 bvhBox
 
 layout ( binding = 3, set = 1, rgba32i ) uniform iimageBuffer bvhMeta;
 
-bbox calcTriBox(in mat3x4 triverts) {
-    bbox result;
+bbox_t calcTriBox(in mat3x4 triverts) {
+    bbox_t result;
     result.mn = min3_wrap(triverts[0], triverts[1], triverts[2]) - 5e-4f;
     result.mx = max3_wrap(triverts[0], triverts[1], triverts[2]) + 5e-4f;
     return result;

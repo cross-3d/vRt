@@ -29,7 +29,7 @@ void main() {
         // get leaf data
         int lidx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
         ivec4 bvhmeta = lidx >= 0 ? (imageLoad(bvhMeta, lidx)-1) : ivec4(-1, -1, -1, -1); 
-        bbox rbox = {100000.f.xxxx, -100000.f.xxxx}; 
+        bbox_t rbox = {100000.f.xxxx, -100000.f.xxxx}; 
 
         // linking leafs
         int leafID = bvhmeta.x >= 0 ? MortoncodesIndices[bvhmeta.x]-1 : -1;

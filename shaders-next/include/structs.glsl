@@ -140,15 +140,8 @@ void parameterb(const ivec2 parameter, inout float bitfield, in bool_ value) {
 }
 
 
-struct bbox {
-     vec4 mn;
-     vec4 mx;
-};
-
-struct HlbvhNode {
-     bbox lbox;
-     ivec4 pdata;
-};
+struct bbox_t { vec4 mn, mx; };
+struct leaf_t { bbox_t lbox; ivec4 pdata; };
 
 
 

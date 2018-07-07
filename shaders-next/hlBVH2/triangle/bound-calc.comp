@@ -25,7 +25,7 @@ layout ( std430, binding = 9, set = 0 )  buffer minmaxB {vec4 minmax[]; };
 //    return length(abs(triverts[0] - tcenter).xyz + abs(triverts[1] - tcenter).xyz + abs(triverts[2] - tcenter).xyz) >= 1.e-5;
 //}
 
-bbox getMinMaxPrimitive(in int idx) {
+bbox_t getMinMaxPrimitive(in int idx) {
     const int tri = bvhBlock.primitiveOffset+clamp(idx, 0, bvhBlock.primitiveCount-1);
     //const int itri = tri*9;
     const int itri = tri*3;
@@ -46,17 +46,17 @@ bbox getMinMaxPrimitive(in int idx) {
     return calcTriBox(triverts);
 }
 
-bbox bboxunion(in bbox b1, in bbox b2) {
-    return bbox(min(b1.mn, b2.mn), max(b1.mx, b2.mx));
+bbox_t bbox_tunion(in bbox_t b1, in bbox_t b2) {
+    return bbox_t(min(b1.mn, b2.mn), max(b1.mx, b2.mx));
 }
 
-bbox bboxunion3(in bbox b1, in bbox b2, in bbox c3) {
-    return bbox(min3_wrap(b1.mn, b2.mn, c3.mn), max3_wrap(b1.mx, b2.mx, c3.mx));
+bbox_t bbox_tunion3(in bbox_t b1, in bbox_t b2, in bbox_t c3) {
+    return bbox_t(min3_wrap(b1.mn, b2.mn, c3.mn), max3_wrap(b1.mx, b2.mx, c3.mx));
 }
 
 
 layout ( local_size_x = WORK_SIZE_BND ) in;
-shared bbox sdata[ WORK_SIZE_BND ];
+shared bbox_t sdata[ WORK_SIZE_BND ];
 
 void main() {
     const int tid = int(gl_LocalInvocationID.x);
@@ -64,14 +64,14 @@ void main() {
     const int tcount = max( bvhBlock.primitiveCount, 2 );
 
     // 
-    sdata[tid] = bbox(vec4( 100000.f), vec4(-100000.f));
+    sdata[tid] = bbox_t(vec4( 100000.f), vec4(-100000.f));
     LGROUP_BARRIER
 
     // calculate boxes for per work
     int i = int(gl_WorkGroupID.x * (gl_WorkGroupSize.x*2)) + tid;
     while (i < tcount) {
-        bbox bound = sdata[tid];
-        bound = bboxunion3(bound, getMinMaxPrimitive(i), getMinMaxPrimitive(i + int(gl_WorkGroupSize.x)));
+        bbox_t bound = sdata[tid];
+        bound = bbox_tunion3(bound, getMinMaxPrimitive(i), getMinMaxPrimitive(i + int(gl_WorkGroupSize.x)));
         sdata[tid] = bound;
         i += gridSize;
     }
@@ -81,8 +81,8 @@ void main() {
     [[unroll]]
     for (int ki=(int(gl_WorkGroupSize.x)>>1);ki>=int(Wave_Size_RT);ki>>=1) {
         if (tid < ki) { 
-            bbox bound = sdata[tid], opbound = sdata[tid + ki]; 
-            bound = bboxunion(bound, opbound); 
+            bbox_t bound = sdata[tid], opbound = sdata[tid + ki]; 
+            bound = bbox_tunion(bound, opbound); 
             SB_BARRIER
             sdata[tid] = bound; 
         }
