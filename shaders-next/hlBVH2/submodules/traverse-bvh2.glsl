@@ -58,7 +58,7 @@ void storeStack(in int rsl) {
     int idx = traverseState.stackPtr++; lstack[idx] = rsl;
 }
 
-bool stackIsFull() { return traverseState.stackPtr >= computedStackSize && traverseState.pageID >= pageCount; }
+bool stackIsFull() { return traverseState.stackPtr >= localStackSize && traverseState.pageID >= pageCount; }
 bool stackIsEmpty() { return traverseState.stackPtr <= 0 && traverseState.pageID <= 0; }
 #endif
 
