@@ -16,11 +16,9 @@ layout ( r32i, binding = _CACHE_BINDING, set = 0 )  uniform iimageBuffer texelPa
 _RAY_TYPE currentRayTmp;
 
 struct BvhTraverseState {
-    int idx, defTriangleID;
-    float distMult, diffOffset;
-    float cutOut; int stackPtr, cacheID, _2;
-    fvec4_ minusOrig, directInv;
-    bvec4_ boxSide;
+    int idx, defTriangleID, stackPtr, cacheID;
+    float distMult, diffOffset, cutOut, _2;
+    fvec4_ minusOrig, directInv; bvec4_ boxSide;
 
 #ifdef USE_STACKLESS_BVH
     uint64_t bitStack, bitStack2;

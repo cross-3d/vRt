@@ -53,9 +53,7 @@ namespace _vt {
         auto& vtRTSet = (_vtRTSet = std::make_shared<RayTracingSet>());
         vtRTSet->_device = _vtDevice;
 
-        // planned variable size
-
-        {
+        { // planned variable size
             const auto& rayCount = info.maxRays;
             const auto& maxAttribCount = 8;
             vtRTSet->_cuniform.maxRayCount = rayCount;
