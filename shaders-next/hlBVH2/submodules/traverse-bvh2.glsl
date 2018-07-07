@@ -21,8 +21,8 @@ layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYS
 _RAY_TYPE currentRayTmp;
 
 struct BvhTraverseState {
-    int idx, defTriangleID, stackPtr, cacheID;
-    float distMult, diffOffset, cutOut; int pageID;
+    int idx, defTriangleID, stackPtr, cacheID, pageID;
+    float distMult, diffOffset, cutOut;
     fvec4_ minusOrig, directInv; bvec4_ boxSide;
 
 #ifdef USE_STACKLESS_BVH
