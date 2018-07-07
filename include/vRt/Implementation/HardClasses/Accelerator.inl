@@ -107,7 +107,7 @@ namespace _vt {
                 bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_onWorkBoxes);
 
-                bfi.bufferSize = 4 * maxPrimitives * 2 * sizeof(uint32_t);
+                bfi.bufferSize = 8 * maxPrimitives * 2 * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_currentNodeIndices);
 

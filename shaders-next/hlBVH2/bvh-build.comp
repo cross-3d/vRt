@@ -73,7 +73,7 @@ void main() {
         LGROUP_BARRIER
 
 #ifdef FIRST_STEP // limit by few elements
-        if (m >= 2) { break; }
+        if (m >= 4) { break; }
 #endif
 
         // swap buffers emulation
