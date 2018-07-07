@@ -47,6 +47,10 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBuffer);
 
+            bfi.bufferSize = maxPrimitives * sizeof(float) * 4;
+            bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+            createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBufferSide);
+
             bfi.bufferSize = sizeof(uint32_t) * 4;
             bfi.format = VK_FORMAT_R32_UINT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_countersBuffer);
@@ -87,10 +91,9 @@ namespace _vt {
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexAssembly->_countersBuffer->_descriptorInfo())),
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexAssembly->_materialBuffer->_descriptorInfo())),
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexAssembly->_bitfieldBuffer->_descriptorInfo())),
-
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtVertexAssembly->_verticeBuffer->_bufferView)),
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo(&vk::DescriptorImageInfo(vtVertexAssembly->_attributeTexelBuffer->_descriptorInfo())),
-                vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtVertexAssembly->_verticeBuffer->_bufferView)), // planned to replace
+                vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtVertexAssembly->_verticeBufferSide->_bufferView)), // planned to replace
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(6).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&vk::DescriptorImageInfo(vtVertexAssembly->_attributeTexelBuffer->_descriptorInfo()).setSampler(attributeSampler)),
             };
             vk::Device(*_vtDevice).updateDescriptorSets(writes, {});

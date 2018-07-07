@@ -30,8 +30,10 @@ uint64_t splitBy3(in uint a){
     return x;
 }
 
-uvec2 encodeMorton3_64(in uvec3 a) {
-    return U2P(splitBy3(a.x) | (splitBy3(a.y) << 1) | (splitBy3(a.z) << 2));
+//uvec2 encodeMorton3_64(in uvec3 a) {
+//    return U2P(splitBy3(a.x) | (splitBy3(a.y) << 1) | (splitBy3(a.z) << 2));
+uint64_t encodeMorton3_64(in uvec3 a) {
+    return (splitBy3(a.x) | (splitBy3(a.y) << 1) | (splitBy3(a.z) << 2));
 }
 
 #endif

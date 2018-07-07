@@ -119,11 +119,11 @@ void traverseBvh2(in bool_ valid, in int eht) {
 
     // calculate affine matrices
     vec4 vm = vec4(-direct, 1.f) / (primitiveState.axis == 0 ? direct.x : (primitiveState.axis == 1 ? direct.y : direct.z));
-    primitiveState.iM = mat3(
+    primitiveState.iM = transpose(mat3(
         primitiveState.axis == 0 ? vm.wyz : vec3(1.f,0.f,0.f),
         primitiveState.axis == 1 ? vm.xwz : vec3(0.f,1.f,0.f),
         primitiveState.axis == 2 ? vm.xyw : vec3(0.f,0.f,1.f)
-    );
+    ));
 #endif
 
     // test intersection with main box

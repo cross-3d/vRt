@@ -2,7 +2,11 @@
 // Morton codes and geometry counters
 
 layout ( binding = 0, set = 0, std430 )  buffer MortoncodesB {
+#ifdef PREFER_64BIT_MORTON_TYPE
+    uint64_t Mortoncodes[];
+#else
     uvec2 Mortoncodes[];
+#endif
 };
 
 layout ( binding = 1, set = 0, std430 )  buffer MortoncodesIndicesB {
