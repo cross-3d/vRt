@@ -13,20 +13,21 @@
 const int max_iteraction = 8192;
 //const int stackPageCount = 8;
 //const int localStackSize = 4;
-const int stackPageCount = 4;
-const int localStackSize = 8;
+//const int stackPageCount = 4;
+//const int localStackSize = 8;
 
 // dedicated BVH stack
 //struct NodeCache { ivec4 stackPages[stackPageCount]; };
 //layout ( std430, binding = _CACHE_BINDING, set = 0 ) buffer nodeCache { NodeCache nodeCache[]; };
-layout ( rgba32i, binding = _CACHE_BINDING, set = 0 )  uniform iimageBuffer texelPages;
+layout ( r32i, binding = _CACHE_BINDING, set = 0 )  uniform iimageBuffer texelPages;
 
 
 // 128-bit payload
-int stackPtr = 0, pagePtr = 0, cacheID = 0, _r0 = -1;
-
+//int stackPtr = 0, pagePtr = 0, cacheID = 0, _r0 = -1;
+int stackPtr = 0, cacheID = 0;
 
 #ifndef USE_STACKLESS_BVH
+/*
 shared ivec4 localStack[WORK_SIZE][2];
 #define lstack localStack[Local_Idx]
 //ivec4 lstack = ivec4(-1,-1,-1,-1);
@@ -66,6 +67,26 @@ void storeStack(in int val) {
 
 bool stackIsFull() { return stackPtr >= localStackSize && pagePtr >= stackPageCount; }
 bool stackIsEmpty() { return stackPtr <= 0 && pagePtr < 0; }
+*/
+
+const int localStackSize = 8, extStackSize = 32;
+
+shared int localStack[WORK_SIZE][8];
+#define lstack localStack[Local_Idx]
+
+int loadStack() {
+    int rsl = -1, idx = --stackPtr;
+    if (idx < localStackSize) { rsl = lstack[idx]; } else { rsl = imageLoad(texelPages, cacheID*extStackSize+(idx-localStackSize)).x; }
+    return rsl;
+}
+
+void storeStack(in int rsl) {
+    int idx = stackPtr++;
+    if (idx < localStackSize) { lstack[idx] = rsl; } else { imageStore(texelPages, cacheID*extStackSize+(idx-localStackSize), rsl.xxxx); } 
+}
+
+bool stackIsFull() { return stackPtr >= (localStackSize + extStackSize); }
+bool stackIsEmpty() { return stackPtr <= 0; }
 #endif
 
 
@@ -123,8 +144,8 @@ void traverseBvh2(in bool_ valid, in int eht) {
     //int eht = -1;
 
     // reset stack
-    stackPtr = 0, pagePtr = 0;
-    lstack = ivec4[2]((-1).xxxx, (-1).xxxx);
+    //stackPtr = 0, pagePtr = 0, lstack = ivec4[2]((-1).xxxx, (-1).xxxx);
+    stackPtr = 0;
     //lstack = (-1).xxxx;
 
     // test constants
