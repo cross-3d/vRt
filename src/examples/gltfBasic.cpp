@@ -253,7 +253,7 @@ void main() {
     VtAcceleratorSet accelerator;
     VtVertexAssemblySet vertexAssembly;
     //VtVertexInputSet vertexInput, vertexInput2; // arrayed
-    VkCommandBuffer bCmdBuf, rtCmdBuf, vxCmdBuf;
+    VkCommandBuffer bCmdBuf, rtCmdBuf, vxCmdBuf, vxuCmdBuf;
     VtDeviceBuffer rtUniformBuffer;
 
     // mesh list
@@ -616,13 +616,22 @@ void main() {
         // make accelerator and vertex builder command
         vxCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qVxCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxCmdBuf, &qVxCmdBuf);
-        //vtCmdBindAccelerator(qVxCmdBuf, accelerator);
         vtCmdBindDescriptorSets(qVxCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
         vtCmdBindVertexAssembly(qVxCmdBuf, vertexAssembly);
         vtCmdBindVertexInputSets(qVxCmdBuf, inputs.size(), inputs.data());
         vtCmdBuildVertexAssembly(qVxCmdBuf);
-        //vtCmdBuildAccelerator(qVxCmdBuf);
         vkEndCommandBuffer(qVxCmdBuf);
+    }
+
+    {
+        // make accelerator and vertex builder command
+        vxuCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
+        VtCommandBuffer qVxuCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxuCmdBuf, &qVxuCmdBuf);
+        vtCmdBindDescriptorSets(qVxuCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
+        vtCmdBindVertexAssembly(qVxuCmdBuf, vertexAssembly);
+        vtCmdBindVertexInputSets(qVxuCmdBuf, inputs.size(), inputs.data());
+        vtCmdUpdateVertexAssembly(qVxuCmdBuf, 0, true);
+        vkEndCommandBuffer(qVxuCmdBuf);
     }
 
     {
@@ -631,8 +640,7 @@ void main() {
         VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
         vtCmdBindAccelerator(qBCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
-        //vtCmdBindVertexInputSets(qBCmdBuf, inputs.size(), inputs.data());
-        //vtCmdBuildVertexAssembly(qBCmdBuf);
+        vtCmdBindVertexInputSets(qBCmdBuf, inputs.size(), inputs.data());
         vtCmdBuildAccelerator(qBCmdBuf);
         vkEndCommandBuffer(qBCmdBuf);
     }
@@ -641,7 +649,6 @@ void main() {
         // make ray tracing command buffer
         rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
-        //vkCmdUpdateBuffer(qRtCmdBuf, rtUniformBuffer, 0, sizeof(VtCameraUniform), &cameraUniformData);
         vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipeline);
         vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), materialSet);
         vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
@@ -806,7 +813,7 @@ void main() {
         });
 
 
-        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
+        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxuCmdBuf });
         vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
         vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
