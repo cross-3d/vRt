@@ -12,24 +12,24 @@
     #endif
 #endif
 
-#ifdef UNIVERSAL_PLATFORM
+//#ifdef UNIVERSAL_PLATFORM
 #define Wave_Size_RT (gl_SubgroupSize.x)
-#else
-#define Wave_Size_RT (Wave_Size)
-#endif
+//#else
+//#define Wave_Size_RT (Wave_Size)
+//#endif
 
 #ifndef OUR_INVOC_TERM
     #define Global_Idx gl_GlobalInvocationID
     #define Local_Idx (gl_LocalInvocationIndex)
     #define Local_2D (gl_LocalInvocationIndex.xy)
     //#define Global_Idx ()
-    #ifdef UNIVERSAL_PLATFORM
+    //#ifdef UNIVERSAL_PLATFORM
         #define Wave_Idx (gl_SubgroupID.x)
         #define Lane_Idx (gl_SubgroupInvocationID.x)
-    #else
-        #define Wave_Idx (Local_Idx/Wave_Size_RT)
-        #define Lane_Idx (Local_Idx%Wave_Size_RT)
-    #endif
+    //#else
+    //    #define Wave_Idx (Local_Idx/Wave_Size_RT)
+    //    #define Lane_Idx (Local_Idx%Wave_Size_RT)
+    //#endif
 #endif
 
 #define uvec_wave_ballot uvec4
