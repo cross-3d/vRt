@@ -155,9 +155,10 @@ namespace _vt {
                 );
                 auto _write_tmpl = vk::WriteDescriptorSet(vtRTSet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {
-                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(9).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtRTSet->_traverseCache->_bufferView)),
+                    //vk::WriteDescriptorSet(_write_tmpl).setDstBinding(9).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtRTSet->_traverseCache->_bufferView)),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(10).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtRTSet->_rayLinkPayload->_bufferView)),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(11).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtRTSet->_attribBuffer->_bufferView)),
+                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(9).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_traverseCache->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_rayBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_hitBuffer->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtRTSet->_closestHitIndiceBuffer->_descriptorInfo())),

@@ -9,15 +9,20 @@
 #define _RAY_TYPE VtRay
 #endif
 
+#ifndef USE_STACKLESS_BVH
+//const int localStackSize = 8, extStackSize = 32, computedStackSize = localStackSize+extStackSize;
+const int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount;
 
 const int max_iteraction = 8192;
-layout ( r32i, binding = _CACHE_BINDING, set = 0 )  uniform iimageBuffer texelPages;
+//layout ( r32i, binding = _CACHE_BINDING, set = 0 ) uniform iimageBuffer texelPages;
+layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYSTEM { int pages[][8]; };
+#endif
 
 _RAY_TYPE currentRayTmp;
 
 struct BvhTraverseState {
     int idx, defTriangleID, stackPtr, cacheID;
-    float distMult, diffOffset, cutOut, _2;
+    float distMult, diffOffset, cutOut; int pageID;
     fvec4_ minusOrig, directInv; bvec4_ boxSide;
 
 #ifdef USE_STACKLESS_BVH
@@ -36,23 +41,25 @@ struct PrimitiveState {
 
 
 #ifndef USE_STACKLESS_BVH
-const int localStackSize = 8, extStackSize = 32, computedStackSize = localStackSize+extStackSize;
-shared int localStack[WORK_SIZE][8];
+shared int localStack[WORK_SIZE][localStackSize];
 #define lstack localStack[Local_Idx]
 
 int loadStack() {
-    int rsl = -1, idx = --traverseState.stackPtr;
-    if (idx < localStackSize) { rsl = lstack[idx]; } else { rsl = imageLoad(texelPages, traverseState.cacheID*extStackSize+(idx-localStackSize)).x; }
-    return rsl;
+    if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
+        lstack = pages[traverseState.cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize; 
+    };
+    int idx = --traverseState.stackPtr, rsl = lstack[idx]; return rsl;
 }
 
 void storeStack(in int rsl) {
-    int idx = traverseState.stackPtr++;
-    if (idx < localStackSize) { lstack[idx] = rsl; } else { imageStore(texelPages, traverseState.cacheID*extStackSize+(idx-localStackSize), rsl.xxxx); } 
+    if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
+        pages[traverseState.cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
+    }
+    int idx = traverseState.stackPtr++; lstack[idx] = rsl;
 }
 
-bool stackIsFull() { return traverseState.stackPtr >= computedStackSize; }
-bool stackIsEmpty() { return traverseState.stackPtr <= 0; }
+bool stackIsFull() { return traverseState.stackPtr >= computedStackSize && traverseState.pageID >= pageCount; }
+bool stackIsEmpty() { return traverseState.stackPtr <= 0 && traverseState.pageID <= 0; }
 #endif
 
 void doIntersection() {
@@ -123,7 +130,7 @@ void traverseBvh2(in bool_ valid, in int eht) {
     float near = -INFINITY, far = INFINITY;
     const vec2 bndsf2 = vec2(-1.0005f, 1.0005f);
     traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2, bndsf2, bndsf2), near, far)) ? (SSC(valid) ? BVH_ENTRY : -1) : -1;
-    traverseState.stackPtr = 0;
+    traverseState.stackPtr = 0, traverseState.pageID = 0;
     traverseState.diffOffset = max(near, 0.f);
     traverseState.directInv.xyz = fvec3_(dirproj);
     traverseState.minusOrig.xyz = fma(fvec3_(torig), fvec3_(dirproj), -fvec3_(traverseState.diffOffset).xxx);
