@@ -197,7 +197,8 @@ namespace _vt {
         VtVertexAssemblyPipelineCreateInfo simfo;
         simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, vt::natives::vertexAssembly[vendorName]);
         simfo.maxPrimitives = vtExtension.maxPrimitives;
-        createPipelineLayout(vtDevice, vk::PipelineLayoutCreateInfo(), simfo.pipelineLayout, VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT);
+        VtPipelineLayoutCreateInfo vtpl;
+        createPipelineLayout(vtDevice, vtpl, simfo.pipelineLayout, VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT);
 
         // create radix sort tool
         createRadixSort(vtDevice, vtExtension, vtDevice->_radixSort);

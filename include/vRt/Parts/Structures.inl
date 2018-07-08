@@ -62,6 +62,13 @@ namespace vt { // store in official namespace
         uint32_t groupModuleCount = 0;
     };
 
+    struct VtPipelineLayoutCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        const void* pNext = nullptr;
+        const VkPipelineLayoutCreateInfo * pGeneralPipelineLayout = nullptr;
+        VkBool32 enableMaterialSet = true;
+    };
+
 
 
     // use immutables in accelerator inputs

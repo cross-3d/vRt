@@ -395,7 +395,11 @@ void main() {
         vk::PipelineLayoutCreateInfo vpi;
         vpi.pSetLayouts = customedLayouts.data();
         vpi.setLayoutCount = customedLayouts.size();
-        vtCreateRayTracingPipelineLayout(deviceQueue->device->rtDev, &(VkPipelineLayoutCreateInfo)vpi, &rtPipelineLayout);
+
+        VtPipelineLayoutCreateInfo vpti;
+        vpti.pGeneralPipelineLayout = &(VkPipelineLayoutCreateInfo)vpi;
+
+        vtCreateRayTracingPipelineLayout(deviceQueue->device->rtDev, &vpti, &rtPipelineLayout);
     }
 
 
@@ -427,7 +431,11 @@ void main() {
         vk::PipelineLayoutCreateInfo vpi;
         vpi.pSetLayouts = customedLayouts.data();
         vpi.setLayoutCount = customedLayouts.size();
-        vtCreateVertexAssemblyPipelineLayout(deviceQueue->device->rtDev, &(VkPipelineLayoutCreateInfo)vpi, &rtVPipelineLayout);
+
+        VtPipelineLayoutCreateInfo vpti;
+        vpti.pGeneralPipelineLayout = &(VkPipelineLayoutCreateInfo)vpi;
+
+        vtCreateVertexAssemblyPipelineLayout(deviceQueue->device->rtDev, &vpti, &rtVPipelineLayout);
     }
 
     {
