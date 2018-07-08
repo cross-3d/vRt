@@ -138,26 +138,22 @@ void main() {
             bool wasTextured = false;
             [[unroll]]
             for (int wl=0;wl<Wave_Size_RT;wl++) {
-                IFALL(wasTextured) break;
+                //IFALL(wasTextured) break;
+                if (wasTextured) break;
                 if (!wasTextured && readLane(hit.materialID, wl) == hit.materialID) { // don't occupy warpy
                     wasTextured = true;
 #endif
 #ifdef ENABLE_POM
-                    SB_BARRIER
                     texcoord = parallaxMapping(pV, texcoord, hW);
 #endif
-                    SB_BARRIER
                     textured.bump.xyz = getNormalMapping(texcoord);
-                    SB_BARRIER
                     textured.diffuse = fetchDiffuse(texcoord);
-                    SB_BARRIER
                     textured.specular = fetchSpecular(texcoord);
-                    SB_BARRIER
                     textured.emissive = fetchEmission(texcoord);
-                    SB_BARRIER
 #ifndef PLAIN_BINDLESS_TEXTURE_FETCH
                 }
             }
+            SB_BARRIER
 #endif
 
             vec4 diffuse = textured.diffuse; diffuse.xyz = toLinear(max(diffuse.xyz, vec3(0.f)));
