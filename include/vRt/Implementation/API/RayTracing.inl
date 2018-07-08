@@ -52,16 +52,15 @@ namespace _vt {
         rtset->_cuniform.closestHitOffset = 0;
         rtset->_cuniform.currentGroup = 0;
 
-        const uint32_t WG_COUNT = 64;
-        const uint32_t RADICE_AFFINE = 16;
-        const uint32_t uzero = 0u;
+        const uint32_t WG_COUNT = 64, RADICE_AFFINE = 16;
 
         // form descriptor sets
-        std::vector<VkDescriptorSet> _rtSets = { rtset->_descriptorSet, matrl->_descriptorSet };
+        std::vector<VkDescriptorSet> _rtSets = { rtset->_descriptorSet };
+        if (matrl) {
+            _rtSets.push_back(matrl->_descriptorSet); // make material set not necesssary
+            vkCmdUpdateBuffer(*cmdBuf, *matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
+        }
         for (auto &s : cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
-
-        // initial consts
-        vkCmdUpdateBuffer(*cmdBuf, *matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
 
         // cleaning indices and counters
         auto cmdClean = [&](){
