@@ -48,20 +48,30 @@ void splitNode(inout int fID, inout int side) {
                 bvec2 isLeaf = lessThan(transplit.yw - transplit.xz, ivec2(1,1));
                 
                 // resolve branch
-                int hd = lCounterInc();
+                int hd = (split+1) << 1;
+                //int hd = (_pdata.x+1) << 1;
+                //int hd = lCounterInc();
+                //int hd = (_pdata.x << 1) >> 1; // just use offset index for
                 imageStore(bvhMeta, prID, ivec4(hd.xx+ivec2(1,2), _pdata.zw+1));
-                imageStore(bvhMeta, hd+0, ivec4(transplit.xy, prID, -1)+1);
-                imageStore(bvhMeta, hd+1, ivec4(transplit.zw, prID, -1)+1);
-
-                // add prefix to next task
+                imageStore(bvhMeta, hd+0, ivec4(transplit.xy, prID, _pdata.w)+1);
+                imageStore(bvhMeta, hd+1, ivec4(transplit.zw, prID, _pdata.w)+1);
                 Actives[wID(aCounterInc())][cBuffer] = hd+1;
-            } else {
+                /*
+                // add prefix to next task
+                if (all(isLeaf)) {
+                    const int chid = cCounterInc2();
+                    LeafIndices[chid+0] = hd+1;//(bvhBlock.leafCount + hd+0)+1;
+                    LeafIndices[chid+1] = hd+2;//(bvhBlock.leafCount + hd+1)+1;
+                } else {
+                    Actives[wID(aCounterInc())][cBuffer] = hd+1;
+                    if (isLeaf.x) LeafIndices[cCounterInc()] = hd+1;
+                    if (isLeaf.y) LeafIndices[cCounterInc()] = hd+2;
+                }*/
+            } else 
 
             // if leaf, add to leaf list
-            //[[flatten]]
-            //if (_pdata.y == _pdata.x) {
-                LeafIndices[cCounterInc()] = prID+1;
-            }
+            [[flatten]]
+            if (_pdata.y == _pdata.x) { LeafIndices[cCounterInc()] = prID+1; }
         }
     }
 }

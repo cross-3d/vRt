@@ -25,6 +25,7 @@ shared int _counters[8];
 initAtomicSubgroupIncFunctionTarget(_counters[WHERE], _aCounterInc, 1, int)
 initAtomicSubgroupIncFunction(lCounter, lCounterInc, 2, int)
 initAtomicSubgroupIncFunction(cCounter, cCounterInc, 1, int)
+initAtomicSubgroupIncFunction(cCounter, cCounterInc2, 2, int)
 
 int aCounterInc(){return _aCounterInc(cBuffer*4);}
 uint wID(in uint t){return t*gl_NumWorkGroups.x+gl_WorkGroupID.x;}
@@ -54,7 +55,8 @@ void main() {
     // create initial (root) node
     if (threadID == 0) {
 #ifdef FIRST_STEP
-        int hid = lCounterInc();
+        //int hid = lCounterInc();
+        int hid = 0;
         imageStore(bvhMeta, hid+0, ivec4(1, bvhBlock.leafCount, 0, 0));
         imageStore(bvhMeta, hid+1, ivec4(0, 0, 0, 0));
         //bvhMeta[hid+0] = ivec4(1, bvhBlock.leafCount, 0, 0);
