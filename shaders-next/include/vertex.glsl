@@ -74,11 +74,9 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
 
 
 
-
-//#define _SWIZV wzx
 #define _SWIZV xyz
 
-const int WARPED_WIDTH = (2048*4/3);
+const int WARPED_WIDTH = 4096;
 const ivec2 mit[3] = {ivec2(0,1), ivec2(1,1), ivec2(1,0)};
 
 ivec2 mosaicIdc(in ivec2 mosaicCoord, const uint idc) {
@@ -90,13 +88,8 @@ ivec2 mosaicIdc(in ivec2 mosaicCoord, const uint idc) {
 }
 
 ivec2 gatherMosaic(in ivec2 uniformCoord) {
-    return ivec2(uniformCoord.x * 3 + uniformCoord.y % 3, uniformCoord.y);
+    return ivec2((uniformCoord.x * 3) + (uniformCoord.y % 3), uniformCoord.y);
 }
-
-//vec4 fetchMosaic(in sampler2D vertices, in ivec2 mosaicCoord, const uint idc) {
-    //return texelFetch(vertices, mosaicCoord + mit[idc], 0);
-    //return textureLod(vertices, (vec2(mosaicIdc(mosaicCoord, idc)) + 0.49999f) / textureSize(vertices, 0), 0); // supper native warping
-//}
 
 ivec2 getUniformCoord(in int indice) {
     return ivec2(indice % WARPED_WIDTH, indice / WARPED_WIDTH);

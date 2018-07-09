@@ -28,7 +28,7 @@ namespace _vt {
 
         // build vertex input assembly program
         {
-            constexpr auto ATTRIB_EXTENT = 8u; // no way to set more than it now
+            constexpr auto ATTRIB_EXTENT = 8ull; // no way to set more than it now
 
             VtDeviceBufferCreateInfo bfi;
             bfi.familyIndex = _vtDevice->_mainFamilyIndex;
@@ -56,7 +56,7 @@ namespace _vt {
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_countersBuffer);
 
 
-            constexpr auto aWidth = 6144ull * 4ull;
+            constexpr auto aWidth = 4096ull * 3ull;
 
             // create vertex attribute buffer
             VtDeviceImageCreateInfo tfi;
@@ -66,7 +66,7 @@ namespace _vt {
             tfi.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             tfi.layout = VK_IMAGE_LAYOUT_GENERAL;
             tfi.mipLevels = 1;
-            tfi.size = { aWidth, uint32_t(tiled(maxPrimitives * 3u * ATTRIB_EXTENT, aWidth))+1u, 1u };
+            tfi.size = { uint32_t(aWidth), uint32_t(tiled(maxPrimitives * 3ull * ATTRIB_EXTENT, aWidth)+1ull), 1u };
             createDeviceImage(_vtDevice, tfi, vtVertexAssembly->_attributeTexelBuffer);
         };
 

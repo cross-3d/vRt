@@ -129,8 +129,8 @@ namespace _vt {
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_constBuffer);
 
-
-                bfi.bufferSize = tiled(rayCount, 4096ull) * 4096ull * sizeof(uint32_t);
+                // at now unused
+                bfi.bufferSize = sizeof(uint32_t);//tiled(rayCount, 4096ull) * 4096ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_blockBuffer);
 
