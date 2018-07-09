@@ -46,13 +46,14 @@ void main(){
         if (globalID < wsize && globalID >= 0) {
 
             // constant material ID from vertex instance 
-            uint matID = uint(vertexBlock.materialID);
+            uint matID = 0u;//uint(vertexBlock.materialID);
             uint rofft = uint(vertexBlock.readOffset) + globalID;
             uint wofft = uint(vertexBlock.primitiveOffset) + globalID;
             uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
 
             // read material accessor
             readByAccessorIndice(int(vertexBlock.materialAccessor), rofft, matID);
+            matID += uint(vertexBlock.materialID);
 
             // planned to support quad based geometry
             vmaterials[wofft] = int(matID);
