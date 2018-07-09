@@ -134,7 +134,7 @@ namespace vt { // store in official namespace
             VtPrimitiveBitfield bitfieldDetail;
         };
 
-        uint32_t materialAccessor = 0;
+        uint32_t materialAccessor = 0xFFFFFFFFu;
         uint32_t readOffset = 0;
         uint32_t reserved0 = 0, reserved1 = 0;
     };
