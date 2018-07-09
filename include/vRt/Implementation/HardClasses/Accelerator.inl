@@ -14,7 +14,7 @@ namespace _vt {
 
         // planned import from descriptor
         //constexpr auto maxPrimitives = 1024u * 1024u;
-        const auto& maxPrimitives = info.maxPrimitives;
+        //const auto& maxPrimitives = info.maxPrimitives;
 
         // build BVH builder program
         {
@@ -91,7 +91,7 @@ namespace _vt {
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
-                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16;
+                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull;
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_leafBuffer);
 
@@ -103,15 +103,15 @@ namespace _vt {
                 bfi.format = VK_FORMAT_R32_SINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_mortonIndicesBuffer);
 
-                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16 * 2;
+                bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull * 2ull;
                 bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_onWorkBoxes);
 
-                bfi.bufferSize = 8 * maxPrimitives * 2 * sizeof(uint32_t);
+                bfi.bufferSize = 8ull * maxPrimitives * 2ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_currentNodeIndices);
 
-                bfi.bufferSize = maxPrimitives * 2 * sizeof(uint32_t);
+                bfi.bufferSize = maxPrimitives * 2ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_fitStatusBuffer);
 
@@ -119,11 +119,11 @@ namespace _vt {
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_leafNodeIndices);
 
-                bfi.bufferSize = 16 * sizeof(uint32_t);
+                bfi.bufferSize = 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_countersBuffer);
 
-                bfi.bufferSize = 2 * 128 * 16 * sizeof(float);
+                bfi.bufferSize = 2ull * 128ull * 16ull * sizeof(float);
                 bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_generalBoundaryResultBuffer);
             };
@@ -176,18 +176,18 @@ namespace _vt {
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
                 if (!info.bvhMetaBuffer) {
-                    bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 4 * 2;
+                    bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 4ull * 2ull;
                     bfi.format = VK_FORMAT_R32G32B32A32_SINT;
                     createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhMetaBuffer);
                 }
 
                 if (!info.bvhBoxBuffer) {
-                    bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16 * 2;
+                    bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull * 2ull;
                     bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                     createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBoxBuffer);
                 }
 
-                bfi.bufferSize = sizeof(uint32_t) * 8 * 128;
+                bfi.bufferSize = sizeof(uint32_t) * 8ull * 128ull;
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBlockUniform);
             };
@@ -214,7 +214,7 @@ namespace _vt {
                     bvi.flags = {};
                     bvi.buffer = info.bvhMetaBuffer;
                     bvi.format = VK_FORMAT_R32G32B32A32_SINT;
-                    bvi.offset = 4 * sizeof(int32_t) * info.bvhMetaOffset;
+                    bvi.offset = 4ull * sizeof(int32_t) * info.bvhMetaOffset;
                     bvi.range = VK_WHOLE_SIZE;
                     if (vkCreateBufferView(_vtDevice->_device, &bvi, nullptr, &bvhMetaView) == VK_SUCCESS) {
                         result = VK_SUCCESS;
@@ -224,7 +224,7 @@ namespace _vt {
                 }
 
                 auto metaView = info.bvhMetaBuffer ? vk::BufferView(bvhMetaView) : vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView);
-                auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 16 * sizeof(int32_t) * info.bvhBoxOffset, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
+                auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 16ull * sizeof(int32_t) * info.bvhBoxOffset, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
 
                 auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {

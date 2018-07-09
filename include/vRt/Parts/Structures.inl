@@ -19,8 +19,8 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION;
         const void* pNext = nullptr;
         uint32_t mainQueueFamily = 0;
-        size_t sharedCacheSize = 1024u * 1024u * 4;
-        size_t maxPrimitives = 1024u * 1024u;
+        size_t sharedCacheSize = 1024u * 1024u;
+        size_t maxPrimitives = 1024u * 256u;
         std::string_view shaderPath = "./";
         VmaAllocator allocator = nullptr;
     };
@@ -149,7 +149,7 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_PIPELINE_CREATE_INFO;
         const void* pNext = nullptr;
 
-        size_t maxPrimitives = 1024u * 1024u;
+        //size_t maxPrimitives = 1024u * 256u;
         VtPipelineLayout pipelineLayout;
         VkPipelineShaderStageCreateInfo vertexAssemblyModule;
     };
@@ -160,7 +160,7 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
-        size_t maxPrimitives = 1024u * 1024u;
+        size_t maxPrimitives = 1024u * 256u;
     };
 
 
@@ -169,7 +169,7 @@ namespace vt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_ACCELERATOR_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
-        size_t maxPrimitives = 1024u * 1024u;
+        size_t maxPrimitives = 1024u * 256u;
         VkBuffer bvhMetaBuffer = nullptr;
         VkBuffer bvhBoxBuffer = nullptr;
         uint32_t entryID = 0, primitiveCount = -1, primitiveOffset = 0;

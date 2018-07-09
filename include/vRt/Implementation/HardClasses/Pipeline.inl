@@ -55,7 +55,7 @@ namespace _vt {
 
         { // planned variable size
             const auto& rayCount = info.maxRays;
-            const auto& maxAttribCount = 8;
+            const auto& maxAttribCount = 8ull;
             vtRTSet->_cuniform.maxRayCount = rayCount;
 
             {
@@ -69,12 +69,12 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayBuffer);
 
 
-                bfi.bufferSize = rayCount * 4 * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 4ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupIndicesBuffer);
 
 
-                bfi.bufferSize = rayCount * 4 * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 4ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupIndicesBufferRead);
 
@@ -84,12 +84,12 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_hitBuffer);
 
 
-                bfi.bufferSize = rayCount * 5 * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_closestHitIndiceBuffer);
 
 
-                bfi.bufferSize = rayCount * 5 * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_missedHitIndiceBuffer);
 
@@ -114,7 +114,7 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_hitPayloadBuffer);
 
 
-                bfi.bufferSize = rayCount * 2 * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 2ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32G32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayLinkPayload);
 
@@ -135,7 +135,7 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_blockBuffer);
 
 
-                bfi.bufferSize = rayCount * 4 * maxAttribCount * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 4ull * maxAttribCount * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_attribBuffer);
             };

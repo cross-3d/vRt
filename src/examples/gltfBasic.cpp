@@ -207,11 +207,10 @@ void main() {
 
 
 
-
     tinygltf::Model model = {};
     tinygltf::TinyGLTF loader = {};
-    std::string err;
-    std::string input_filename("models/sponza/sponza.gltf");
+    std::string err, input_filename = "models/sponza/sponza.gltf";//"models/vokselia_spawn.gltf";
+    //std::string input_filename("models/sponza/sponza.gltf");
     //std::string input_filename("models/BoomBoxWithAxes.gltf");
     //std::string input_filename("models/Chess_Set.gltf");
     //std::string input_filename("models/Cube.gltf");
@@ -489,14 +488,14 @@ void main() {
 
     // create accelerator set
     VtAcceleratorSetCreateInfo acci;
-    acci.maxPrimitives = 1024 * 1024;
+    acci.maxPrimitives = 1024 * 1024 * 4;
     acci.entryID = 0;
     vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
 
 
     // create vertex assembly
     VtVertexAssemblySetCreateInfo vtsi;
-    vtsi.maxPrimitives = 1024 * 1024;
+    vtsi.maxPrimitives = 1024 * 1024 * 4;
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
 
@@ -599,6 +598,7 @@ void main() {
 
         // matrix with scaling
         double mscale = 1.0;
+        //double mscale = 100.0;
         glm::dmat4 matrix(1.0);
         matrix *= glm::scale(glm::dvec3(mscale, mscale, mscale));
 

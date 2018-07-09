@@ -345,6 +345,8 @@ namespace NSM
                 dbi.mainQueueFamily = deviceQueuePtr->familyIndex;
                 dbi.shaderPath = shaderPath;
                 dbi.allocator = devicePtr->allocator;
+                dbi.sharedCacheSize = 1024 * 1024 * 64; // 512Mb?
+                dbi.maxPrimitives = 1024 * 1024 * 4;
                 vt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
 
                 //devicePtr->allocator = deviceQueuePtr->device->rtDev->_allocator;

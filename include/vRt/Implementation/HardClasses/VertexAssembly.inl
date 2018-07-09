@@ -43,18 +43,20 @@ namespace _vt {
             bfi.format = VK_FORMAT_UNDEFINED;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_materialBuffer);
 
-            bfi.bufferSize = maxPrimitives * sizeof(float) * 4;
+            bfi.bufferSize = maxPrimitives * sizeof(float) * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBuffer);
 
-            bfi.bufferSize = maxPrimitives * sizeof(float) * 4;
+            bfi.bufferSize = maxPrimitives * sizeof(float) * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBufferSide);
 
-            bfi.bufferSize = sizeof(uint32_t) * 4;
+            bfi.bufferSize = sizeof(uint32_t) * 4ull;
             bfi.format = VK_FORMAT_R32_UINT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_countersBuffer);
 
+
+            constexpr auto aWidth = 6144ull * 4ull;
 
             // create vertex attribute buffer
             VtDeviceImageCreateInfo tfi;
@@ -64,7 +66,7 @@ namespace _vt {
             tfi.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             tfi.layout = VK_IMAGE_LAYOUT_GENERAL;
             tfi.mipLevels = 1;
-            tfi.size = { 6144u, uint32_t(tiled(maxPrimitives * 3u * ATTRIB_EXTENT, 6144ull))+1u, 1u };
+            tfi.size = { aWidth, uint32_t(tiled(maxPrimitives * 3u * ATTRIB_EXTENT, aWidth))+1u, 1u };
             createDeviceImage(_vtDevice, tfi, vtVertexAssembly->_attributeTexelBuffer);
         };
 

@@ -196,7 +196,7 @@ namespace _vt {
         // 
         VtVertexAssemblyPipelineCreateInfo simfo;
         simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, vt::natives::vertexAssembly[vendorName]);
-        simfo.maxPrimitives = vtExtension.maxPrimitives;
+        //simfo.maxPrimitives = vtExtension.maxPrimitives;
         VtPipelineLayoutCreateInfo vtpl;
         createPipelineLayout(vtDevice, vtpl, simfo.pipelineLayout, VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT);
 

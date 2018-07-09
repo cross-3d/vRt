@@ -78,7 +78,7 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
 //#define _SWIZV wzx
 #define _SWIZV xyz
 
-const int WARPED_WIDTH = 2048;
+const int WARPED_WIDTH = (2048*4/3);
 const ivec2 mit[3] = {ivec2(0,1), ivec2(1,1), ivec2(1,0)};
 
 ivec2 mosaicIdc(in ivec2 mosaicCoord, const uint idc) {
@@ -173,10 +173,6 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
 #endif
 
 
-
-
-
-const int _BVH_WIDTH = 2048;
 
 #ifdef ENABLE_VSTORAGE_DATA
 #ifdef ENABLE_VERTEX_INTERPOLATOR

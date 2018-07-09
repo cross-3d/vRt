@@ -27,7 +27,7 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtMaterialSet->_virtualSamplerCombinedBuffer);
                 */
 
-                bfi.bufferSize = 8 * sizeof(uint32_t);
+                bfi.bufferSize = 8ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtMaterialSet->_constBuffer);
             };
