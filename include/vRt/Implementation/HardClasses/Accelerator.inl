@@ -83,9 +83,9 @@ namespace _vt {
         const auto& maxPrimitives = info.maxPrimitives;
         vtAccelerator->_primitiveCount = info.primitiveCount;
         vtAccelerator->_primitiveOffset = info.primitiveOffset;
-        
-        {
 
+        if (!info.secondary)
+        {
             { // solve building BVH conflicts by creation in accelerator set
                 VtDeviceBufferCreateInfo bfi;
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
@@ -167,10 +167,9 @@ namespace _vt {
                 };
                 vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
             };
+        };
 
-
-
-
+        {
             {
                 VtDeviceBufferCreateInfo bfi;
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
