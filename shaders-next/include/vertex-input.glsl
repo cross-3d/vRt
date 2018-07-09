@@ -53,7 +53,7 @@ int aNormalized(in uint bitfield) {
 
 // input data of vertex instance
 //layout ( binding = 0, set = 1, std430 ) readonly buffer bufferSpaceB {INDEX16 bufferSpace[]; };
-layout ( binding = 0, set = 1 ) uniform usamplerBuffer bufferSpace[8]; // vertex model v1.3
+layout ( binding = 0, set = 1 ) uniform usamplerBuffer bufferSpace[8]; // vertex model v1.4
 //layout ( binding = 1, set = 1, std430 ) readonly buffer VT_BUFFER_REGION {VtBufferRegion bufferRegions[]; };
 layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
 layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR {VtAccessor accessors[]; };
@@ -68,20 +68,19 @@ struct VtVIUniform {
     uint materialID;
 
     uint primitiveOffset;
-    uint reserved0;
+    uint attributeOffset;
     uint attributeCount;
     uint bitfield;
 
     uint materialAccessor;
-    uint updateOnly; // planned to merge into bitfields
     uint readOffset;
-    uint reserved1;
+    uint reserved0, reserved1;
 };
 
 // uniform input of vertex loader
 layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
 layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
-#define vertexBlock _vertexBlock[cblock.inputID]
+#define vertexBlock _vertexBlock[gl_GlobalInvocationID.y + cblock.inputID]
 
 
 

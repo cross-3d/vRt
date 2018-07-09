@@ -22,6 +22,7 @@ void main(){
     const uint lID = uint(Local_Idx);
     const uint rng = gS*wgs;
     const uint trp = 3;
+    
 
     // for faster geometry loading, just add counter in single thread
     //if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && vertexBlock.updateOnly == 0) { atomicAdd(tcounter[0], int(wsize)); }
@@ -36,6 +37,7 @@ void main(){
             uint matID = uint(vertexBlock.materialID);
             uint rofft = uint(vertexBlock.readOffset) + globalID;
             uint wofft = uint(vertexBlock.primitiveOffset) + globalID;
+            //uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
 
             // read material accessor
             readByAccessorIndice(int(vertexBlock.materialAccessor), rofft, matID);
@@ -56,6 +58,7 @@ void main(){
                 // load attrib data
                 [[unroll]]
                 for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
+                    uint a = vertexBlock.attributeOffset + a;
                     vec4 attribValue = vec4(0.f);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
                     storeAttribute(ivec3(wofft, attributes[a].attributeID, i), attribValue);

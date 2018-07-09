@@ -127,18 +127,16 @@ namespace vt { // store in official namespace
         uint32_t materialID = 0;
 
         uint32_t primitiveOffset = 0;
-        uint32_t topology = 0;//VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
+        uint32_t attributeOffset = 0;
         uint32_t attributeCount = 8;
-
         union {
             uint32_t bitfield = 0u;
             VtPrimitiveBitfield bitfieldDetail;
         };
 
         uint32_t materialAccessor = 0;
-        uint32_t updateOnly = 0;
         uint32_t readOffset = 0;
-        uint32_t reserved2 = 0;
+        uint32_t reserved0 = 0, reserved1 = 0;
     };
 
     struct VtStageUniform { int width = 1, height = 1, iteration = 0, closestHitOffset = 0; int currentGroup = 0, maxRayCount = 0, r1 = 0, r2 = 0; };

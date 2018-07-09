@@ -42,7 +42,7 @@ namespace _vt {
         
         // additional block clause (16.06.2018)
         vtVertexInput->_uniformBlock.primitiveOffset = info.primitiveOffset;
-        vtVertexInput->_uniformBlock.topology = info.topology;
+        vtVertexInput->_uniformBlock.attributeOffset = info.attributeOffset;
         vtVertexInput->_uniformBlock.attributeCount = info.attributeCount;
         vtVertexInput->_uniformBlock.bitfield = info.bitfield;
 

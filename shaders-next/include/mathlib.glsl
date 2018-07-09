@@ -11,9 +11,6 @@ const float TWO_PI = 6.2831853071795864769252867665590057683943f;
 const float SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
 const float E = 2.7182818284590452353602874713526624977572f;
 
-// short means barrier
-#define LGROUP_BARRIER groupMemoryBarrier(),barrier();
-
 // float 16 or 32 bit types
 #ifdef AMD_F16_BVH
 #define ftype_ float16_t

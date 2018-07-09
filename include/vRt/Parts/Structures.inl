@@ -78,6 +78,7 @@ namespace vt { // store in official namespace
         const void* pNext = nullptr;
 
         VtVertexAssemblyPipeline vertexAssemblyPipeline;
+        VtTopologyType topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
 
         // original block
         uint32_t primitiveCount = 0;
@@ -87,7 +88,7 @@ namespace vt { // store in official namespace
 
         // additional clause (16.06.2018)
         uint32_t primitiveOffset = 0;
-        VtTopologyType topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
+        uint32_t attributeOffset = 0;
         uint32_t attributeCount = 8;
         uint32_t materialAccessor = 0;
 

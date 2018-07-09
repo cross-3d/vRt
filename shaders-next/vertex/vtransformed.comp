@@ -49,6 +49,7 @@ void main(){
             uint matID = uint(vertexBlock.materialID);
             uint rofft = uint(vertexBlock.readOffset) + globalID;
             uint wofft = uint(vertexBlock.primitiveOffset) + globalID;
+            uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
 
             // read material accessor
             readByAccessorIndice(int(vertexBlock.materialAccessor), rofft, matID);
@@ -69,9 +70,10 @@ void main(){
                 // load attrib data
                 [[unroll]]
                 for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
+                    uint a = vertexBlock.attributeOffset + a;
                     vec4 attribValue = vec4(0.f);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-                    if (a == NORMAL_TID) { attribValue = mult4(vTransforms[cblock.inputID].transformNrm, attribValue); }
+                    if (a == NORMAL_TID) { attribValue = mult4(vTransforms[inputID].transformNrm, attribValue); }
                     storeAttribute(ivec3(wofft, attributes[a].attributeID, i), attribValue);
                 }}
 
@@ -79,7 +81,7 @@ void main(){
                 {
                     vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); 
                     readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
-                    vertice = mult4(vTransforms[cblock.inputID].transform, vertice);
+                    vertice = mult4(vTransforms[inputID].transform, vertice);
                     storePosition(ivec2(wofft, i), vec4(vertice.xyz, 1.f));
                 }
             }

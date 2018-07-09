@@ -552,7 +552,8 @@ void main() {
             vtii.sourceBufferCount = bviews.size();
             vtii.bBufferAccessors = VAccessorSet;
             vtii.bBufferAttributeBindings = VAttributes;
-            vtii.attributeByteOffset = attribOffset * sizeof(VtVertexAttributeBinding);
+            //vtii.attributeByteOffset = attribOffset * sizeof(VtVertexAttributeBinding);
+            vtii.attributeOffset = attribOffset;
             vtii.bBufferRegionBindings = VBufferRegions;
             vtii.bBufferViews = VBufferView;
             vtii.vertexAssemblyPipeline = vtxPipeline;

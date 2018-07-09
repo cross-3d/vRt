@@ -81,12 +81,12 @@ namespace vt {
     };
 
 
-    inline VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, uint32_t inputSet, bool multiple) {
-        return updateVertexSet(commandBuffer, inputSet, multiple);
+    inline VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, uint32_t inputSet, bool multiple, bool useInstance, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb) {
+        return updateVertexSet(commandBuffer, inputSet, multiple, useInstance, cb);
     };
 
-    inline VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb) {
-        return buildVertexSet(commandBuffer, cb);
+    inline VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer, bool useInstance, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb) {
+        return buildVertexSet(commandBuffer, useInstance, cb);
     };
 
     inline VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer /*,  */) {

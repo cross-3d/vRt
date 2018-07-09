@@ -66,10 +66,10 @@ namespace vt { // store in official namespace
     extern inline VtResult vtCmdBindVertexAssembly(VtCommandBuffer commandBuffer, VtVertexAssemblySet vertexAssembly);
 
     // update vertex assembly without needs to full rebuilding vertex set 
-    extern inline VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, uint32_t inputSet = 0, bool multiple = false);
+    extern inline VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, uint32_t inputSet, bool multiple = false, bool useInstance = true, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {});
 
     // pre-build vertex input in accelerator structure
-    extern inline VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {});
+    extern inline VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {});
 
     // build accelerator structure command
     extern inline VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer /*,  */);
