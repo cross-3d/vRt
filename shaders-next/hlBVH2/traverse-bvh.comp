@@ -40,6 +40,7 @@ void main() {
         currentRayTmp = rays[it]; // fix SPIR-V error
         int hid = vtFetchHitIdc(it);
         traverseBvh2(not(overflow), hid);
+        SB_BARRIER
 
         IF (not(overflow)) { // verify intersection
             const int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
