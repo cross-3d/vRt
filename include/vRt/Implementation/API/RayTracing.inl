@@ -93,9 +93,9 @@ namespace _vt {
             }
 
             // reload to caches and reset counters (if has group shaders)
+            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             for (int i = 0; i < std::min(4ull, rtppl->_groupPipelines.size()); i++) {
                 if (rtppl->_groupPipelines[i]) {
-                    vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
                     cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 16 * sizeof(uint32_t)) });
                     cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, rayCount * sizeof(uint32_t) * 4) });
                     cmdClean();
