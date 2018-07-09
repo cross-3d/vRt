@@ -45,17 +45,11 @@ void main() {
 
         IF (not(overflow)) { // verify intersection
             const int triID = floatBitsToInt(hit.uvt.w)-1;
-            const int itri = triID*3;
-            //const mat3 vT = transpose(mat3(
-            const mat3 vT = mat3(
-                TLOAD(lvtxIn, itri+0).xyz,
-                TLOAD(lvtxIn, itri+1).xyz,
-                TLOAD(lvtxIn, itri+2).xyz
-            );//));
             
             // interpolate hit
             if (triID >= 0) {
-                hit.vdat = vec4(normalize(cross(vT[1]-vT[0], vT[2]-vT[0])), 1.f);
+                const int itri = triID*3; const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
+                hit.vdat = vec4(normalize(cross(TLOAD(lvtxIn, itri+1).xyz-v0, TLOAD(lvtxIn, itri+2).xyz-v0)), 1.f);
                 interpolateMeshData(hit);
 #ifndef DMA_HIT
                 hits[hitID] = hit;
@@ -67,9 +61,8 @@ void main() {
             [[unroll]]
             for (int i=0;i<4;i++) {
                 [[flatten]]
-                if (rID == i) { vtVerifyClosestHit(hitID, i); }
+                if (rID == i) { vtVerifyClosestHit(hitID, i); break; }
             }
-
         }
     }
 
