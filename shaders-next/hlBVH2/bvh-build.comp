@@ -44,7 +44,7 @@ void main() {
 
     // lane-based
     //const uint gS = groupSize >> 1, iT = threadID >> 1;
-    uint gS = 0u, iT = 0u, uID = 0u;
+    uint gS = 0u, iT = 0u, uID = 0u, uWD = 0u;
     gS = groupSize >> 1, iT = threadID >> 1;
     int sD = int(threadID & 1);
 
@@ -64,8 +64,8 @@ void main() {
         Actives[aCounterInc()][cBuffer] = hid+1;
         //asize = asize_inv_;
 #else
-        asize_inv_ = aCounter[  cBuffer]/int(gl_NumWorkGroups.x>>1), 
-        asize_     = aCounter[1-cBuffer]/int(gl_NumWorkGroups.x>>1);
+        //asize_inv_ = aCounter[  cBuffer]/int(gl_NumWorkGroups.x>>1), asize_ = aCounter[1-cBuffer]/int(gl_NumWorkGroups.x>>1);
+        asize_inv_ = aCounter[  cBuffer], asize_ = aCounter[1-cBuffer];
 #endif
     }
     
@@ -75,35 +75,41 @@ void main() {
         LGROUP_BARRIER
 
 #ifdef FIRST_STEP // limit by few elements
-        if (m >= 4) { break; }
+        if (m >= 4) { break; }     
 #endif
 
         // swap buffers emulation
         if (threadID == 0) { cBuffer = 1-cBuffer; asize_inv_ = 0; asize = asize_; }
         LGROUP_BARRIER
         
-        //IFALL (asize >= (gS*largeStageThreshold) || asize <= 0) { break; }
-        IFALL (asize <= 0) { break; } // remove count limiter
+#ifdef FIRST_STEP
+        const int wsize = asize, osize = wsize;
+#else
+        const int wsize = asize * int(m == 0 ? 1 : gl_NumWorkGroups.x), osize = (wsize / int(gl_NumWorkGroups.x));
+#endif
+
+        //IFALL (osize >= (gS*largeStageThreshold) || osize <= 0) { break; }
+        IFALL (osize <= 0) { break; } // remove count limiter
 
         // split nodes
-        for (uint fT=0;fT<asize;fT+=gS) {
+        for (uint fT=0;fT<osize;fT+=gS) {
             // subgroup barrier
             SB_BARRIER
 
             // index of node element
             //const uint uID = fT + iT;
-            uID = (fT + iT);
+            uID = (fT + iT), uWD = wID(uID);
 
             // split prefixed elements
-            IFALL (uID >= asize) break;
+            IFALL (uWD >= wsize) break;
 
             // get spared prefix
-            int fID = Actives[wID(uID)][1-cBuffer]-1;
-            if (sD == 0) Actives[wID(uID)][1-cBuffer] = 0;
+            int fID = Actives[uWD][1-cBuffer]-1;
+            if (sD == 0) Actives[uWD][1-cBuffer] = 0;
 
             // split sibling nodes
             [[flatten]]
-            if (uID < asize && fID >= 0) { splitNode(fID, sD); }
+            if (uWD < wsize && fID >= 0) { splitNode(fID, sD); }
         }
     }
 
