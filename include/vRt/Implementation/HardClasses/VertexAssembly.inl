@@ -28,8 +28,6 @@ namespace _vt {
 
         // build vertex input assembly program
         {
-            constexpr auto ATTRIB_EXTENT = 8ull; // no way to set more than it now
-
             VtDeviceBufferCreateInfo bfi;
             bfi.familyIndex = _vtDevice->_mainFamilyIndex;
             bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);

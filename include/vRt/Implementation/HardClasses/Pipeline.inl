@@ -55,7 +55,6 @@ namespace _vt {
 
         { // planned variable size
             const auto& rayCount = info.maxRays;
-            const auto& maxAttribCount = 8ull;
             vtRTSet->_cuniform.maxRayCount = rayCount;
 
             {
@@ -135,7 +134,7 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_blockBuffer);
 
 
-                bfi.bufferSize = rayCount * 4ull * maxAttribCount * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 4ull * ATTRIB_EXTENT * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_attribBuffer);
             };
