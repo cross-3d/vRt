@@ -34,8 +34,7 @@ You can see here current API:
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/Enums.inl
 
 ## Current Limitations:
-- No support of top level BVH (only bottom level at moment)
-- No common DXR features 
+- No direct equivalent of top level BVH
 
 We still working on forming of ray tracing API. 
 
