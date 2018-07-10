@@ -231,6 +231,8 @@ namespace _vt {
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);
         //commandBarrier(*cmdBuf);
 
+
+        const auto workGroupSize = 16u;
         std::vector<VkDescriptorSet> _sets = { bounder->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 128); // calculate general box of BVH
@@ -239,9 +241,9 @@ namespace _vt {
         radixSort(cmdBuf, bounder->_sortDescriptorSet, accel->_bvhBlockData.leafCount);
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
-        cmdDispatch(*cmdBuf, acclb->_buildPipeline, 8); // parallelize by another threads
+        cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
         cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
-        cmdDispatch(*cmdBuf, acclb->_fitPipeline, 8);
+        cmdDispatch(*cmdBuf, acclb->_fitPipeline, workGroupSize);
         //cmdDispatch(*cmdBuf, acclb->_fitPipeline, INTENSIVITY); // fit BVH nodes
 
         return result;
