@@ -44,6 +44,7 @@ We still working on forming of ray tracing API.
 - Development of better implementation 
 - Improve API and interfaces
 - Support for NVidia (GTX 9, 10, Titan series) and AMD (RX Vega) hardware
+- Planned support for V-EZ by GPUOpen (July/August)
 
 #### 2018 Q4 ("Lithium")
 - Coming to (pre-)alpha stage
