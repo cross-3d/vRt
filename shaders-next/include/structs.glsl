@@ -114,11 +114,11 @@ void parameteri(const ivec2 parameter, inout uint bitfield, in int value) {
     bitfield = BFI_HW(bitfield, uint(value), parameter.x, parameter.y);
 }
 
-bool_ parameterb(const ivec2 parameter, in uint bitfield) {
+lowp bool_ parameterb(const ivec2 parameter, in uint bitfield) {
     return bool_(BFE_HW(bitfield, parameter.x, 1));
 }
 
-void parameterb(const ivec2 parameter, inout uint bitfield, in bool_ value) {
+void parameterb(const ivec2 parameter, inout uint bitfield, in lowp bool_ value) {
     bitfield = BFI_HW(bitfield, uint(value), parameter.x, 1);
 }
 
@@ -131,11 +131,11 @@ void parameteri(const ivec2 parameter, inout float bitfield, in int value) {
     bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), uint(value), parameter.x, parameter.y));
 }
 
-bool_ parameterb(const ivec2 parameter, in float bitfield) {
+lowp bool_ parameterb(const ivec2 parameter, in float bitfield) {
     return bool_(BFE_HW(floatBitsToUint(bitfield), parameter.x, 1));
 }
 
-void parameterb(const ivec2 parameter, inout float bitfield, in bool_ value) {
+void parameterb(const ivec2 parameter, inout float bitfield, in lowp bool_ value) {
     bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), uint(value), parameter.x, 1));
 }
 

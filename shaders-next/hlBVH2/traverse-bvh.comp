@@ -33,7 +33,7 @@ void main() {
     for (int w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         int it = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
-        bool_ overflow = bool_(it >= wsize);
+        lowp bool_ overflow = bool_(it >= wsize);
         IFALL(overflow) break;
 
         // do BVH traversing 

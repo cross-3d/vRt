@@ -23,7 +23,7 @@ _RAY_TYPE currentRayTmp;
 struct BvhTraverseState {
     int idx, defTriangleID, stackPtr, cacheID, pageID;
     float distMult, diffOffset, cutOut;
-    fvec4_ minusOrig, directInv; bvec4_ boxSide;
+    fvec4_ minusOrig, directInv; lowp bvec4_ boxSide;
 
 #ifdef USE_STACKLESS_BVH
     uint64_t bitStack, bitStack2;
@@ -79,7 +79,7 @@ void doIntersection() {
     //if (d < INFINITY && d <= nearhit) { primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(exchange(traverseState.defTriangleID,-1)+1)); }
 }
 
-void traverseBvh2(in bool_ valid, in int eht) {
+void traverseBvh2(in lowp bool_ valid, in int eht) {
     vec3 origin = currentRayTmp.origin.xyz;
     vec3 direct = dcts(currentRayTmp.cdirect.xy);
 
@@ -93,7 +93,7 @@ void traverseBvh2(in bool_ valid, in int eht) {
     float dirlen = length(dirproj); dirproj /= dirlen, dirproj = 1.f.xxx / vec3(precIssue(dirproj.x), precIssue(dirproj.y), precIssue(dirproj.z));
 
     // limitation of distance
-    bvec3_ bsgn = (bvec3_(sign(dirproj)*ftype_(1.0001f))+true_)>>true_;
+    lowp bvec3_ bsgn = (bvec3_(sign(dirproj)*ftype_(1.0001f))+true_)>>true_;
 
     // initial state
     traverseState.defTriangleID = -1;
@@ -150,7 +150,7 @@ void traverseBvh2(in bool_ valid, in int eht) {
             // if not leaf and not wrong
             if (cnode.x != cnode.y) {
                 vec2 nears = INFINITY.xx, fars = INFINITY.xx;
-                bvec2_ childIntersect = bvec2_((traverseState.idx >= 0).xx);
+                lowp bvec2_ childIntersect = bvec2_((traverseState.idx >= 0).xx);
 
                 // intersect boxes
                 const int _cmp = cnode.x >> 1;
@@ -165,7 +165,7 @@ void traverseBvh2(in bool_ valid, in int eht) {
                 , nears, fars);
                 childIntersect &= bvec2_(lessThanEqual(nears, traverseState.cutOut.xx));
 
-                int fmask = (childIntersect.x + childIntersect.y*2)-1; // mask of intersection
+                int fmask = int(childIntersect.x + childIntersect.y*2u)-1; // mask of intersection
 
                 [[flatten]]
                 if (fmask >= 0) {

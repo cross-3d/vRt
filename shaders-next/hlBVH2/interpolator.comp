@@ -33,7 +33,7 @@ void main() {
     for (int w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
-        bool_ overflow = bool_(globalID >= wsize);
+        lowp bool_ overflow = bool_(globalID >= wsize);
         IFALL(overflow) break;
         int hitID = SSC(overflow) ? -1 : vtClosestId(offset + globalID);
         

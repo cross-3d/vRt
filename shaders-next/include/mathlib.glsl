@@ -124,12 +124,12 @@ vec4 fakeGather(in usampler2D smpler, in vec2 texcoord, const int channel){
 //#define SGATHER(smp, crd, chnl) textureGather(smp,crd,chnl)
 
 
-#define bvec4_ ivec4
-#define bvec3_ ivec3
-#define bvec2_ ivec2
-#define bool_ int
-#define true_ (1)
-#define false_ (0)
+#define bvec4_ uvec4
+#define bvec3_ uvec3
+#define bvec2_ uvec2
+#define bool_ uint
+#define true_ (1u)
+#define false_ (0u)
 #define true2_ (true_.xx)
 #define false2_ (false_.xx)
 
@@ -143,11 +143,11 @@ vec4 fakeGather(in usampler2D smpler, in vec2 texcoord, const int channel){
 
 // inprecise comparsion functions
 const float PRECERR = PZERO;
-bool_ lessEqualF   (in float a, in float b) { return bool_(   (a-b) <=  PRECERR); }
-bool_ lessF        (in float a, in float b) { return bool_(   (a-b) <  -PRECERR); }
-bool_ greaterEqualF(in float a, in float b) { return bool_(   (a-b) >= -PRECERR); }
-bool_ greaterF     (in float a, in float b) { return bool_(   (a-b) >   PRECERR); }
-bool_ equalF       (in float a, in float b) { return bool_(abs(a-b) <=  PRECERR); }
+lowp bool_ lessEqualF   (in float a, in float b) { return bool_(   (a-b) <=  PRECERR); }
+lowp bool_ lessF        (in float a, in float b) { return bool_(   (a-b) <  -PRECERR); }
+lowp bool_ greaterEqualF(in float a, in float b) { return bool_(   (a-b) >= -PRECERR); }
+lowp bool_ greaterF     (in float a, in float b) { return bool_(   (a-b) >   PRECERR); }
+lowp bool_ equalF       (in float a, in float b) { return bool_(abs(a-b) <=  PRECERR); }
 
 // precision utils
 float precIssue(in float a) { if (isnan(a)) a = 1.f; if (isinf(a)) a = 1.f*sign(a); return max(abs(a),1e-5f)*(a>=0.f?1.f:-1.f); }
@@ -350,18 +350,18 @@ vec2 unpackFloat2x32(in uint64_t b64){
 
 
 // boolean binary compatibility
-bool SSC(in bool_ b){return bool(b);}
-bvec2 SSC(in bvec2_ b){return bvec2(b);}
-bvec4 SSC(in bvec4_ b){return bvec4(b);}
+bool SSC(in lowp bool_ b){return bool(b);}
+bvec2 SSC(in lowp bvec2_ b){return bvec2(b);}
+bvec4 SSC(in lowp bvec4_ b){return bvec4(b);}
 
 bool SSC(in bool b){return b;}
 bvec2 SSC(in bvec2 b){return b;}
 bvec4 SSC(in bvec4 b){return b;}
 
-bool_ any(in bvec2_ b){return b.x|b.y;}
-bool_ all(in bvec2_ b){return b.x&b.y;}
-bool_ not(in bool_ b){return true_^b;}
-bvec2_ not(in bvec2_ b){return true2_^b;}
+lowp bool_ any(in lowp bvec2_ b){return b.x|b.y;}
+lowp bool_ all(in lowp bvec2_ b){return b.x&b.y;}
+lowp bool_ not(in lowp bool_ b){return true_^b;}
+lowp bvec2_ not(in lowp bvec2_ b){return true2_^b;}
 
 #define IF(b)if(SSC(b))
 
@@ -369,37 +369,37 @@ bvec2_ not(in bvec2_ b){return true2_^b;}
 
 
 // select by boolean
-int mix(in int a, in int b, in bool_ c) { return mix(a,b,SSC(c)); }
-uint mix(in uint a, in uint b, in bool_ c) { return mix(a,b,SSC(c)); }
-float mix(in float a, in float b, in bool_ c) { return mix(a,b,SSC(c)); }
-ivec2 mix(in ivec2 a, in ivec2 b, in bvec2_ c) { return mix(a,b,SSC(c)); }
-uvec2 mix(in uvec2 a, in uvec2 b, in bvec2_ c) { return mix(a,b,SSC(c)); }
-vec2 mix(in vec2 a, in vec2 b, in bvec2_ c) { return mix(a,b,SSC(c)); }
-vec4 mix(in vec4 a, in vec4 b, in bvec4_ c) { return mix(a,b,SSC(c)); }
+int mix(in int a, in int b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
+uint mix(in uint a, in uint b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
+float mix(in float a, in float b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
+ivec2 mix(in ivec2 a, in ivec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
+uvec2 mix(in uvec2 a, in uvec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
+vec2 mix(in vec2 a, in vec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
+vec4 mix(in vec4 a, in vec4 b, in lowp bvec4_ c) { return mix(a,b,SSC(c)); }
 
 // 16-bit int/uint
 #ifdef ENABLE_AMD_INT16
-int16_t mix(in int16_t a, in int16_t b, in bool_ c) { return mix(a,b,SSC(c)); }
-uint16_t mix(in uint16_t a, in uint16_t b, in bool_ c) { return mix(a,b,SSC(c)); }
-i16vec2 mix(in i16vec2 a, in i16vec2 b, in bvec2_ c) { return mix(a,b,SSC(c)); }
-u16vec2 mix(in u16vec2 a, in u16vec2 b, in bvec2_ c) { return mix(a,b,SSC(c)); }
+int16_t mix(in int16_t a, in int16_t b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
+uint16_t mix(in uint16_t a, in uint16_t b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
+i16vec2 mix(in i16vec2 a, in i16vec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
+u16vec2 mix(in u16vec2 a, in u16vec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
 #endif
 
 // 16-bit float
 #ifdef ENABLE_AMD_INSTRUCTION_SET
-float16_t mix(in float16_t a, in float16_t b, in bool_ c) { return mix(a,b,SSC(c)); }
-f16vec2 mix(in f16vec2 a, in f16vec2 b, in bvec2_ c) { return mix(a,b,SSC(c)); }
-f16vec4 mix(in f16vec4 a, in f16vec4 b, in bvec4_ c) { return mix(a,b,SSC(c)); }
+float16_t mix(in float16_t a, in float16_t b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
+f16vec2 mix(in f16vec2 a, in f16vec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
+f16vec4 mix(in f16vec4 a, in f16vec4 b, in lowp bvec4_ c) { return mix(a,b,SSC(c)); }
 #endif
 
 
 // swap of 16-bits by funnel shifts and mapping 
-uint fast16swap(in uint b32, const bool_ nswp){
+uint fast16swap(in uint b32, const lowp bool_ nswp){
     const uint vrc = 16u - uint(nswp) * 16u;
     return (b32 << (vrc)) | (b32 >> (32u-vrc));
 }
 
-uint64_t fast32swap(in uint64_t b64, const bool_ nswp){
+uint64_t fast32swap(in uint64_t b64, const lowp bool_ nswp){
     const uint64_t vrc = 32ul - uint64_t(nswp) * 32ul;
     return (b64 << (vrc)) | (b64 >> (64ul-vrc));
 }
@@ -407,13 +407,13 @@ uint64_t fast32swap(in uint64_t b64, const bool_ nswp){
 
 // swap x and y swizzle by funnel shift (AMD half float)
 #ifdef ENABLE_AMD_INSTRUCTION_SET
-f16vec2 fast16swap(in f16vec2 b32, in bool_ nswp) { 
+f16vec2 fast16swap(in f16vec2 b32, in lowp bool_ nswp) { 
     return mix(b32.yx, b32, nswp.xx); // use swizzle version (some device can be slower)
 }
 #endif
 
 // swap x and y swizzle by funnel shift
-vec2 fast32swap(in vec2 b64, in bool_ nswp) { 
+vec2 fast32swap(in vec2 b64, in lowp bool_ nswp) { 
     return mix(b64.yx, b64, nswp.xx); // use swizzle version (some device can be slower)
 }
 
@@ -429,7 +429,7 @@ vec2 fast32swap(in vec2 b64, in bool_ nswp) {
 // single float 32-bit box intersection
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
-bool_ intersectCubeF32Single(const mediump vec3 origin, const mediump vec3 dr, inout bvec3_ sgn, const mediump mat3x2 tMinMaxMem, inout float near, inout float far) {
+lowp bool_ intersectCubeF32Single(const mediump vec3 origin, const mediump vec3 dr, inout lowp bvec3_ sgn, const mediump mat3x2 tMinMaxMem, inout float near, inout float far) {
     mediump mat3x2 tMinMax = mat3x2(
         fma(SSC(sgn.x) ? tMinMaxMem[0] : tMinMaxMem[0].yx, dr.xx, origin.xx),
         fma(SSC(sgn.y) ? tMinMaxMem[1] : tMinMaxMem[1].yx, dr.yy, origin.yy),
@@ -444,7 +444,7 @@ bool_ intersectCubeF32Single(const mediump vec3 origin, const mediump vec3 dr, i
     tFar *= 1.00000024f;
 
     // validate hit
-    bool_ isCube = bool_(tFar>tNear) & bool_(tFar>0.f) & bool_(abs(tNear) <= INFINITY-PRECERR);
+    lowp bool_ isCube = bool_(tFar>tNear) & bool_(tFar>0.f) & bool_(abs(tNear) <= INFINITY-PRECERR);
 
     // resolve hit
     const float inf = float(INFINITY);
@@ -460,9 +460,9 @@ bool_ intersectCubeF32Single(const mediump vec3 origin, const mediump vec3 dr, i
 // compatible with NVidia GPU too
 
 #ifdef AMD_F16_BVH
-bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, inout bvec3_ sgn, in fmat3x4_ tMinMax, in fmat3x4_ tCorrections, inout vec2 near, inout vec2 far) {
+lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, inout lowp bvec3_ sgn, in fmat3x4_ tMinMax, in fmat3x4_ tCorrections, inout vec2 near, inout vec2 far) {
 #else
-bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, inout bvec3_ sgn, in highp fmat3x4_ tMinMax, in highp fmat3x4_ tCorrections, inout vec2 near, inout vec2 far) {
+lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, inout lowp bvec3_ sgn, in highp fmat3x4_ tMinMax, in highp fmat3x4_ tCorrections, inout vec2 near, inout vec2 far) {
 #endif
     tMinMax = fmat3x4_(
         fma(SSC(sgn.x) ? tMinMax[0] : tMinMax[0].zwxy, dr.xxxx, origin.xxxx),
@@ -486,7 +486,7 @@ bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, inou
     tFar *= 1.00000024f.xx;
 #endif
 
-    bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(abs(tNear), fvec2_(INFINITY-PRECERR)));
+    lowp bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(abs(tNear), fvec2_(INFINITY-PRECERR)));
 
     const vec2 inf = vec2(INFINITY);
     near = mix(inf, vec2(tNear), isCube), 
