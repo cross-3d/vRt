@@ -31,14 +31,14 @@ LOCAL_SIZE_LAYOUT;
 void main() {
     vec4 gmn = vec4(100000.f), gmx = vec4(-100000.f);
 
-    [[unroll]]
+    [[unroll, dependency_length(4)]]
     for (uint I=0u;I<256u;I+=Wave_Size) {
-        uint it = I + Lane_Idx;
-        
+        const uint it = I + Lane_Idx;
         gmn = min(gmn, subgroupMin(minmax[it*2+0]));
         gmx = max(gmx, subgroupMax(minmax[it*2+1]));
     }
 
+    [[flatten]]
     if (electedInvoc()) {
         vec4 scale = 1.f/(gmx-gmn), offset = -scale*gmn;
         //mat4 transform = transpose(bvhBlock.transform);

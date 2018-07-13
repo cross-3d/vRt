@@ -11,15 +11,16 @@ int cdelta( inout int a, inout int b ){
 int findSplit( inout int left, inout int right ) {
     int split = left, nstep = right - left, nsplit = split + nstep;
     int commonPrefix = cdelta(split, nsplit);
-    //if (commonPrefix >= 64 || nstep <= 1) { // if morton code equals or so small range
-    //    split = (split + nsplit)>>1;
-    //} else 
-    //{ //fast search SAH split
+    [[flatten]]
+    if (commonPrefix >= 64 || nstep <= 1) { // if morton code equals or so small range
+        split = (split + nsplit)>>1;
+    } else 
+    { //fast search SAH split
         do {
             nstep = (nstep + 1) >> 1, nsplit = split + nstep;
             if (cdelta(split, nsplit) > commonPrefix) { split = nsplit; }
         } while (nstep > 1);
-    //}
+    }
     return clamp(split, left, right-1);
 }
 

@@ -16,8 +16,8 @@ namespace _vt {
         std::vector<VkDescriptorSet> _sets = { radix->_descriptorSet, inputSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, radix->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         for (uint32_t i = 0; i < STEPS; i++) {
-            cmdFillBuffer<0u>(*cmdBuf, *radix->_histogramBuffer);
-            cmdFillBuffer<0u>(*cmdBuf, *radix->_prefixSumBuffer);
+            //cmdFillBuffer<0u>(*cmdBuf, *radix->_histogramBuffer);
+            //cmdFillBuffer<0u>(*cmdBuf, *radix->_prefixSumBuffer);
             std::vector<uint32_t> _values = { primCount, i };
             vkCmdPushConstants(*cmdBuf, radix->_pipelineLayout, VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t) * _values.size(), _values.data());
             cmdDispatch(*cmdBuf, radix->_histogramPipeline, WG_COUNT, RADICE_AFFINE);
