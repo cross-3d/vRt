@@ -219,8 +219,8 @@ void traverseBvh2(in lowp bool_ valid, in int eht) {
             }
 
             // if all threads had intersection, or does not given any results, break for processing
-            IFALL
-            //IFANY 
+            //IFALL
+            IFANY 
             (traverseState.defTriangleID >= 0 || traverseState.idx < 0) { break; }
         }}
         
