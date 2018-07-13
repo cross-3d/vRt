@@ -104,16 +104,12 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 #ifdef ENABLE_VSTORAGE_DATA
 
 #ifndef USE_FAST_INTERSECTION
-float intersectTriangle(const vec3 orig, const mat3 M, const int axis, const int tri, inout vec2 UV, in bool valid) {
+float intersectTriangle(const vec3 orig, const mat3 M, const int axis, in int tri, inout vec2 UV, in bool valid) {
     float T = INFINITY;
     IFANY (valid) {
         // gather patterns
-        const int itri = tri*3;//tri*9;
-        const mat3 ABC = mat3(//transpose(M*mat3(
-            TLOAD(lvtx, itri+0).xyz-orig.xxx,
-            TLOAD(lvtx, itri+1).xyz-orig.yyy,
-            TLOAD(lvtx, itri+2).xyz-orig.zzz
-        )*M;
+        const int itri = tri*3;
+        const mat3 ABC = mat3(TLOAD(lvtx, itri+0).xyz-orig.xxx, TLOAD(lvtx, itri+1).xyz-orig.yyy, TLOAD(lvtx, itri+2).xyz-orig.zzz)*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf
@@ -131,13 +127,8 @@ float intersectTriangle(const vec3 orig, const mat3 M, const int axis, const int
 
 #ifdef USE_FAST_INTERSECTION
 float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout vec2 uv, in bool _valid) {
-    const int itri = tri*3;//tri*9;
-    //const mat3 vT = transpose(mat3(
-    const mat3 vT = mat3(
-        TLOAD(lvtxIn, itri+0).xyz,
-        TLOAD(lvtxIn, itri+1).xyz,
-        TLOAD(lvtxIn, itri+2).xyz
-    );//));
+    const int itri = tri*3;
+    const mat3 vT = mat3(TLOAD(lvtxIn, itri+0).xyz, TLOAD(lvtxIn, itri+1).xyz, TLOAD(lvtxIn, itri+2).xyz);
     const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
     const vec3 h = cross(dir, e2);
     const float a = dot(e1,h);

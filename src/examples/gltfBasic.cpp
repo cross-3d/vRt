@@ -209,15 +209,14 @@ void main() {
 
     tinygltf::Model model = {};
     tinygltf::TinyGLTF loader = {};
-    //std::string err, input_filename = "models/sponza/sponza.gltf";
-    std::string err, input_filename = "models/vokselia_spawn.gltf";
-
-    //std::string input_filename("models/sponza/sponza.gltf");
-    //std::string input_filename("models/BoomBoxWithAxes.gltf");
-    //std::string input_filename("models/Chess_Set.gltf");
-    //std::string input_filename("models/Cube.gltf");
-    //std::string input_filename("models/scene.gltf");
-    //std::string input_filename("models/BoomBox.gltf");
+    std::string err, input_filename = 
+        //"models/vokselia_spawn.gltf";
+        "models/sponza/sponza.gltf";
+        //"models/BoomBoxWithAxes.gltf";
+        //"models/Chess_Set.gltf";
+        //"models/Cube.gltf";
+        //"models/scene.gltf";
+        //"models/BoomBox.gltf";
 
     bool ret = loader.LoadASCIIFromFile(&model, &err, input_filename.c_str());
 
@@ -599,8 +598,7 @@ void main() {
         });
 
         // matrix with scaling
-        //double mscale = 1.0;
-        double mscale = 100.0;
+        double mscale = 1.0;
         glm::dmat4 matrix(1.0);
         matrix *= glm::scale(glm::dvec3(mscale, mscale, mscale));
 

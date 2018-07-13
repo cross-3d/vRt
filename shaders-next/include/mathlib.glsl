@@ -136,9 +136,9 @@ vec4 fakeGather(in usampler2D smpler, in vec2 texcoord, const int channel){
 
 // null of indexing in float representation
 //float FINT_NULL = intBitsToFloat(-1); // -1
-//float FINT_ZERO = intBitsToFloat( 0); //  0
+  float FINT_ZERO = intBitsToFloat(0); //  0
 
-#define FINT_ZERO intBitsToFloat( 0)
+//#define FINT_ZERO intBitsToFloat( 0)
 //#define FINT_NULL intBitsToFloat(-1)
 
 // inprecise comparsion functions
