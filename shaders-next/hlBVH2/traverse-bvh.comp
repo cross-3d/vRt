@@ -24,25 +24,21 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    int wsize = rayCounter;
-    int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
-    int wgs = int(gl_NumWorkGroups);
+    const int wsize = rayCounter;
+    const int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
+    const int wgs = int(gl_NumWorkGroups);
     traverseState.cacheID = int(gl_GlobalInvocationID.x);
 
-    LGROUP_BARRIER;
     for (int w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         int it = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
-        lowp bool_ overflow = bool_(it >= wsize);
-        IFALL(overflow) break;
+        bool overflow = it >= wsize; IFALL(overflow) break;
 
         // do BVH traversing 
         currentRayTmp = rays[it]; // fix SPIR-V error
         int hid = vtFetchHitIdc(it);
-        traverseBvh2(not(overflow), hid);
-        SB_BARRIER
-
-        IF (not(overflow)) { // verify intersection
+        traverseBvh2(!overflow, hid);
+        if (!overflow) { // verify intersection
             const int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
             if (hid < 0) hid = it;
 
@@ -54,8 +50,8 @@ void main() {
             hit.rayID = it+1;
             hit.uvt = primitiveState.lastIntersection;
             hit.payloadID = 0;
-            hit.materialID = vmaterials[triID];
-            hit.next = 0;
+            //hit.materialID = vmaterials[triID];
+            //hit.next = 0;
             hit.attribID = 0;
 #ifndef DMA_HIT
             hits[hid] = hit;

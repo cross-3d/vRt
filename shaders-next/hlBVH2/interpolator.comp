@@ -20,22 +20,19 @@ LOCAL_SIZE_LAYOUT;
 
 void main() {
     // accumulate closest hits
-    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { 
-        atomicAdd(closestHitCounter, closestHitCounterCurrent); 
-    }
+    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { add(closestHitCounter, closestHitCounterCurrent); }
+    SB_BARRIER
 
-    int offset = stageUniform.closestHitOffset;
-    int wsize = int(closestHitCounterCurrent);
-    int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
-    int wgs = int(gl_NumWorkGroups);
+    const int offset = stageUniform.closestHitOffset;
+    const int wsize = int(closestHitCounterCurrent);
+    const int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
+    const int wgs = int(gl_NumWorkGroups);
 
-    LGROUP_BARRIER;
     for (int w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
-        lowp bool_ overflow = bool_(globalID >= wsize);
-        IFALL(overflow) break;
-        int hitID = SSC(overflow) ? -1 : vtClosestId(offset + globalID);
+        bool overflow = globalID >= wsize; IFALL(overflow) break;
+        int hitID = overflow ? -1 : vtClosestId(offset + globalID);
         
 #ifdef DMA_HIT
         #define hit hits[hitID]
@@ -43,21 +40,20 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
-        IF (not(overflow)) { // verify intersection
-            const int triID = floatBitsToInt(hit.uvt.w)-1;
-            
+        if (!overflow) { // verify intersection
+            const int triID = floatBitsToInt(hit.uvt.w)-1, rID = parameteri(VTX_TYPE, uint(vbitfields[triID]));
+
             // interpolate hit
             if (triID >= 0) {
                 const int itri = triID*3; const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
-                hit.vdat = vec4(normalize(cross(TLOAD(lvtxIn, itri+1).xyz-v0, TLOAD(lvtxIn, itri+2).xyz-v0)), 1.f);
-                interpolateMeshData(hit);
+                hit.uvt.w = intBitsToFloat(vmaterials[triID]);
+                hit.vdat = vec4(normalize(cross(TLOAD(lvtxIn, itri+1).xyz-v0, TLOAD(lvtxIn, itri+2).xyz-v0)), uintBitsToFloat(rID));
+                interpolateMeshData(hit, triID);
 #ifndef DMA_HIT
                 hits[hitID] = hit;
 #endif
             }
 
-            //const int rID = parameteri(RAY_TYPE, rays[hit.rayID-1].dcolor.y);
-            const int rID = parameteri(VTX_TYPE, uint(vbitfields[triID]));
             [[unroll]]
             for (int i=0;i<4;i++) {
                 [[flatten]]

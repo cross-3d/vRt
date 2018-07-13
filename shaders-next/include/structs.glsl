@@ -80,8 +80,8 @@ uvec2 writeColor(inout uvec2 rwby, in vec4 color){
 const int ATTRIB_EXTENT = 5;
 
 struct VtHitData {
-    int next; uint bitfield; int r0, r1;
-    int attribID, rayID, payloadID, materialID;
+    //int next; uint bitfield; int r0, r1;
+    int attribID, rayID, payloadID, nextID; //materialID;
     vec4 uvt, vdat; // UV, distance, triangle (base data), normal
 };
 

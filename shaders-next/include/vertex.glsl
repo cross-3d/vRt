@@ -41,7 +41,6 @@
     #define TLOAD(img,t) imageLoad(img,t)
 
     layout ( binding = 4, set = VTX_SET, rgba32ui ) uniform uimage2D attrib_texture_out;
-    
     layout ( binding = 6, set = VTX_SET           ) uniform usampler2D attrib_texture;
 #endif
 
@@ -162,12 +161,12 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
 #ifdef ENABLE_VSTORAGE_DATA
 #ifdef ENABLE_VERTEX_INTERPOLATOR
 // barycentric map (for corrections tangents in POM)
-void interpolateMeshData(inout VtHitData ht) {
-    const int tri = floatBitsToInt(ht.uvt.w)-1;
+void interpolateMeshData(inout VtHitData ht, in int tri) {
+    //const int tri = floatBitsToInt(ht.uvt.w)-1;
     const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
-    const bool validInterpolant = ht.attribID > 0 && vmaterials[tri] == ht.materialID;
-    IFANY (validInterpolant) {
+    [[flatten]]
+    if (ht.attribID > 0) {
         [[unroll]]
         for (int i=0;i<ATTRIB_EXTENT;i++) {
             const vec2 trig = fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, sz*0.5f);

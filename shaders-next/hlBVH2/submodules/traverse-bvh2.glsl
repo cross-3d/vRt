@@ -80,9 +80,8 @@ void doIntersection() {
     //if (d < INFINITY && d <= nearhit) { primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(exchange(traverseState.defTriangleID,-1)+1)); }
 }
 
-void traverseBvh2(in lowp bool_ valid, in int eht) {
-    vec3 origin = currentRayTmp.origin.xyz;
-    vec3 direct = dcts(currentRayTmp.cdirect.xy);
+void traverseBvh2(in bool valid, in int eht) {
+    vec3 origin = currentRayTmp.origin.xyz, direct = dcts(currentRayTmp.cdirect.xy);
 
     // test constants
     vec3 
@@ -105,12 +104,11 @@ void traverseBvh2(in lowp bool_ valid, in int eht) {
 #endif
 
     primitiveState.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO);
-    
+    primitiveState.axis = 2;
 #ifdef USE_FAST_INTERSECTION
     primitiveState.dir = vec4(direct, 1.f);
 #else
     // calculate longest axis
-    primitiveState.axis = 2;
     {
         vec3 drs = abs(direct); 
         if (drs.y >= drs.x && drs.y > drs.z) primitiveState.axis = 1;
@@ -130,7 +128,7 @@ void traverseBvh2(in lowp bool_ valid, in int eht) {
     // test intersection with main box
     vec2 nears = (-INFINITY).xx, fars = INFINITY.xx;
     const vec2 bndsf2 = vec2(-1.0005f, 1.0005f);
-    traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2, bndsf2, bndsf2), nears.x, fars.x)) ? (SSC(valid) ? BVH_ENTRY : -1) : -1;
+    traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2, bndsf2, bndsf2), nears.x, fars.x)) ? (valid ? BVH_ENTRY : -1) : -1;
     traverseState.stackPtr = 0, traverseState.pageID = 0;
     traverseState.diffOffset = max(nears.x, 0.f);
     traverseState.directInv.xyz = fvec3_(dirproj);

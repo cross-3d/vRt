@@ -81,16 +81,14 @@ void main() {
     const vec3 max_fresnel_color = toLinear(vec3(1.f));
     const vec3 min_fresnel_color = toLinear(vec3(1.f));
 
-    int wsize = int(closestHitTypedCounterRead[stageUniform.currentGroup]);
-    int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
-    bool overflow = false;
-    int wgs = int(gl_NumWorkGroups);
-    int rayID = -1;
-    
+
+    const int wsize = int(closestHitTypedCounterRead[stageUniform.currentGroup]);
+    const int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
+    const int wgs = int(gl_NumWorkGroups);
     for (int w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
-        bool overflow = overflow || globalID >= wsize || globalID < 0;
+        bool overflow = globalID >= wsize || globalID < 0;
         int hitID = overflow ? -1 : vtClosestId(globalID, stageUniform.currentGroup);
         IFALL(overflow) break;
         {
@@ -100,14 +98,13 @@ void main() {
             VtHitData hit = hits[hitID];
 #endif
 
-            rayID = hit.rayID-1;
+            int rayID = hit.rayID-1;
             hitp = hitPayload[hit.payloadID-1];
 
-            vec3 viewVec = dcts(cray.cdirect.xy);
-            vec3 rorigin = cray.origin.xyz;
+            vec3 viewVec = dcts(cray.cdirect.xy), rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;
 
-            matID = hit.materialID;// - materialOffset;
+            matID = floatBitsToInt(hit.uvt.w);//hit.materialID;// - materialOffset;
             //bool overflow = overflow || rayID < 0 || (matID >= materialCount || matID < 0);
             bool overflow = overflow || rayID < 0;
 
@@ -140,7 +137,7 @@ void main() {
             for (int wl=0;wl<Wave_Size_RT;wl++) {
                 //IFALL(wasTextured) break;
                 if (wasTextured) break;
-                if (!wasTextured && readLane(hit.materialID, wl) == hit.materialID) { // don't occupy warpy
+                if (!wasTextured && readLane(matID, wl) == matID) { // don't occupy warpy
                     wasTextured = true;
 #endif
 #ifdef ENABLE_POM
