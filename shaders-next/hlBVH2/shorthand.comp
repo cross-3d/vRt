@@ -29,10 +29,11 @@ layout ( std430, binding = 9, set = 0 ) readonly buffer minmaxB { vec4 minmax[];
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-
     vec4 gmn = vec4(100000.f), gmx = vec4(-100000.f);
-    for (int I=0;I<128;I+=int(Wave_Size)) {
-        int it = I + int(Lane_Idx);
+
+    [[unroll]]
+    for (uint I=0u;I<256u;I+=Wave_Size) {
+        uint it = I + Lane_Idx;
         
         gmn = min(gmn, subgroupMin(minmax[it*2+0]));
         gmx = max(gmx, subgroupMax(minmax[it*2+1]));
