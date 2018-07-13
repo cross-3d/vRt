@@ -25,10 +25,8 @@ layout ( std430, binding = 9, set = 0 )  buffer minmaxB {vec4 minmax[]; };
 //    return length(abs(triverts[0] - tcenter).xyz + abs(triverts[1] - tcenter).xyz + abs(triverts[2] - tcenter).xyz) >= 1.e-5;
 //}
 
-bbox_t getMinMaxPrimitive(in int idx) {
-    const int tri = bvhBlock.primitiveOffset+clamp(idx, 0, bvhBlock.primitiveCount-1);
-    //const int itri = tri*9;
-    const int itri = tri*3;
+bbox_t getMinMaxPrimitive(in uint idx) {
+    const uint tri = bvhBlock.primitiveOffset+clamp(idx, 0u, max(bvhBlock.primitiveCount,1u)-1u); int itri = int(tri*3);
 
     //const mat4 transform = bvhBlock.transform;
     //const mat4 transform = mat4(1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f);
@@ -38,9 +36,9 @@ bbox_t getMinMaxPrimitive(in int idx) {
         //divW(mult4(transform, vec4(TLOAD(lvtxIn, itri+1).xyz, 1.f))), 
         //divW(mult4(transform, vec4(TLOAD(lvtxIn, itri+2).xyz, 1.f)))
 
-        vec4(TLOAD(lvtxIn, itri+0).xyz, 1.f), 
-        vec4(TLOAD(lvtxIn, itri+1).xyz, 1.f), 
-        vec4(TLOAD(lvtxIn, itri+2).xyz, 1.f)
+        TLOAD(lvtxIn, itri+0).xyzw, 
+        TLOAD(lvtxIn, itri+1).xyzw, 
+        TLOAD(lvtxIn, itri+2).xyzw
     );
     
     return calcTriBox(triverts);
@@ -59,19 +57,19 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 shared bbox_t sdata[ WORK_SIZE_BND ];
 
 void main() {
-    const int tid = int(gl_LocalInvocationID.x);
-    const int gridSize = int((gl_WorkGroupSize.x*2) * gl_NumWorkGroups.x);
-    const int tcount = max( bvhBlock.primitiveCount, 2 );
+    const uint tid = gl_LocalInvocationID.x;
+    const uint gridSize = (gl_WorkGroupSize.x*2) * gl_NumWorkGroups.x;
+    const uint tcount = max( bvhBlock.primitiveCount, 2 );
 
     // 
     sdata[tid] = bbox_t(vec4( 100000.f), vec4(-100000.f));
     LGROUP_BARRIER
 
     // calculate boxes for per work
-    int i = int(gl_WorkGroupID.x * (gl_WorkGroupSize.x*2)) + tid;
+    uint i = gl_WorkGroupID.x * (gl_WorkGroupSize.x*2) + tid;
     while (i < tcount) {
         bbox_t bound = sdata[tid];
-        bound = bbox_tunion3(bound, getMinMaxPrimitive(i), getMinMaxPrimitive(i + int(gl_WorkGroupSize.x)));
+        bound = bbox_tunion3(bound, getMinMaxPrimitive(i), getMinMaxPrimitive(i + gl_WorkGroupSize.x));
         sdata[tid] = bound;
         i += gridSize;
     }
