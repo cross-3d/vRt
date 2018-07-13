@@ -14,15 +14,13 @@
 
 LOCAL_SIZE_LAYOUT;
 
-//initAtomicSubgroupIncFunctionDyn(tcounter[0], tcounterInc, int)
-
-
 // attribute formating
 const int NORMAL_TID = 0;
 const int TEXCOORD_TID = 1;
 const int TANGENT_TID = 2;
 const int BITANGENT_TID = 3;
 const int VCOLOR_TID = 4;
+const int VCOUNT = 3;
 
 struct Transforms { mat4 transform, transformNrm; };
 layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { Transforms vTransforms[]; };
@@ -34,11 +32,7 @@ void main(){
     const uint wID = uint(gl_WorkGroupID.x);
     const uint lID = uint(Local_Idx);
     const uint rng = gS*wgs;
-    const uint trp = 3;
 
-    // for faster geometry loading, just add counter in single thread
-    //if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && vertexBlock.updateOnly == 0) { atomicAdd(tcounter[0], int(wsize)); }
-    
     // process vertex assembly
     for (uint w=0;w<wsize;w+=rng) {
         uint globalID = w + wID * gS + lID;
@@ -65,8 +59,8 @@ void main(){
                 uint a = vertexBlock.attributeOffset + a;
                 [[unroll]]
                 for (int i=0;i<3;i++) {
-                    vec4 attribValue = vec4(0.f); uint indiceID = 0u;
-                    readByAccessorIndice(int(vertexBlock.indiceAccessor), rofft * trp + i, indiceID);
+                    vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
+                    readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
                     if (a == NORMAL_TID) { attribValue = mult4(vTransforms[inputID].transformNrm, attribValue); }
                     storeAttribute(ivec3(wofft, attributes[a].attributeID, i), attribValue);
@@ -76,10 +70,10 @@ void main(){
             // load vertex data
             [[unroll]]
             for (int i=0;i<3;i++) {
-                vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = 0u;
-                readByAccessorIndice(int(vertexBlock.indiceAccessor), rofft * trp + i, indiceID);
+                vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = rofft * VCOUNT + i;
+                readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
                 readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
-                storePosition(ivec2(wofft, i), vec4(vertice.xyz, 1.f));
+                storePosition(ivec2(wofft, i), mult4(vTransforms[inputID].transform, vec4(vertice.xyz, 1.f)));
             }
             
         }
