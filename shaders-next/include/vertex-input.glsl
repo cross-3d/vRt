@@ -99,9 +99,13 @@ void readByAccessor(in int accessor, in uint index, inout vec4 outp) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         uint T = calculateByteOffset(accessor, index, 2);
         uint C = aComponents(accessors[accessor].bitfield)+1;
+        [[flatten]]
         if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace[bufferID],T+0));
+        [[flatten]]
         if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace[bufferID],T+1));
+        [[flatten]]
         if (C >= 3) outp.z = uintBitsToFloat(M32(bufferSpace[bufferID],T+2));
+        [[flatten]]
         if (C >= 4) outp.w = uintBitsToFloat(M32(bufferSpace[bufferID],T+3));
     }
 }
@@ -112,8 +116,11 @@ void readByAccessor(in int accessor, in uint index, inout vec3 outp) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         uint T = calculateByteOffset(accessor, index, 2);
         uint C = aComponents(accessors[accessor].bitfield)+1;
+        [[flatten]]
         if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace[bufferID],T+0));
+        [[flatten]]
         if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace[bufferID],T+1));
+        [[flatten]]
         if (C >= 3) outp.z = uintBitsToFloat(M32(bufferSpace[bufferID],T+2));
     }
 }
@@ -124,7 +131,9 @@ void readByAccessor(in int accessor, in uint index, inout vec2 outp) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         uint T = calculateByteOffset(accessor, index, 2);
         uint C = aComponents(accessors[accessor].bitfield)+1;
+        [[flatten]]
         if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace[bufferID],T+0));
+        [[flatten]]
         if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace[bufferID],T+1));
     }
 }
@@ -153,6 +162,7 @@ void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         const bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
         uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
+        [[flatten]]
         if (U16) { outp = M16(bufferSpace[bufferID],T+0); } else { outp = M32(bufferSpace[bufferID],T+0); }
     }
 }

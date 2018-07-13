@@ -58,33 +58,28 @@ void main(){
             // planned to support quad based geometry
             vmaterials[wofft] = int(matID);
             vbitfields[wofft] = vertexBlock.bitfield;
-            //parameteri(VTX_TYPE, vbitfields[wofft], int(vertexBlock.hitGroup));
             
-            // planned to add support of vertex and geometry shaders
+            // load attrib data
             [[unroll]]
-            for (int i=0;i<3;i++) {
-                // aggregated indices
-                uint indiceID = rofft * trp + i;
-                readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
-                storeAttribute(ivec3(wofft, 0, i), vec4(0.f.xxx, 0.f));
-
-                // load attrib data
+            for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
+                uint a = vertexBlock.attributeOffset + a;
                 [[unroll]]
-                for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
-                    uint a = vertexBlock.attributeOffset + a;
-                    vec4 attribValue = vec4(0.f);
+                for (int i=0;i<3;i++) {
+                    vec4 attribValue = vec4(0.f); uint indiceID = 0u;
+                    readByAccessorIndice(int(vertexBlock.indiceAccessor), rofft * trp + i, indiceID);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
                     if (a == NORMAL_TID) { attribValue = mult4(vTransforms[inputID].transformNrm, attribValue); }
                     storeAttribute(ivec3(wofft, attributes[a].attributeID, i), attribValue);
-                }}
-
-                // load vertex data
-                {
-                    vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); 
-                    readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
-                    vertice = mult4(vTransforms[inputID].transform, vertice);
-                    storePosition(ivec2(wofft, i), vec4(vertice.xyz, 1.f));
                 }
+            }}
+
+            // load vertex data
+            [[unroll]]
+            for (int i=0;i<3;i++) {
+                vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = 0u;
+                readByAccessorIndice(int(vertexBlock.indiceAccessor), rofft * trp + i, indiceID);
+                readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
+                storePosition(ivec2(wofft, i), vec4(vertice.xyz, 1.f));
             }
             
         }
