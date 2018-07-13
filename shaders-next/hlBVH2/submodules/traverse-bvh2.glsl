@@ -163,6 +163,8 @@ void traverseBvh2(in lowp bool_ valid, in int eht) {
                     fmat3x4_(vec4(0.f), vec4(0.f), vec4(0.f))
 #endif
                 , nears, fars);
+
+                // it increase FPS by filtering nodes by first triangle intersection
                 childIntersect &= bvec2_(lessThanEqual(nears, traverseState.cutOut.xx));
 
                 int fmask = int(childIntersect.x + childIntersect.y*2u)-1; // mask of intersection
