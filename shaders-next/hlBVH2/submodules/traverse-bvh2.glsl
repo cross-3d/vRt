@@ -63,18 +63,19 @@ bool stackIsEmpty() { return traverseState.stackPtr <= 0 && traverseState.pageID
 #endif
 
 void doIntersection() {
+    const bool isvalid = true; //traverseState.defTriangleID >= 0;
     vec2 uv = vec2(0.f.xx); const float d = 
 #ifdef USE_FAST_INTERSECTION
-        intersectTriangle(currentRayTmp.origin.xyz, primitiveState.dir.xyz, traverseState.defTriangleID, uv.xy, traverseState.defTriangleID >= 0);
+        intersectTriangle(currentRayTmp.origin.xyz, primitiveState.dir.xyz, traverseState.defTriangleID, uv.xy, isvalid);
 #else
-        intersectTriangle(currentRayTmp.origin.xyz, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID, uv.xy, traverseState.defTriangleID >= 0);
+        intersectTriangle(currentRayTmp.origin.xyz, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID, uv.xy, isvalid);
 #endif
 #define nearhit primitiveState.lastIntersection.z
 
-    //[[flatten]]
+    [[flatten]]
     if (d < nearhit) { traverseState.cutOut = d * traverseState.distMult - traverseState.diffOffset; }
 
-    //[[flatten]]
+    [[flatten]]
     if (d < INFINITY && d <= nearhit) { primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID+1)); } traverseState.defTriangleID=-1;
     //if (d < INFINITY && d <= nearhit) { primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(exchange(traverseState.defTriangleID,-1)+1)); }
 }
@@ -127,47 +128,46 @@ void traverseBvh2(in lowp bool_ valid, in int eht) {
 #endif
 
     // test intersection with main box
-    float near = -INFINITY, far = INFINITY;
+    vec2 nears = (-INFINITY).xx, fars = INFINITY.xx;
     const vec2 bndsf2 = vec2(-1.0005f, 1.0005f);
-    traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2, bndsf2, bndsf2), near, far)) ? (SSC(valid) ? BVH_ENTRY : -1) : -1;
+    traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2, bndsf2, bndsf2), nears.x, fars.x)) ? (SSC(valid) ? BVH_ENTRY : -1) : -1;
     traverseState.stackPtr = 0, traverseState.pageID = 0;
-    traverseState.diffOffset = max(near, 0.f);
+    traverseState.diffOffset = max(nears.x, 0.f);
     traverseState.directInv.xyz = fvec3_(dirproj);
     traverseState.minusOrig.xyz = fma(fvec3_(torig), fvec3_(dirproj), -fvec3_(traverseState.diffOffset).xxx);
     traverseState.boxSide.xyz = bsgn;
-    traverseState.cutOut = primitiveState.lastIntersection.z * traverseState.distMult - traverseState.diffOffset; 
+    traverseState.cutOut = primitiveState.lastIntersection.z * traverseState.distMult - traverseState.diffOffset;
     
     // begin of traverse BVH 
     ivec4 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
     for (int hi=0;hi<max_iteraction;hi++) {
-        SB_BARRIER
-        //IFALL (traverseState.idx < 0) break; // if traverse can't live
-        if (traverseState.idx < 0) break; else 
-        //if (traverseState.idx >= 0)
+        [[flatten]]
+        if (traverseState.idx >= 0 && traverseState.defTriangleID < 0) 
         { for (;hi<max_iteraction;hi++) {
             bool _continue = false;
 
-            // if not leaf and not wrong
-            if (cnode.x != cnode.y) {
-                vec2 nears = INFINITY.xx, fars = INFINITY.xx;
-                lowp bvec2_ childIntersect = bvec2_((traverseState.idx >= 0).xx);
-
-                // intersect boxes
-                const int _cmp = cnode.x >> 1;
-                childIntersect &= intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, traverseState.boxSide.xyz, 
+            [[flatten]]
+            if (cnode.x == cnode.y) { // if leaf, defer for intersection 
+                [[flatten]]
+                if (traverseState.defTriangleID < 0) { 
+                    traverseState.defTriangleID = cnode.x;
+                } else {
+                    _continue = true;
+                    //continue; 
+                }
+            } else { // if not leaf, intersect with nodes
+                const int _cmp = cnode.x >> 1; // intersect boxes
+                lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, traverseState.boxSide.xyz, 
                     fmat3x4_(bvhBoxes[_cmp][0], bvhBoxes[_cmp][1], bvhBoxes[_cmp][2]),
                     fmat3x4_(vec4(0.f), vec4(0.f), vec4(0.f))
                 , nears, fars);
 
                 // it increase FPS by filtering nodes by first triangle intersection
                 childIntersect &= bvec2_(lessThanEqual(nears, traverseState.cutOut.xx));
-
                 int fmask = int(childIntersect.x + childIntersect.y*2u)-1; // mask of intersection
 
                 [[flatten]]
                 if (fmask >= 0) {
-                    _continue = true;
-
 #ifdef USE_STACKLESS_BVH
                     traverseState.bitStack <<= 1;
 #endif
@@ -186,14 +186,12 @@ void traverseBvh2(in lowp bool_ valid, in int eht) {
                     }
 
                     cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
+                    _continue = true; 
+                    //continue;
                 }
             }
-            
-            // if leaf, defer for intersection 
-            if (cnode.x == cnode.y && traverseState.defTriangleID < 0) {
-                traverseState.defTriangleID = cnode.x;
-            }
 
+            [[flatten]]
             if (!_continue) {
 #ifdef USE_STACKLESS_BVH
                 // stackless
@@ -218,14 +216,16 @@ void traverseBvh2(in lowp bool_ valid, in int eht) {
                 }
 #endif
                 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
-            } _continue = false;
+            }
 
-            IFANY (traverseState.defTriangleID >= 0 || traverseState.idx < 0) { SB_BARRIER break; }
+            // if all threads had intersection, or does not given any results, break for processing
+            IFALL (traverseState.defTriangleID >= 0 || traverseState.idx < 0) { break; }
         }}
-
-        SB_BARRIER
-
-        IFANY (traverseState.defTriangleID >= 0 || traverseState.idx < 0) { SB_BARRIER doIntersection(); }
+        
+        [[flatten]]
+        if (traverseState.defTriangleID >= 0) { doIntersection(); }
+        [[flatten]]
+        if (traverseState.idx < 0) { break; }
     }
 }
 
