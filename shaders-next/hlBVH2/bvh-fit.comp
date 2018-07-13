@@ -79,7 +79,7 @@ void main() {
     LGROUP_BARRIER
 
     // upcoming to root node
-    //[[unroll, dependency_length(4)]]
+    [[dependency_infinite]]
     for (int l=0;l<65536;l++) {
         // check activity counter
         if (lID == 0) { asize = exchange(_counters[0], 0); cBuffer = 1-cBuffer; }

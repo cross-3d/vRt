@@ -34,6 +34,14 @@ uint wID(in uint t){return t*gl_NumWorkGroups.x+gl_WorkGroupID.x;}
 #define asize_inv_ _counters[cBuffer*4]
 #define asize _counters[7]
 
+#ifdef FIRST_STEP
+#define osize asize
+#define wsize asize
+#else
+#define osize _counters[6]
+#define wsize _counters[5]
+#endif
+
 #include "./submodules/bvh-build-general.glsl" // unified functions
 layout ( local_size_x = WORK_SIZE_BND ) in;
 
@@ -44,7 +52,8 @@ void main() {
 
     // lane-based
     //const uint gS = groupSize >> 1, iT = threadID >> 1;
-    uint gS = 0u, iT = 0u, uID = 0u, uWD = 0u;
+    //uint gS = 0u, iT = 0u, uID = 0u, uWD = 0u;
+    uint gS = 0u, iT = 0u, uWD = 0u;
     gS = groupSize >> 1, iT = threadID >> 1;
     int sD = int(threadID & 1);
 
@@ -70,7 +79,7 @@ void main() {
     }
     
     // building BVH
-    //[[unroll]]
+    [[dependency_infinite]]
     for (int m=0;m<65536;m++) {
         LGROUP_BARRIER
 
@@ -79,14 +88,15 @@ void main() {
 #endif
 
         // swap buffers emulation
-        if (threadID == 0) { cBuffer = 1-cBuffer; asize_inv_ = 0; asize = asize_; }
-        LGROUP_BARRIER
-        
+        if (threadID == 0) { 
+                cBuffer = 1-cBuffer; asize_inv_ = 0; asize = asize_; 
 #ifdef FIRST_STEP
-        const int wsize = asize, osize = wsize;
+//                wsize = asize, osize = wsize;
 #else
-        const int wsize = asize * int(m == 0 ? 1 : gl_NumWorkGroups.x), osize = (wsize / int(gl_NumWorkGroups.x));
+                wsize = asize * (m == 0 ? 1 : int(gl_NumWorkGroups.x)), osize = wsize / int(gl_NumWorkGroups.x);
 #endif
+        }
+        LGROUP_BARRIER
 
         //IFALL (osize >= (gS*largeStageThreshold) || osize <= 0) { break; }
         IFALL (osize <= 0) { break; } // remove count limiter
@@ -98,10 +108,10 @@ void main() {
 
             // index of node element
             //const uint uID = fT + iT;
-            uID = (fT + iT), uWD = wID(uID);
+            uWD = wID(fT + iT);
 
-            // split prefixed elements
-            IFALL (uWD >= wsize) break;
+            [[flatten]]
+            IFALL (uWD >= wsize) break; // split prefixed elements
 
             // get spared prefix
             int fID = Actives[uWD][1-cBuffer]-1;
