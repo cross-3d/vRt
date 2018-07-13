@@ -155,13 +155,8 @@ void traverseBvh2(in lowp bool_ valid, in int eht) {
                 // intersect boxes
                 const int _cmp = cnode.x >> 1;
                 childIntersect &= intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, traverseState.boxSide.xyz, 
-#ifdef USE_F32_BVH
                     fmat3x4_(bvhBoxes[_cmp][0], bvhBoxes[_cmp][1], bvhBoxes[_cmp][2]),
                     fmat3x4_(vec4(0.f), vec4(0.f), vec4(0.f))
-#else
-                    fmat3x4_(UNPACK_HF(bvhBoxes[_cmp][0].xy), UNPACK_HF(bvhBoxes[_cmp][1].xy), UNPACK_HF(bvhBoxes[_cmp][2].xy)),
-                    fmat3x4_(vec4(0.f), vec4(0.f), vec4(0.f))
-#endif
                 , nears, fars);
 
                 // it increase FPS by filtering nodes by first triangle intersection
