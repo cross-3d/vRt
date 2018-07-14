@@ -41,16 +41,15 @@
 #define readLane RL_
 
 
-uvec_wave_ballot ballotHW(in bool i) { return subgroupBallot(i); }
-uvec_wave_ballot ballotHW() { return subgroupBallot(true); }
+//uvec_wave_ballot ballotHW(in bool i) { return subgroupBallot(i); }
+//uvec_wave_ballot ballotHW() { return subgroupBallot(true); }
 bool electedInvoc() { return subgroupElect(); }
 
 
 // statically multiplied
 #define initAtomicSubgroupIncFunction(mem, fname, by, T)\
 T fname() {\
-    const uvec_wave_ballot bits = ballotHW();\
-    const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
+    const uint sumInOrder = subgroupAdd(true_), idxInOrder = subgroupExclusiveAdd(true_);\
     T gadd = 0;\
     if (subgroupElect() && sumInOrder > 0) {gadd = atomicAdd(mem, T(sumInOrder) * T(by));}\
     return readFLane(gadd) + T(idxInOrder) * T(by);\
@@ -58,8 +57,7 @@ T fname() {\
 
 #define initAtomicSubgroupIncFunctionDyn(mem, fname, T)\
 T fname(in T by) {\
-    const uvec_wave_ballot bits = ballotHW();\
-    const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
+    const uint sumInOrder = subgroupAdd(true_), idxInOrder = subgroupExclusiveAdd(true_);\
     T gadd = 0;\
     if (subgroupElect() && sumInOrder > 0) {gadd = atomicAdd(mem, T(sumInOrder) * T(by));}\
     return readFLane(gadd) + T(idxInOrder) * T(by);\
@@ -69,8 +67,7 @@ T fname(in T by) {\
 // statically multiplied
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in uint WHERE) {\
-    const uvec_wave_ballot bits = ballotHW();\
-    const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
+    const uint sumInOrder = subgroupAdd(true_), idxInOrder = subgroupExclusiveAdd(true_);\
     T gadd = 0;\
     if (subgroupElect() && sumInOrder > 0) {gadd = atomicAdd(mem, T(sumInOrder) * T(by));}\
     return readFLane(gadd) + T(idxInOrder) * T(by);\
@@ -78,8 +75,7 @@ T fname(in uint WHERE) {\
 
 #define initAtomicSubgroupIncFunctionByTarget(mem, fname, T)\
 T fname(in uint WHERE, in T by) {\
-    const uvec_wave_ballot bits = ballotHW();\
-    const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
+    const uint sumInOrder = subgroupAdd(true_), idxInOrder = subgroupExclusiveAdd(true_);\
     T gadd = 0;\
     if (subgroupElect() && sumInOrder > 0) {gadd = atomicAdd(mem, T(sumInOrder) * T(by));}\
     return readFLane(gadd) + T(idxInOrder) * T(by);\
@@ -89,8 +85,7 @@ T fname(in uint WHERE, in T by) {\
 // statically multiplied
 #define initSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in uint WHERE) {\
-    const uvec_wave_ballot bits = ballotHW();\
-    const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
+    const uint sumInOrder = subgroupAdd(true_), idxInOrder = subgroupExclusiveAdd(true_);\
     T gadd = 0;\
     if (subgroupElect() && sumInOrder > 0) {gadd = add(mem, T(sumInOrder) * T(by));}\
     return readFLane(gadd) + T(idxInOrder) * T(by);\
@@ -98,22 +93,18 @@ T fname(in uint WHERE) {\
 
 #define initSubgroupIncFunctionByTarget(mem, fname, T)\
 T fname(in uint WHERE, in T by) {\
-    const uvec_wave_ballot bits = ballotHW();\
-    const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
+    const uint sumInOrder = subgroupAdd(true_), idxInOrder = subgroupExclusiveAdd(true_);\
     T gadd = 0;\
     if (subgroupElect() && sumInOrder > 0) {gadd = add(mem, T(sumInOrder) * T(by));}\
     return readFLane(gadd) + T(idxInOrder) * T(by);\
 }
 
-
-
 // statically multiplied
 #define initSubgroupIncFunctionTargetDual(mem, fname, by, T, T2)\
 T2 fname(in uint WHERE, in bvec2 a) {\
-    const uvec_wave_ballot bitsx = ballotHW(a.x), bitsy = ballotHW(a.y);\
     const uvec2 \
-        sumInOrder = uvec2(subgroupBallotBitCount(bitsx), subgroupBallotBitCount(bitsy)),\
-        idxInOrder = uvec2(subgroupBallotExclusiveBitCount(bitsx), subgroupBallotExclusiveBitCount(bitsy));\
+        sumInOrder = uvec2(subgroupAdd(bool_(a.x)), subgroupAdd(bool_(a.y))),\
+        idxInOrder = uvec2(subgroupExclusiveAdd(bool_(a.x)), subgroupExclusiveAdd(bool_(a.y)));\
     T gadd = 0;\
     if (subgroupElect() && any(greaterThan(sumInOrder, (0u).xx))) {gadd = add(mem, T(sumInOrder.x+sumInOrder.y)*T(by));}\
     return readFLane(gadd).xx + T2(idxInOrder.x, sumInOrder.x+idxInOrder.y) * T(by);\

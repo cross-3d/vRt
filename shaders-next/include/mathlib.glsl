@@ -128,11 +128,9 @@ vec4 fakeGather(in usampler2D smpler, in vec2 texcoord, const int channel){
 #define bvec3_ uvec3
 #define bvec2_ uvec2
 #define bool_ uint
-#define true_ (1u)
-#define false_ (0u)
-#define true2_ (true_.xx)
-#define false2_ (false_.xx)
 
+const lowp bool_ true_ = 1u, false_ = 0u; 
+const lowp bvec2_ true2_ = true_.xx, false2_ = false_.xx;
 
 // null of indexing in float representation
 //float FINT_NULL = intBitsToFloat(-1); // -1
