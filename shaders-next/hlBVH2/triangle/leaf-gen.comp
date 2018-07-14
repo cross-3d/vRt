@@ -1,7 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-#define VTX_TRANSPLIT
+//#define VTX_TRANSPLIT
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 #define LEAF_GEN
@@ -41,19 +41,28 @@ void main() {
         IFALL (globalID >= wsize) break;
 
         const uint tri = bvhBlock.primitiveOffset+clamp(globalID, 0, bvhBlock.primitiveCount-1); const int itri = int(tri*3);
-#ifdef VTX_TRANSPLIT
-        {
-            const mat3x3 vtxL = transpose(mat3(TLOAD(lvtxIn, itri+0).xyz, TLOAD(lvtxIn, itri+1).xyz, TLOAD(lvtxIn, itri+2).xyz));
-            imageStore(lvtx, itri+0, vec4(vtxL[0].xyz, 1.f)), imageStore(lvtx, itri+1, vec4(vtxL[1].xyz, 1.f)), imageStore(lvtx, itri+2, vec4(vtxL[2].xyz, 1.f));
-        }
-#endif
 
         const mat3x4 triverts = mat3x4(
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, itri+0).xyzw)),
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, itri+1).xyzw)),
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, itri+2).xyzw))
         );
+        {
+            imageStore(lvtxIn, itri+0, triverts[0]);
+            imageStore(lvtxIn, itri+1, triverts[1]);
+            imageStore(lvtxIn, itri+2, triverts[2]);
+        }
+
         const vec4 bcenter = (triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f;
+        const bbox_t lbox = calcTriBox(triverts);
+
+#ifdef VTX_TRANSPLIT
+        {
+            //const mat3x3 vtxL = transpose(mat3(TLOAD(lvtxIn, itri+0).xyz, TLOAD(lvtxIn, itri+1).xyz, TLOAD(lvtxIn, itri+2).xyz));
+            const mat4x3 vtxL = transpose(triverts);
+            imageStore(lvtx, itri+0, vec4(vtxL[0].xyz, 1.f)), imageStore(lvtx, itri+1, vec4(vtxL[1].xyz, 1.f)), imageStore(lvtx, itri+2, vec4(vtxL[2].xyz, 1.f));
+        }
+#endif
 
         // gen morton code
 #ifdef INTEL_PLATFORM
@@ -73,7 +82,7 @@ void main() {
         // store leaf data
         [[flatten]]
         if (globalID < wsize && globalID >= 0) {
-            Leafs[to].lbox = calcTriBox(triverts), Leafs[to].pdata = ivec4(to.xx, 0, tri+1);
+            Leafs[to].lbox = lbox, Leafs[to].pdata = ivec4(to.xx, 0, tri+1);
             Mortoncodes[to] = mortonCode;
             MortoncodesIndices[to] = int(to+1);
         }

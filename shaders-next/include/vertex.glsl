@@ -29,7 +29,7 @@
     layout ( binding = 2, set = VTX_SET, std430   ) readonly buffer bitfieldsB { int vbitfields[]; };
     #endif
 
-    #if (defined(VERTEX_FILLING) || defined(VTX_TRANSPLIT))
+    #if (defined(VERTEX_FILLING) || defined(LEAF_GEN))
     layout ( binding = 3, set = VTX_SET, rgba32f  ) uniform imageBuffer lvtxIn;
     layout ( binding = 5, set = VTX_SET           ) uniform imageBuffer lvtx;
     #else
@@ -108,7 +108,7 @@ float intersectTriangle(const vec3 orig, const mat3 M, const int axis, in int tr
     IFANY (valid) {
         // gather patterns
         const int itri = tri*3;
-        const mat3 ABC = mat3(TLOAD(lvtx, itri+0).xyz-orig.xxx, TLOAD(lvtx, itri+1).xyz-orig.yyy, TLOAD(lvtx, itri+2).xyz-orig.zzz)*M;
+        const mat3 ABC = mat3(TLOAD(lvtx, itri+0).xyz+orig.xxx, TLOAD(lvtx, itri+1).xyz+orig.yyy, TLOAD(lvtx, itri+2).xyz+orig.zzz)*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf
@@ -133,17 +133,17 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
     const float a = dot(e1,h);
 
 #ifdef BACKFACE_CULLING
-    if (a < 0.f) { _valid = false; }
-//    if (a < 1e-5f) { _valid = false; }
-//#else
-//    if (abs(a) < 1e-5f) { _valid = false; }
+    if (a < 1e-6f) { _valid = false; }
+#else
+    if (abs(a) < 1e-6f) { _valid = false; }
 #endif
 
-    const float f = 1.f/precIssue(a);
-    const vec3 s = orig - vT[0], q = cross(s, e1);
+    const float f = 1.f/a;
+    const vec3 s = -(orig+vT[0]), q = cross(s, e1);
     uv = f * vec2(dot(s,h),dot(dir,q));
 
-    if (uv.x <= -1e-6 || uv.y <= -1e-6 || (uv.x+uv.y) >= (1.f+1e-6)) { _valid = false; }
+    //if (any(lessThanEqual(uv, -1e-6f.xx)) || (uv.x+uv.y) >= (1.f+1e-6f)) { _valid = false; }
+    if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > (1.f)) { _valid = false; }
 
     float T = f * dot(e2,q);
     if (T >= INFINITY || T < 0.f) { _valid = false; } 

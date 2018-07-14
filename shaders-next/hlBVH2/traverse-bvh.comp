@@ -1,7 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-//#define USE_FAST_INTERSECTION
+#define USE_FAST_INTERSECTION
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
 #define DISCARD_SHARED_CACHING
@@ -35,9 +35,9 @@ void main() {
         bool overflow = it >= wsize; IFALL(overflow) break;
 
         // do BVH traversing 
-        currentRayTmp = rays[it]; // fix SPIR-V error
+        //currentRayTmp = rays[it]; // fix SPIR-V error
         int hid = vtFetchHitIdc(it);
-        traverseBvh2(!overflow, hid);
+        traverseBvh2(!overflow, hid, rays[it].origin.xyz, rays[it].cdirect.xy);
         if (!overflow) { // verify intersection
             const int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
             if (hid < 0) hid = it;
