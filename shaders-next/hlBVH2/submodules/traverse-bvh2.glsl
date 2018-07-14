@@ -175,7 +175,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
                     [[flatten]]
                     if (fmask == 2) { // if both has intersection
-                        ivec2 ordered = cnode.xx + (SSC(lessEqualF(nears.x, nears.y)) ? ivec2(0,1) : ivec2(1,0));
+                        ivec2 ordered = cnode.xx + (nears.x<=nears.y ? ivec2(0,1) : ivec2(1,0));
                         traverseState.idx = ordered.x;
 #ifdef USE_STACKLESS_BVH
                         IF (all(childIntersect)) traverseState.bitStack |= 1ul; 
