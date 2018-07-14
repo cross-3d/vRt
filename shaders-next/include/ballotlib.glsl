@@ -57,7 +57,7 @@ T fname() {\
 }
 
 #define initAtomicSubgroupIncFunctionDyn(mem, fname, T)\
-T fname(const T by) {\
+T fname(in T by) {\
     const uvec_wave_ballot bits = ballotHW();\
     const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
     T gadd = 0;\
@@ -68,7 +68,7 @@ T fname(const T by) {\
 
 // statically multiplied
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
-T fname(const uint WHERE) {\
+T fname(in uint WHERE) {\
     const uvec_wave_ballot bits = ballotHW();\
     const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
     T gadd = 0;\
@@ -77,7 +77,7 @@ T fname(const uint WHERE) {\
 }
 
 #define initAtomicSubgroupIncFunctionByTarget(mem, fname, T)\
-T fname(const uint WHERE, const T by) {\
+T fname(in uint WHERE, in T by) {\
     const uvec_wave_ballot bits = ballotHW();\
     const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
     T gadd = 0;\
@@ -88,7 +88,7 @@ T fname(const uint WHERE, const T by) {\
 
 // statically multiplied
 #define initSubgroupIncFunctionTarget(mem, fname, by, T)\
-T fname(const uint WHERE) {\
+T fname(in uint WHERE) {\
     const uvec_wave_ballot bits = ballotHW();\
     const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
     T gadd = 0;\
@@ -97,7 +97,7 @@ T fname(const uint WHERE) {\
 }
 
 #define initSubgroupIncFunctionByTarget(mem, fname, T)\
-T fname(const uint WHERE, const T by) {\
+T fname(in uint WHERE, in T by) {\
     const uvec_wave_ballot bits = ballotHW();\
     const uint sumInOrder = subgroupBallotBitCount(bits), idxInOrder = subgroupBallotExclusiveBitCount(bits);\
     T gadd = 0;\
@@ -109,7 +109,7 @@ T fname(const uint WHERE, const T by) {\
 
 // statically multiplied
 #define initSubgroupIncFunctionTargetDual(mem, fname, by, T, T2)\
-T2 fname(const uint WHERE, in bvec2 a) {\
+T2 fname(in uint WHERE, in bvec2 a) {\
     const uvec_wave_ballot bitsx = ballotHW(a.x), bitsy = ballotHW(a.y);\
     const uvec2 \
         sumInOrder = uvec2(subgroupBallotBitCount(bitsx), subgroupBallotBitCount(bitsy)),\

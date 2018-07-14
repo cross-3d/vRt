@@ -30,22 +30,12 @@ layout ( std430, binding = 5, set = 0 ) buffer VT_RAY_INDICES {int rayGroupIndic
 
 // system canvas info
 layout ( std430, binding = 6, set = 0 ) readonly buffer VT_CANVAS_INFO {
-    ivec2 size; int iteration, closestHitOffset;
-    int currentGroup, maxRayCount, r1, r2;
+    int currentGroup, maxRayCount, iteration, closestHitOffset;
+    ivec2 size;
 } stageUniform;
 
 // counters
-layout ( std430, binding = 7, set = 0 ) buffer VT_RT_COUNTERS { 
-    int rayCounter;
-    int hitCounter;
-    int closestHitCounterCurrent;
-    int closestHitCounter;
-
-    int missHitCounter;
-    int payloadHitCounter;
-    int blockSpaceCounter; // 9th line counter
-    int attribCounter;
-};
+layout ( std430, binding = 7, set = 0 ) buffer VT_RT_COUNTERS { int vtCounters[8]; };
 
 // imported from satellite (blocky indicing)
 #ifdef USE_16BIT_ADDRESS_SPACE
@@ -62,7 +52,6 @@ layout ( std430, binding = 8, set = 0 ) buffer VT_9_LINE { highp uint ispace[][R
 layout ( rgba32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
 layout ( rgba32f,  binding = 11, set = 0 ) uniform imageBuffer attributes;
 
-
 layout ( std430, binding = 12, set = 0 ) buffer VT_GROUPS_COUNTERS {
     int rayTypedCounter[4];
     int closestHitTypedCounter[4];
@@ -76,36 +65,38 @@ layout ( std430, binding = 14, set = 0 ) readonly buffer VT_GROUPS_COUNTERS_READ
     int missHitTypedCounterRead[4];
 };
 
-
-
-// atomic counters with subgroups
-initAtomicSubgroupIncFunction(attribCounter, atomicIncAttribCount, 1, int)
-initAtomicSubgroupIncFunction(rayCounter, atomicIncRayCount, 1, int)
-initAtomicSubgroupIncFunction(hitCounter, atomicIncHitCount, 1, int)
-initAtomicSubgroupIncFunction(closestHitCounterCurrent, atomicIncClosestHitCount, 1, int)
-initAtomicSubgroupIncFunction(missHitCounter, atomicIncMissHitCount, 1, int)
-initAtomicSubgroupIncFunction(payloadHitCounter, atomicIncPayloadHitCount, 1, int)
-initAtomicSubgroupIncFunction(blockSpaceCounter, atomicIncblockSpaceCount, 1, int)
+initAtomicSubgroupIncFunctionTarget(vtCounters[WHERE], atomicIncVtCounters, 1, int)
 initAtomicSubgroupIncFunctionTarget(rayTypedCounter[WHERE], atomicIncRayTypedCount, 1, int)
 initAtomicSubgroupIncFunctionTarget(closestHitTypedCounter[WHERE], atomicIncClosestHitTypedCount, 1, int)
 initAtomicSubgroupIncFunctionTarget(missHitTypedCounter[WHERE], atomicIncMissHitTypedCount, 1, int)
 
 
-int makeAttribID(in int hAttribID, in int sub) {
-    return (hAttribID-1)*ATTRIB_EXTENT + sub;
-}
+// aliased values
+#define rayCounter vtCounters[0]
+#define hitCounter vtCounters[1]
+#define closestHitCounterCurrent vtCounters[2]
+#define closestHitCounter vtCounters[3]
+#define missHitCounter vtCounters[4]
+#define payloadHitCounter vtCounters[5]
+#define blockSpaceCounter vtCounters[6]
+#define attribCounter vtCounters[7]
 
-//initAtomicSubgroupIncFunction(blockSpaceCounter, atomicIncblockSpaceCount, 1, int)
+// aliased functions
+int atomicIncRayCount(){return atomicIncVtCounters(0);}
+int atomicIncHitCount(){return atomicIncVtCounters(1);}
+int atomicIncClosestHitCount(){return atomicIncVtCounters(2);}
+int atomicIncMissHitCount(){return atomicIncVtCounters(4);}
+int atomicIncPayloadHitCount(){return atomicIncVtCounters(5);}
+int atomicIncblockSpaceCount(){return atomicIncVtCounters(6);}
+int atomicIncAttribCount(){return atomicIncVtCounters(7);}
 
 // alpha version of low level ray emitter
-int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint group) {
-    const uint type = group;
-    int rayID = atomicIncRayCount();
+int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint type) {
+    const int rayID = atomicIncRayCount();
     parameteri(RAY_TYPE, ray.dcolor.y, int(type));
     
     rays[rayID] = ray; 
     imageStore(rayLink, rayID, uvec4(0u, p2x(c2d), 0u.xx));
-    //imageStore(rayGroupIndices[type], atomicIncRayTypedCount(type), uint(rayID+1).xxxx);
     int gID = atomicIncRayTypedCount(type);
     if (gID < stageUniform.maxRayCount) rayGroupIndices[gID*4+type] = (rayID+1);
     return rayID;

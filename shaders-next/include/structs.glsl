@@ -79,6 +79,8 @@ uvec2 writeColor(inout uvec2 rwby, in vec4 color){
 //const int ATTRIB_EXTENT = 8;
 const int ATTRIB_EXTENT = 5;
 
+int makeAttribID(in int hAttribID, in int sub) { return (hAttribID-1)*ATTRIB_EXTENT + sub; }
+
 struct VtHitData {
     //int next; uint bitfield; int r0, r1;
     int attribID, rayID, payloadID, nextID; //materialID;

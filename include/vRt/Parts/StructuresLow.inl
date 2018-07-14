@@ -139,7 +139,10 @@ namespace vt { // store in official namespace
         uint32_t reserved0 = 0, reserved1 = 0;
     };
 
-    struct VtStageUniform { int width = 1, height = 1, iteration = 0, closestHitOffset = 0; int currentGroup = 0, maxRayCount = 0, r1 = 0, r2 = 0; };
+    struct VtStageUniform { 
+        int currentGroup = 0, maxRayCount = 0, iteration = 0, closestHitOffset = 0;
+        int width = 1, height = 1;//, r0 = 0, r1 = 0;
+    };
 
     struct VtBvhBlock {
         VtMat4 transform;

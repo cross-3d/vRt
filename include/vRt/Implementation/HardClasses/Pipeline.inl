@@ -56,6 +56,7 @@ namespace _vt {
         { // planned variable size
             const auto& rayCount = info.maxRays;
             vtRTSet->_cuniform.maxRayCount = rayCount;
+            
 
             {
                 VtDeviceBufferCreateInfo bfi;
