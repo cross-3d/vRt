@@ -23,9 +23,9 @@ shared int _counters[8];
 
 // define function for increment
 initAtomicSubgroupIncFunctionTarget(_counters[WHERE], _aCounterInc, 1, int)
-initAtomicSubgroupIncFunction(lCounter, lCounterInc, 2, int)
-initAtomicSubgroupIncFunction(cCounter, cCounterInc, 1, int)
-initAtomicSubgroupIncFunction(cCounter, cCounterInc2, 2, int)
+initAtomicSubgroupIncFunctionTarget(vtCounters[WHERE], vtCountersInc, 1, int)
+int lCounterInc() {return vtCountersInc(0)*2;};
+int cCounterInc() {return vtCountersInc(1);};
 
 int aCounterInc(){return _aCounterInc(cBuffer*4);}
 uint wID(in uint t){return t*gl_NumWorkGroups.x+gl_WorkGroupID.x;}
