@@ -134,7 +134,7 @@ const lowp bvec2_ true2_ = true_.xx, false2_ = false_.xx;
 
 // null of indexing in float representation
 //float FINT_NULL = intBitsToFloat(-1); // -1
-  float FINT_ZERO = intBitsToFloat(0); //  0
+  float FINT_ZERO = intBitsToFloat( 0); //  0
 
 //#define FINT_ZERO intBitsToFloat( 0)
 //#define FINT_NULL intBitsToFloat(-1)
