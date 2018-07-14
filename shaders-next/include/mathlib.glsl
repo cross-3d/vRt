@@ -460,9 +460,9 @@ lowp bool_ intersectCubeF32Single(const mediump vec3 origin, const mediump vec3 
 // compatible with NVidia GPU too
 
 #ifdef AMD_F16_BVH
-lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, inout lowp bvec3_ sgn, in fmat3x4_ tMinMax, in fmat3x4_ tCorrections, inout vec2 near, inout vec2 far) {
+lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, inout lowp bvec3_ sgn, in fmat3x4_ tMinMax, inout vec2 near, inout vec2 far) {
 #else
-lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, inout lowp bvec3_ sgn, in highp fmat3x4_ tMinMax, in highp fmat3x4_ tCorrections, inout vec2 near, inout vec2 far) {
+lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, inout lowp bvec3_ sgn, in highp fmat3x4_ tMinMax, inout vec2 near, inout vec2 far) {
 #endif
     tMinMax = fmat3x4_(
         fma(SSC(sgn.x) ? tMinMax[0] : tMinMax[0].zwxy, dr.xxxx, origin.xxxx),

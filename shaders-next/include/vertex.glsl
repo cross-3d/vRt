@@ -133,17 +133,16 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
     const float a = dot(e1,h);
 
 #ifdef BACKFACE_CULLING
-    if (a < 1e-6f) { _valid = false; }
+    if (a <= 0.f) { _valid = false; }
 #else
-    if (abs(a) < 1e-6f) { _valid = false; }
+    if (abs(a) <= 0.f) { _valid = false; }
 #endif
 
     const float f = 1.f/a;
     const vec3 s = -(orig+vT[0]), q = cross(s, e1);
     uv = f * vec2(dot(s,h),dot(dir,q));
 
-    //if (any(lessThanEqual(uv, -1e-6f.xx)) || (uv.x+uv.y) >= (1.f+1e-6f)) { _valid = false; }
-    if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > (1.f)) { _valid = false; }
+    if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
 
     float T = f * dot(e2,q);
     if (T >= INFINITY || T < 0.f) { _valid = false; } 
