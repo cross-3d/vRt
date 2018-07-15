@@ -68,7 +68,6 @@ namespace _vt {
         vertx->_calculatedPrimitiveCount = 0;
 
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
-        commandBarrier(*cmdBuf);
 
         // update constants
         for (auto& iV_ : cmdBuf->_vertexInputs) {
@@ -81,7 +80,7 @@ namespace _vt {
             vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
-        commandBarrier(*cmdBuf);
+        updateCommandBarrier(*cmdBuf);
 
         vertx->_calculatedPrimitiveCount = calculatedPrimitiveCount;
         if (useInstance) {
@@ -133,7 +132,6 @@ namespace _vt {
         auto vertx = cmdBuf->_vertexSet.lock();
 
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
-        commandBarrier(*cmdBuf);
 
         // update constants
         for (auto& iV_ : cmdBuf->_vertexInputs) {
@@ -146,8 +144,8 @@ namespace _vt {
             vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
-        commandBarrier(*cmdBuf);
-
+        updateCommandBarrier(*cmdBuf);
+        
         if (useInstance || !multiple) {
             uint32_t _bnd = inputSet;
             uint32_t _szi = cmdBuf->_vertexInputs.size() - inputSet;
@@ -229,7 +227,7 @@ namespace _vt {
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_currentNodeIndices);
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_countersBuffer); // reset counters
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);
-        //commandBarrier(*cmdBuf);
+        updateCommandBarrier(*cmdBuf);
 
 
         const auto workGroupSize = 8u;//16u;

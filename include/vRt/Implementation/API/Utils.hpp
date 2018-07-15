@@ -109,7 +109,7 @@ namespace _vt { // store in undercover namespace
         imageMemoryBarriers.dstAccessMask = dstMask;
 
         // barrier
-        vk::CommandBuffer(cmd).pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, vk::DependencyFlagBits::eByRegion, {}, {}, std::array<vk::ImageMemoryBarrier, 1>{imageMemoryBarriers});
+        vk::CommandBuffer(cmd).pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, std::array<vk::ImageMemoryBarrier, 1>{imageMemoryBarriers});
         image->_initialLayout = (VkImageLayout)imageMemoryBarriers.newLayout;
 
         return result;

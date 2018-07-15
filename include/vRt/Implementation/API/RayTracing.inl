@@ -69,11 +69,13 @@ namespace _vt {
             cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupCountersBuffer);
             cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupIndicesBuffer);
         };
+        updateCommandBarrier(*cmdBuf);
 
         // run rays generation (if have)
         if (rtppl->_generationPipeline.size() > 0 && rtppl->_generationPipeline[0]) {
             cmdClean();
             vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+            updateCommandBarrier(*cmdBuf);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, 8u), tiled(y, 8u));
         };
@@ -83,6 +85,7 @@ namespace _vt {
             // update uniform buffer of ray tracing steps
             rtset->_cuniform.iteration = it;
             vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform); 
+            updateCommandBarrier(*cmdBuf);
 
             // run traverse processing (single accelerator supported at now)
             if (vertx && vertx->_calculatedPrimitiveCount > 0) {
@@ -108,6 +111,7 @@ namespace _vt {
                 // handling misses in groups
                 if (rtppl->_missHitPipeline[0]) {
                     vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                    updateCommandBarrier(*cmdBuf);
                     cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY);
                 }
 
@@ -116,6 +120,7 @@ namespace _vt {
                     if (rtppl->_closestHitPipeline[i]) {
                         rtset->_cuniform.currentGroup = i;
                         vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                        updateCommandBarrier(*cmdBuf);
                         cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY);
                     }
                 }
@@ -126,6 +131,7 @@ namespace _vt {
                 if (rtppl->_groupPipelines[i]) {
                     rtset->_cuniform.currentGroup = i;
                     vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                    updateCommandBarrier(*cmdBuf);
                     cmdDispatch(*cmdBuf, rtppl->_groupPipelines[i], INTENSIVITY);
                 }
             }
