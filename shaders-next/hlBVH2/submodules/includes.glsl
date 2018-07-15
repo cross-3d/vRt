@@ -21,7 +21,7 @@ layout ( binding = 4, set = 0, std430 )  buffer bvhBoxesWorkB {
     vec4 bvhBoxesWork[][2];
 };
 
-layout ( binding = 5, set = 0, std430 )  restrict buffer FlagsB {
+layout ( binding = 5, set = 0, std430 )  buffer FlagsB {
     int Flags[];
 };
 
@@ -33,7 +33,7 @@ layout ( binding = 7, set = 0, std430 )  buffer LeafIndicesB {
     int LeafIndices[];
 };
 
-layout ( binding = 8, set = 0, std430 )  restrict buffer CountersB {
+layout ( binding = 8, set = 0, std430 ) restrict buffer CountersB {
     int aCounter[2];
     int vtCounters[6];
 };
