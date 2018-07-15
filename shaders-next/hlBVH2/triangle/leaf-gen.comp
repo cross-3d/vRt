@@ -47,11 +47,14 @@ void main() {
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, itri+1).xyzw)),
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, itri+2).xyzw))
         );
+
+#ifndef VTX_TRANSPLIT
         {
-            imageStore(lvtxIn, itri+0, triverts[0]);
-            imageStore(lvtxIn, itri+1, triverts[1]);
-            imageStore(lvtxIn, itri+2, triverts[2]);
+            imageStore(lvtx, itri+0, triverts[0]);
+            imageStore(lvtx, itri+1, triverts[1]);
+            imageStore(lvtx, itri+2, triverts[2]);
         }
+#endif
 
         const vec4 bcenter = (triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f;
         const bbox_t lbox = calcTriBox(triverts);

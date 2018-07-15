@@ -64,12 +64,9 @@ namespace _vt {
         auto vertbd = device->_vertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
 
-        imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
-        vertx->_calculatedPrimitiveCount = 0;
-
-        uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
-
         // update constants
+        imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
+        uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto& iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
             auto iV = iV_.lock();
@@ -131,9 +128,8 @@ namespace _vt {
         auto vertbd = device->_vertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
 
-        uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
-
         // update constants
+        uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto& iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
             auto iV = iV_.lock();
@@ -194,13 +190,6 @@ namespace _vt {
         auto acclb = device->_acceleratorBuilder;
         auto accel = cmdBuf->_acceleratorSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
-
-        // build vertex if possible
-        //if (vertx && cmdBuf->_vertexInputs.size() > 0) {
-            //buildVertexSet(cmdBuf);
-            //updateVertexSet(cmdBuf);
-        //}
-
         const VtMat4 initialMat = {
             { 1.f, 0.f, 0.f, 0.f },
             { 0.f, 1.f, 0.f, 0.f },
@@ -208,8 +197,6 @@ namespace _vt {
             { 0.f, 0.f, 0.f, 1.f },
         };
 
-        //cmdBarrierAggregated(cmdBuf);
-        commandBarrier(*cmdBuf);
         accel->_bvhBlockData.primitiveOffset = accel->_primitiveOffset;
         accel->_bvhBlockData.primitiveCount = (accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount;
         accel->_bvhBlockData.leafCount = accel->_bvhBlockData.primitiveCount;
@@ -219,6 +206,7 @@ namespace _vt {
         accel->_bvhBlockData.transform = initialMat;
         accel->_bvhBlockData.transformInv = initialMat;
         vkCmdUpdateBuffer(*cmdBuf, *accel->_bvhBlockUniform, 0, sizeof(accel->_bvhBlockData), &accel->_bvhBlockData);
+        //updateCommandBarrier(*cmdBuf);
 
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting
@@ -229,8 +217,7 @@ namespace _vt {
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);
         updateCommandBarrier(*cmdBuf);
 
-
-        const auto workGroupSize = 8u;//16u;
+        const auto workGroupSize = 8u;
         std::vector<VkDescriptorSet> _sets = { bounder->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH
@@ -242,7 +229,6 @@ namespace _vt {
         cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
         cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
         cmdDispatch(*cmdBuf, acclb->_fitPipeline, workGroupSize);
-        //cmdDispatch(*cmdBuf, acclb->_fitPipeline, INTENSIVITY); // fit BVH nodes
 
         return result;
     }

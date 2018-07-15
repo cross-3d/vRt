@@ -29,13 +29,19 @@
     layout ( binding = 2, set = VTX_SET, std430   ) readonly buffer bitfieldsB { int vbitfields[]; };
     #endif
 
-    #if (defined(VERTEX_FILLING) || defined(LEAF_GEN))
+
+    #ifdef VERTEX_FILLING
     layout ( binding = 3, set = VTX_SET, rgba32f  ) uniform imageBuffer lvtxIn;
-    layout ( binding = 5, set = VTX_SET           ) uniform imageBuffer lvtx;
     #else
     layout ( binding = 3, set = VTX_SET           ) readonly uniform imageBuffer lvtxIn;
+    #endif
+
+    #ifdef LEAF_GEN
+    layout ( binding = 5, set = VTX_SET           ) uniform imageBuffer lvtx;
+    #else
     layout ( binding = 5, set = VTX_SET, rgba32f  ) readonly uniform imageBuffer lvtx;
     #endif
+
 
     //#define TLOAD_I(img,t) imageLoad(img,t)
     #define TLOAD(img,t) imageLoad(img,t)
@@ -127,7 +133,7 @@ float intersectTriangle(const vec3 orig, const mat3 M, const int axis, in int tr
 #ifdef USE_FAST_INTERSECTION
 float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout vec2 uv, in bool _valid) {
     const int itri = tri*3;
-    const mat3 vT = mat3(TLOAD(lvtxIn, itri+0).xyz, TLOAD(lvtxIn, itri+1).xyz, TLOAD(lvtxIn, itri+2).xyz);
+    const mat3 vT = mat3(TLOAD(lvtx, itri+0).xyz, TLOAD(lvtx, itri+1).xyz, TLOAD(lvtx, itri+2).xyz);
     const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
     const vec3 h = cross(dir, e2);
     const float a = dot(e1,h);

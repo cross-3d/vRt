@@ -45,7 +45,7 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBuffer);
 
-            bfi.bufferSize = 4u;//maxPrimitives * sizeof(float) * 4ull;
+            bfi.bufferSize = maxPrimitives * sizeof(float) * 4ull; // restored due fatal issue
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBufferSide);
 
