@@ -1,6 +1,12 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+//#include <unistd.h>
+//#include <dos.h>
+//#include <windows.h>
+
 #include <misc/half.hpp>
 #include <misc/pcg_random.hpp>
 #include <glm/glm.hpp>

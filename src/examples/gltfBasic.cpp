@@ -788,13 +788,13 @@ void main() {
 
 
     // dispatch building vertex internal data
-    vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
+    vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
 
     // dispatch building accelerators
-    vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+    vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
 
     // dispatch ray tracing
-    //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
+    //vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
 
 
@@ -823,11 +823,11 @@ void main() {
             updateCommandBarrier(cmdBuf);
         });
 
-
-        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { vxuCmdBuf });
-        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
-        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
-
+        
+        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { vxuCmdBuf });
+        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1)); // unable in NVidia to barrrier
 
 
         /*{ // reserved field for computing code
