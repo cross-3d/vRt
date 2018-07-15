@@ -43,7 +43,6 @@ void main() {
             imageStore(bvhMeta, lidx, bvhmeta+1);
             bvhBoxesWork[lidx][0] = rbox.mn;
             bvhBoxesWork[lidx][1] = rbox.mx;
-            Flags[lidx] = 0;
         }
     }
 

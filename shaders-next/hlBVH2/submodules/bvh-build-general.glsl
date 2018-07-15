@@ -32,10 +32,10 @@ void splitNode(inout int fID, inout int side) {
     //if (prID >= 0 && fID >= 0) {
         // initial box and refit status
         //bvhBoxesWork[prID] = vec4[2](100000.f.xxxx, -100000.f.xxxx); // initial AABB
-        //Flags[prID] = 0; // reset flag of refit
 
         // splitting nodes
         ivec4 _pdata = imageLoad(bvhMeta, prID)-1;
+        Flags[prID] = 0; // reset flag of refit
 
         [[flatten]]
         if (_pdata.x >= 0 && _pdata.y >= 0) {
@@ -56,7 +56,7 @@ void splitNode(inout int fID, inout int side) {
                 imageStore(bvhMeta, prID, ivec4(hd.xx+ivec2(1,2), _pdata.zw+1));
                 imageStore(bvhMeta, hd+0, ivec4(transplit.xy, prID, _pdata.w)+1);
                 imageStore(bvhMeta, hd+1, ivec4(transplit.zw, prID, _pdata.w)+1);
-                Actives[wID(aCounterInc())][cBuffer] = hd+1, Flags[prID] = 0;
+                Actives[wID(aCounterInc())][cBuffer] = hd+1;
                 /*
                 // add prefix to next task
                 if (all(isLeaf)) {
