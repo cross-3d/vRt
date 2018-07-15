@@ -103,6 +103,7 @@ void main() {
                 if ( atomicCompSwap(Flags[pid], 0, 1) == 1 ) {
                 //if ( atomicExchange(Flags[pid], 1) == 1 ) {
                     Actives[wID(aCounterInc())][cBuffer] = pid+1; // add to contributors list
+                    Flags[pid] = 0; // reset fit flag for avoid most issues
                 }
             }
         }
