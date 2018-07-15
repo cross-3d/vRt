@@ -82,7 +82,7 @@ void main() {
     [[dependency_infinite]]
     for (int l=0;l<65536;l++) {
         // check activity counter
-        if (lID == 0) { asize = exchange(_counters[0], 0); cBuffer = 1-cBuffer; }
+        if (lID == 0) { asize = atomicExchange(_counters[0], 0); cBuffer = 1-cBuffer; }
         LGROUP_BARRIER
 
         IFALL (asize <= 0) break;

@@ -89,11 +89,11 @@ void main() {
 
         // swap buffers emulation
         if (threadID == 0) { 
-                cBuffer = 1-cBuffer; asize_inv_ = 0; asize = asize_; 
+                cBuffer = 1-cBuffer; asize_inv_ = 0; asize = atomicExchange(asize_, 0);
 #ifdef FIRST_STEP
 //                wsize = asize, osize = wsize;
 #else
-                wsize = asize * (m == 0 ? 1 : int(gl_NumWorkGroups.x)), osize = wsize / int(gl_NumWorkGroups.x);
+                wsize = asize * (m == 0 ? 1 : int(gl_NumWorkGroups.x)), osize = wsize / int(gl_NumWorkGroups.x); 
 #endif
         }
         LGROUP_BARRIER
