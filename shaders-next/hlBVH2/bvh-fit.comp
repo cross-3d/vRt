@@ -47,66 +47,25 @@ void unifyNodeBox(inout int idx){
 
 layout ( local_size_x = WORK_SIZE_BND ) in;
 
-// shared memory counters
-shared int _counters[8];
-#define cBuffer _counters[3]
-#define asize _counters[7]
-//#define wsize (bvhBlock.leafCount/gl_NumWorkGroups.x)
-// define function for increment
-initAtomicSubgroupIncFunction(_counters[0], aCounterInc, 1, int)
-uint wID(in uint t){return t*gl_NumWorkGroups.x+gl_WorkGroupID.x;}
-
 #define lID Local_Idx
 #define gS gl_WorkGroupSize.x
-#define rng gS
+#define wsize bvhBlock.leafCount
 
 void main() {
-    // initial counters
-    if (lID < 8) { _counters[lID] = 0; }
-    LGROUP_BARRIER
-
     // move to work list
-    const uint wsize = (bvhBlock.leafCount/gl_NumWorkGroups.x);
-    for (uint w=0;w<wsize;w+=rng) {
+    const uint rng = gS*gl_NumWorkGroups.x;
+    for (uint w=gS*gl_WorkGroupID.x;w<wsize;w+=rng) {
         SB_BARRIER
-        const uint globalID = wID(w + lID);
-        IFALL (globalID >= bvhBlock.leafCount) break; // add to queue list parent node
-        int idx = globalID < bvhBlock.leafCount ? LeafIndices[globalID]-1 : -1;
-        if (idx >= 0) { Actives[wID(aCounterInc())][cBuffer] = idx+1; }
-    }
+        const uint globalID = (w + lID);
+        IFALL (globalID >= wsize) break; // add to queue list parent node
+        int idx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
 
-    // sync work
-    LGROUP_BARRIER
-
-    // upcoming to root node
-    [[dependency_infinite]]
-    for (int l=0;l<65536;l++) {
-        // check activity counter
-        if (lID == 0) { asize = atomicExchange(_counters[0], 0); cBuffer = 1-cBuffer; }
-        LGROUP_BARRIER
-
-        IFALL (asize <= 0) break;
-
-        // unify boxes when possible
-        for (uint w=0;w<asize;w+=rng) {
-            SB_BARRIER
-            
-            // unify boxes for parent
-            const uint globalID = w + lID;
-            IFALL (globalID >= asize) break;
-            int idx = globalID < asize ? Actives[wID(globalID)][1-cBuffer]-1 : -1;
-            if ( idx >= 0 ) { unifyNodeBox(idx); }
-
-            // unify box for current and add parent
-            int pid = idx >= 0 ? imageLoad(bvhMeta, idx).z-1 : -1;
-            [[flatten]]
-            if ( pid >= 0 ) {
-                const int cmpt = atomicCompSwap(Flags[pid], 0, 1);
-                if ( cmpt >= 1 ) { Actives[wID(aCounterInc())][cBuffer] = pid+1; }
-            }
+        [[dependency_infinite]]
+        for (int l=0;l<65536;l++) {
+            const int pid = idx >= 0 ? (imageLoad(bvhMeta, idx).z-1) : -1;
+            idx = pid >= 0 && atomicCompSwap(Flags[pid], 0, 1) == 1 ? pid : -1;
+            if ( idx >= 0 ) { unifyNodeBox(idx); Flags[idx] = 0; } else { break; };
         }
-
-        // sync work
-        LGROUP_BARRIER
     }
+    LGROUP_BARRIER
 }

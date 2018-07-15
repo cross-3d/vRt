@@ -1,0 +1,112 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#ifdef NVIDIA_PLATFORM
+#define WORK_SIZE_BND 1024
+#else 
+#define WORK_SIZE_BND 1024
+#endif
+
+#define BVH_CREATION
+
+#include "../include/driver.glsl"
+#include "../include/structs.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+#include "../include/vertex.glsl"
+#include "./submodules/includes.glsl"
+
+// optimize by shareds
+//shared mat4 _lrbox[WORK_SIZE_BND];
+//#define lrbox _lrbox[Local_Idx]
+//shared ivec4 _comp[WORK_SIZE_BND]; 
+//#define comp _comp[Local_Idx]
+
+void unifyNodeBox(inout int idx){
+    // initial for unify box
+    ivec2 comp = imageLoad(bvhMeta, idx).xy-1; // meta of contributable
+    if (comp.x != comp.y && comp.x >= 0) {
+
+        // get contributors boxes
+        mat4 lrbox = mat4(bvhBoxesWork[comp.x][0], bvhBoxesWork[comp.y][0], bvhBoxesWork[comp.x][1], bvhBoxesWork[comp.y][1]);
+
+        // contribute to current node
+        bvhBoxesWork[idx] = vec4[2](min(lrbox[0], lrbox[1]), max(lrbox[2], lrbox[3]));
+
+        // transpose and compress boxes of contributors
+        lrbox = transpose(lrbox);
+
+        // transposed save
+#ifdef USE_F32_BVH
+        bvhBoxesResulting[comp.x >> 1] = fvec4_[4](fvec4_(lrbox[0]), fvec4_(lrbox[1]), fvec4_(lrbox[2]), fvec4_(lrbox[3]));
+#else
+        bvhBoxesResulting[comp.x >> 1] = uvec2[4](packHalf4x16(lrbox[0]), packHalf4x16(lrbox[1]), packHalf4x16(lrbox[2]), packHalf4x16(lrbox[3]));
+#endif
+    }
+}
+
+layout ( local_size_x = WORK_SIZE_BND ) in;
+
+// shared memory counters
+shared int _counters[8];
+#define cBuffer _counters[3]
+#define asize _counters[7]
+//#define wsize (bvhBlock.leafCount/gl_NumWorkGroups.x)
+// define function for increment
+initAtomicSubgroupIncFunction(_counters[0], aCounterInc, 1, int)
+uint wID(in uint t){return t*gl_NumWorkGroups.x+gl_WorkGroupID.x;}
+
+#define lID Local_Idx
+#define gS gl_WorkGroupSize.x
+#define rng gS
+
+void main() {
+    // initial counters
+    if (lID < 8) { _counters[lID] = 0; }
+    LGROUP_BARRIER
+
+    // move to work list
+    const uint wsize = tiled(uint(bvhBlock.leafCount), gl_NumWorkGroups.x);
+    for (uint w=0;w<wsize;w+=rng) {
+        SB_BARRIER
+        const uint globalID = wID(w + lID);
+        IFALL (globalID >= bvhBlock.leafCount) break; // add to queue list parent node
+        int idx = globalID < bvhBlock.leafCount ? LeafIndices[globalID]-1 : -1;
+        if (idx >= 0) { Actives[wID(aCounterInc())][cBuffer] = idx+1; }
+    }
+
+    // sync work
+    LGROUP_BARRIER
+
+    // upcoming to root node
+    [[dependency_infinite]]
+    for (int l=0;l<65536;l++) {
+        // check activity counter
+        if (lID == 0) { asize = atomicExchange(_counters[0], 0); cBuffer = 1-cBuffer; }
+        LGROUP_BARRIER
+
+        IFALL (asize <= 0) break;
+
+        // unify boxes when possible
+        for (uint w=0;w<asize;w+=rng) {
+            SB_BARRIER
+            
+            // unify boxes for parent
+            const uint globalID = w + lID;
+            IFALL (globalID >= asize) break;
+            int idx = globalID < asize ? Actives[wID(globalID)][1-cBuffer]-1 : -1;
+            if ( idx >= 0 ) { unifyNodeBox(idx); }
+
+            // unify box for current and add parent
+            int pid = idx >= 0 ? imageLoad(bvhMeta, idx).z-1 : -1;
+            [[flatten]]
+            if ( pid >= 0 ) {
+                const int cmpt = atomicCompSwap(Flags[pid], 0, 1);
+                if ( cmpt >= 1 ) { Actives[wID(aCounterInc())][cBuffer] = pid+1; }
+            }
+        }
+
+        // sync work
+        LGROUP_BARRIER
+    }
+}
