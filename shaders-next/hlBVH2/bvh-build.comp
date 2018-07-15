@@ -51,8 +51,6 @@ void main() {
 #define groupSize gl_WorkGroupSize.x
 
     // lane-based
-    //const uint gS = groupSize >> 1, iT = threadID >> 1;
-    //uint gS = 0u, iT = 0u, uID = 0u, uWD = 0u;
     uint gS = 0u, iT = 0u, uWD = 0u;
     gS = groupSize >> 1, iT = threadID >> 1;
     int sD = int(threadID & 1);
@@ -68,13 +66,9 @@ void main() {
         int hid = 0;
         imageStore(bvhMeta, hid+0, ivec4(1, bvhBlock.leafCount, 0, 0));
         imageStore(bvhMeta, hid+1, ivec4(0, 0, 0, 0));
-        //bvhMeta[hid+0] = ivec4(1, bvhBlock.leafCount, 0, 0);
-        //bvhMeta[hid+1] = ivec4(0, 0, 0, 0);
         Actives[aCounterInc()][cBuffer] = hid+1;
-        //asize = asize_inv_;
 #else
-        //asize_inv_ = aCounter[  cBuffer]/int(gl_NumWorkGroups.x>>1), asize_ = aCounter[1-cBuffer]/int(gl_NumWorkGroups.x>>1);
-        asize_inv_ = aCounter[  cBuffer], asize_ = aCounter[1-cBuffer];
+        cBuffer = 1, asize_inv_ = aCounter[  cBuffer], asize_ = aCounter[1-cBuffer];
 #endif
     }
     
@@ -84,21 +78,18 @@ void main() {
         LGROUP_BARRIER
 
 #ifdef FIRST_STEP // limit by few elements
-        if (m >= 4) { break; }     
+        if ( m >= 5 ) { break; }
 #endif
 
         // swap buffers emulation
         if (threadID == 0) { 
-                cBuffer = 1-cBuffer; asize_inv_ = 0; asize = atomicExchange(asize_, 0);
-#ifdef FIRST_STEP
-//                wsize = asize, osize = wsize;
-#else
-                wsize = asize * (m == 0 ? 1 : int(gl_NumWorkGroups.x)), osize = wsize / int(gl_NumWorkGroups.x); 
+                cBuffer = 1-cBuffer, asize_inv_ = 0, asize = atomicExchange(asize_, 0);
+#ifndef FIRST_STEP
+                wsize = asize * (m == 0 ? 1 : int(gl_NumWorkGroups.x)), osize = tiled(wsize, int(gl_NumWorkGroups.x));
 #endif
         }
+        
         LGROUP_BARRIER
-
-        //IFALL (osize >= (gS*largeStageThreshold) || osize <= 0) { break; }
         IFALL (osize <= 0) { break; } // remove count limiter
 
         // split nodes
