@@ -35,7 +35,7 @@ layout ( std430, binding = 6, set = 0 ) readonly buffer VT_CANVAS_INFO {
 } stageUniform;
 
 // counters
-layout ( std430, binding = 7, set = 0 ) buffer VT_RT_COUNTERS { int vtCounters[8]; };
+layout ( std430, binding = 7, set = 0 ) restrict buffer VT_RT_COUNTERS { int vtCounters[8]; };
 
 // imported from satellite (blocky indicing)
 #ifdef USE_16BIT_ADDRESS_SPACE

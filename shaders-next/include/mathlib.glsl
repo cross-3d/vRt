@@ -193,13 +193,13 @@ vec4 mult4(in mat4 tmat, in vec4 vec) { return vec * tmat; }
 
 
 // 64-bit packing
-#if (!defined(NVIDIA_PLATFORM) && !defined(UNIVERSAL_PLATFORM))
+//#if (!defined(NVIDIA_PLATFORM) && !defined(UNIVERSAL_PLATFORM))
 #define U2P unpackUint2x32
 #define P2U packUint2x32
-#else
-uvec2 U2P(in uint64_t pckg) { return uvec2(uint((pckg >> 0ul) & 0xFFFFFFFFul), uint((pckg >> 32ul) & 0xFFFFFFFFul)); }
-uint64_t P2U(in uvec2 pckg) { return uint64_t(pckg.x) | (uint64_t(pckg.y) << 32ul); }
-#endif
+//#else
+//uvec2 U2P(in uint64_t pckg) { return uvec2(uint((pckg >> 0ul) & 0xFFFFFFFFul), uint((pckg >> 32ul) & 0xFFFFFFFFul)); }
+//uint64_t P2U(in uvec2 pckg) { return uint64_t(pckg.x) | (uint64_t(pckg.y) << 32ul); }
+//#endif
 
 
 // 128-bit packing (2x64bit)

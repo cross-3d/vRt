@@ -7,9 +7,7 @@ uint Lane_Idx = 0;
 uint Local_Idx = 0;
 uint Wave_Idx = 0;
 
-
 #ifdef INTEL_PLATFORM
-#undef Wave_Size
 #define Wave_Size 32u
 #endif
 

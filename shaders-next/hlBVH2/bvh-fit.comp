@@ -100,7 +100,8 @@ void main() {
             // unify box for current and add parent
             int pid = idx >= 0 ? imageLoad(bvhMeta, idx).z-1 : -1;
             if ( pid >= 0) {
-                if ( atomicCompSwap(Flags[pid], 0, 1) == 1 ) {
+                //if ( atomicCompSwap(Flags[pid], 0, 1) == 1 ) {
+                if ( atomicExchange(Flags[pid], 1) == 1 ) {
                     Actives[wID(aCounterInc())][cBuffer] = pid+1; // add to contributors list
                 }
             }
