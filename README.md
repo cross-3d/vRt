@@ -43,14 +43,13 @@ We still working on forming of ray tracing API.
 #### July 2018 ("Hydrogen")
 - Development of better implementation 
 - Improve API and interfaces
-- Support for NVidia (GTX 9, 10, Titan series) and AMD (RX Vega) hardware
-- Planned support for V-EZ by GPUOpen (July/August)
 
 #### 2018 Q4 ("Lithium")
 - Coming to (pre-)alpha stage
 - Finish to fix (un)common bugs and issues 
 - Write bigger real-time application with ray tracing 
 - Make support of all Vulkan API 1.1 (or newer) supported platforms
+- Planned support for V-EZ by GPUOpen (July/August)
 
 #### Beyond...  
 - First implementations in bigger framework and engines (The Forge, Unreal Engine 5, Blender 2.90)
