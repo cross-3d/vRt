@@ -84,14 +84,15 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     //const vec3 origin = currentRayTmp.origin.xyz, direct = dcts(currentRayTmp.cdirect.xy);
 
     // test constants
-    vec3 
-        torig = -divW(mult4( bvhBlock.transform, vec4(orig.xyz, 1.0f))).xyz,
-        torigTo = divW(mult4( bvhBlock.transform, vec4(orig.xyz+dcts(pdir.xy), 1.0f))).xyz,
-        dirproj = torigTo+torig;
+    //vec3 torig = -orig.xyz, dirproj = dcts(pdir.xy);
+    vec3 torig = -divW(mult4( bvhBlock.transform, vec4(orig.xyz, 1.0f))).xyz,
+         torigTo = divW(mult4( bvhBlock.transform, vec4(orig.xyz+dcts(pdir.xy), 1.0f))).xyz,
+         dirproj = torigTo+torig;
 
     // make vector for box intersection
-    vec3 origin = torig, direct = 0.f.xxx;
-    float dirlen = length(dirproj); dirproj /= dirlen, direct = dirproj, dirproj = 1.f.xxx / vec3(precIssue(dirproj.x), precIssue(dirproj.y), precIssue(dirproj.z));
+    const float dirlen = length(dirproj);
+    //const float dirlen = 1.f;
+    dirproj /= dirlen; const vec3 direct = dirproj; dirproj = 1.f.xxx / vec3(precIssue(dirproj.x), precIssue(dirproj.y), precIssue(dirproj.z));
 
     // limitation of distance
     lowp bvec3_ bsgn = (bvec3_(sign(dirproj)*ftype_(1.0001f))+true_)>>true_;
@@ -127,7 +128,9 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     // test intersection with main box
     vec2 nears = (-INFINITY).xx, fars = INFINITY.xx;
     const vec2 bndsf2 = vec2(-1.0005f, 1.0005f);
-    traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2, bndsf2, bndsf2), nears.x, fars.x)) ? (valid ? BVH_ENTRY : -1) : -1; 
+    const int entry = (valid ? BVH_ENTRY : -1), _cmp = entry >> 1;
+    //traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x4(bvhBoxes[_cmp][0], bvhBoxes[_cmp][1], bvhBoxes[_cmp][2]), nears.x, fars.x)) ? entry : -1;
+    traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2,bndsf2,bndsf2), nears.x, fars.x)) ? entry : -1; 
     
     float diffOffset = -max(nears.x, 0.f); 
     primitiveState.orig = fma(direct, diffOffset.xxx, torig);//vec4(fma(direct, diffOffset.xxx, torig), 1.f);

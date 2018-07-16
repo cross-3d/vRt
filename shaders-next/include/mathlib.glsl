@@ -447,9 +447,9 @@ vec2 fast32swap(in vec2 b64, in lowp bool_ nswp) {
 // compatible with AMD radeon min3 and max3
 lowp bool_ intersectCubeF32Single(const mediump vec3 origin, const mediump vec3 dr, inout lowp bvec3_ sgn, const mediump mat3x2 tMinMaxMem, inout float near, inout float far) {
     mediump mat3x2 tMinMax = mat3x2(
-        fma(SSC(sgn.x) ? tMinMaxMem[0] : tMinMaxMem[0].yx, dr.xx, origin.xx),
-        fma(SSC(sgn.y) ? tMinMaxMem[1] : tMinMaxMem[1].yx, dr.yy, origin.yy),
-        fma(SSC(sgn.z) ? tMinMaxMem[2] : tMinMaxMem[2].yx, dr.zz, origin.zz)
+        fma(SSC(sgn.x) ? tMinMaxMem[0].xy : tMinMaxMem[0].yx, dr.xx, origin.xx),
+        fma(SSC(sgn.y) ? tMinMaxMem[1].xy : tMinMaxMem[1].yx, dr.yy, origin.yy),
+        fma(SSC(sgn.z) ? tMinMaxMem[2].xy : tMinMaxMem[2].yx, dr.zz, origin.zz)
     );
 
     mediump float 
