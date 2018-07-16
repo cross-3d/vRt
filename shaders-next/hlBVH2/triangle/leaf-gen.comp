@@ -58,7 +58,7 @@ void main() {
 #endif
 
         // gen morton code
-        const uvec2 mortonCode = encodeMorton3_64(clamp(uvec4(floor(fma(bcenter.xyzw, 0.5f.xxxx, 0.5f.xxxx)*65535.f)), uvec4(0), uvec4(0xFFFF)));
+        const uvec2 mortonCode = encodeMorton(clamp(uvec4(floor(fma(bcenter.xyzw, 0.5f.xxxx, 0.5f.xxxx)*65535.f)), uvec4(0), uvec4(0xFFFF)));
 
 #define to globalID
 

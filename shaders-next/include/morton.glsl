@@ -10,7 +10,7 @@ uvec2 splitBy4(in highp uint a){
     return r;
 }
 
-uvec2 encodeMorton3_64(in highp uvec4 a) {
+uvec2 encodeMorton(in highp uvec4 a) {
     return splitBy4(a.x) | (splitBy4(a.y) << 1) | (splitBy4(a.z) << 2) | (splitBy4(a.w) << 3);
 }
 
