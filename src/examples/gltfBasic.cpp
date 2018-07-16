@@ -489,14 +489,14 @@ void main() {
 
     // create accelerator set
     VtAcceleratorSetCreateInfo acci;
-    acci.maxPrimitives = 1024 * 1024 * 4;
+    acci.maxPrimitives = 1024 * 1024;
     acci.entryID = 0;
     vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
 
 
     // create vertex assembly
     VtVertexAssemblySetCreateInfo vtsi;
-    vtsi.maxPrimitives = 1024 * 1024 * 4;
+    vtsi.maxPrimitives = 1024 * 1024;
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
 
