@@ -18,21 +18,19 @@
 
 LOCAL_SIZE_LAYOUT;
 
+#define wsize closestHitCounterCurrent
+
 void main() {
     // accumulate closest hits
     if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { add(closestHitCounter, closestHitCounterCurrent); }
     SB_BARRIER
 
-    const int offset = stageUniform.closestHitOffset;
-    const int wsize = int(closestHitCounterCurrent);
-    const int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
-    const int wgs = int(gl_NumWorkGroups);
-
-    for (int w=0;w<wcount;w+=wgs) {
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         SB_BARRIER
-        int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
+        int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         bool overflow = globalID >= wsize; IFALL(overflow) break;
-        int hitID = overflow ? -1 : vtClosestId(offset + globalID);
+        int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID);
         
 #ifdef DMA_HIT
         #define hit hits[hitID]

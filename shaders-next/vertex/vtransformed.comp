@@ -25,54 +25,50 @@ const int VCOUNT = 3;
 struct Transforms { mat4 transform, transformNrm; };
 layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { Transforms vTransforms[]; };
 
-void main(){
-    const uint wsize = uint(vertexBlock.primitiveCount);
-    const uint gS = uint(gl_WorkGroupSize.x);
-    const uint wgs = uint(gl_NumWorkGroups.x);
-    const uint wID = uint(gl_WorkGroupID.x);
-    const uint lID = uint(Local_Idx);
-    const uint rng = gS*wgs;
+#define wsize vertexBlock.primitiveCount
 
-    // process vertex assembly
-    for (uint w=0;w<wsize;w+=rng) {
-        uint globalID = w + wID * gS + lID;
+void main(){
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
+        SB_BARRIER
+        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
         IFALL (globalID >= wsize) break;
         if (globalID < wsize && globalID >= 0) {
 
-            // constant material ID from vertex instance 
-            uint matID = 0u;//uint(vertexBlock.materialID);
-            uint rofft = uint(vertexBlock.readOffset) + globalID;
-            uint wofft = uint(vertexBlock.primitiveOffset) + globalID;
-            uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
+            // constant material ID from vertex instance
+            const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
 
             // read material accessor
-            readByAccessorIndice(int(vertexBlock.materialAccessor), rofft, matID);
+            uint matID = 0u;
+            readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID);
             matID += uint(vertexBlock.materialID);
 
             // planned to support quad based geometry
             vmaterials[wofft] = int(matID);
             vbitfields[wofft] = vertexBlock.bitfield;
-            
+
+            // 
+            const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
+
             // load attrib data
             [[unroll]]
-            for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
-                uint a = vertexBlock.attributeOffset + a;
+            for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
                 [[unroll]]
                 for (int i=0;i<3;i++) {
                     vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
-                    readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
+                    readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
                     if (a == NORMAL_TID) { attribValue = mult4(vTransforms[inputID].transformNrm, attribValue); }
                     storeAttribute(ivec3(wofft, attributes[a].attributeID, i), attribValue);
                 }
-            }}
+            }
 
             // load vertex data
             [[unroll]]
             for (int i=0;i<3;i++) {
                 vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = rofft * VCOUNT + i;
-                readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
-                readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
+                readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
+                readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice);
                 storePosition(ivec2(wofft, i), mult4(vTransforms[inputID].transform, vec4(vertice.xyz, 1.f)));
             }
             

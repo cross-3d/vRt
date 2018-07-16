@@ -16,27 +16,20 @@ LOCAL_SIZE_LAYOUT;
 
 const int VCOUNT = 3;
 
-void main(){
-    const uint wsize = uint(vertexBlock.primitiveCount);
-    const uint gS = uint(gl_WorkGroupSize.x);
-    const uint wgs = uint(gl_NumWorkGroups.x);
-    const uint wID = uint(gl_WorkGroupID.x);
-    const uint lID = uint(Local_Idx);
-    const uint rng = gS*wgs;
+#define wsize vertexBlock.primitiveCount
 
-    // process vertex assembly
-    for (uint w=0;w<wsize;w+=rng) {
-        uint globalID = w + wID * gS + lID;
+void main(){
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
+        SB_BARRIER
+        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
         IFALL (globalID >= wsize) break;
         if (globalID < wsize && globalID >= 0) {
-
-            // constant material ID from vertex instance 
-            uint matID = 0u;//uint(vertexBlock.materialID);
-            uint rofft = uint(vertexBlock.readOffset) + globalID;
-            uint wofft = uint(vertexBlock.primitiveOffset) + globalID;
-            //uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
+            // constant material ID from vertex instance
+            uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
 
             // read material accessor
+            uint matID = 0u;
             readByAccessorIndice(int(vertexBlock.materialAccessor), rofft, matID);
             matID += uint(vertexBlock.materialID);
 
@@ -46,8 +39,7 @@ void main(){
 
             // load attrib data
             [[unroll]]
-            for (uint a=0;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount);a++) {{
-                uint a = vertexBlock.attributeOffset + a;
+            for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
                 [[unroll]]
                 for (int i=0;i<3;i++) {
                     vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
@@ -55,7 +47,7 @@ void main(){
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
                     storeAttribute(ivec3(wofft, attributes[a].attributeID, i), attribValue);
                 }
-            }}
+            }
 
             // load vertex data
             [[unroll]]

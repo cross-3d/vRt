@@ -23,15 +23,16 @@
 
 LOCAL_SIZE_LAYOUT;
 
+#define wsize rayCounter
+#define wgs gl_NumWorkGroups.x
+
 void main() {
-    const int wsize = rayCounter;
-    const int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
-    const int wgs = int(gl_NumWorkGroups);
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     traverseState.cacheID = int(gl_GlobalInvocationID.x);
 
-    for (int w=0;w<wcount;w+=wgs) {
+    for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
-        int it = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
+        int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         bool overflow = it >= wsize; IFALL(overflow) break;
 
         // do BVH traversing 

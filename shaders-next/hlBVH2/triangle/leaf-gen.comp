@@ -18,26 +18,15 @@
 #include "../../include/morton.glsl"
 #include "../submodules/includes.glsl"
 
-//initAtomicSubgroupIncFunction(nCounter, atomicIncLeaf, 1, int)
-
 LOCAL_SIZE_LAYOUT;
 
-void main() {
-    //const int wsize =  bvhBlock.primitiveCount;
-    //const int gS = int(gl_WorkGroupSize.x);
-    //const int wgs = int(gl_NumWorkGroups.x);
-    //const int wID = int(gl_WorkGroupID.x);
-    //const int lID = int(Local_Idx);
 #define wsize bvhBlock.primitiveCount
-#define gS gl_WorkGroupSize.x
-#define wgs gl_NumWorkGroups.x
-#define wID gl_WorkGroupID.x
-#define lID Local_Idx
 
-    const uint rng = gS*wgs;
-    for (uint w=0;w<wsize;w+=rng) {
+void main() {
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         SB_BARRIER
-        const uint globalID = w + (wID * gS + lID);
+        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
         IFALL (globalID >= wsize) break;
 
         const uint tri = bvhBlock.primitiveOffset+clamp(globalID, 0, bvhBlock.primitiveCount-1); const int itri = int(tri*3);

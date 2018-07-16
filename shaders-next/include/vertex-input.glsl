@@ -63,16 +63,16 @@ layout ( binding = 4, set = 1, std430 ) readonly buffer VT_ATTRIB {VtAttributeBi
 
 struct VtVIUniform {
     uint primitiveCount;
-    uint verticeAccessor;
-    uint indiceAccessor;
-    uint materialID;
+    int verticeAccessor;
+    int indiceAccessor;
+    int materialAccessor;
 
     uint primitiveOffset;
     uint attributeOffset;
     uint attributeCount;
     uint bitfield;
 
-    uint materialAccessor;
+    uint materialID;
     uint readOffset;
     uint reserved0, reserved1;
 };

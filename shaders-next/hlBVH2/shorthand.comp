@@ -40,25 +40,25 @@ void main() {
 
     [[flatten]]
     if (electedInvoc()) {
-        vec4 scale = 1.f/(gmx-gmn), offset = -scale*gmn;
-        //mat4 transform = transpose(bvhBlock.transform);
-        //mat4 transform = mat4(1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f);
+        const vec4 scale = 1.f/(gmx-gmn), offset = -scale*gmn;
+        //const mat4 transform = transpose(bvhBlock.transform);
+        //const mat4 transform = mat4(1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f);
 
-        mat4 translate = mat4(
+        const mat4 translate = mat4(
             1.f, 0.f, 0.f, 0.f,
             0.f, 1.f, 0.f, 0.f,
             0.f, 0.f, 1.f, 0.f,
             offset.x, offset.y, offset.z, 1.f
         );
 
-        mat4 scaling = mat4(
+        const mat4 scaling = mat4(
             scale.x, 0.f, 0.f, 0.f,
             0.f, scale.x, 0.f, 0.f,
             0.f, 0.f, scale.z, 0.f,
             0.f, 0.f, 0.f, 1.f
         );
 
-        mat4 centric = mat4(
+        const mat4 centric = mat4(
              1.f,  0.f,  0.f, 0.f,
              0.f,  1.f,  0.f, 0.f,
              0.f,  0.f,  1.f, 0.f,
@@ -70,7 +70,7 @@ void main() {
             0.f, 0.f, 0.f, 1.f
         );
 
-        mat4 rtransform = mat4(
+        const mat4 rtransform = mat4(
             1.f, 0.f, 0.f, 0.f,
             0.f, 1.f, 0.f, 0.f,
             0.f, 0.f, 1.f, 0.f,

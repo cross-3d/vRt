@@ -25,17 +25,15 @@ VtHitPayload hitp;
 
 LOCAL_SIZE_LAYOUT;
 
+#define wgs gl_NumWorkGroups.x
+#define wsize missHitTypedCounterRead[stageUniform.currentGroup]
+
 void main() {
-    int wsize = int(missHitTypedCounterRead[stageUniform.currentGroup]);
-    int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
-    bool overflow = false;
-    int wgs = int(gl_NumWorkGroups);
-    int rayID = -1;
-    
-    for (int w=0;w<wcount;w+=wgs) {
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
-        int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
-        bool overflow = overflow || globalID >= wsize || globalID < 0;
+        int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+        bool overflow = globalID >= wsize || globalID < 0;
         int hitID = overflow ? -1 : vtMissId(globalID, stageUniform.currentGroup);
 
         IFALL(overflow) break;

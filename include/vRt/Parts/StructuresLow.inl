@@ -105,7 +105,7 @@ namespace vt {
         uint32_t primitiveCount = 0;
         uint32_t verticeAccessor = 0;
         uint32_t indiceAccessor = 0xFFFFFFFFu;
-        uint32_t materialID = 0;
+        uint32_t materialAccessor = 0xFFFFFFFFu;
 
         uint32_t primitiveOffset = 0;
         uint32_t attributeOffset = 0;
@@ -115,7 +115,7 @@ namespace vt {
             VtPrimitiveBitfield bitfieldDetail;
         };
 
-        uint32_t materialAccessor = 0xFFFFFFFFu;
+        uint32_t materialID = 0;
         uint32_t readOffset = 0;
         uint32_t reserved0 = 0, reserved1 = 0;
     };

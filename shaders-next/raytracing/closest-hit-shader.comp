@@ -72,8 +72,12 @@ layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
     int enable360, variant, r1, r2;
 } cameraUniform;
 
-void main() {
 
+#define wgs gl_NumWorkGroups.x
+#define wsize closestHitTypedCounterRead[stageUniform.currentGroup]
+
+
+void main() {
     // constants
     const float IOR = 1.400f;
     const float diffuse_min_importance = 0.5f;
@@ -82,12 +86,10 @@ void main() {
     const vec3 min_fresnel_color = toLinear(vec3(1.f));
 
 
-    const int wsize = int(closestHitTypedCounterRead[stageUniform.currentGroup]);
-    const int wcount = min(tiled(wsize, int(gl_WorkGroupSize.x)), 1000000);
-    const int wgs = int(gl_NumWorkGroups);
-    for (int w=0;w<wcount;w+=wgs) {
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
-        int globalID = (w + int(gl_WorkGroupID.x)) * int(gl_WorkGroupSize.x) + int(gl_LocalInvocationID.x);
+        int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         bool overflow = globalID >= wsize || globalID < 0;
         int hitID = overflow ? -1 : vtClosestId(globalID, stageUniform.currentGroup);
         IFALL(overflow) break;
