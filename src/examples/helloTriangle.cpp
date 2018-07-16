@@ -353,14 +353,14 @@ void main() {
 
     // create accelerator set
     VtAcceleratorSetCreateInfo acci;
-    acci.maxPrimitives = 1024;
+    acci.maxPrimitives = 1;
     acci.entryID = 0;
     vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
 
 
     // create vertex assembly
     VtVertexAssemblySetCreateInfo vtsi;
-    vtsi.maxPrimitives = 1024;
+    vtsi.maxPrimitives = 1;
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
 
@@ -379,9 +379,9 @@ void main() {
 
         // attribute binding with accessors
         std::vector<VtVertexAttributeBinding> attributes = {
-            { 0, 1 }, 
-            { 1, 2 }, 
-            { 2, 3 }, 
+            { 0, 1 },
+            { 1, 2 },
+            { 2, 3 },
             { 3, 4 },
             { 4, 5 },
         };
@@ -457,6 +457,7 @@ void main() {
         vtii.bBufferRegionBindings = VBufferRegions;
         vtii.bBufferViews = VBufferView;
         vtii.primitiveCount = 1;
+        vtii.primitiveOffset = 0;
         vtii.attributeCount = 5;
         vtii.materialID = 0;
         vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &vertexInput);

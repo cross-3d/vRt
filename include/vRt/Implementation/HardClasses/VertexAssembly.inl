@@ -37,11 +37,11 @@ namespace _vt {
             bfi.format = VK_FORMAT_UNDEFINED;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_materialBuffer);
 
-            bfi.bufferSize = maxPrimitives * sizeof(float) * 4ull;
+            bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBuffer);
 
-            bfi.bufferSize = maxPrimitives * sizeof(float) * 4ull; // restored due fatal issue
+            bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull; // restored due fatal issue
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBufferSide);
 
