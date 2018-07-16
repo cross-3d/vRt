@@ -27,7 +27,7 @@ void splitNode(inout int fID, inout int side) {
 
     // splitting nodes
     ivec4 _pdata = imageLoad(bvhMeta, prID)-1;
-    Flags[prID] = 0; // reset flag of refit
+    //Flags[prID] = 0; // reset flag of refit
 
     [[flatten]]
     if (_pdata.x >= 0 && _pdata.y >= 0) {
@@ -42,9 +42,6 @@ void splitNode(inout int fID, inout int side) {
             
             // resolve branch
             int hd = (split+1) << 1;
-            //int hd = (_pdata.x+1) << 1;
-            //int hd = lCounterInc();
-            //int hd = (_pdata.x << 1) >> 1; // just use offset index for
             imageStore(bvhMeta, prID, ivec4(hd.xx+ivec2(1,2), _pdata.zw+1));
             imageStore(bvhMeta, hd+0, ivec4(transplit.xy, prID, _pdata.w)+1);
             imageStore(bvhMeta, hd+1, ivec4(transplit.zw, prID, _pdata.w)+1);

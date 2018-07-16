@@ -38,27 +38,20 @@ void main() {
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, itri+2).xyzw))
         );
 
-#ifndef VTX_TRANSPLIT
-        {
-            imageStore(lvtx, itri+0, triverts[0]);
-            imageStore(lvtx, itri+1, triverts[1]);
-            imageStore(lvtx, itri+2, triverts[2]);
-        }
-#endif
-
         const vec4 bcenter = vec4((triverts[0] + triverts[1] + triverts[2]).xyz * 0.33333333333333f, -1.f);
         const bbox_t lbox = calcTriBox(triverts);
 
-#ifdef VTX_TRANSPLIT
         {
-            //const mat3x3 vtxL = transpose(mat3(TLOAD(lvtxIn, itri+0).xyz, TLOAD(lvtxIn, itri+1).xyz, TLOAD(lvtxIn, itri+2).xyz));
-            const mat4x3 vtxL = transpose(triverts);
-            imageStore(lvtx, itri+0, vec4(vtxL[0].xyz, 1.f)), imageStore(lvtx, itri+1, vec4(vtxL[1].xyz, 1.f)), imageStore(lvtx, itri+2, vec4(vtxL[2].xyz, 1.f));
-        }
+#ifdef VTX_TRANSPLIT
+            const mat4x3 triverts = transpose(triverts);
+            imageStore(lvtx, itri+0, vec4(triverts[0].xyz, 1.f)), imageStore(lvtx, itri+1, vec4(triverts[1].xyz, 1.f)), imageStore(lvtx, itri+2, vec4(triverts[2].xyz, 1.f));
+#else
+            imageStore(lvtx, itri+0, triverts[0]), imageStore(lvtx, itri+1, triverts[1]), imageStore(lvtx, itri+2, triverts[2]);
 #endif
+        }
 
         // gen morton code
-        const uvec2 mortonCode = encodeMorton(clamp(uvec4(floor(fma(bcenter.xyzw, 0.5f.xxxx, 0.5f.xxxx)*65535.f)), uvec4(0), uvec4(0xFFFF)));
+        const uvec2 mortonCode = encodeMorton(clamp(uvec4(floor(clamp(fma(bcenter.xyzw, 0.5f.xxxx, 0.5f.xxxx),0.f,1.f)*65535.f)), uvec4(0), uvec4(0xFFFF)));
 
 #define to globalID
 

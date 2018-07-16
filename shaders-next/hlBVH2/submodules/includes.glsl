@@ -2,11 +2,7 @@
 // Morton codes and geometry counters
 
 layout ( binding = 0, set = 0, std430 )  buffer MortoncodesB {
-//#ifdef PREFER_64BIT_MORTON_TYPE
-//    uint64_t Mortoncodes[];
-//#else
     uvec2 Mortoncodes[];
-//#endif
 };
 
 layout ( binding = 1, set = 0, std430 )  buffer MortoncodesIndicesB {
@@ -39,14 +35,13 @@ layout ( binding = 8, set = 0, std430 ) restrict buffer CountersB {
 };
 
 
-
-
 #ifdef USE_F32_BVH
-layout ( binding = 2, set = 1, std430 ) buffer bvhBoxesResultingB { vec4 bvhBoxesResulting[][4]; };
+#define BTYPE_ vec4
 #else
-layout ( binding = 2, set = 1, std430 ) buffer bvhBoxesResultingB { uvec2 bvhBoxesResulting[][4]; }; 
+#define BTYPE_ uvec2
 #endif
 
+layout ( binding = 2, set = 1, std430 ) buffer bvhBoxesResultingB { BTYPE_ bvhBoxesResulting[][4]; };
 layout ( binding = 3, set = 1, rgba32i ) uniform iimageBuffer bvhMeta;
 
 bbox_t calcTriBox(in mat3x4 triverts) {

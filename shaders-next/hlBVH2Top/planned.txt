@@ -1,1 +1,0 @@
-The TOP level builder of hlBVH2 
