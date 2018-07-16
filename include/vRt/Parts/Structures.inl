@@ -37,7 +37,6 @@ namespace vt { // store in official namespace
         VtInstance instance;
     };
 
-
     struct VtRayTracingSetCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_SET_CREATE_INFO;
         const void* pNext = nullptr;
@@ -68,8 +67,6 @@ namespace vt { // store in official namespace
         const VkPipelineLayoutCreateInfo * pGeneralPipelineLayout = nullptr;
         VkBool32 enableMaterialSet = true;
     };
-
-
 
     // use immutables in accelerator inputs
     // planned support of indirect const buffers
@@ -143,7 +140,6 @@ namespace vt { // store in official namespace
         uint32_t materialCount = 0;
     };
 
-
     // 
     struct VtVertexAssemblyPipelineCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_PIPELINE_CREATE_INFO;
@@ -154,7 +150,6 @@ namespace vt { // store in official namespace
         VkPipelineShaderStageCreateInfo vertexAssemblyModule;
     };
 
-
     // 
     struct VtVertexAssemblySetCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_SET_CREATE_INFO;
@@ -162,7 +157,6 @@ namespace vt { // store in official namespace
 
         size_t maxPrimitives = 1024u * 256u;
     };
-
 
     // 
     struct VtAcceleratorSetCreateInfo {
@@ -179,11 +173,8 @@ namespace vt { // store in official namespace
         //VtVertexAssemblySet vertexAssembly;
     };
 
-
-
     // custom (unified) object create info, exclusive for vRt ray tracing system, and based on classic Satellite objects
     // bound in device space
-
     struct VtDeviceBufferCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_BUFFER_CREATE_INFO;
         const void* pNext = nullptr;
@@ -206,6 +197,4 @@ namespace vt { // store in official namespace
         uint32_t mipLevels = 1;
         uint32_t familyIndex = 0;
     };
-
-
 };

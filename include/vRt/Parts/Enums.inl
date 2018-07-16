@@ -3,8 +3,7 @@
 #include "StructuresLow.inl"
 
 namespace vt { // store in official namespace
-
-    // for not confusing with Vulkan API
+    // for not confusing with Vulkan API enums
     // use 0x11E for VtResult
     // use 0x11F for VtStructureType
 
@@ -37,7 +36,6 @@ namespace vt { // store in official namespace
         VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_PIPELINE_CREATE_INFO = 0x11F00011,
         VT_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO = 0x11F00012
     } VtStructureType;
-
 
     // retype VtFormatDecomp
     using VtFormat = VtFormatDecomp;
@@ -76,5 +74,4 @@ namespace vt { // store in official namespace
         VT_VENDOR_NVIDIA,
         VT_VENDOR_INTEL
     } VtVendor;
-
 };

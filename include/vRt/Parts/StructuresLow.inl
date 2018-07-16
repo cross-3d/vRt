@@ -1,12 +1,8 @@
 #pragma once
 #include "Headers.inl"
-//#include "HardClassesDef.inl"
-//#include "HandlersDef.inl"
-//#include "Enums.inl"
 
-namespace vt { // store in official namespace
-
-
+// store in official namespace
+namespace vt {
 
     // any other vertex bindings can be used by attributes
     struct VtVertexRegionBinding {
@@ -33,10 +29,7 @@ namespace vt { // store in official namespace
     struct VtVec3 { float x, y, z; };
     struct VtVec2 { float x, y; };
     struct VtUVec2 { uint32_t x, y; };
-
-
     struct VtMat4 { VtVec4 m0, m1, m2, m3; };
-
 
     // in future planned custom ray structures support
     // in current moment we will using 32-byte standard structuring
@@ -47,8 +40,6 @@ namespace vt { // store in official namespace
         uint32_t _indice; // reserved for indice in another ray system
         uint16_t hf_r, hf_g, hf_b, bitfield;
     };
-
-
 
     struct VtVirtualCombinedImage {
         union {
@@ -73,15 +64,6 @@ namespace vt { // store in official namespace
         operator uint64_t() const { return _combined; };
         operator uint64_t&() { return _combined; };
     };
-
-    /*
-    struct VtVertexDataBufferBinding {
-        uint32_t binding = 0;
-        VkBuffer pBuffer = nullptr;
-        VkDeviceSize offset = 0;
-    };
-    */
-
 
     typedef enum VtType : uint32_t {
         VT_TYPE_FLOAT = 0,
@@ -117,7 +99,6 @@ namespace vt { // store in official namespace
         uint32_t reserved = 0;
     };
 
-
     struct VtPrimitiveBitfield { uint32_t hitGroup : 2, frontFace : 1, backFace : 1; };
 
     struct VtUniformBlock {
@@ -151,6 +132,4 @@ namespace vt { // store in official namespace
         VtMat4 projectionInv;
         int leafCount = 0, primitiveCount = 0, entryID = 0, primitiveOffset = 0;
     };
-
-
 };

@@ -5,14 +5,12 @@
 namespace _vt {
     using namespace vt;
 
-
     // destructor of DeviceImage
     inline DeviceImage::~DeviceImage() {
         std::async(std::launch::async | std::launch::deferred, [=]() {
             vmaDestroyImage(_device->_allocator, _image, _allocation);
         });
     };
-
 
     inline VtResult createDeviceImage(std::shared_ptr<Device> device, const VtDeviceImageCreateInfo& cinfo, std::shared_ptr<DeviceImage>& _vtImage) {
         // result will no fully handled

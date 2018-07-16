@@ -45,8 +45,6 @@ namespace vt { // store in official namespace
         auto* operator->() { return _vtPipelineLayout.get(); };
     };
 
-
-
     struct VtVertexInputSet {
         std::shared_ptr<_vt::VertexInputSet> _vtVertexInputSet;
         operator std::shared_ptr<_vt::VertexInputSet>() const { return _vtVertexInputSet; };
@@ -58,7 +56,6 @@ namespace vt { // store in official namespace
         //VtUniformBlock& uniform() { return _vtVertexInputSet->uniform(); };
         //VtUniformBlock uniform() const { return _vtVertexInputSet->uniform(); };
     };
-
 
     // ray tracing state set 
     struct VtRayTracingSet {
@@ -78,8 +75,6 @@ namespace vt { // store in official namespace
         auto* operator->() { return _vtPipeline.get(); };
     };
 
-
-
     // accelerator structure state set
     struct VtAcceleratorSet {
         std::shared_ptr<_vt::AcceleratorSet> _vtAcceleratorSet;
@@ -98,7 +93,6 @@ namespace vt { // store in official namespace
         auto* operator->() { return _vtAccelerator.get(); };
     };
 
-
     // vertex input state set
     struct VtVertexAssemblySet {
         std::shared_ptr<_vt::VertexAssemblySet> _vtVertexAssemblySet;
@@ -116,7 +110,6 @@ namespace vt { // store in official namespace
         operator bool() const { return !!_vtVertexAssembly; };
         auto* operator->() { return _vtVertexAssembly.get(); };
     };
-
 
     struct VtMaterialSet {
         std::shared_ptr<_vt::MaterialSet> _vtMaterialSet;
@@ -150,8 +143,6 @@ namespace vt { // store in official namespace
         auto* operator->() { return _vtDeviceImage.get(); };
     };
 
-
-
     struct VtDevice {
         std::shared_ptr<_vt::Device> _vtDevice;
         operator std::shared_ptr<_vt::Device>() const { return _vtDevice; };
@@ -173,5 +164,4 @@ namespace vt { // store in official namespace
             return _vtDevice->_descriptorLayoutMap[std::string(name)];
         };
     };
-
 };

@@ -176,8 +176,6 @@ namespace _vt {
             };
         }
 
-
         return result;
     }
-
 };

@@ -21,18 +21,10 @@ namespace _vt {
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
-                /*
-                bfi.bufferSize = info.imageSamplerCount * sizeof(uint64_t);
-                bfi.format = VK_FORMAT_UNDEFINED;
-                createDeviceBuffer(_vtDevice, bfi, vtMaterialSet->_virtualSamplerCombinedBuffer);
-                */
-
                 bfi.bufferSize = 8ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createDeviceBuffer(_vtDevice, bfi, vtMaterialSet->_constBuffer);
             };
-
-
 
             { // planned to add support of default element in not enough 
                 std::vector<vk::DescriptorSetLayout> dsLayouts = {
@@ -41,12 +33,7 @@ namespace _vt {
                 auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtMaterialSet->_descriptorSet = dsc[0];
 
-
-                std::vector<vk::DescriptorImageInfo> _samplers = {};
-                std::vector<vk::DescriptorImageInfo> _images = {};
-                
-
-
+                std::vector<vk::DescriptorImageInfo> _samplers = {}, _images = {};
                 const auto samplerCount = std::min(info.samplerCount, 16u), imageCount = std::min(info.imageCount, 64u);
 
                 // fill as many as possible
@@ -70,8 +57,6 @@ namespace _vt {
             };
         }
 
-
         return result;
     }
-
 };

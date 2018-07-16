@@ -49,9 +49,6 @@ namespace _vt {
     inline size_t strided(size_t sizeo) { return sizeof(T) * sizeo; }
 
 
-
-
-
     // read binary (for SPIR-V)
     inline auto readBinary(std::string filePath) {
         std::ifstream file(filePath, std::ios::in | std::ios::binary | std::ios::ate);
@@ -88,28 +85,6 @@ namespace _vt {
     };
 
 
-
-    /*
-    // general command buffer barrier
-    inline void commandBarrierAll(const VkCommandBuffer& cmdBuffer) {
-        VkMemoryBarrier memoryBarrier;
-        memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-        memoryBarrier.pNext = nullptr;
-        memoryBarrier.srcAccessMask = VK_ACCESS_FLAG_BITS_MAX_ENUM;
-        memoryBarrier.dstAccessMask = VK_ACCESS_FLAG_BITS_MAX_ENUM;
-
-        vkCmdPipelineBarrier(
-            cmdBuffer,
-            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-            VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-            {}, //VK_DEPENDENCY_BY_REGION_BIT,
-            1, &memoryBarrier,
-            0, nullptr,
-            0, nullptr);
-    };*/
-
-
-
     // general command buffer barrier
     inline void commandBarrier(const VkCommandBuffer& cmdBuffer) {
         VkMemoryBarrier memoryBarrier;
@@ -127,7 +102,6 @@ namespace _vt {
             0, nullptr,
             0, nullptr);
     };
-
 
     // from host command buffer barrier
     inline void fromHostCommandBarrier(const VkCommandBuffer& cmdBuffer) {
@@ -147,7 +121,6 @@ namespace _vt {
             0, nullptr);
     };
 
-
     // to host command buffer barrier
     inline void toHostCommandBarrier(const VkCommandBuffer& cmdBuffer) {
         VkMemoryBarrier memoryBarrier;
@@ -166,12 +139,9 @@ namespace _vt {
             0, nullptr);
     };
 
-
     inline void updateCommandBarrier(const VkCommandBuffer& cmdBuffer) {
         commandBarrier(cmdBuffer);
     };
-
-
 
     // create secondary command buffers for batching compute invocations
     inline auto createCommandBuffer(const VkDevice device, const VkCommandPool cmdPool, bool secondary = true, bool once = true) {
@@ -286,8 +256,6 @@ namespace _vt {
         return pipeline;
     }
 
-
-
     // add dispatch in command buffer (with default pipeline barrier)
     inline VkResult cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1, bool barrier = true) {
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
@@ -327,9 +295,6 @@ namespace _vt {
         return vk::DescriptorBufferInfo(buffer, offset, size);
     }
 
-
-
-
     // submit command (with async wait)
     inline void submitCmd(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, vk::SubmitInfo smbi = {}) {
         // no commands 
@@ -351,7 +316,6 @@ namespace _vt {
         submitCmd(device, queue, { cmdBuf });
         vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer
     };
-
 
     // submit command (with async wait)
     inline void submitCmdAsync(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, std::function<void()> asyncCallback = {}, vk::SubmitInfo smbi = {}) {
@@ -382,16 +346,11 @@ namespace _vt {
         });
     };
 
-
-
-
     template <class T>
     inline auto makeVector(const T*ptr, size_t size = 1) {
         std::vector<T>v(size); memcpy(v.data(), ptr, strided<T>(size));
         return v;
     }
-
-
 
     // create fence function
     inline vk::Fence createFence(VkDevice device, bool signaled = true) {
@@ -400,6 +359,34 @@ namespace _vt {
         return vk::Device(device).createFence(info);
     }
 
+    // List of all possible required extensions
+    // Raytracing itself should support extension filtering and NVidia GPU alongside of RX Vega
+    // Can work in single GPU systems (AMD or NVidia)
+    inline static std::vector<const char *> raytracingRequiredExtensions = {
+        "VK_AMD_gpu_shader_int16",
+        "VK_AMD_gpu_shader_half_float",
+        "VK_AMD_buffer_marker",
+        "VK_AMD_shader_info",
+        "VK_AMD_shader_ballot",
+        "VK_AMD_texture_gather_bias_lod",
+        "VK_AMD_shader_image_load_store_lod",
+        "VK_AMD_gcn_shader",
+        "VK_AMD_shader_trinary_minmax",
+        "VK_KHR_8bit_storage",
+        "VK_KHR_16bit_storage",
+        "VK_KHR_descriptor_update_template",
+        "VK_KHR_push_descriptor",
+        "VK_KHR_image_format_list",
+        "VK_KHR_sampler_mirror_clamp_to_edge",
+        "VK_KHR_storage_buffer_storage_class",
+        "VK_KHR_variable_pointers",
+        "VK_KHR_relaxed_block_layout",
+        "VK_KHR_get_memory_requirements2",
+        "VK_KHR_get_physical_device_properties2",
+        "VK_KHR_get_surface_capabilities2",
+        "VK_KHR_bind_memory2",
+        "VK_KHR_maintenance1",
+        "VK_KHR_maintenance2",
+        "VK_KHR_maintenance3"
+    };
 };
-
-

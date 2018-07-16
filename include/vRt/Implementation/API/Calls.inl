@@ -80,7 +80,6 @@ namespace vt {
         return cmdVertexAssemblyBarrier(commandBuffer, vertexAssembly);
     };
 
-
     inline VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, uint32_t inputSet, bool multiple, bool useInstance, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb) {
         return updateVertexSet(commandBuffer, inputSet, multiple, useInstance, cb);
     };
@@ -92,7 +91,6 @@ namespace vt {
     inline VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer /*,  */) {
         return buildAccelerator(commandBuffer);
     };
-
 
     inline VtResult vtCmdBindVertexInputSets(VtCommandBuffer commandBuffer, uint32_t setCount, const VtVertexInputSet * sets) {
         std::vector<std::shared_ptr<VertexInputSet>> inputSets;
@@ -121,9 +119,6 @@ namespace vt {
         return VK_SUCCESS;
     };
 
-
-
-
     inline VtResult vtConvertPhysicalDevice(VtInstance vtInstance, VkPhysicalDevice vkPhysicalDevice, VtPhysicalDevice * vtPhysicalDevice) {
         return convertPhysicalDevice(vtInstance, vkPhysicalDevice, *vtPhysicalDevice);
     };
@@ -132,21 +127,16 @@ namespace vt {
         return convertInstance(vkInstance, *cinfo, *vtInstance);
     };
 
-
     // radix sort API
     inline VtResult vtRadixSort(VtCommandBuffer commandBuffer, VkDescriptorSet radixInput, uint32_t primCount) {
         return radixSort(commandBuffer, radixInput, primCount);
     };
-
 
     // create device image and buffers
     inline VtResult vtCreateDeviceImage(VtDevice device, const VtDeviceImageCreateInfo * info, VtDeviceImage * image) { return createDeviceImage(device, *info, *image); };
     inline VtResult vtCreateDeviceBuffer(VtDevice device, const VtDeviceBufferCreateInfo * info, VtDeviceBuffer * buffer) { return createDeviceBuffer(device, *info, *buffer); };
     inline VtResult vtCreateHostToDeviceBuffer(VtDevice device, const VtDeviceBufferCreateInfo * info, VtHostToDeviceBuffer * buffer) { return createHostToDeviceBuffer(device, *info, *buffer); };
     inline VtResult vtCreateDeviceToHostBuffer(VtDevice device, const VtDeviceBufferCreateInfo * info, VtDeviceToHostBuffer * buffer) { return createDeviceToHostBuffer(device, *info, *buffer); };
-
-
-
 
     // between buffers
     inline VtResult vtCmdCopyDeviceBuffer(VkCommandBuffer commandBuffer, VtDeviceBuffer srcBuffer, VtDeviceBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy* pRegions) {
@@ -182,6 +172,17 @@ namespace vt {
     inline VtResult vtCmdCopyDeviceImage(VkCommandBuffer commandBuffer, VtDeviceImage srcImage, VtDeviceImage dstImage, uint32_t regionCount, const VkImageCopy* pRegions) {
         cmdCopyDeviceImage(commandBuffer, srcImage, dstImage, makeVector<vk::ImageCopy>((const vk::ImageCopy *)pRegions, regionCount)); return VK_SUCCESS;
     };
+
+    // get all possible required extensions
+    inline VtResult vtGetRequiredExtensions(VkDevice vkDevice, uint32_t* extCount, const char ** extensionNames) {
+        if (extensionNames) {
+            memcpy(extensionNames, raytracingRequiredExtensions.data(), raytracingRequiredExtensions.size());
+        }
+        if (extCount) {
+            *extCount = raytracingRequiredExtensions.size();
+        }
+        return VK_SUCCESS;
+    }
 
 
     /*

@@ -10,11 +10,6 @@ namespace _vt {
         auto& vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
         vtAccelerator->_device = _vtDevice;
         const auto& vendorName = _vtDevice->_vendorName;
-        //VtVendor vendorName = VtVendor(_vtDevice->_vendorName);
-
-        // planned import from descriptor
-        //constexpr auto maxPrimitives = 1024u * 1024u;
-        //const auto& maxPrimitives = info.maxPrimitives;
 
         // build BVH builder program
         {
@@ -49,7 +44,6 @@ namespace _vt {
             };
 
 
-
             // create pipelines (planned to unify between accelerator instances)
             {
                 vtAccelerator->_shorthandPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::shorthand[vendorName], vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
@@ -64,14 +58,8 @@ namespace _vt {
             };
         };
 
-
-
-
         return result;
     };
-
-
-
 
     inline VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
         VtResult result = VK_SUCCESS;
@@ -239,6 +227,4 @@ namespace _vt {
 
         return result;
     };
-
-
 };

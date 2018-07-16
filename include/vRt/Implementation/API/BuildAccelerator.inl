@@ -6,8 +6,6 @@
 namespace _vt {
     using namespace vt;
 
-
-
     VtResult bindDescriptorSetsPerVertexInput(std::shared_ptr<CommandBuffer>& cmdBuf, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t vertexInputID = 0, uint32_t firstSet = 0, const std::vector<VkDescriptorSet>& descriptorSets = {}, const std::vector<VkDescriptorSet>& dynamicOffsets = {}) {
         VtResult result = VK_SUCCESS;
         if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY) {
@@ -44,9 +42,6 @@ namespace _vt {
         imageBarrier(cmdBuf, vasSet->_attributeTexelBuffer);
         return result;
     }
-
-
-
 
     VtResult cmdBarrierAggregated(std::shared_ptr<CommandBuffer>& cmdBuf) {
         auto device = cmdBuf->_parent();
@@ -232,5 +227,4 @@ namespace _vt {
 
         return result;
     }
-
 };

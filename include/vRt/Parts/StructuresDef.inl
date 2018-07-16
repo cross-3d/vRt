@@ -1,8 +1,6 @@
 #pragma once
 #include "Headers.inl"
 #include "StructuresLow.inl"
-//#include "HandlersDef.inl"
-//#include "Enums.inl"
 
 namespace vt { // store in official namespace
 
@@ -20,11 +18,8 @@ namespace vt { // store in official namespace
     struct VtMaterialSetCreateInfo;
     struct VtAcceleratorSetCreateInfo;
 
-
     // custom (unified) object create info, exclusive for vRt ray tracing system, and based on classic Satellite objects
     // bound in device space
-
     struct VtDeviceBufferCreateInfo;
     struct VtDeviceImageCreateInfo;
-
 };

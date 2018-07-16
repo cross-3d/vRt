@@ -2,8 +2,8 @@
 #include "Headers.inl"
 #include "HardClassesDef.inl"
 
-namespace vt { // store in official namespace
-
+// store in official namespace
+namespace vt {
     struct VtInstance;
     struct VtPhysicalDevice;
     struct VtDevice;
@@ -26,5 +26,4 @@ namespace vt { // store in official namespace
     using VtDeviceBuffer = VtRoledBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
     using VtHostToDeviceBuffer = VtRoledBuffer<VMA_MEMORY_USAGE_CPU_TO_GPU>;
     using VtDeviceToHostBuffer = VtRoledBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
-
 };
