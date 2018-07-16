@@ -2,19 +2,19 @@
 #define _MORTON_H
 
 uvec2 splitBy4(in highp uint a){
-    uvec2 r = 0u.xx;
-    [[unroll]]
-    for (int i=0;i<8;i++) {
-        r |= uvec2(bitfieldExtract(a, i, 1) << (i<<2), bitfieldExtract(a, i+8, 1) << (i<<2));
-    }
-    return r;
+    //uvec2 r = 0u.xx;
+    //[[unroll]]
+    //for (int i=0;i<8;i++) {
+    //    r |= uvec2(bitfieldExtract(a, i, 1) << (i<<2), bitfieldExtract(a, i+8, 1) << (i<<2));
+    //}
+    //return r;
 
     // unable to use this version
-    //uvec2 r = uvec2(bitfieldExtract(a, 0, 8), bitfieldExtract(a, 8, 8));
-    //r = (r | (r <<  8u.xx)) & 0x000F000Fu.xx;
-    //r = (r | (r <<  4u.xx)) & 0x03030303u.xx;
-    //r = (r | (r <<  2u.xx)) & 0x11111111u.xx;
-    //return r;
+    uvec2 r = uvec2(bitfieldExtract(a, 0, 8), bitfieldExtract(a, 8, 8));
+    r = (r | (r << 12u.xx)) & 0x000F000Fu.xx;
+    r = (r | (r << 6u.xx)) & 0x03030303u.xx;
+    r = (r | (r << 3u.xx)) & 0x11111111u.xx;
+    return r;
 }
 
 // consist of 4 uint16 as uint32 format
