@@ -1,10 +1,6 @@
 int cdelta( inout int a, inout int b ){
     uvec2 acode = Mortoncodes[a], bcode = Mortoncodes[b];
-#if defined(INTEL_PLATFORM)
     int pfx = 32 + nlz(acode^bcode);
-#else
-    int pfx = nlz(acode^bcode);
-#endif
     return pfx + (pfx < 64 ? 0 : nlz(a^b));
 }
 
