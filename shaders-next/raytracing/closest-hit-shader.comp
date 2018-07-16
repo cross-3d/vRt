@@ -85,8 +85,8 @@ void main() {
     const vec3 max_fresnel_color = toLinear(vec3(1.f));
     const vec3 min_fresnel_color = toLinear(vec3(1.f));
 
-
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    [[unroll, dependency_length(4)]]
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);

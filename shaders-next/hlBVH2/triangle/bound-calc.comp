@@ -77,7 +77,7 @@ void main() {
 
     // shared reduction
     [[unroll]]
-    for (int ki=(int(gl_WorkGroupSize.x)>>1);ki>=int(Wave_Size_RT);ki>>=1) {
+    for (uint ki=(gl_WorkGroupSize.x>>1u);ki>=Wave_Size_RT;ki>>=1) {
         if (tid < ki) { 
             bbox_t bound = sdata[tid], opbound = sdata[tid + ki]; 
             bound = bbox_tunion(bound, opbound); 

@@ -14,16 +14,14 @@
 
 LOCAL_SIZE_LAYOUT;
 
+#define wsize bvhBlock.leafCount
+
 void main() {
-    const int wsize = bvhBlock.leafCount;
-    const int gS = int(gl_WorkGroupSize.x);
-    const int wgs = int(gl_NumWorkGroups.x);
-    const int wID = int(gl_WorkGroupID.x);
-    const int lID = int(Local_Idx);
-    const int rng = gS*wgs;
-    for (int w=0;w<wsize;w+=rng) {
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    [[unroll, dependency_length(4)]]
+    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         SB_BARRIER
-        const int globalID = w + (wID * gS + lID);
+        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
         IFALL (globalID >= wsize) break;
 
         // get leaf data
@@ -45,6 +43,5 @@ void main() {
             bvhBoxesWork[lidx][1] = rbox.mx;
         }
     }
-
     LGROUP_BARRIER
 }

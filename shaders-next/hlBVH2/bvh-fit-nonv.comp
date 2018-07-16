@@ -67,6 +67,7 @@ void main() {
 
     // move to work list
     const uint wsize = tiled(uint(bvhBlock.leafCount), gl_NumWorkGroups.x);
+    [[unroll, dependency_length(4)]]
     for (uint w=0;w<wsize;w+=rng) {
         SB_BARRIER
         const uint globalID = wID(w + lID);
@@ -88,6 +89,7 @@ void main() {
         IFALL (asize <= 0) break;
 
         // unify boxes when possible
+        [[unroll, dependency_length(4)]]
         for (uint w=0;w<asize;w+=rng) {
             SB_BARRIER
             

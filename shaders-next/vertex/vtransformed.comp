@@ -29,6 +29,8 @@ layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { Transfo
 
 void main(){
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+
+    [[unroll, dependency_length(4)]]
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         SB_BARRIER
         const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;

@@ -12,15 +12,14 @@ void main() {
     Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
 
     // constants
-    uint wsize = uint(push_block.NumKeys);
-    uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
-    bool overflow = false;
-    
-    uint wgs = gl_NumWorkGroups.x;
+    const uint wsize = uint(push_block.NumKeys);
+    const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
+    const uint wgs = gl_NumWorkGroups.x;
+    [[unroll, dependency_length(4)]]
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + Local_Idx;
-        bool overflow = overflow || globalID >= wsize || globalID < 0;
+        bool overflow = globalID >= wsize || globalID < 0;
         if (!overflow) { KeyIn[globalID] = KeyTmp[globalID], ValueIn[globalID] = ValueTmp[globalID]; }
     }
 

@@ -93,6 +93,7 @@ void main() {
         IFALL (osize <= 0) { break; } // remove count limiter
 
         // split nodes
+        [[unroll, dependency_length(4)]]
         for (uint fT=0;fT<osize;fT+=gS) {
             // subgroup barrier
             SB_BARRIER

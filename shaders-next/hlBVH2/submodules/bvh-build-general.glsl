@@ -16,6 +16,7 @@ int findSplit( inout int left, inout int right ) {
         split = (split + nsplit)>>1;
     } else 
     { //fast search SAH split
+        [[dependency_infinite]]
         do {
             nstep = (nstep + 1) >> 1, nsplit = split + nstep;
             if (cdelta(split, nsplit) > commonPrefix) { split = nsplit; }

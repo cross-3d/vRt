@@ -49,6 +49,7 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 void main() {
     // move to work list
     const uint rng = gS*gl_NumWorkGroups.x;
+    [[unroll, dependency_length(4)]]
     for (uint w=gS*gl_WorkGroupID.x;w<wsize;w+=rng) {
         SB_BARRIER
         const uint globalID = (w + lID);
