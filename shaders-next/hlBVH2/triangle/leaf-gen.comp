@@ -46,7 +46,7 @@ void main() {
         }
 #endif
 
-        const vec4 bcenter = (triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f;
+        const vec4 bcenter = vec4((triverts[0] + triverts[1] + triverts[2]).xyz * 0.33333333333333f, -1.f);
         const bbox_t lbox = calcTriBox(triverts);
 
 #ifdef VTX_TRANSPLIT
@@ -58,17 +58,7 @@ void main() {
 #endif
 
         // gen morton code
-#ifdef INTEL_PLATFORM
-        const uvec2 mortonCode = 
-#else
-        const uint64_t mortonCode = 
-#endif
-
-#if defined(INTEL_PLATFORM)
-        encodeMorton3_64(clamp(uvec3(floor(fma(bcenter.xyz, 0.5f.xxx, 0.5f.xxx)*1024.0f)), uvec3(0), uvec3(0x3FF)));
-#else
-        encodeMorton3_64(clamp(uvec3(floor(fma(bcenter.xyz, 0.5f.xxx, 0.5f.xxx)*2097152.0f)), uvec3(0), uvec3(0x1FFFFF)));
-#endif
+        const uvec2 mortonCode = encodeMorton3_64(clamp(uvec4(floor(fma(bcenter.xyzw, 0.5f.xxxx, 0.5f.xxxx)*65535.f)), uvec4(0), uvec4(0xFFFF)));
 
 #define to globalID
 
