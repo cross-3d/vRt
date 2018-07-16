@@ -123,6 +123,24 @@ vec4 fakeGather(in usampler2D smpler, in vec2 texcoord, const int channel){
 
 //#define SGATHER(smp, crd, chnl) textureGather(smp,crd,chnl)
 
+#ifdef ENABLE_AMD_INSTRUCTION_SET
+#define mid3_wrap(a,b,c) mid3(a,b,c)
+#else
+float mid3_wrap(in float a, in float b, in float c){
+    const float m = max3_wrap(a, b, c);
+    if (m == a) { return max(b, c); } else if (m == b) { return max(a, c); } else { return max(a, b); }
+}
+
+vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c){
+    return vec4(
+        mid3_wrap(a.x,b.x,c.x),
+        mid3_wrap(a.y,b.y,c.y),
+        mid3_wrap(a.z,b.z,c.z),
+        mid3_wrap(a.w,b.w,c.w)
+    );
+}
+#endif
+
 
 #define bvec4_ uvec4
 #define bvec3_ uvec3
