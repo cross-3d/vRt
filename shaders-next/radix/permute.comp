@@ -35,6 +35,7 @@ void main() {
     uint bcount = min(tiled(blocks.count, 2u), 524288u);
     WPTR2 addr = WPTR(blocks.offset).xx + WPTR2(Lane_Idx, Wave_Size_RT + Lane_Idx);
 
+    [[unroll, dependency_length(4)]]
     for ( uint wk = 0; wk < bcount; wk++ ) {
         bvec2_wave validAddress = lessThan(addr, blocks.limit.xx);
         IFALL(all(not(validAddress))) break;
@@ -50,6 +51,7 @@ void main() {
         LGROUP_BARRIER
 
         // WARP-optimized histogram calculation
+        [[unroll]]
         for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
             uvec_wave radice = uvec_wave(rk + Radice_Idx);
             bvec2 owned = and(equal(up2x(key), radice.xx), validAddress);

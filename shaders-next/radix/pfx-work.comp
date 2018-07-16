@@ -24,6 +24,7 @@ void main() {
 
         // calculate local prefix-sum in each work of each radice
         uint awHistogram = 0; // sum of work-group histograms (globalized histograms)
+        [[unroll]]
         for (uint wk=0;wk<WG_COUNT;wk++) {
             uint widx = Local_Idx + RADICES * wk;
             if (Local_Idx < RADICES) PrefixSum[widx] = add(awHistogram, Histogram[widx]);
@@ -61,6 +62,7 @@ void main() {
         }
         
         // add work-group prefix-sum of radice to in-group prefix-sum
+        [[unroll]]
         for (uint wk=0;wk<WG_COUNT;wk++) {
             if (Local_Idx < RADICES) PrefixSum[Local_Idx + RADICES * wk] += rdcAwPrefixOffset;
         }
