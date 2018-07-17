@@ -30,11 +30,7 @@ uvec2 encodeMorton(in uvec2 a) {
 #ifdef ENABLE_AMD_INT16
     return encodeMorton(uvec4(unpackUint2x16(a.x), unpackUint2x16(a.y))); // fast packing of RX Vega
 #else
-    return 
-        (splitBy4(bitfieldExtract(a.x, 0 , 16)) << 0u) | 
-        (splitBy4(bitfieldExtract(a.x, 16, 16)) << 1u) | 
-        (splitBy4(bitfieldExtract(a.y, 0 , 16)) << 2u) | 
-        (splitBy4(bitfieldExtract(a.y, 16, 16)) << 3u); // fallback method
+    return encodeMorton(uvec4(bitfieldExtract(a.x, 0, 16), bitfieldExtract(a.x, 16, 16), bitfieldExtract(a.y, 0, 16), bitfieldExtract(a.y, 16, 16))); // fallback method
 #endif
 }
 
