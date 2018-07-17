@@ -9,11 +9,10 @@ uvec2 splitBy4(in highp uint a){
     //}
     //return r;
 
-    // unable to use this version
-    uvec2 r = uvec2(bitfieldExtract(a, 0, 8), bitfieldExtract(a, 8, 8));
-    r = (r | (r << 12u.xx)) & 0x000F000Fu.xx;
-    r = (r | (r << 6u.xx)) & 0x03030303u.xx;
-    r = (r | (r << 3u.xx)) & 0x11111111u.xx;
+    uvec2 r = uvec2(bitfieldExtract(a, 0, 8), bitfieldExtract(a, 8, 8)); // ---- ----  ---- ----  ---- ---- fedc ba98   ---- ----  ---- ----  ---- ---- 7654 3210
+    r = (r | (r << 12u.xx)) & 0x000F000Fu.xx;                            // ---- ----  ---- fedc  ---- ---- ---- ba98   ---- ----  ---- 7654  ---- ---- ---- 3210
+    r = (r | (r <<  6u.xx)) & 0x03030303u.xx;                            // ---- --fe  ---- --dc  ---- --ba ---- --98   ---- --76  ---- --54  ---- --32 ---- --10
+    r = (r | (r <<  3u.xx)) & 0x11111111u.xx;                            // ---f ---e  ---d ---c  ---b ---a ---9 ---8   ---7 ---6  ---5 ---4  ---3 ---2 ---1 ---0
     return r;
 }
 
