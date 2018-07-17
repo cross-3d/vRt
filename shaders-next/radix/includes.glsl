@@ -49,6 +49,7 @@ uint Wave_Idx = 0;
 // pointer of...
 #define WPTR uint
 #define WPTR2 uvec2
+#define KEYTYPE uvec2
 
 #define READ_LANE(V, I) (uint(I >= 0 && I < Wave_Size_RT) * readLane(V, I))
 
@@ -63,18 +64,25 @@ uint BFE(in uvec2 ua, in uint o, in uint n) {
     return uint(o >= 32u ? BFE_HW(ua.x, int(o-32u), int(n)) : BFE_HW(ua.y, int(o), int(n)));
 }
 
-
 struct RadicePropStruct { uint Descending; uint IsSigned; };
 
-#define KEYTYPE uvec2
+#ifdef COPY_HACK_IDENTIFY
+#define INDIR 0
+#define OUTDIR 1
+#else
+#define INDIR 1
+#define OUTDIR 0
+#endif
+
 //#define KEYTYPE uvec_wave
-layout (std430, binding = 0, set = 1 )  buffer KeyInB {KEYTYPE KeyIn[]; };
-layout (std430, binding = 1, set = 1 )  buffer ValueInB {uint ValueIn[]; };
+layout (std430, binding = 0, set = INDIR )  readonly coherent buffer KeyInB {KEYTYPE KeyIn[]; };
+layout (std430, binding = 1, set = INDIR )  readonly coherent buffer ValueInB {uint ValueIn[]; };
+
+layout (std430, binding = 0, set = OUTDIR )  coherent buffer KeyTmpB {KEYTYPE KeyTmp[]; };
+layout (std430, binding = 1, set = OUTDIR )  coherent buffer ValueTmpB {uint ValueTmp[]; };
 layout (std430, binding = 2, set = 0 )  readonly buffer VarsB { RadicePropStruct radProps[]; };
-layout (std430, binding = 3, set = 0 )  buffer KeyTmpB {KEYTYPE KeyTmp[]; };
-layout (std430, binding = 4, set = 0 )  buffer ValueTmpB {uint ValueTmp[]; };
-layout (std430, binding = 5, set = 0 )  buffer HistogramB {uint Histogram[]; };
-layout (std430, binding = 6, set = 0 )  buffer PrefixSumB {uint PrefixSum[]; };
+layout (std430, binding = 3, set = 0 )  restrict buffer HistogramB {uint Histogram[]; };
+layout (std430, binding = 4, set = 0 )  restrict buffer PrefixSumB {uint PrefixSum[]; };
 
 // push constant in radix sort
 layout(push_constant) uniform PushBlock {uint NumKeys, Shift;} push_block;

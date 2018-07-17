@@ -21,7 +21,7 @@ int findSplit( inout int left, inout int right ) {
     return clamp(split, left, right-1);
 }
 
-void splitNode(inout int fID, inout int side) {
+void splitNode(in int fID, in int side) {
     // select elements, include sibling
     int prID = fID + side;
 
@@ -45,7 +45,7 @@ void splitNode(inout int fID, inout int side) {
             imageStore(bvhMeta, prID, ivec4(hd.xx+ivec2(1,2), _pdata.zw+1));
             imageStore(bvhMeta, hd+0, ivec4(transplit.xy, prID, _pdata.w)+1);
             imageStore(bvhMeta, hd+1, ivec4(transplit.zw, prID, _pdata.w)+1);
-            Actives[wID(aCounterInc())][cBuffer] = hd+1;
+            Actives[swapOut+wID(aCounterInc())] = hd+1;
         } else 
         { LeafIndices[cCounterInc()] = prID+1; }
     }

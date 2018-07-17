@@ -1,31 +1,32 @@
 
 // Morton codes and geometry counters
 
-layout ( binding = 0, set = 0, std430 )  buffer MortoncodesB {
+layout ( binding = 0, set = 0, std430 ) coherent buffer MortoncodesB {
     uvec2 Mortoncodes[];
 };
 
-layout ( binding = 1, set = 0, std430 )  buffer MortoncodesIndicesB {
+layout ( binding = 1, set = 0, std430 ) coherent buffer MortoncodesIndicesB {
     int MortoncodesIndices[];
 };
 
-layout ( binding = 3, set = 0, std430 )  buffer LeafsB {
+layout ( binding = 3, set = 0, std430 ) coherent buffer LeafsB {
     leaf_t Leafs[];
 };
 
-layout ( binding = 4, set = 0, std430 )  buffer bvhBoxesWorkB { 
+layout ( binding = 4, set = 0, std430 ) restrict buffer bvhBoxesWorkB { 
     vec4 bvhBoxesWork[][2];
 };
 
-layout ( binding = 5, set = 0, std430 )  buffer FlagsB {
+layout ( binding = 5, set = 0, std430 ) restrict buffer FlagsB {
     int Flags[];
 };
 
-layout ( binding = 6, set = 0, std430 )  buffer ActivesB {
-    int Actives[][2];
+layout ( binding = 6, set = 0, std430 ) coherent buffer ActivesB {
+    //int Actives[][2];
+    int Actives[];
 };
 
-layout ( binding = 7, set = 0, std430 )  buffer LeafIndicesB {
+layout ( binding = 7, set = 0, std430 ) coherent buffer LeafIndicesB {
     int LeafIndices[];
 };
 

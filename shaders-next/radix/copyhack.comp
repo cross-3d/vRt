@@ -1,6 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+#define COPY_HACK_IDENTIFY // buffer names was swapped
 #include "./includes.glsl"
 
 LOCAL_SIZE_LAYOUT;
@@ -20,7 +21,7 @@ void main() {
         SB_BARRIER
         uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + Local_Idx;
         bool overflow = globalID >= wsize || globalID < 0;
-        if (!overflow) { KeyIn[globalID] = KeyTmp[globalID], ValueIn[globalID] = ValueTmp[globalID]; }
+        if (!overflow) { KeyTmp[globalID] = KeyIn[globalID], ValueTmp[globalID] = ValueIn[globalID]; }
     }
 
     LGROUP_BARRIER
