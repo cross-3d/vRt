@@ -15,7 +15,7 @@ namespace _vt {
             case 4098:
                 shaderDir = VT_VENDOR_AMD;
                 break;
-            case 8086: // x86 ID, WHAT?
+            case 32902:
                 shaderDir = VT_VENDOR_INTEL;
                 break;
         }

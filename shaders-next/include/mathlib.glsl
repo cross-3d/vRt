@@ -235,23 +235,23 @@ uint bitcnt(in uint64_t lh) { ivec2 bic = bitCount(U2P(lh)); return uint(bic.x+b
 
 // bit measure utils
 int lsb(in uvec2 pair) {
-#if (!defined(NVIDIA_PLATFORM) && !defined(UNIVERSAL_PLATFORM))
+#ifdef AMD_PLATFORM
     return findLSB(P2U(pair));
 #else
-    ivec2 hl = findLSB(pair); return (hl.x >= 0) ? hl.x : (32 + hl.y);
+    const ivec2 hl = findLSB(pair); return (hl.x >= 0) ? hl.x : (32 + hl.y);
 #endif
 }
 
 int msb(in uvec2 pair) {
-#if (!defined(NVIDIA_PLATFORM) && !defined(UNIVERSAL_PLATFORM))
+#ifdef AMD_PLATFORM
     return findMSB(P2U(pair));
 #else
-    ivec2 hl = findMSB(pair); return (hl.y >= 0) ? (32 + hl.y) : hl.x;
+    const ivec2 hl = findMSB(pair); return (hl.y >= 0) ? (32 + hl.y) : hl.x;
 #endif
 }
 
 int msb(in uint64_t vlc) { 
-#if (!defined(NVIDIA_PLATFORM) && !defined(UNIVERSAL_PLATFORM))
+#ifdef AMD_PLATFORM
     return findMSB(vlc);
 #else
     return msb(U2P(vlc));
@@ -259,7 +259,7 @@ int msb(in uint64_t vlc) {
 }
 
 int lsb(in uint64_t vlc) { 
-#if (!defined(NVIDIA_PLATFORM) && !defined(UNIVERSAL_PLATFORM))
+#ifdef AMD_PLATFORM
     return findLSB(vlc);
 #else
     return lsb(U2P(vlc));
