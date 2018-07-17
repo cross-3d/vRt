@@ -118,7 +118,7 @@ void main() {
             #define rWD uWD
 #endif
             const int fID = rWD < osize ? Actives[swapIn+rWD]-1 : -1;
-            [[flatten]] if (sD == 0) Actives[swapIn+rWD] = 0;
+            [[flatten]] if (sD == 0 && rWD < osize) Actives[swapIn+rWD] = 0;
 
             // split sibling nodes
             [[flatten]]
