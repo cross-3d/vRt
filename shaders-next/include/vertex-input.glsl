@@ -50,10 +50,19 @@ int aNormalized(in uint bitfield) {
 }
 
 
+#ifdef INTEL_PLATFORM
+#define BFS bufferSpace
+#else
+#define BFS bufferSpace[bufferID]
+#endif
 
 // input data of vertex instance
 //layout ( binding = 0, set = 1, std430 ) readonly buffer bufferSpaceB {INDEX16 bufferSpace[]; };
+#ifdef INTEL_PLATFORM
+layout ( binding = 0, set = 1 ) uniform usamplerBuffer bufferSpace;
+#else
 layout ( binding = 0, set = 1 ) uniform usamplerBuffer bufferSpace[8]; // vertex model v1.4
+#endif
 //layout ( binding = 1, set = 1, std430 ) readonly buffer VT_BUFFER_REGION {VtBufferRegion bufferRegions[]; };
 layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
 layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR {VtAccessor accessors[]; };
@@ -100,13 +109,13 @@ void readByAccessor(in int accessor, in uint index, inout vec4 outp) {
         uint T = calculateByteOffset(accessor, index, 2);
         uint C = aComponents(accessors[accessor].bitfield)+1;
         [[flatten]]
-        if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace[bufferID],T+0));
+        if (C >= 1) outp.x = uintBitsToFloat(M32(BFS,T+0));
         [[flatten]]
-        if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace[bufferID],T+1));
+        if (C >= 2) outp.y = uintBitsToFloat(M32(BFS,T+1));
         [[flatten]]
-        if (C >= 3) outp.z = uintBitsToFloat(M32(bufferSpace[bufferID],T+2));
+        if (C >= 3) outp.z = uintBitsToFloat(M32(BFS,T+2));
         [[flatten]]
-        if (C >= 4) outp.w = uintBitsToFloat(M32(bufferSpace[bufferID],T+3));
+        if (C >= 4) outp.w = uintBitsToFloat(M32(BFS,T+3));
     }
 }
 
@@ -117,11 +126,11 @@ void readByAccessor(in int accessor, in uint index, inout vec3 outp) {
         uint T = calculateByteOffset(accessor, index, 2);
         uint C = aComponents(accessors[accessor].bitfield)+1;
         [[flatten]]
-        if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace[bufferID],T+0));
+        if (C >= 1) outp.x = uintBitsToFloat(M32(BFS,T+0));
         [[flatten]]
-        if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace[bufferID],T+1));
+        if (C >= 2) outp.y = uintBitsToFloat(M32(BFS,T+1));
         [[flatten]]
-        if (C >= 3) outp.z = uintBitsToFloat(M32(bufferSpace[bufferID],T+2));
+        if (C >= 3) outp.z = uintBitsToFloat(M32(BFS,T+2));
     }
 }
 
@@ -132,9 +141,9 @@ void readByAccessor(in int accessor, in uint index, inout vec2 outp) {
         uint T = calculateByteOffset(accessor, index, 2);
         uint C = aComponents(accessors[accessor].bitfield)+1;
         [[flatten]]
-        if (C >= 1) outp.x = uintBitsToFloat(M32(bufferSpace[bufferID],T+0));
+        if (C >= 1) outp.x = uintBitsToFloat(M32(BFS,T+0));
         [[flatten]]
-        if (C >= 2) outp.y = uintBitsToFloat(M32(bufferSpace[bufferID],T+1));
+        if (C >= 2) outp.y = uintBitsToFloat(M32(BFS,T+1));
     }
 }
 
@@ -143,7 +152,7 @@ void readByAccessor(in int accessor, in uint index, inout float outp) {
     if (accessor >= 0) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         uint T = calculateByteOffset(accessor, index, 2);
-        outp = uintBitsToFloat(M32(bufferSpace[bufferID],T+0));
+        outp = uintBitsToFloat(M32(BFS,T+0));
     }
 }
 
@@ -152,7 +161,7 @@ void readByAccessor(in int accessor, in uint index, inout int outp) {
     if (accessor >= 0) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         uint T = calculateByteOffset(accessor, index, 2);
-        outp = int(M32(bufferSpace[bufferID],T+0));
+        outp = int(M32(BFS,T+0));
     }
 }
 
@@ -163,7 +172,7 @@ void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
         const bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
         uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
         [[flatten]]
-        if (U16) { outp = M16(bufferSpace[bufferID],T+0); } else { outp = M32(bufferSpace[bufferID],T+0); }
+        if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
     }
 }
 

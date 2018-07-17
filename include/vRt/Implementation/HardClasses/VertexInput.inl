@@ -50,8 +50,8 @@ namespace _vt {
         vtVertexInput->_uniformBlock.materialAccessor = info.materialAccessor;
 
 
-
-        const auto inputCount = 8u;
+        const auto& vendorName = _vtDevice->_vendorName;
+        const auto inputCount = vendorName == VT_VENDOR_INTEL ? 1u : 8u;
         std::vector<vk::BufferView> sourceBuffers;
         const auto sourceBufferCount = std::min(info.sourceBufferCount, inputCount);
         for (int i = 0; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }

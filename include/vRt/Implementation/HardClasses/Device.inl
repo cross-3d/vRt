@@ -86,6 +86,7 @@ namespace _vt {
         dbfi.format = VK_FORMAT_UNDEFINED;
         dbfi.bufferSize = strided<VtUniformBlock>(1024);
         createDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_uniformVIBuffer);
+        const auto& vendorName = _vtDevice->_vendorName;
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
@@ -180,7 +181,7 @@ namespace _vt {
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
-                vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eUniformTexelBuffer, 8, vk::ShaderStageFlagBits::eCompute), // vertex raw data
+                vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eUniformTexelBuffer, vendorName == VT_VENDOR_INTEL ? 1 : 8, vk::ShaderStageFlagBits::eCompute), // vertex raw data
                 vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // virtual regions
                 vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // buffer views
                 vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // accessors
@@ -189,9 +190,6 @@ namespace _vt {
             };
             vtDevice->_descriptorLayoutMap["vertexInputSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         }
-
-
-        const auto& vendorName = _vtDevice->_vendorName;
 
         // 
         VtVertexAssemblyPipelineCreateInfo simfo;
