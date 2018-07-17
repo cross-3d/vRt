@@ -235,11 +235,19 @@ uint bitcnt(in uint64_t lh) { ivec2 bic = bitCount(U2P(lh)); return uint(bic.x+b
 
 // bit measure utils
 int lsb(in uvec2 pair) {
-    int lv = lsb(pair.x), hi = lsb(pair.y); return (lv >= 0) ? lv : (32 + hi);
+#if (!defined(NVIDIA_PLATFORM) && !defined(UNIVERSAL_PLATFORM))
+    return findLSB(P2U(pair));
+#else
+    ivec2 hl = findLSB(pair); return (hl.x >= 0) ? hl.x : (32 + hl.y);
+#endif
 }
 
 int msb(in uvec2 pair) {
-    int lv = msb(pair.x), hi = msb(pair.y); return (hi >= 0) ? (32 + hi) : lv;
+#if (!defined(NVIDIA_PLATFORM) && !defined(UNIVERSAL_PLATFORM))
+    return findMSB(P2U(pair));
+#else
+    ivec2 hl = findMSB(pair); return (hl.y >= 0) ? (32 + hl.y) : hl.x;
+#endif
 }
 
 int msb(in uint64_t vlc) { 
