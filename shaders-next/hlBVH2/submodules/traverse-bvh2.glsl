@@ -144,10 +144,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // begin of traverse BVH 
     ivec4 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
+
+    [[dependency_infinite]]
     for (int hi=0;hi<max_iteraction;hi++) {
         [[flatten]]
         if (traverseState.idx >= 0 && traverseState.defTriangleID < 0) 
-        { for (;hi<max_iteraction;hi++) {
+        { [[dependency_infinite]] for (;hi<max_iteraction;hi++) {
             bool _continue = false;
 
             [[flatten]]
