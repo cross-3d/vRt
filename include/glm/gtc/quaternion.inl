@@ -4,7 +4,6 @@
 #include "../trigonometric.hpp"
 #include "../geometric.hpp"
 #include "../exponential.hpp"
-#include "../detail/compute_vector_relational.hpp"
 #include "epsilon.hpp"
 #include <limits>
 
@@ -87,7 +86,7 @@ namespace detail
 
 #	if !GLM_HAS_DEFAULTED_FUNCTIONS || defined(GLM_FORCE_CTOR_INIT)
 		template<typename T, qualifier Q>
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR tquat<T, Q>::tquat()
+		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CXX11 tquat<T, Q>::tquat()
 #			ifdef GLM_FORCE_CTOR_INIT
 			: x(0), y(0), z(0), w(1)
 #			endif
@@ -96,26 +95,26 @@ namespace detail
 
 #	if !GLM_HAS_DEFAULTED_FUNCTIONS
 		template<typename T, qualifier Q>
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR tquat<T, Q>::tquat(tquat<T, Q> const& q)
+		GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CXX11 tquat<T, Q>::tquat(tquat<T, Q> const& q)
 			: x(q.x), y(q.y), z(q.z), w(q.w)
 		{}
 #	endif//!GLM_HAS_DEFAULTED_FUNCTIONS
 
 	template<typename T, qualifier Q>
 	template<qualifier P>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR tquat<T, Q>::tquat(tquat<T, P> const& q)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CXX11 tquat<T, Q>::tquat(tquat<T, P> const& q)
 		: x(q.x), y(q.y), z(q.z), w(q.w)
 	{}
 
 	// -- Explicit basic constructors --
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR tquat<T, Q>::tquat(T s, vec<3, T, Q> const& v)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CXX11 tquat<T, Q>::tquat(T s, vec<3, T, Q> const& v)
 		: x(v.x), y(v.y), z(v.z), w(s)
 	{}
 
 	template <typename T, qualifier Q>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR tquat<T, Q>::tquat(T _w, T _x, T _y, T _z)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CXX11 tquat<T, Q>::tquat(T _w, T _x, T _y, T _z)
 		: x(_x), y(_y), z(_z), w(_w)
 	{}
 
@@ -123,7 +122,7 @@ namespace detail
 
 	template<typename T, qualifier Q>
 	template<typename U, qualifier P>
-	GLM_FUNC_QUALIFIER GLM_CONSTEXPR tquat<T, Q>::tquat(tquat<U, P> const& q)
+	GLM_FUNC_QUALIFIER GLM_CONSTEXPR_CXX11 tquat<T, Q>::tquat(tquat<U, P> const& q)
 		: x(static_cast<T>(q.x))
 		, y(static_cast<T>(q.y))
 		, z(static_cast<T>(q.z))
@@ -603,7 +602,7 @@ namespace detail
 		const T y = static_cast<T>(2) * (q.y * q.z + q.w * q.x);
 		const T x = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
 
-		if(detail::compute_equal<T>::call(y, static_cast<T>(0)) && detail::compute_equal<T>::call(x, static_cast<T>(0))) //avoid atan2(0,0) - handle singularity - Matiis
+		if(detail::compute_equal<T, std::numeric_limits<T>::is_iec559>::call(y, static_cast<T>(0)) && detail::compute_equal<T, std::numeric_limits<T>::is_iec559>::call(x, static_cast<T>(0))) //avoid atan2(0,0) - handle singularity - Matiis
 			return static_cast<T>(static_cast<T>(2) * atan(q.x,q.w));
 
 		return static_cast<T>(atan(y,x));
@@ -772,7 +771,7 @@ namespace detail
 	{
 		vec<4, bool, Q> Result;
 		for(length_t i = 0; i < x.length(); ++i)
-			Result[i] = detail::compute_equal<T>::call(x[i], y[i]);
+			Result[i] = detail::compute_equal<T, std::numeric_limits<T>::is_iec559>::call(x[i], y[i]);
 		return Result;
 	}
 
@@ -781,7 +780,7 @@ namespace detail
 	{
 		vec<4, bool, Q> Result;
 		for(length_t i = 0; i < x.length(); ++i)
-			Result[i] = !detail::compute_equal<T>::call(x[i], y[i]);
+			Result[i] = !detail::compute_equal<T, std::numeric_limits<T>::is_iec559>::call(x[i], y[i]);
 		return Result;
 	}
 
@@ -802,7 +801,7 @@ namespace detail
 	}
 }//namespace glm
 
-#if GLM_ARCH != GLM_ARCH_PURE && GLM_HAS_ALIGNED_TYPE
+#if (GLM_ARCH & GLM_ARCH_SIMD_BIT) && (GLM_HAS_ANONYMOUS_STRUCT)
 #	include "quaternion_simd.inl"
 #endif
 

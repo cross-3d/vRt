@@ -57,7 +57,7 @@ namespace glm
 
 		vec<L, bool, Q> Result;
 		for(length_t i = 0; i < x.length(); ++i)
-			Result[i] = detail::compute_equal<T>::call(x[i], y[i]);
+			Result[i] = detail::compute_equal<T, std::numeric_limits<T>::is_iec559>::call(x[i], y[i]);
 		return Result;
 	}
 
@@ -68,7 +68,7 @@ namespace glm
 
 		vec<L, bool, Q> Result;
 		for(length_t i = 0; i < x.length(); ++i)
-			Result[i] = !detail::compute_equal<T>::call(x[i], y[i]);
+			Result[i] = !detail::compute_equal<T, std::numeric_limits<T>::is_iec559>::call(x[i], y[i]);
 		return Result;
 	}
 
@@ -100,6 +100,6 @@ namespace glm
 	}
 }//namespace glm
 
-#if GLM_ARCH != GLM_ARCH_PURE && GLM_HAS_UNRESTRICTED_UNIONS
+#if (GLM_ARCH & GLM_ARCH_SIMD_BIT) && (GLM_HAS_ANONYMOUS_STRUCT)
 #	include "func_vector_relational_simd.inl"
 #endif

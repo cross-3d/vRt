@@ -4,13 +4,11 @@
 #pragma once
 
 #include "type_vec.hpp"
-#if GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
-#	if GLM_HAS_UNRESTRICTED_UNIONS
-#		include "_swizzle.hpp"
-#	else
-#		include "_swizzle_func.hpp"
-#	endif
-#endif //GLM_SWIZZLE
+#if GLM_SWIZZLE == GLM_SWIZZLE_OPERATOR
+#	include "_swizzle.hpp"
+#elif GLM_SWIZZLE == GLM_SWIZZLE_FUNCTION
+#	include "_swizzle_func.hpp"
+#endif
 #include <cstddef>
 
 namespace glm
@@ -21,32 +19,21 @@ namespace glm
 		// -- Implementation detail --
 
 		typedef T value_type;
-		typedef vec type;
+		typedef vec<2, T, Q> type;
 		typedef vec<2, bool, Q> bool_type;
 
 		// -- Data --
 
-#		if GLM_HAS_ONLY_XYZW
-			T x, y;
-
-#		elif GLM_HAS_ALIGNED_TYPE
-#			if GLM_COMPILER & GLM_COMPILER_GCC
-#				pragma GCC diagnostic push
-#				pragma GCC diagnostic ignored "-Wpedantic"
-#			endif
-#			if GLM_COMPILER & GLM_COMPILER_CLANG
-#				pragma clang diagnostic push
-#				pragma clang diagnostic ignored "-Wgnu-anonymous-struct"
-#				pragma clang diagnostic ignored "-Wnested-anon-types"
-#			endif
-
+#		if GLM_HAS_ANONYMOUS_STRUCT
 			union
 			{
 				struct{ T x, y; };
 				struct{ T r, g; };
 				struct{ T s, t; };
 
-#				if GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
+				typename detail::storage<2, T, detail::is_aligned<Q>::value>::type data;
+
+#				if GLM_SWIZZLE == GLM_SWIZZLE_OPERATOR
 					GLM_SWIZZLE2_2_MEMBERS(T, Q, x, y)
 					GLM_SWIZZLE2_2_MEMBERS(T, Q, r, g)
 					GLM_SWIZZLE2_2_MEMBERS(T, Q, s, t)
@@ -56,22 +43,14 @@ namespace glm
 					GLM_SWIZZLE2_4_MEMBERS(T, Q, x, y)
 					GLM_SWIZZLE2_4_MEMBERS(T, Q, r, g)
 					GLM_SWIZZLE2_4_MEMBERS(T, Q, s, t)
-#				endif//GLM_SWIZZLE
-
+#				endif
 			};
-
-#			if GLM_COMPILER & GLM_COMPILER_CLANG
-#				pragma clang diagnostic pop
-#			endif
-#			if GLM_COMPILER & GLM_COMPILER_GCC
-#				pragma GCC diagnostic pop
-#			endif
 #		else
 			union {T x, r, s;};
 			union {T y, g, t;};
 
-#			if GLM_SWIZZLE == GLM_SWIZZLE_ENABLED
-				GLM_SWIZZLE_GEN_VEC_FROM_VEC2(T, P)
+#			if GLM_SWIZZLE == GLM_SWIZZLE_FUNCTION
+				GLM_SWIZZLE_GEN_VEC_FROM_VEC2(T, Q)
 #			endif//GLM_SWIZZLE
 #		endif
 
@@ -79,59 +58,66 @@ namespace glm
 
 		/// Return the count of components of the vector
 		typedef length_t length_type;
-		GLM_FUNC_DECL static GLM_CONSTEXPR length_type length(){return 2;}
+		GLM_FUNC_DECL static GLM_CONSTEXPR_CXX11 length_type length(){return 2;}
 
 		GLM_FUNC_DECL T& operator[](length_type i);
-		GLM_FUNC_DECL T const& operator[](length_type i) const;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 T const& operator[](length_type i) const;
 
 		// -- Implicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec() GLM_DEFAULT_CTOR;
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec(vec const& v) GLM_DEFAULT;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 vec() GLM_DEFAULT_CTOR;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 vec(vec const& v) GLM_DEFAULT;
 		template<qualifier P>
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec(vec<2, T, P> const& v);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 vec(vec<2, T, P> const& v);
 
 		// -- Explicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR explicit vec(T scalar);
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec(T x, T y);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 explicit vec(T scalar);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 vec(T x, T y);
 
 		// -- Conversion constructors --
 
+		template<typename U, qualifier P>
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 explicit vec(vec<1, U, P> const& v);
+
 		/// Explicit conversions (From section 5.4.1 Conversion and scalar constructors of GLSL 1.30.08 specification)
 		template<typename A, typename B>
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec(A x, B y);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 vec(A x, B y);
 		template<typename A, typename B>
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR vec(vec<1, A, Q> const& x, vec<1, B, Q> const& y);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 vec(vec<1, A, Q> const& x, B y);
+		template<typename A, typename B>
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 vec(A x, vec<1, B, Q> const& y);
+		template<typename A, typename B>
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 vec(vec<1, A, Q> const& x, vec<1, B, Q> const& y);
 
 		// -- Conversion vector constructors --
 
 		/// Explicit conversions (From section 5.4.1 Conversion and scalar constructors of GLSL 1.30.08 specification)
 		template<typename U, qualifier P>
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR GLM_EXPLICIT vec(vec<3, U, P> const& v);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 GLM_EXPLICIT vec(vec<3, U, P> const& v);
 		/// Explicit conversions (From section 5.4.1 Conversion and scalar constructors of GLSL 1.30.08 specification)
 		template<typename U, qualifier P>
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR GLM_EXPLICIT vec(vec<4, U, P> const& v);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 GLM_EXPLICIT vec(vec<4, U, P> const& v);
 
 		/// Explicit conversions (From section 5.4.1 Conversion and scalar constructors of GLSL 1.30.08 specification)
 		template<typename U, qualifier P>
-		GLM_FUNC_DECL GLM_CONSTEXPR_CTOR GLM_EXPLICIT vec(vec<2, U, P> const& v);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 GLM_EXPLICIT vec(vec<2, U, P> const& v);
 
 		// -- Swizzle constructors --
-#		if GLM_HAS_UNRESTRICTED_UNIONS && (GLM_SWIZZLE == GLM_SWIZZLE_ENABLED)
+#		if GLM_SWIZZLE == GLM_SWIZZLE_OPERATOR
 			template<int E0, int E1>
 			GLM_FUNC_DECL vec(detail::_swizzle<2, T, Q, E0, E1,-1,-2> const& that)
 			{
 				*this = that();
 			}
-#		endif// GLM_HAS_UNRESTRICTED_UNIONS && (GLM_SWIZZLE == GLM_SWIZZLE_ENABLED)
+#		endif//GLM_SWIZZLE == GLM_SWIZZLE_OPERATOR
 
 		// -- Unary arithmetic operators --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 vec& operator=(vec const& v) GLM_DEFAULT;
+		GLM_FUNC_DECL vec& operator=(vec const& v);
 
 		template<typename U>
-		GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 vec& operator=(vec<2, U, Q> const& v);
+		GLM_FUNC_DECL vec& operator=(vec<2, U, Q> const& v);
 		template<typename U>
 		GLM_FUNC_DECL vec& operator+=(U scalar);
 		template<typename U>
@@ -370,16 +356,16 @@ namespace glm
 	// -- Boolean operators --
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL bool operator==(vec<2, T, Q> const& v1, vec<2, T, Q> const& v2);
+	GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 bool operator==(vec<2, T, Q> const& v1, vec<2, T, Q> const& v2);
 
 	template<typename T, qualifier Q>
-	GLM_FUNC_DECL bool operator!=(vec<2, T, Q> const& v1, vec<2, T, Q> const& v2);
+	GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 bool operator!=(vec<2, T, Q> const& v1, vec<2, T, Q> const& v2);
 
 	template<qualifier Q>
-	GLM_FUNC_DECL vec<2, bool, Q> operator&&(vec<2, bool, Q> const& v1, vec<2, bool, Q> const& v2);
+	GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 vec<2, bool, Q> operator&&(vec<2, bool, Q> const& v1, vec<2, bool, Q> const& v2);
 
 	template<qualifier Q>
-	GLM_FUNC_DECL vec<2, bool, Q> operator||(vec<2, bool, Q> const& v1, vec<2, bool, Q> const& v2);
+	GLM_FUNC_DECL GLM_CONSTEXPR_CXX14 vec<2, bool, Q> operator||(vec<2, bool, Q> const& v1, vec<2, bool, Q> const& v2);
 }//namespace glm
 
 #ifndef GLM_EXTERNAL_TEMPLATE

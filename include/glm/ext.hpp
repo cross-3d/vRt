@@ -8,7 +8,7 @@
 
 #include "glm.hpp"
 
-#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_EXT_INCLUDED_DISPLAYED)
+#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_MESSAGE_EXT_INCLUDED_DISPLAYED)
 #	define GLM_MESSAGE_EXT_INCLUDED_DISPLAYED
 #	pragma message("GLM: All extensions included (not recommended)")
 #endif//GLM_MESSAGES
@@ -36,7 +36,7 @@
 #include "./gtc/type_ptr.hpp"
 #include "./gtc/ulp.hpp"
 #include "./gtc/vec1.hpp"
-#if GLM_HAS_ALIGNED_TYPE
+#if GLM_HAS_ANONYMOUS_STRUCT
 #	include "./gtc/type_aligned.hpp"
 #endif
 

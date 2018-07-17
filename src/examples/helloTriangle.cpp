@@ -47,28 +47,36 @@ struct VtLeafDebug {
 };
 
 
-// application fast utility for fill buffers
+
 template<class T>
 inline auto writeIntoBuffer(vte::Queue deviceQueue, const std::vector<T>& vctr, const vt::VtDeviceBuffer& dBuffer, size_t byteOffset = 0) {
     VkResult result = VK_SUCCESS;
     vt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
-    vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
-        vt::vtCmdCopyHostToDeviceBuffer(cmdBuf, deviceQueue->device->rtDev, dBuffer, 1, (const VkBufferCopy *)&(vk::BufferCopy(0, byteOffset, vte::strided<T>(vctr.size()))));
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+        vt::vtCmdCopyHostToDeviceBuffer(cmdBuf, deviceQueue->device->rtDev, dBuffer, 1, &VkBufferCopy{ 0, byteOffset, vte::strided<T>(vctr.size()) });
     });
     return result;
 };
 
+template<class T>
+inline auto writeIntoImage(vte::Queue deviceQueue, const std::vector<T>& vctr, const vt::VtDeviceImage& dImage, size_t byteOffset = 0) {
+    VkResult result = VK_SUCCESS;
+    vt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+        vt::vtCmdCopyHostToDeviceImage(cmdBuf, deviceQueue->device->rtDev, dImage, 1, &VkBufferImageCopy{ 0, dImage->_extent.width, dImage->_extent.height, dImage->_subresourceRange, {0u,0u,0u}, dImage->_extent });
+    });
+    return result;
+};
 
 template<class T>
 inline auto readFromBuffer(vte::Queue deviceQueue, const vt::VtDeviceBuffer& dBuffer, std::vector<T>& vctr, size_t byteOffset = 0) {
     VkResult result = VK_SUCCESS;
     vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
-        vt::vtCmdCopyDeviceBufferToHost(cmdBuf, dBuffer, deviceQueue->device->rtDev, 1, (const VkBufferCopy *)&(vk::BufferCopy(0, byteOffset, vte::strided<T>(vctr.size()))));
+        vt::vtCmdCopyDeviceBufferToHost(cmdBuf, dBuffer, deviceQueue->device->rtDev, 1, &VkBufferCopy{ 0, byteOffset, vte::strided<T>(vctr.size() }));
     });
     vt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
     return result;
 };
-
 
 inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer, size_t byteSize = 1024 * 16) {
     vt::VtDeviceBufferCreateInfo dbs;
@@ -78,6 +86,13 @@ inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer
     dbs.format = VK_FORMAT_R16G16_UINT;
     vt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
 };
+
+
+
+
+
+
+
 
 inline auto getShaderDir(const uint32_t& vendorID) {
     std::string shaderDir = "./universal/";
@@ -157,7 +172,7 @@ void main() {
     vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outputImage);
 
     // dispatch image barrier
-    vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
         vtCmdImageBarrier(cmdBuf, outputImage);
     });
 
@@ -208,7 +223,7 @@ void main() {
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &dullImage);
 
         // dispatch image barrier
-        vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
             vtCmdImageBarrier(cmdBuf, dullImage);
         });
     }
@@ -247,10 +262,10 @@ void main() {
 
     {
         // custom bindings for ray tracing systems
-        const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
-            vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // constants for generation shader
-            vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute), // env map for miss shader
-            vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eCompute) // env map for miss shader
+        auto  _bindings = std::vector<vk::DescriptorSetLayoutBinding>{
+            vk::DescriptorSetLayoutBinding{0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute}, // constants for generation shader
+            vk::DescriptorSetLayoutBinding{1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute}, // env map for miss shader
+            vk::DescriptorSetLayoutBinding{2, vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eCompute} // env map for miss shader
         };
         customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
 
@@ -272,7 +287,7 @@ void main() {
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &envImage);
 
         // dispatch image barrier
-        vte::submitOnceAsync(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
             vtCmdImageBarrier(cmdBuf, envImage);
         });
     }
@@ -311,7 +326,7 @@ void main() {
         vpi.setLayoutCount = customedLayouts.size();
 
         VtPipelineLayoutCreateInfo vpti;
-        vpti.pGeneralPipelineLayout = &(VkPipelineLayoutCreateInfo)vpi;
+        vpti.pGeneralPipelineLayout = (VkPipelineLayoutCreateInfo*)&vpi;
 
         vtCreateRayTracingPipelineLayout(deviceQueue->device->rtDev, &vpti, &rtPipelineLayout);
     }
@@ -619,10 +634,10 @@ void main() {
 
 
     // dispatch building accelerators and vertex internal data
-    //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+    //vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
 
     // dispatch ray tracing
-    //vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
+    //vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
 
     // rendering presentation 
@@ -634,8 +649,8 @@ void main() {
         glfwPollEvents();
 
 
-        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
-        vte::submitCmdAsync(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
+        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
 
 
         /*

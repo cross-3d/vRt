@@ -12,10 +12,10 @@
 
 #pragma once
 
-#if !GLM_HAS_ALIGNED_TYPE
+#if !GLM_HAS_ANONYMOUS_STRUCT
 #	error "GLM: Aligned types are not supported on this platform"
 #endif
-#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
+#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
 # pragma message("GLM: GLM_GTC_type_aligned extension included")
 #endif
 
@@ -428,7 +428,7 @@ namespace glm
 	typedef aligned_highp_vec3			aligned_vec3;
 
 	/// 4 components vector aligned in memory of single-precision floating-point numbers.
-	typedef aligned_highp_vec4			aligned_vec4;
+	typedef aligned_highp_vec4 			aligned_vec4;
 
 	/// 1 component vector tightly packed in memory of single-precision floating-point numbers.
 	typedef packed_highp_vec1			packed_vec1;

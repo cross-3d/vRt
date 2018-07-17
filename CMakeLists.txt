@@ -105,28 +105,22 @@ set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${
 #set (LIBS glfw3 ${Vulkan_LIBRARY})
 set (LIBS glfw3)
 
-# if OptiX was has
-if (OptiX_INSTALL_DIR AND ENABLE_OPTIX_DENOISER) 
-set (INC_DIR "${INC_DIR}" "${OptiX_INCLUDE}" ${CUDA_INCLUDE_DIRS})
-set (LIB_DIR "${LIB_DIR}" "${OptiX_INSTALL_DIR}/lib")
-set (LIBS ${LIBS} ${optix_LIBRARY} ${optix_prime_LIBRARY} ${optixu_LIBRARY} ${CUDA_LIBRARIES})
-if (ENABLE_OPTIX_DENOISER) 
-set (DEFINES ${DEFINES} -DOPTIX_DENOISER_HACK)
-endif()
-endif()
+set (CMAKE_CXX_STANDARD 20)
+set (CMAKE_C_STANDARD 11)
 
 if (MSVC)
-    set (CMAKE_CXX_FLAGS "/std:c++latest /EHsc")
+    set (CMAKE_CXX_FLAGS "/std:c++latest /arch:AVX2 /EHsc /Ox /Oi /Ot /Oy /Ob2 /GL /GT")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG /INCREMENTAL:NO")
 else()
-    set (CMAKE_CXX_FLAGS "-std=c++2a")
-    set (CMAKE_C_FLAGS "-std=c1x")
+    set (CMAKE_CXX_FLAGS "-std=c++2a -march=skylake")
+    set (CMAKE_C_FLAGS "-std=c1x -march=skylake")
 endif()
 
 
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS}")
-set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS}")
-set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS}")
-set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS}")
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Og")
+set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -Ofast")
+set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -Og")
+set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast")
 
 set (INCLUDE_LIST 
     ${INC_DIR}

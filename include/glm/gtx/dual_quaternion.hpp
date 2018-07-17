@@ -24,7 +24,7 @@
 #	error "GLM: GLM_GTX_dual_quaternion is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
 #endif
 
-#if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_EXT_INCLUDED)
+#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
 #	pragma message("GLM: GLM_GTX_dual_quaternion extension included")
 #endif
 
@@ -49,28 +49,28 @@ namespace glm
 
 		typedef length_t length_type;
 		/// Return the count of components of a dual quaternion
-		GLM_FUNC_DECL static GLM_CONSTEXPR length_type length(){return 2;}
+		GLM_FUNC_DECL static GLM_CONSTEXPR_CXX11 length_type length(){return 2;}
 
 		GLM_FUNC_DECL part_type & operator[](length_type i);
 		GLM_FUNC_DECL part_type const& operator[](length_type i) const;
 
 		// -- Implicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat() GLM_DEFAULT_CTOR;
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tdualquat<T, Q> const& d) GLM_DEFAULT;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 tdualquat() GLM_DEFAULT_CTOR;
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 tdualquat(tdualquat<T, Q> const& d) GLM_DEFAULT;
 		template<qualifier P>
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tdualquat<T, P> const& d);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 tdualquat(tdualquat<T, P> const& d);
 
 		// -- Explicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tquat<T, Q> const& real);
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tquat<T, Q> const& orientation, vec<3, T, Q> const& translation);
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tquat<T, Q> const& real, tquat<T, Q> const& dual);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 tdualquat(tquat<T, Q> const& real);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 tdualquat(tquat<T, Q> const& orientation, vec<3, T, Q> const& translation);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 tdualquat(tquat<T, Q> const& real, tquat<T, Q> const& dual);
 
 		// -- Conversion constructors --
 
 		template<typename U, qualifier P>
-		GLM_FUNC_DECL GLM_CONSTEXPR GLM_EXPLICIT tdualquat(tdualquat<U, P> const& q);
+		GLM_FUNC_DECL GLM_CONSTEXPR_CXX11 GLM_EXPLICIT tdualquat(tdualquat<U, P> const& q);
 
 		GLM_FUNC_DECL GLM_EXPLICIT tdualquat(mat<2, 4, T, Q> const& holder_mat);
 		GLM_FUNC_DECL GLM_EXPLICIT tdualquat(mat<3, 4, T, Q> const& aug_mat);
