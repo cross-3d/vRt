@@ -24,8 +24,7 @@ uint Wave_Idx = 0;
 //#define RADICES 4
 //#define RADICES_MASK 0x3
 
-//#define AFFINITION 1
-#define AFFINITION 16
+#define AFFINITION 1
 
 // general work groups
 #define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)

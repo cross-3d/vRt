@@ -207,7 +207,7 @@ namespace _vt {
         // planned to use secondary buffer for radix sorting
         auto& bounder = accel;
         cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, *bounder->_mortonCodesBuffer);
-        cmdFillBuffer<0u>(*cmdBuf, *bounder->_currentNodeIndices);
+        //cmdFillBuffer<0u>(*cmdBuf, *bounder->_currentNodeIndices);
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_countersBuffer); // reset counters
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);
         updateCommandBarrier(*cmdBuf);

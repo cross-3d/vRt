@@ -487,14 +487,14 @@ void main() {
 
     // create accelerator set
     VtAcceleratorSetCreateInfo acci;
-    acci.maxPrimitives = 1024 * 1024 * 2;
+    acci.maxPrimitives = 1024 * 512;
     acci.entryID = 0;
     vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
 
 
     // create vertex assembly
     VtVertexAssemblySetCreateInfo vtsi;
-    vtsi.maxPrimitives = 1024 * 1024 * 2;
+    vtsi.maxPrimitives = 1024 * 512;
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
 
@@ -808,7 +808,7 @@ void main() {
 
 
         
-        eyePos += float(tDiffF) * glm::normalize(moveVector)*0.001f;
+        eyePos += float(tDiffF) * glm::normalize(moveVector)*0.004f;
         
 
         // spamming by update uniform value
