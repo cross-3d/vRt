@@ -24,7 +24,8 @@ uint Wave_Idx = 0;
 //#define RADICES 4
 //#define RADICES_MASK 0x3
 
-#define AFFINITION 1
+//#define AFFINITION 1
+#define AFFINITION 16
 
 // general work groups
 #define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)
@@ -61,7 +62,6 @@ uint BFE(in uint ua, in uint o, in uint n) {
 //uint64_t BFE(inout uint64_t ua, in uint64_t o, in uint64_t n) {
 uint BFE(in uvec2 ua, in uint o, in uint n) {
     return uint(o >= 32u ? BFE_HW(ua.y, int(o-32u), int(n)) : BFE_HW(ua.x, int(o), int(n)));
-    //return uint(o >= 32u ? BFE_HW(ua.x, int(o-32u), int(n)) : BFE_HW(ua.y, int(o), int(n)));
 }
 
 struct RadicePropStruct { uint Descending; uint IsSigned; };

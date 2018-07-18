@@ -56,9 +56,7 @@ void main() {
                 LGROUP_BARRIER
             }
 
-            uint res = localHistogram[ldx];
-            LGROUP_BARRIER
-            rdcAwPrefixOffset = res;
+            rdcAwPrefixOffset = localHistogram[ldx];
         }
         
         // add work-group prefix-sum of radice to in-group prefix-sum

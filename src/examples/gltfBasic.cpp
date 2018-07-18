@@ -208,8 +208,8 @@ void main() {
     tinygltf::Model model = {};
     tinygltf::TinyGLTF loader = {};
     std::string err, input_filename = 
-        "models/vokselia_spawn.gltf";
-        //"models/sponza/sponza.gltf";
+        //"models/vokselia_spawn.gltf";
+        "models/sponza/sponza.gltf";
         //"models/BoomBoxWithAxes.gltf";
         //"models/Chess_Set.gltf";
         //"models/Cube.gltf";
@@ -596,7 +596,7 @@ void main() {
         });
 
         // matrix with scaling
-        double mscale = 100.0;
+        double mscale = 1.0;
         glm::dmat4 matrix(1.0);
         matrix *= glm::scale(glm::dvec3(mscale, mscale, mscale));
 
