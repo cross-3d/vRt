@@ -151,11 +151,9 @@ const lowp bool_ true_ = 1u, false_ = 0u;
 const lowp bvec2_ true2_ = true_.xx, false2_ = false_.xx;
 
 // null of indexing in float representation
-//float FINT_NULL = intBitsToFloat(-1); // -1
-  float FINT_ZERO = intBitsToFloat( 0); //  0
-
-//#define FINT_ZERO intBitsToFloat( 0)
-//#define FINT_NULL intBitsToFloat(-1)
+const uint UINT_ZERO = 0x0u, UINT_NULL = 0xFFFFFFFFu;
+#define FINT_NULL uintBitsToFloat(UINT_NULL)
+#define FINT_ZERO uintBitsToFloat(UINT_ZERO)
 
 // inprecise comparsion functions
 const float PRECERR = PZERO;
