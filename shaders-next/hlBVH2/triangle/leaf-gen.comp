@@ -36,15 +36,16 @@ void main() {
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, itri+1).xyzw)),
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, itri+2).xyzw))
         );
-        const vec4 e1 = trivertsUnit[1]-trivertsUnit[0], e2 = trivertsUnit[2]-trivertsUnit[0];
-        const float area = 0.5f*length(cross(e1.xyz, e2.xyz));
-        
-        const vec4 unorm4f = clamp(fma(vec4((trivertsUnit[0] + trivertsUnit[1] + trivertsUnit[2]).xyz * 0.33333333333333f, fma(area,2.f,-1.f)), 0.5f.xxxx, 0.5f.xxxx),0.f.xxxx,1.f.xxxx);
-        const uvec2 mortonCode = encodeMorton(uvec2(packUnorm2x16(unorm4f.xy), packUnorm2x16(unorm4f.zw)));
-
+        //const vec4 e1 = trivertsUnit[1]-trivertsUnit[0], e2 = trivertsUnit[2]-trivertsUnit[0];
         //const mat3x4 triverts = mat3x4(TLOAD(lvtxIn, itri+0).xyzw,TLOAD(lvtxIn, itri+1).xyzw,TLOAD(lvtxIn, itri+2).xyzw);
         #define triverts trivertsUnit
         const bbox_t lbox = calcTriBox(triverts);
+        const float area = distance(lbox.mn, lbox.mx)*SQRT_OF_ONE_THIRD;//0.5f*length(cross(e1.xyz, e2.xyz));
+        //const vec4 unorm4f = clamp(fma(vec4((trivertsUnit[0] + trivertsUnit[1] + trivertsUnit[2]).xyz * 0.33333333333333f, fma(area,2.f,-1.f)), 0.5f.xxxx, 0.5f.xxxx),0.f.xxxx,1.f.xxxx);
+        const vec4 unorm4f = clamp(vec4((trivertsUnit[0] + trivertsUnit[1] + trivertsUnit[2]).xyz * 0.33333333333333f, fma(area,2.f,-1.f)),-1.f.xxxx,1.f.xxxx);
+        const uvec2 mortonCode = encodeMorton(uvec2(packSnorm2x16(unorm4f.xy), packSnorm2x16(unorm4f.zw)));
+
+
         {
 #ifdef VTX_TRANSPLIT
             const mat4x3 triverts = transpose(triverts);

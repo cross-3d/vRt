@@ -10,21 +10,18 @@
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
-//#include "../include/vertex.glsl"
 #include "../include/morton.glsl"
 
-
 // bvh uniform unified
-layout ( std430, binding = 0, set = 1 ) buffer bvhBlockB { 
+layout ( binding = 0, set = 1, std430 ) buffer bvhBlockB { 
     mat4x4 transform;
     mat4x4 transformInv;
     mat4x4 projection;
     mat4x4 projectionInv;
-    int leafCount, primitiveCount, r1, r2;
+    int leafCount, primitiveCount, entryID, primitiveOffset;
 } bvhBlock;
 
 layout ( std430, binding = 9, set = 0 ) readonly buffer minmaxB { vec4 minmax[]; };
-
 
 LOCAL_SIZE_LAYOUT;
 
@@ -80,5 +77,4 @@ void main() {
         bvhBlock.transform = transpose(rtransform);
         bvhBlock.transformInv = transpose(inverse(rtransform));
     }
-
 }

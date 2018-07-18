@@ -18,13 +18,12 @@
 #include "../include/ballotlib.glsl"
 #include "../include/vertex.glsl"
 
-//#define USE_STACKLESS_BVH
 #include "./submodules/traverse-bvh2.glsl"
-
-LOCAL_SIZE_LAYOUT;
 
 #define wsize rayCounter
 #define wgs gl_NumWorkGroups.x
+
+LOCAL_SIZE_LAYOUT;
 
 void main() {
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);

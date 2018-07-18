@@ -24,7 +24,7 @@
 
 namespace _vt {
     constexpr auto DEFAULT_FENCE_TIMEOUT = 100000000000ll;
-    constexpr auto INTENSIVITY = 4096ull;
+    constexpr auto INTENSIVITY = 3600ull;
     constexpr auto ATTRIB_EXTENT = 8ull; // no way to set more than it now
 
     template <typename T>
