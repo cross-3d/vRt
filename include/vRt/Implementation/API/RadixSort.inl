@@ -7,7 +7,7 @@ namespace _vt {
 
     // radix sorting command (qRadix)
     VtResult radixSort(std::shared_ptr<CommandBuffer>& cmdBuf, const VkDescriptorSet& inputSet, uint32_t primCount = 2) {
-        constexpr auto STEPS = 8u, WG_COUNT = 64u, RADICE_AFFINE = 1u; // QLC
+        constexpr auto STEPS = 16u, WG_COUNT = 64u, RADICE_AFFINE = 1u; // QLC
         //constexpr auto STEPS = 16u, WG_COUNT = 64u, RADICE_AFFINE = 1u; // MLC
 
         VtResult result = VK_SUCCESS;
