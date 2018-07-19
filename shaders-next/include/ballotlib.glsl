@@ -113,12 +113,12 @@ T2 fname(in uint WHERE, in bvec2 a) {\
 
 
 // invoc vote
-bool allInvoc(in bool bc){ return subgroupAll(bc); }
-bool anyInvoc(in bool bc){ return subgroupAny(bc); }
+bool allInvoc(in bool bc) { return subgroupAll(bc); }
+bool anyInvoc(in bool bc) { return subgroupAny(bc); }
 
 // aliases
-bool allInvoc(in lowp bool_ bc){ return allInvoc(SSC(bc)); }
-bool anyInvoc(in lowp bool_ bc){ return anyInvoc(SSC(bc)); }
+bool allInvoc(in lowp bool_ bc) { return allInvoc(SSC(bc)); }
+bool anyInvoc(in lowp bool_ bc) { return anyInvoc(SSC(bc)); }
 
 #define IFALL(b)if(allInvoc(b))
 #define IFANY(b)if(anyInvoc(b))

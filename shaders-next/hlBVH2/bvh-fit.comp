@@ -17,7 +17,7 @@
 //shared ivec4 _comp[WORK_SIZE_BND]; 
 //#define comp _comp[Local_Idx]
 
-void unifyNodeBox(inout int idx){
+void unifyNodeBox(inout int idx) {
     // initial for unify box
     ivec2 comp = imageLoad(bvhMeta, idx).xy-1; // meta of contributable
     if (comp.x != comp.y && comp.x >= 0) {

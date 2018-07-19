@@ -194,7 +194,7 @@ void storeAttribute(in ivec3 cdata, in vec4 fval) {
     ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_, cdata.z), floatBitsToUint(fval));
 }
 
-void storePosition(in ivec2 cdata, in vec4 fval){
+void storePosition(in ivec2 cdata, in vec4 fval) {
     imageStore(lvtxIn, cdata.x*3+cdata.y, fval);
 }
 #endif

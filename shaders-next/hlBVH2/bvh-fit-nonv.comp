@@ -22,7 +22,7 @@
 //shared ivec4 _comp[WORK_SIZE_BND]; 
 //#define comp _comp[Local_Idx]
 
-void unifyNodeBox(inout int idx){
+void unifyNodeBox(inout int idx) {
     // initial for unify box
     ivec2 comp = imageLoad(bvhMeta, idx).xy-1; // meta of contributable
     if (comp.x != comp.y && comp.x >= 0) {
@@ -54,7 +54,7 @@ shared int _counters[8];
 //#define wsize (bvhBlock.leafCount/gl_NumWorkGroups.x)
 // define function for increment
 initAtomicSubgroupIncFunction(_counters[0], aCounterInc, 1, int)
-uint wID(in uint t){return t*gl_NumWorkGroups.x+gl_WorkGroupID.x;}
+uint wID(in uint t) {return t*gl_NumWorkGroups.x+gl_WorkGroupID.x;}
 
 #define lID Local_Idx
 #define gS gl_WorkGroupSize.x

@@ -67,7 +67,7 @@ uint M32(in usamplerBuffer m, in uint i) {
 #endif
 
 
-float extractChannel(in usampler2D smpler, in vec2 texcoord, const int channel){
+float extractChannel(in usampler2D smpler, in vec2 texcoord, const int channel) {
     uint chnl = 0u;
     if (channel == 0) {
         chnl = textureLod(smpler, texcoord, 0).x;
@@ -84,7 +84,7 @@ float extractChannel(in usampler2D smpler, in vec2 texcoord, const int channel){
     return uintBitsToFloat(chnl);
 }
 
-vec4 fakeGather(in usampler2D smpler, in vec2 texcoord, const int channel){
+vec4 fakeGather(in usampler2D smpler, in vec2 texcoord, const int channel) {
     vec2 size = 0.5f/textureSize(smpler, 0);
     return vec4(
         extractChannel(smpler, texcoord + vec2(-size.x,  size.y), channel), extractChannel(smpler, texcoord + vec2( size.x,  size.y), channel),
@@ -126,12 +126,12 @@ vec4 fakeGather(in usampler2D smpler, in vec2 texcoord, const int channel){
 #ifdef ENABLE_AMD_INSTRUCTION_SET
 #define mid3_wrap(a,b,c) mid3(a,b,c)
 #else
-float mid3_wrap(in float a, in float b, in float c){
+float mid3_wrap(in float a, in float b, in float c) {
     const float m = max3_wrap(a, b, c);
     if (m == a) { return max(b, c); } else if (m == b) { return max(a, c); } else { return max(a, b); }
 }
 
-vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c){
+vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
     return vec4(
         mid3_wrap(a.x,b.x,c.x),
         mid3_wrap(a.y,b.y,c.y),
@@ -280,15 +280,15 @@ uint tiled(in uint x, in uint y) {return x/y + int(x%y != 0); }
 
 // precise optimized mix/lerp
 #define _FMOP fma(b,c,fma(a,-c,a)) // fma based mix/lerp
-float fmix(in float a, in float b, in float c){ return _FMOP; }
-vec2 fmix(in vec2 a, in vec2 b, in vec2 c){ return _FMOP; }
-vec3 fmix(in vec3 a, in vec3 b, in vec3 c){ return _FMOP; }
-vec4 fmix(in vec4 a, in vec4 b, in vec4 c){ return _FMOP; }
+float fmix(in float a, in float b, in float c) { return _FMOP; }
+vec2 fmix(in vec2 a, in vec2 b, in vec2 c) { return _FMOP; }
+vec3 fmix(in vec3 a, in vec3 b, in vec3 c) { return _FMOP; }
+vec4 fmix(in vec4 a, in vec4 b, in vec4 c) { return _FMOP; }
 #ifdef ENABLE_AMD_INSTRUCTION_SET
-float16_t fmix(in float16_t a, in float16_t b, in float16_t c){ return _FMOP; }
-f16vec2 fmix(in f16vec2 a, in f16vec2 b, in f16vec2 c){ return _FMOP; }
-f16vec3 fmix(in f16vec3 a, in f16vec3 b, in f16vec3 c){ return _FMOP; }
-f16vec4 fmix(in f16vec4 a, in f16vec4 b, in f16vec4 c){ return _FMOP; }
+float16_t fmix(in float16_t a, in float16_t b, in float16_t c) { return _FMOP; }
+f16vec2 fmix(in f16vec2 a, in f16vec2 b, in f16vec2 c) { return _FMOP; }
+f16vec3 fmix(in f16vec3 a, in f16vec3 b, in f16vec3 c) { return _FMOP; }
+f16vec4 fmix(in f16vec4 a, in f16vec4 b, in f16vec4 c) { return _FMOP; }
 #endif
 
 
@@ -362,28 +362,28 @@ uvec4 packFloat32x4(in vec4 floats) {
 }
 
 // hacky pack for 64-bit uint and two 32-bit float
-uint64_t packFloat2x32(in vec2 f32x2){
+uint64_t packFloat2x32(in vec2 f32x2) {
     return P2U(floatBitsToUint(f32x2));
 }
 
-vec2 unpackFloat2x32(in uint64_t b64){
+vec2 unpackFloat2x32(in uint64_t b64) {
     return uintBitsToFloat(U2P(b64));
 }
 
 
 // boolean binary compatibility
-bool SSC(in lowp bool_ b){return bool(b);}
-bvec2 SSC(in lowp bvec2_ b){return bvec2(b);}
-bvec4 SSC(in lowp bvec4_ b){return bvec4(b);}
+bool SSC(in lowp bool_ b) {return bool(b);}
+bvec2 SSC(in lowp bvec2_ b) {return bvec2(b);}
+bvec4 SSC(in lowp bvec4_ b) {return bvec4(b);}
 
-bool SSC(in bool b){return b;}
-bvec2 SSC(in bvec2 b){return b;}
-bvec4 SSC(in bvec4 b){return b;}
+bool SSC(in bool b) {return b;}
+bvec2 SSC(in bvec2 b) {return b;}
+bvec4 SSC(in bvec4 b) {return b;}
 
-lowp bool_ any(in lowp bvec2_ b){return b.x|b.y;}
-lowp bool_ all(in lowp bvec2_ b){return b.x&b.y;}
-lowp bool_ not(in lowp bool_ b){return true_^b;}
-lowp bvec2_ not(in lowp bvec2_ b){return true2_^b;}
+lowp bool_ any(in lowp bvec2_ b) {return b.x|b.y;}
+lowp bool_ all(in lowp bvec2_ b) {return b.x&b.y;}
+lowp bool_ not(in lowp bool_ b) {return true_^b;}
+lowp bvec2_ not(in lowp bvec2_ b) {return true2_^b;}
 
 #define IF(b)if(SSC(b))
 
@@ -416,12 +416,12 @@ f16vec4 mix(in f16vec4 a, in f16vec4 b, in lowp bvec4_ c) { return mix(a,b,SSC(c
 
 
 // swap of 16-bits by funnel shifts and mapping 
-uint fast16swap(in uint b32, const lowp bool_ nswp){
+uint fast16swap(in uint b32, const lowp bool_ nswp) {
     const uint vrc = 16u - uint(nswp) * 16u;
     return (b32 << (vrc)) | (b32 >> (32u-vrc));
 }
 
-uint64_t fast32swap(in uint64_t b64, const lowp bool_ nswp){
+uint64_t fast32swap(in uint64_t b64, const lowp bool_ nswp) {
     const uint64_t vrc = 32ul - uint64_t(nswp) * 32ul;
     return (b64 << (vrc)) | (b64 >> (64ul-vrc));
 }
@@ -518,8 +518,8 @@ lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr,
 
 
 // BVH utility
-uint64_t bitfieldReverse64(in uint64_t a){uvec2 p = U2P(a);p=bitfieldReverse(p);return P2U(p.yx);}
-uvec2 bitfieldReverse64(in uvec2 p){return bitfieldReverse(p).yx;}
+uint64_t bitfieldReverse64(in uint64_t a) {uvec2 p = U2P(a);p=bitfieldReverse(p);return P2U(p.yx);}
+uvec2 bitfieldReverse64(in uvec2 p) {return bitfieldReverse(p).yx;}
 
 //int nlz(in uint64_t x) { return x == 0 ? 64 : lsb(bitfieldReverse64(x)); }
 //int nlz(in uvec2 x) { return all(equal(x, 0u.xx)) ? 64 : lsb(bitfieldReverse64(x)); }
@@ -535,7 +535,7 @@ int nlz(in uint x) { return 31 - msb(x); }
 int nlz(in int x) { return nlz(uint(x)); }
 
 // polar/cartesian coordinates
-vec2 lcts(in vec3 direct){
+vec2 lcts(in vec3 direct) {
     direct.xyz = direct.xzy * vec3(1.f,1.f,-1.f);
     return vec2(atan(direct.y, direct.x), acos(direct.z));
 }

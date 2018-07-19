@@ -82,13 +82,13 @@ initAtomicSubgroupIncFunctionTarget(missHitTypedCounter[WHERE], atomicIncMissHit
 #define attribCounter vtCounters[7]
 
 // aliased functions
-int atomicIncRayCount(){return atomicIncVtCounters(0);}
-int atomicIncHitCount(){return atomicIncVtCounters(1);}
-int atomicIncClosestHitCount(){return atomicIncVtCounters(2);}
-int atomicIncMissHitCount(){return atomicIncVtCounters(4);}
-int atomicIncPayloadHitCount(){return atomicIncVtCounters(5);}
-int atomicIncblockSpaceCount(){return atomicIncVtCounters(6);}
-int atomicIncAttribCount(){return atomicIncVtCounters(7);}
+int atomicIncRayCount() {return atomicIncVtCounters(0);}
+int atomicIncHitCount() {return atomicIncVtCounters(1);}
+int atomicIncClosestHitCount() {return atomicIncVtCounters(2);}
+int atomicIncMissHitCount() {return atomicIncVtCounters(4);}
+int atomicIncPayloadHitCount() {return atomicIncVtCounters(5);}
+int atomicIncblockSpaceCount() {return atomicIncVtCounters(6);}
+int atomicIncAttribCount() {return atomicIncVtCounters(7);}
 
 // alpha version of low level ray emitter
 int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint type) {
@@ -107,7 +107,7 @@ int vtFetchHitIdc(in int lidx) {
     return int(imageLoad(rayLink, lidx).x)-1;
 }
 
-uvec2 vtFetchIndex(in int lidx){
+uvec2 vtFetchIndex(in int lidx) {
     uint c2dp = imageLoad(rayLink, lidx).y;
     return up2x(c2dp);
 }
@@ -118,13 +118,13 @@ VtRay vtFetchRay(in int lidx) {
 }
 
 
-int vtVerifyClosestHit(in int closestId, in int g){
+int vtVerifyClosestHit(in int closestId, in int g) {
     int id = g < 0 ? atomicIncClosestHitCount() : atomicIncClosestHitTypedCount(g);
     closestHits[id*5+(g+1)] = closestId+1;
     return id;
 }
 
-int vtVerifyMissedHit(in int missId, in int g){
+int vtVerifyMissedHit(in int missId, in int g) {
     //int id = g < 0 ? atomicIncMissHitCount() : atomicIncMissHitTypedCount(g);
     int id = atomicIncMissHitTypedCount(g);
     missHits[id*5+(g+1)] = missId+1;
@@ -132,11 +132,11 @@ int vtVerifyMissedHit(in int missId, in int g){
 }
 
 int vtClosestId(in int id, in int g) {return closestHits[id*5+(g+1)]-1; }
-int vtMissId(in int id, in int g){ return missHits[id*5+(g+1)]-1; }
+int vtMissId(in int id, in int g) { return missHits[id*5+(g+1)]-1; }
 int vtVerifyClosestHit(in int closestId) { int id = atomicIncClosestHitCount(); closestHits[id*5] = closestId+1; return id; }
 int vtVerifyMissedHit(in int missId) { int id = atomicIncMissHitCount(); missHits[id*5] = missId+1; return id; }
-int vtClosestId(in int id){ return vtClosestId(id, -1); }
-int vtMissId(in int id){ return vtMissId(id, -1); }
+int vtClosestId(in int id) { return vtClosestId(id, -1); }
+int vtMissId(in int id) { return vtMissId(id, -1); }
 
 
 #endif

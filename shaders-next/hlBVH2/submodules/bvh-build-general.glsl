@@ -1,4 +1,4 @@
-int cdelta( inout int a, inout int b ){
+int cdelta( inout int a, inout int b ) {
 #ifdef USE_MORTON_32
     uint acode = Mortoncodes[a], bcode = Mortoncodes[b];
     int pfx = nlz(acode^bcode);

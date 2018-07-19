@@ -36,19 +36,19 @@ bool validateTexture(const uint tbinding) {
 #define fetchTextureOffset(tbinding, tcoord, toffset) textureLodOffset(vSampler2D(tbinding-1), tcoord, 0, toffset)
 
 
-vec4 fetchDiffuse(in vec2 texcoord){
+vec4 fetchDiffuse(in vec2 texcoord) {
     const uint tbinding = material.diffuseTexture;
     const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.diffuse;
     return rslt;
 }
 
-vec4 fetchSpecular(in vec2 texcoord){
+vec4 fetchSpecular(in vec2 texcoord) {
     const uint tbinding = material.specularTexture;
     const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.specular;
     return rslt;
 }
 
-vec4 fetchEmission(in vec2 texcoord){
+vec4 fetchEmission(in vec2 texcoord) {
     const uint tbinding = material.emissiveTexture;
     const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.emissive;
     return rslt;
@@ -79,7 +79,7 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
     vec3 chd_a = vec3(T, 0.f), chd_b = chd_a;
 
     // parallax sample tracing 
-    for(int l=0;l<256;l++){
+    for(int l=0;l<256;l++) {
         float heightFromTexture = 1.f-fetchTexture(tbinding, chd_b.xy).z;
         if ( heightFromTexture <= chd_b.z ) break;
         chd_a = chd_b, chd_b += chv;
@@ -87,7 +87,7 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
     
     // refinement
     [[unroll]]
-    for(int l=0;l<refLayers;l++){
+    for(int l=0;l<refLayers;l++) {
         vec3 chd = mix(chd_a, chd_b, 0.5f);
         float heightFromTexture = 1.f-fetchTexture(tbinding, chd.xy).z;
         if ( heightFromTexture <= chd.z ) { chd_b = chd; } else { chd_a = chd; }
@@ -107,7 +107,7 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
 
 
 // generated normal mapping
-vec3 getUVH(in vec2 texcoord){ return vec3(texcoord, fetchTexture(material.bumpTexture, texcoord).x); }
+vec3 getUVH(in vec2 texcoord) { return vec3(texcoord, fetchTexture(material.bumpTexture, texcoord).x); }
 vec3 getNormalMapping(in vec2 texcoordi) {
     const uint tbinding = material.bumpTexture;
     const vec3 tc = validateTexture(tbinding) ? fetchTexture(tbinding, texcoordi).xyz : vec3(0.5f, 0.5f, 1.0f);

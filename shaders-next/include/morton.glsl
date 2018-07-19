@@ -3,11 +3,13 @@
 
 #ifdef USE_MORTON_32
 
-uint splitBy4(in lowp uint a){
-    //uvec2 r = uvec2(bitfieldExtract(a, 0, 8), bitfieldExtract(a, 8, 8)); // ---- ----  ---- ----  ---- ---- fedc ba98   ---- ----  ---- ----  ---- ---- 7654 3210
-    //r = (r | (r << 12u.xx)) & 0x000F000Fu.xx;                            // ---- ----  ---- fedc  ---- ---- ---- ba98   ---- ----  ---- 7654  ---- ---- ---- 3210
-    //r = (r | (r <<  6u.xx)) & 0x03030303u.xx;                            // ---- --fe  ---- --dc  ---- --ba ---- --98   ---- --76  ---- --54  ---- --32 ---- --10
-    //r = (r | (r <<  3u.xx)) & 0x11111111u.xx;                            // ---f ---e  ---d ---c  ---b ---a ---9 ---8   ---7 ---6  ---5 ---4  ---3 ---2 ---1 ---0
+uint splitBy4(in lowp uint a) {
+    //uint r = 0u;
+    //[[unroll]]
+    //for (int i=0;i<8;i++) {
+    //    r |= bitfieldExtract(a, i, 1) << (i<<2);
+    //}
+    //return r;
 
     uint r = (a | (a << 12u)) & 0x000F000Fu; // ---- ----  ---- 7654  ---- ---- ---- 3210
          r = (r | (r <<  6u)) & 0x03030303u; // ---- --76  ---- --54  ---- --32 ---- --10
@@ -35,7 +37,7 @@ uint encodeMorton(in uint a) {
 
 #else
 
-uvec2 splitBy4(in highp uint a){
+uvec2 splitBy4(in highp uint a) {
     //uvec2 r = 0u.xx;
     //[[unroll]]
     //for (int i=0;i<8;i++) {
