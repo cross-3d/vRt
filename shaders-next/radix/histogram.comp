@@ -16,10 +16,10 @@ initSubgroupIncFunctionTargetDual(localHistogram[WHERE], countHistogram, 1, uint
 
 
 void main() {
-    Local_Idx = gl_LocalInvocationID.x;
-    Wave_Idx = gl_LocalInvocationID.x / Wave_Size_RT;
-    Lane_Idx = gl_LocalInvocationID.x % Wave_Size_RT;
-    Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
+    //Local_Idx = gl_LocalInvocationID.x;
+    //Wave_Idx = gl_LocalInvocationID.x / Wave_Size_RT;
+    //Lane_Idx = gl_LocalInvocationID.x % Wave_Size_RT;
+    const uint Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
 
     // clear histogram of block (planned distribute threads)
     [[unroll]]

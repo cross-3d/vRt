@@ -12,10 +12,10 @@ shared uint localHistogram[RADICES];
 layout (local_size_x = RADICES) in;
 
 void main() {
-      Wave_Idx = gl_LocalInvocationID.x / Wave_Size_RT;
-      Lane_Idx = gl_LocalInvocationID.x % Wave_Size_RT;
-     Local_Idx = gl_LocalInvocationID.x;
-    Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
+    //  Wave_Idx = gl_LocalInvocationID.x / Wave_Size_RT;
+    //  Lane_Idx = gl_LocalInvocationID.x % Wave_Size_RT;
+    // Local_Idx = gl_LocalInvocationID.x;
+    const uint Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
 
     IFALL (gl_WorkGroupID.y < 1) {
         

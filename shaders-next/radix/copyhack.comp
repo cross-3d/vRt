@@ -7,21 +7,14 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    Local_Idx = gl_LocalInvocationID.x;
-    Wave_Idx = gl_LocalInvocationID.x / Wave_Size_RT;
-    Lane_Idx = gl_LocalInvocationID.x % Wave_Size_RT;
-    Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
-
     // constants
-    const uint wsize = uint(push_block.NumKeys);
+    //const uint wsize = uint(push_block.NumKeys);
+#define wsize push_block.NumKeys
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
-    const uint wgs = gl_NumWorkGroups.x;
     [[unroll, dependency_length(4)]]
-    for (uint w=0;w<wcount;w+=wgs) {
-        SB_BARRIER
-        uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + Local_Idx;
-        bool overflow = globalID >= wsize || globalID < 0;
-        if (!overflow) { KeyTmp[globalID] = KeyIn[globalID], ValueTmp[globalID] = ValueIn[globalID]; }
+    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
+        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + Local_Idx;
+        [[flatten]] if (globalID < wsize) { KeyTmp[globalID] = KeyIn[globalID], ValueTmp[globalID] = ValueIn[globalID]; }
     }
 
     LGROUP_BARRIER

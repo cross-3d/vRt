@@ -1,11 +1,11 @@
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
 
-#define OUR_INVOC_TERM
-uint Radice_Idx = 0;
-uint Lane_Idx = 0;
-uint Local_Idx = 0;
-uint Wave_Idx = 0;
+//#define OUR_INVOC_TERM
+//uint Radice_Idx = 0;
+//uint Lane_Idx = 0;
+//uint Local_Idx = 0;
+//uint Wave_Idx = 0;
 
 #ifdef INTEL_PLATFORM
 #define Wave_Size 32u
