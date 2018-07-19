@@ -193,7 +193,7 @@ namespace _vt {
 
         // 
         VtVertexAssemblyPipelineCreateInfo simfo;
-        simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, vt::natives::vertexAssembly[vendorName]);
+        simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, vt::natives::vertexAssembly.at(vendorName));
         //simfo.maxPrimitives = vtExtension.maxPrimitives;
         VtPipelineLayoutCreateInfo vtpl;
         createPipelineLayout(vtDevice, vtpl, simfo.pipelineLayout, VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT);
@@ -206,7 +206,7 @@ namespace _vt {
         // create dull barrier pipeline
         auto rng = vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2));
         auto ppl = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, 0, nullptr, 0, nullptr));
-        vtDevice->_dullBarrier = createComputeMemory(VkDevice(*_vtDevice), natives::dullBarrier[vtDevice->_vendorName], ppl, VkPipelineCache(*_vtDevice));
+        vtDevice->_dullBarrier = createComputeMemory(VkDevice(*_vtDevice), natives::dullBarrier.at(vtDevice->_vendorName), ppl, VkPipelineCache(*_vtDevice));
 
         return result;
     };

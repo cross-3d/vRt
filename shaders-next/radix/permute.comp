@@ -8,7 +8,7 @@ layout (local_size_x = BLOCK_SIZE) in;
 shared uint localHistogram[RADICES];
 
 // wide of 128 elements
-shared uint_rdc_wave_lcm _data[Wave_Size];
+shared highp uint_rdc_wave_lcm _data[Wave_Size];
 
 #define key _data[Lane_Idx]
 
@@ -38,7 +38,7 @@ void main() {
         IFALL(all(not(validAddress))) break;
 
         if (Wave_Idx == 0) {
-            key = p2x(uvec2(
+            key = p2x_8(uvec2(
                 BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
                 BFE(validAddress.y ? KeyIn[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
                 //validAddress.x ? BFE(KeyIn[addr.x], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK,
@@ -51,7 +51,7 @@ void main() {
         [[unroll]]
         for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
             const uvec_wave radice = uvec_wave(rk + Radice_Idx);
-            const bvec2 owned = and(equal(up2x(key), radice.xx), validAddress);
+            const bvec2 owned = and(equal(up2x_8(key), radice.xx), validAddress);
             if (any(owned)) {
                 WPTR2 offset = WPTR2(countOffset(uint(radice), owned));
                 if (owned.x) { ValueTmp[offset.x] = ValueIn[addr.x], KeyTmp[offset.x] = KeyIn[addr.x]; }

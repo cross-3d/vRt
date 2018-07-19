@@ -5,7 +5,7 @@
 namespace _vt {
     namespace hlbvh2 {
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> builderFirst = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> builderFirst = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/hlBVH2/bvh-build-first.comp.inl"
         } },
@@ -20,7 +20,7 @@ namespace _vt {
         } },
         };
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> builder = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> builder = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/hlBVH2/bvh-build.comp.inl"
         } },
@@ -35,7 +35,7 @@ namespace _vt {
         } },
         };
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> fitBox = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> fitBox = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/hlBVH2/bvh-fit.comp.inl"
         } },
@@ -54,7 +54,7 @@ namespace _vt {
 
         namespace triangle {
 
-            inline static std::map<VtVendor, std::vector<uint32_t>> outerBox = {
+            inline static const std::map<VtVendor, std::vector<uint32_t>> outerBox = {
                 { VT_VENDOR_AMD,{
     #include "../HardCodes/amd/hlBVH2/triangle/bound-calc.comp.inl"
             } },
@@ -69,7 +69,7 @@ namespace _vt {
             } },
             };
 
-            inline static std::map<VtVendor, std::vector<uint32_t>> genLeafs = {
+            inline static const std::map<VtVendor, std::vector<uint32_t>> genLeafs = {
                 { VT_VENDOR_AMD,{
     #include "../HardCodes/amd/hlBVH2/triangle/leaf-gen.comp.inl"
             } },
@@ -88,7 +88,7 @@ namespace _vt {
 
 
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> linkLeafs = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> linkLeafs = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/hlBVH2/leaf-link.comp.inl"
         } },
@@ -103,7 +103,7 @@ namespace _vt {
         } },
         };
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> shorthand = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> shorthand = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/hlBVH2/shorthand.comp.inl"
         } },
@@ -118,7 +118,7 @@ namespace _vt {
         } },
         };
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> traverse = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> traverse = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/hlBVH2/traverse-bvh.comp.inl"
         } },
@@ -133,7 +133,7 @@ namespace _vt {
         } },
         };
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> interpolator = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> interpolator = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/hlBVH2/interpolator.comp.inl"
         } },
@@ -150,7 +150,7 @@ namespace _vt {
     };
 
     namespace qradix {
-        inline static std::map<VtVendor, std::vector<uint32_t>> permute = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> permute = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/radix/permute.comp.inl"
         } },
@@ -166,7 +166,7 @@ namespace _vt {
         };
 
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> workPrefix = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> workPrefix = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/radix/pfx-work.comp.inl"
         } },
@@ -182,7 +182,7 @@ namespace _vt {
         };
 
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> histogram = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> histogram = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/radix/histogram.comp.inl"
         } },
@@ -198,7 +198,7 @@ namespace _vt {
         };
 
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> copyhack = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> copyhack = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/radix/copyhack.comp.inl"
         } },
@@ -217,7 +217,7 @@ namespace _vt {
 
     namespace natives {
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> vertexAssembly = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> vertexAssembly = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/native/vinput.comp.inl"
         } },
@@ -233,7 +233,7 @@ namespace _vt {
         };
 
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> dullBarrier = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> dullBarrier = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/native/dull.comp.inl"
         } },
@@ -249,7 +249,7 @@ namespace _vt {
         };
 
 
-        inline static std::map<VtVendor, std::vector<uint32_t>> triplet = {
+        inline static const std::map<VtVendor, std::vector<uint32_t>> triplet = {
     { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/native/triplet.comp.inl"
         } },
@@ -265,5 +265,4 @@ namespace _vt {
         };
 
     }
-
 };
