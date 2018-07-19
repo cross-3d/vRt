@@ -49,19 +49,16 @@ uint Wave_Idx = 0;
 // pointer of...
 #define WPTR uint
 #define WPTR2 uvec2
-#define KEYTYPE uvec2
 
 #define READ_LANE(V, I) (uint(I >= 0 && I < Wave_Size_RT) * readLane(V, I))
 
-uint BFE(in uint ua, in uint o, in uint n) {
-    return BFE_HW(ua, int(o), int(n));
-}
-
-//planned extended support
-//uint64_t BFE(inout uint64_t ua, in uint64_t o, in uint64_t n) {
-uint BFE(in uvec2 ua, in uint o, in uint n) {
-    return uint(o >= 32u ? BFE_HW(ua.y, int(o-32u), int(n)) : BFE_HW(ua.x, int(o), int(n)));
-}
+#ifdef USE_MORTON_32
+#define KEYTYPE uint
+uint BFE(in uint ua, in int o, in int n) { return BFE_HW(ua, o, n); }
+#else
+#define KEYTYPE uvec2
+uint BFE(in uvec2 ua, in int o, in int n) { return uint(o >= 32u ? BFE_HW(ua.y, o-32, n) : BFE_HW(ua.x, o, n)); }
+#endif
 
 struct RadicePropStruct { uint Descending; uint IsSigned; };
 
@@ -84,7 +81,7 @@ layout (std430, binding = 3, set = 0 )  restrict buffer HistogramB {uint Histogr
 layout (std430, binding = 4, set = 0 )  restrict buffer PrefixSumB {uint PrefixSum[]; };
 
 // push constant in radix sort
-layout(push_constant) uniform PushBlock {uint NumKeys, Shift;} push_block;
+layout(push_constant) uniform PushBlock { uint NumKeys; int Shift; } push_block;
 
 // division of radix sort
 struct blocks_info { uint count; uint offset; uint limit; uint r0; };

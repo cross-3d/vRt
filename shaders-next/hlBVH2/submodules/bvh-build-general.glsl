@@ -1,7 +1,13 @@
 int cdelta( inout int a, inout int b ){
+#ifdef USE_MORTON_32
+    uint acode = Mortoncodes[a], bcode = Mortoncodes[b];
+    int pfx = nlz(acode^bcode);
+    return pfx + (pfx < 32 ? 0 : nlz(a^b));
+#else
     uvec2 acode = Mortoncodes[a], bcode = Mortoncodes[b];
-    int pfx = 32 + nlz(acode^bcode);
+    int pfx = nlz(acode^bcode);
     return pfx + (pfx < 64 ? 0 : nlz(a^b));
+#endif
 }
 
 int findSplit( inout int left, inout int right ) {

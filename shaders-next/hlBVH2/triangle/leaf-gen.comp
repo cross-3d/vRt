@@ -43,8 +43,12 @@ void main() {
         //const float area = 0.5f*length(cross((trivertsUnit[1]-trivertsUnit[0]).xyz, (trivertsUnit[2]-trivertsUnit[0]).xyz));
 
         const vec4 unorm4f = vec4((trivertsUnit[0] + trivertsUnit[1] + trivertsUnit[2]).xyz * 0.33333333333333f, fma(area,2.f,-1.f));
+        
+#ifdef USE_MORTON_32
+        const uint mortonCode = encodeMorton(packSnorm4x8(unorm4f));
+#else
         const uvec2 mortonCode = encodeMorton(uvec2(packSnorm2x16(unorm4f.xy), packSnorm2x16(unorm4f.zw)));
-
+#endif
 
         {
 #ifdef VTX_TRANSPLIT

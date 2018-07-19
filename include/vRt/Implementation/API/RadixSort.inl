@@ -7,8 +7,8 @@ namespace _vt {
 
     // radix sorting command (qRadix)
     VtResult radixSort(std::shared_ptr<CommandBuffer>& cmdBuf, const VkDescriptorSet& inputSet, uint32_t primCount = 2) {
-        constexpr auto STEPS = 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // QLC
-        //constexpr auto STEPS = 32ull, WG_COUNT = 64ull, RADICE_AFFINE = 32ull; // MLC
+        constexpr auto STEPS = RVT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // QLC
+        //constexpr auto STEPS = RVT_USE_MORTON_32 ? 16ull : 32ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // MLC
 
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();

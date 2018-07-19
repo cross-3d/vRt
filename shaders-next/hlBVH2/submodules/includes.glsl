@@ -2,7 +2,11 @@
 // Morton codes and geometry counters
 
 layout ( binding = 0, set = 0, std430 ) coherent buffer MortoncodesB {
+#ifdef USE_MORTON_32
+    uint Mortoncodes[];
+#else
     uvec2 Mortoncodes[];
+#endif
 };
 
 layout ( binding = 1, set = 0, std430 ) coherent buffer MortoncodesIndicesB {
