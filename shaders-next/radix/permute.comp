@@ -8,7 +8,7 @@ layout (local_size_x = BLOCK_SIZE) in;
 shared uint localHistogram[RADICES];
 
 // wide of 128 elements
-shared uint_rdc_wave_lcm _data[64];
+shared uint_rdc_wave_lcm _data[Wave_Size];
 
 #define key _data[Lane_Idx]
 

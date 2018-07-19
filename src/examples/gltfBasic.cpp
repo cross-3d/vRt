@@ -137,6 +137,9 @@ inline auto _getFormat(const tinygltf::Accessor& accs) {
 }
 
 
+// planned add window sizes
+const uint32_t canvasWidth = 1920, canvasHeight = 1080;
+
 void main() {
     using namespace vt;
 
@@ -150,7 +153,7 @@ void main() {
 
     // create GLFW window
     std::string title = "vRt early test";
-    uint32_t canvasWidth = 1280, canvasHeight = 720; float windowScale = 1.0;
+    
 
     GLFWwindow* window = glfwCreateWindow(canvasWidth, canvasHeight, "vRt early test", NULL, NULL);
     if (!window) { glfwTerminate(); exit(EXIT_FAILURE); }
@@ -169,6 +172,7 @@ void main() {
     auto gpu = physicalDevices[gpuID];
 
     // create surface and get format by physical device
+    float windowScale = 1.0;
     glfwGetWindowContentScale(window, &windowScale, nullptr);
     appfw->createWindowSurface(window, canvasWidth, canvasHeight, title);
     appfw->format(appfw->getSurfaceFormat(gpu));
@@ -194,7 +198,7 @@ void main() {
     dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
     dii.layout = VK_IMAGE_LAYOUT_GENERAL;
     dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    dii.size = { 1280, 720, 1 };
+    dii.size = { canvasWidth, canvasHeight, 1 };
     VtDeviceImage outputImage;
     vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outputImage);
 
@@ -351,7 +355,7 @@ void main() {
     VtCameraUniform cameraUniformData;
     cameraUniformData.projInv = glm::transpose(glm::inverse(pjMatrix));
     cameraUniformData.camInv = glm::transpose(glm::inverse(atMatrix));
-    cameraUniformData.sceneRes = glm::vec4(1280.f, 720.f, 1.f, 1.f);
+    cameraUniformData.sceneRes = glm::vec4(canvasWidth, canvasHeight, 1.f, 1.f);
     cameraUniformData.variant = 1;
 
     {
@@ -453,7 +457,7 @@ void main() {
     {
         // create ray tracing set
         VtRayTracingSetCreateInfo rtsi;
-        rtsi.maxRays = 1280 * 720; // prefer that limit
+        rtsi.maxRays = canvasWidth * canvasHeight; // prefer that limit
         vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &raytracingSet);
     }
 
@@ -663,7 +667,7 @@ void main() {
         vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
         vtCmdBindAccelerator(qRtCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qRtCmdBuf, vertexAssembly);
-        vtCmdDispatchRayTracing(qRtCmdBuf, 1280, 720);
+        vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight);
         vkEndCommandBuffer(qRtCmdBuf);
     }
 
