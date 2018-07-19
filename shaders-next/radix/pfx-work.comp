@@ -12,11 +12,6 @@ shared uint localHistogram[RADICES];
 layout (local_size_x = RADICES) in;
 
 void main() {
-    //  Wave_Idx = gl_LocalInvocationID.x / Wave_Size_RT;
-    //  Lane_Idx = gl_LocalInvocationID.x % Wave_Size_RT;
-    // Local_Idx = gl_LocalInvocationID.x;
-    const uint Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
-
     IFALL (gl_WorkGroupID.y < 1) {
         
         // calculate prefix-sums of all work groups
@@ -27,20 +22,22 @@ void main() {
         uint awHistogram = 0; // sum of work-group histograms (globalized histograms)
         [[unroll]]
         for (uint wk=0;wk<WG_COUNT;wk++) {
-            uint widx = Local_Idx + RADICES * wk;
+            const uint widx = Local_Idx + RADICES * wk;
             if (Local_Idx < RADICES) PrefixSum[widx] = add(awHistogram, Histogram[widx]);
         }
 
         // calculate prefix-sum of all work-groups for each radice
         if (Local_Idx < RADICES) localHistogram[Local_Idx] = awHistogram;
         uint rdcAwPrefixOffset = 0u;//prefixScan(RADICES);
+        LGROUP_BARRIER
+
         {
             const uint limit = RADICES;
             uvec_wave ldx = Local_Idx;
             LGROUP_BARRIER
             {
-                uint prv = ldx >= 1 ? ldx-1 : 0;
-                uint tmp = ldx >= 1 && ldx < limit ? localHistogram[prv] : 0;
+                const uint prv = ldx >= 1 ? ldx-1 : 0;
+                const uint tmp = ldx >= 1 && ldx < limit ? localHistogram[prv] : 0;
                 LGROUP_BARRIER
                 if (ldx < limit) localHistogram[ldx] = tmp;
                 LGROUP_BARRIER
@@ -49,9 +46,9 @@ void main() {
             // reduction prefix-scan
             [[unroll]]
             for (int i=1;i<limit;i<<=1) {
-                uint prv = ldx >= i ? ldx-i : 0;
-                uint off = ldx >= i && ldx < limit ? localHistogram[prv] : 0, 
-                     hst =             ldx < limit ? localHistogram[ldx] : 0;
+                const uint prv = ldx >= i ? ldx-i : 0;
+                const uint off = ldx >= i && ldx < limit ? localHistogram[prv] : 0, 
+                           hst =             ldx < limit ? localHistogram[ldx] : 0;
                 LGROUP_BARRIER
                 if (ldx < limit) localHistogram[ldx] = off + hst;
                 LGROUP_BARRIER

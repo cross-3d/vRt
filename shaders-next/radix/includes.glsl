@@ -14,22 +14,28 @@
 #include "../include/ballotlib.glsl"
 
 
-// QLC optimized
-#define BITS_PER_PASS 4
-#define RADICES 16
-#define RADICES_MASK 0xF
-
 // MLC optimized
 //#define BITS_PER_PASS 2
 //#define RADICES 4
 //#define RADICES_MASK 0x3
 
+// QLC optimized
+#define BITS_PER_PASS 4
+#define RADICES 16
+#define RADICES_MASK 0xF
+
+// 8-bit
+//#define BITS_PER_PASS 8
+//#define RADICES 256
+//#define RADICES_MASK 0xFF
+
 #define AFFINITION 1
+//#define AFFINITION 16
 
 // general work groups
 #define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)
 #define BLOCK_SIZE_RT (gl_WorkGroupSize.x)
-#define WRK_SIZE_RT ((BLOCK_SIZE_RT/Wave_Size_RT) * gl_NumWorkGroups.y)
+#define WRK_SIZE_RT (gl_NumWorkGroups.y * Wave_Count_RT)
 
 #define uvec_wave uint
 #define bvec_wave bool

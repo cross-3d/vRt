@@ -12,8 +12,10 @@ namespace _vt {
         auto& vtRadix = (_vtRadix = std::make_shared<RadixSort>());
         vtRadix->_device = _vtDevice;
 
+        //constexpr auto STEPS = RVT_USE_MORTON_32 ? 4ull : 8ull, WG_COUNT = 64ull, RADICE_AFFINE = 256ull; // 8-bit
         constexpr auto STEPS = RVT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 16ull; // QLC
         //constexpr auto STEPS = RVT_USE_MORTON_32 ? 16ull : 32ull, WG_COUNT = 64ull, RADICE_AFFINE = 4ull; // MLC
+
         const auto& vendorName = _vtDevice->_vendorName;
 
         VtDeviceBufferCreateInfo bfi;
@@ -33,7 +35,7 @@ namespace _vt {
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_stepsBuffer); // unused
 
         bfi.format = VK_FORMAT_R32_UINT;
-        bfi.bufferSize = 16ull * WG_COUNT * sizeof(uint32_t);
+        bfi.bufferSize = RADICE_AFFINE * WG_COUNT * sizeof(uint32_t);
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_histogramBuffer);
         createDeviceBuffer(_vtDevice, bfi, vtRadix->_prefixSumBuffer);
 
