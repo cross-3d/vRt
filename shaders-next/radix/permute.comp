@@ -16,12 +16,11 @@ initSubgroupIncFunctionTargetDual(localHistogram[WHERE], countOffset, 1, uint, u
 
 
 void main() {
-    const uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RT + Wave_Idx; //gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
+    const uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
+    //const uint Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
 
     // set prefix sum (planned distribute threads) 
     [[unroll]]
-    //for (uint rk=0;rk<RADICES;rk+=BLOCK_SIZE_RT) {
-    //    const uvec_wave radice = rk + Local_Idx;
     for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
         const uvec_wave radice = uvec_wave(rk + Radice_Idx);
         if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
@@ -61,6 +60,7 @@ void main() {
             IFALL (all(or((radice >= RADICES).xx, or(owned, not(validAddress))))) break;
         }
 
+        LGROUP_BARRIER
         addr += Wave_Size_RT<<1;
     }
 

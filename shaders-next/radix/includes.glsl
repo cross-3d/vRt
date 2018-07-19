@@ -33,9 +33,10 @@
 //#define AFFINITION 16
 
 // general work groups
+#define Wave_Count_RX Wave_Count_RT //(gl_WorkGroupSize.x / Wave_Size_RT.x)
 #define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)
 #define BLOCK_SIZE_RT (gl_WorkGroupSize.x)
-#define WRK_SIZE_RT (gl_NumWorkGroups.y * Wave_Count_RT)
+#define WRK_SIZE_RT (gl_NumWorkGroups.y * Wave_Count_RX)
 
 #define uvec_wave uint
 #define bvec_wave bool
