@@ -38,11 +38,12 @@ You can see here current API:
 
 We still working on forming of ray tracing API. 
 
-## VERY Relative Calendar (VRC):
+## Roadmaps:
 
-#### July 2018 ("Hydrogen")
-- Development of better implementation 
-- Improve API and interfaces
+#### Next month?
+- Add texturing, materials and PBR support and example
+- Make example renderer, based on hybrid ray tracing
+- Add controllers, update all possible libraries
 
 #### 2018 Q4 ("Lithium")
 - Coming to (pre-)alpha stage
