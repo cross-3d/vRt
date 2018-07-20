@@ -138,7 +138,9 @@ inline auto _getFormat(const tinygltf::Accessor& accs) {
 
 
 // planned add window sizes
-const uint32_t canvasWidth = 1920, canvasHeight = 1080;
+//const uint32_t canvasWidth = 1920, canvasHeight = 1080;
+const uint32_t canvasWidth = 1280, canvasHeight = 720;
+
 
 void main() {
     using namespace vt;
