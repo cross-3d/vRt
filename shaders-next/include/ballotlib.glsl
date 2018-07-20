@@ -58,47 +58,12 @@ T fname() {\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 }
 
-#define initAtomicSubgroupIncFunctionDyn(mem, fname, T)\
-T fname(in T by) {\
-    const mediump uvec2 pfx = bPrefixSum();\
-    T gadd = 0;\
-    if (subgroupElect() && pfx.x > 0) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
-}
-
-
 // statically multiplied
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in uint WHERE) {\
     const mediump uvec2 pfx = bPrefixSum();\
     T gadd = 0;\
     if (subgroupElect() && pfx.x > 0) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
-}
-
-#define initAtomicSubgroupIncFunctionByTarget(mem, fname, T)\
-T fname(in uint WHERE, in T by) {\
-    const uvec2 pfx = bPrefixSum();\
-    T gadd = 0;\
-    if (subgroupElect() && pfx.x > 0) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
-}
-
-
-// statically multiplied
-#define initSubgroupIncFunctionTarget(mem, fname, by, T)\
-T fname(in uint WHERE) {\
-    const mediump uvec2 pfx = bPrefixSum();\
-    T gadd = 0;\
-    if (subgroupElect() && pfx.x > 0) {gadd = add(mem, T(pfx.x) * T(by));}\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
-}
-
-#define initSubgroupIncFunctionByTarget(mem, fname, T)\
-T fname(in uint WHERE, in T by) {\
-    const mediump uvec2 pfx = bPrefixSum();\
-    T gadd = 0;\
-    if (subgroupElect() && pfx.x > 0) {gadd = add(mem, T(pfx.x) * T(by));}\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 }
 
