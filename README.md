@@ -44,6 +44,7 @@ We still working on forming of ray tracing API.
 - Add texturing, materials and PBR support and example
 - Make example renderer, based on hybrid ray tracing
 - Add controllers, update all possible libraries
+- Add reflections and shadows
 
 #### 2018 Q4 ("Lithium")
 - Coming to (pre-)alpha stage
