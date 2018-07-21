@@ -72,11 +72,12 @@ template<class T>
 inline auto readFromBuffer(vte::Queue deviceQueue, const vt::VtDeviceBuffer& dBuffer, std::vector<T>& vctr, size_t byteOffset = 0) {
     VkResult result = VK_SUCCESS;
     vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
-        vt::vtCmdCopyDeviceBufferToHost(cmdBuf, dBuffer, deviceQueue->device->rtDev, 1, &VkBufferCopy{ 0, byteOffset, vte::strided<T>(vctr.size() }));
+        vt::vtCmdCopyDeviceBufferToHost(cmdBuf, dBuffer, deviceQueue->device->rtDev, 1, &VkBufferCopy{ 0, byteOffset, vte::strided<T>(vctr.size()) });
     });
     vt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
     return result;
 };
+
 
 inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer, size_t byteSize = 1024 * 16) {
     vt::VtDeviceBufferCreateInfo dbs;
