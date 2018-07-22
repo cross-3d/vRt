@@ -20,6 +20,7 @@ int findSplit( in int left, in int right ) {
     return clamp(split, left, right-1);
 }
 
+
 ivec2 determineRange( in int idx ) {
     int dir = clamp(cdelta(idx,idx+1) - cdelta(idx,idx-1), -1, 1), minPref = cdelta(idx,idx-dir), maxLen = 2;
     [[dependency_infinite]] while (cdelta(idx, maxLen*dir+idx) > minPref) maxLen <<= 1;
@@ -63,14 +64,14 @@ void splitNode2(in int gID) {
             const ivec2 h = mix((0).xx, leafOffset.xx, isLeaf) + split.xx + ivec2(0,1);
             //const ivec2 h = ((split+1)<<1).xx + ivec2(0,1); // required pID, but it can't be calculated without full building from top to bottom
 
-            // connect with child nodes 
+            // connect with child nodes
             bvhMeta[gID].xy = h+1;
             bvhMeta[h.x].zw = ivec2(gID+1, 0);
             bvhMeta[h.y].zw = ivec2(gID+1, 0);
 
             // set leaf indices, without using atomics
             [[flatten]] if (isLeaf.x) { bvhMeta[h.x].xy = (split+1).xx; LeafIndices[split+0] = h.x+1; }
-            [[flatten]] if (isLeaf.y) { bvhMeta[h.y].xy = (split+2).xx; LeafIndices[split+1] = h.x+2; }
+            [[flatten]] if (isLeaf.y) { bvhMeta[h.y].xy = (split+2).xx; LeafIndices[split+1] = h.y+1; }
         }
     }
 }
@@ -91,12 +92,14 @@ void splitNode(in int pID) {
             bvhMeta[pID].xy = h+1;
             bvhMeta[h.x].zw = ivec2(pID+1,0), bvhMeta[h.y].zw = ivec2(pID+1,0);
             bvhMeta[h.x].xy = transplit.xy+1, bvhMeta[h.y].xy = transplit.zw+1;
-            Actives[swapOut+wID(aCounterInc())] = h.x+1;
-            
-            //if (any(not(isLeaf))) Actives[swapOut+wID(aCounterInc())] =  h.x+1;
-            //[[flatten]]
-            //    if (all(isLeaf)) { const int cID = cCounterIncBoth(); LeafIndices[cID+0] = h.x+1, LeafIndices[cID+1] = h.y+1; } else
-            //    if (any(isLeaf)) { LeafIndices[cCounterInc()] = (isLeaf.x ? h.x : h.y)+1; } 
-        } else { LeafIndices[cCounterInc()] = pID+1; }
+
+#ifdef USE_ACTIVE
+            if (any(not(isLeaf))) Actives[swapOut+wID(aCounterInc())] = h.x+1;
+#endif
+
+            // set leaf indices, without using atomics
+            [[flatten]] if (isLeaf.x) { LeafIndices[split+0] = h.x+1; }
+            [[flatten]] if (isLeaf.y) { LeafIndices[split+1] = h.y+1; }
+        }
     }
 }

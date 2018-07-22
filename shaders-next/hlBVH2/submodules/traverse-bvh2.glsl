@@ -179,7 +179,8 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
                     [[flatten]]
                     if (fmask == 2) { // if both has intersection
-                        ivec2 ordered = cnode.xx + (nears.x<=nears.y ? ivec2(0,1) : ivec2(1,0));
+                        //ivec2 ordered = cnode.xx + (nears.x<=nears.y ? ivec2(0,1) : ivec2(1,0));
+                        ivec2 ordered = nears.x<=nears.y ? cnode.xy : cnode.yx;
                         traverseState.idx = ordered.x;
 #ifdef USE_STACKLESS_BVH
                         IF (all(childIntersect)) traverseState.bitStack |= 1ul; 
@@ -187,7 +188,8 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                         IF (all(childIntersect) & bool_(!stackIsFull())) storeStack(ordered.y);
 #endif
                     } else {
-                        traverseState.idx = cnode.x + fmask;
+                        //traverseState.idx = cnode.x + fmask;
+                        traverseState.idx = fmask == 0 ? cnode.x : cnode.y;
                     }
 
                     cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;

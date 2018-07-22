@@ -9,6 +9,7 @@
 
 #define BVH_BUILD
 #define BVH_CREATION
+#define USE_ACTIVE
 
 #include "../include/driver.glsl"
 #include "../include/structs.glsl"
@@ -26,9 +27,13 @@ shared int _counters[8];
 // define function for increment
 initAtomicSubgroupIncFunctionTarget(_counters[WHERE], _aCounterInc, 1, int)
 initAtomicSubgroupIncFunctionTarget(vtCounters[WHERE], vtCountersInc, 1, int)
+initAtomicSubgroupIncFunctionTarget(vtCounters[WHERE], vtCountersIncBoth, 2, int)
 int lCounterInc() {return vtCountersInc(0)*2;};
+
+// shared memory counters
 int cCounterInc() {return vtCountersInc(1);};
-int cCounterIncBoth() {return vtCountersInc(2);};
+int cCounterIncBoth() {return vtCountersIncBoth(1);};
+
 int aCounterInc() {return _aCounterInc(cBuffer*4);}
 
 uint rID(in uint t) {return gl_NumWorkGroups.x * t + gl_WorkGroupID.x;}

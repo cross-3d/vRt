@@ -19,20 +19,20 @@
 
 layout ( local_size_x = WORK_SIZE_BND ) in;
 
-
 // shared memory counters
 initAtomicSubgroupIncFunctionTarget(vtCounters[WHERE], vtCountersInc, 1, int)
+initAtomicSubgroupIncFunctionTarget(vtCounters[WHERE], vtCountersIncBoth, 2, int)
 int cCounterInc() {return vtCountersInc(1);};
-int cCounterIncBoth() {return vtCountersInc(2);};
+int cCounterIncBoth() {return vtCountersIncBoth(1);};
+
 
 #define GSIZE bvhBlock.leafCount
-
 #include "./submodules/bvh-build-general.glsl" // unified functions
 
 void main() {
 #ifdef FIRST_STEP // no support for steps
     if (Local_Idx == 0 && gl_WorkGroupID.x == 0) { 
-        const int hid = 0; bvhMeta[hid+0] = (0).xxxx, bvhMeta[hid+1] = (0).xxxx;
+        const int hid = 0; bvhMeta[hid+0] = (0).xxxx;
     }
 #endif
 
@@ -42,12 +42,11 @@ void main() {
         workSize = groupSize * gl_NumWorkGroups.x,
         threadID = Local_Idx,
         wsize = GSIZE-1;
-    const int sID = int(Local_Idx&1);
     for (uint fT=groupOffset;fT<wsize;fT+=workSize) {
         const int uID = int(fT + threadID); IFALL (uID >= (wsize-1)) break;
 
         [[flatten]]
-        if (uID < wsize-1) {
+        if (uID < wsize) {
 #ifdef FIRST_STEP
             splitNode2(uID);
 #endif
