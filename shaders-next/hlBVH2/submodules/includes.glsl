@@ -47,7 +47,9 @@ layout ( binding = 8, set = 0, std430 ) restrict buffer CountersB {
 #endif
 
 layout ( binding = 2, set = 1, std430 ) buffer bvhBoxesResultingB { BTYPE_ bvhBoxesResulting[][4]; };
-layout ( binding = 3, set = 1, rgba32i ) uniform iimageBuffer bvhMeta;
+layout ( binding = 3, set = 1, std430 ) buffer bvhMetaB { ivec4 bvhMeta[]; };
+//layout ( binding = 4, set = 1, std430 ) buffer bvhMetaOrderB { ivec4 bvhMetaReorder[]; };
+//layout ( binding = 3, set = 1, rgba32i ) uniform iimageBuffer bvhMeta;
 
 bbox_t calcTriBox(in mat3x4 triverts) {
     bbox_t result;

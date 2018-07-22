@@ -28,6 +28,7 @@ initAtomicSubgroupIncFunctionTarget(_counters[WHERE], _aCounterInc, 1, int)
 initAtomicSubgroupIncFunctionTarget(vtCounters[WHERE], vtCountersInc, 1, int)
 int lCounterInc() {return vtCountersInc(0)*2;};
 int cCounterInc() {return vtCountersInc(1);};
+int cCounterIncBoth() {return vtCountersInc(2);};
 int aCounterInc() {return _aCounterInc(cBuffer*4);}
 
 uint rID(in uint t) {return gl_NumWorkGroups.x * t + gl_WorkGroupID.x;}
@@ -45,6 +46,8 @@ uint mrQ(in uint t) {return bvhBlock.leafCount * 16u * t;}
 #define osize _counters[6]
 #define wsize _counters[5]
 #endif
+
+#define GSIZE bvhBlock.leafCount
 
 #define swapIn  _counters[1]
 #define swapOut _counters[2]
@@ -67,10 +70,7 @@ void main() {
     // create initial (root) node
     if (threadID == 0) {
 #ifdef FIRST_STEP
-        //int hid = lCounterInc();
-        int hid = 0;
-        imageStore(bvhMeta, hid+0, ivec4(1, bvhBlock.leafCount, 0, 0));
-        imageStore(bvhMeta, hid+1, ivec4(0, 0, 0, 0));
+        const int hid = 0; bvhMeta[hid+0] = ivec4(1, bvhBlock.leafCount, 0, 0), bvhMeta[hid+1] = ivec4(0, 0, 0, 0);
         Actives[aCounterInc()] = hid+1;
 #else
         cBuffer = 1, asize_inv_ = aCounter[  cBuffer], asize_ = aCounter[1-cBuffer];
@@ -122,7 +122,7 @@ void main() {
 
             // split sibling nodes
             [[flatten]]
-            if (uWD < wsize && fID >= 0) { splitNode(fID, sD); }
+            if (uWD < wsize && fID >= 0) { splitNode(fID|sD); }
         }
     }
 

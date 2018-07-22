@@ -212,14 +212,17 @@ namespace _vt {
                 }
 
                 auto metaView = info.bvhMetaBuffer ? vk::BufferView(bvhMetaView) : vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView);
-                auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 16ull * sizeof(int32_t) * info.bvhBoxOffset, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
+                auto metaBufferDesc = info.bvhMetaBuffer ? vk::DescriptorBufferInfo(info.bvhMetaBuffer, 0, VK_WHOLE_SIZE) : vtAccelerator->_bvhMetaBuffer->_descriptorInfo();
+                metaBufferDesc.offset = 4ull * sizeof(int32_t) * info.bvhMetaOffset;
 
-                auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+                auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 16ull * sizeof(int32_t) * info.bvhBoxOffset, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
+                auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {
-                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&metaView),
-                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView(&metaView),
-                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&boxBuffer),
-                    vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_bvhBlockUniform->_descriptorInfo())),
+                    //vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&metaView),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView(&metaView),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&metaBufferDesc),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo(&boxBuffer),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_bvhBlockUniform->_descriptorInfo())),
                 };
                 vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
             };

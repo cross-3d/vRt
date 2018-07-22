@@ -19,7 +19,7 @@
 
 void unifyNodeBox(inout int idx) {
     // initial for unify box
-    ivec2 comp = imageLoad(bvhMeta, idx).xy-1; // meta of contributable
+    ivec2 comp = bvhMeta[idx].xy-1;//imageLoad(bvhMeta, idx).xy-1; // meta of contributable
     if (comp.x != comp.y && comp.x >= 0) {
 
         // get contributors boxes
@@ -58,7 +58,8 @@ void main() {
 
         [[dependency_infinite]]
         for (int l=0;l<65536;l++) {
-            const int pid = idx >= 0 ? (imageLoad(bvhMeta, idx).z-1) : -1;
+            //const int pid = idx >= 0 ? (imageLoad(bvhMeta, idx).z-1) : -1;
+            const int pid = (idx >= 0 ? bvhMeta[idx].z : 0)-1;
             idx = pid >= 0 && atomicCompSwap(Flags[pid], 0, 1) == 1 ? pid : -1;
             if ( idx >= 0 ) { unifyNodeBox(idx); Flags[idx] = 0; } else { break; };
         }
