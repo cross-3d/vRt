@@ -6,28 +6,27 @@
 #define BIT_TPE uvec2
 #endif
 
-int cdelta( in int a, in int b ) {
+int prefixOf( in int a, in int b ) {
     BIT_TPE acode = Mortoncodes[a], bcode = Mortoncodes[b]; int pfx = nlz(acode^bcode);
     return ((a >= 0 && b >= 0) && (a < GSIZE && b < GSIZE)) ? (pfx + (pfx < BIT_FFT ? 0 : nlz(a^b))) : -1;
 }
 
 int findSplit( in int left, in int right ) {
-    int split = left, nstep = right - left, nsplit = split + nstep, commonPrefix = cdelta(split, nsplit);
+    int split = left, nstep = right - left, nsplit = split + nstep, commonPrefix = prefixOf(split, nsplit);
     [[dependency_infinite]] do {
         nstep = (nstep + 1) >> 1, nsplit = split + nstep;
-        if (cdelta(split, nsplit) > commonPrefix) { split = nsplit; }
+        if (prefixOf(split, nsplit) > commonPrefix) { split = nsplit; }
     } while (nstep > 1);
     return clamp(split, left, right-1);
 }
 
-
 ivec2 determineRange( in int idx ) {
-    int dir = clamp(cdelta(idx,idx+1) - cdelta(idx,idx-1), -1, 1), minPref = cdelta(idx,idx-dir), maxLen = 2;
-    [[dependency_infinite]] while (cdelta(idx, maxLen*dir+idx) > minPref) maxLen <<= 1;
+    int dir = clamp(prefixOf(idx,idx+1) - prefixOf(idx,idx-1), -1, 1), minPref = prefixOf(idx,idx-dir), maxLen = 2;
+    [[dependency_infinite]] while (prefixOf(idx, maxLen*dir+idx) > minPref) maxLen <<= 1;
 
     int len = 0;
     [[dependency_infinite]] 
-    for (int t = maxLen>>1; t > 0; t>>=1) { if (cdelta(idx, (len+t)*dir+idx) > minPref) len += t; }
+    for (int t = maxLen>>1; t > 0; t>>=1) { if (prefixOf(idx, (len+t)*dir+idx) > minPref) len += t; }
 
     int range = len * dir + idx;
     return clamp(ivec2(min(idx,range), max(idx,range)), (0).xx, (GSIZE-1).xx);
@@ -40,7 +39,7 @@ bool ODDB(in int val){ return (val&1)==1; } // check bit is odd
 
 // only low level, without hierarchies
 void splitNode2(in int gID) {
-    const int leafOffset = RFB(GSIZE+2);
+    const int leafOffset = GSIZE;
 
     // pID is upper "split"
     // that "split" is unknown

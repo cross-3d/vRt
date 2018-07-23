@@ -37,8 +37,9 @@ int cCounterIncBoth() {return vtCountersIncBoth(1);};
 int aCounterInc() {return _aCounterInc(cBuffer*4);}
 
 uint rID(in uint t) {return gl_NumWorkGroups.x * t + gl_WorkGroupID.x;}
-uint wID(in uint t) {return bvhBlock.leafCount * gl_WorkGroupID.x + t;}
-uint mrQ(in uint t) {return bvhBlock.leafCount * 16u * t;}
+uint wID(in uint t) {return bvhBlock.leafCount * gl_WorkGroupID.x * 2u + t;}
+uint mrQ(in uint t) {return bvhBlock.leafCount * t;}
+//uint mrQ(in uint t) {return bvhBlock.leafCount * 16u * t;}
 
 #define asize_ _counters[(1-cBuffer)*4]
 #define asize_inv_ _counters[cBuffer*4]
@@ -96,7 +97,7 @@ void main() {
                 cBuffer = 1-cBuffer, asize_inv_ = 0, asize = atomicExchange(asize_, 0), swapIn = int(mrQ(1-cBuffer)), swapOut = int(mrQ(cBuffer));
 #ifndef FIRST_STEP
                 //wsize = asize * (m == 0 ? 1 : int(gl_NumWorkGroups.x)), osize = tiled(wsize, int(gl_NumWorkGroups.x));
-                wsize = int(wID(asize)), osize = m == 0 ? asize : wsize;
+                wsize = swapIn+int(wID(asize)), osize = m == 0 ? asize : wsize;
 #endif
         }
         
@@ -122,12 +123,16 @@ void main() {
 #else
             #define rWD uWD
 #endif
-            const int fID = rWD < osize ? Actives[swapIn+rWD]-1 : -1;
-            [[flatten]] if (sD == 0 && rWD < osize) Actives[swapIn+rWD] = 0;
-
-            // split sibling nodes
             [[flatten]]
-            if (uWD < wsize && fID >= 0) { splitNode(fID|sD); }
+            if (uWD < wsize) {
+                const int fID = rWD < osize ? Actives[swapIn+rWD]-1 : -1;
+                [[flatten]] if (sD == 0 && rWD < osize) Actives[swapIn+rWD] = 0;
+
+                // split sibling nodes
+                [[flatten]]
+                if (fID >= 0) { splitNode(fID|sD); }
+                //if (uWD < wsize && fID >= 0) { splitNode(fID|sD); }
+            }
         }
     }
 
