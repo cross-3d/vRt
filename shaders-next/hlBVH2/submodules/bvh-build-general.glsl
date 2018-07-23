@@ -40,7 +40,7 @@ bool ODDB(in int val){ return (val&1)==1; } // check bit is odd
 
 // only low level, without hierarchies
 void splitNode2(in int gID) {
-    const int leafOffset = RFB(GSIZE+1);
+    const int leafOffset = RFB(GSIZE+2);
 
     // pID is upper "split"
     // that "split" is unknown
@@ -50,10 +50,10 @@ void splitNode2(in int gID) {
     // known one of range, but unknown a porential side
     // i.e. "split+1" may in range.x or "split" may in range.y, but we doesn't know, odd or even  
 
-    //const bool ISODD = ??;
-    //const int pID = RFB(ISODD ? range.x-1 : range.y) + (ISODD ? 1 : 0);
-    //const ivec2 range = bvhMeta[pID].xy-1; // originally by from top to bottom
+    //const bool ISODD = ???;
     const ivec2 range = determineRange(gID);
+    //const int pID = (((ISODD ? range.x-1 : range.y)+1)<<1) + (ISODD ? 1 : 0);
+    const int pID = gID;
     [[flatten]]
     if (range.x >= 0 && range.y >= 0 && range.y < GSIZE) {
         [[flatten]]
@@ -61,13 +61,15 @@ void splitNode2(in int gID) {
             const int split = findSplit(range.x, range.y); // split between childrens 
             const ivec4 transplit = ivec4(range.x, split+0, split+1, range.y);
             const bvec2 isLeaf = lessThan(transplit.yw - transplit.xz, ivec2(1,1));
-            const ivec2 h = mix((0).xx, leafOffset.xx, isLeaf) + split.xx + ivec2(0,1);
-            //const ivec2 h = ((split+1)<<1).xx + ivec2(0,1); // required pID, but it can't be calculated without full building from top to bottom
 
             // connect with child nodes
-            bvhMeta[gID].xy = h+1;
-            bvhMeta[h.x].zw = ivec2(gID+1, 0);
-            bvhMeta[h.y].zw = ivec2(gID+1, 0);
+            const ivec2 h = mix((0).xx, leafOffset.xx, isLeaf) + split.xx + ivec2(0,1);
+            bvhMeta[pID].xy = h+1;
+            bvhMeta[h.x].zw = ivec2(pID+1,0), bvhMeta[h.y].zw = ivec2(pID+1,0);
+
+#ifdef USE_ACTIVE
+            if (any(not(isLeaf))) Actives[swapOut+wID(aCounterInc())] = h.x+1;
+#endif
 
             // set leaf indices, without using atomics
             [[flatten]] if (isLeaf.x) { bvhMeta[h.x].xy = (split+1).xx; LeafIndices[split+0] = h.x+1; }

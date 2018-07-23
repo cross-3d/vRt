@@ -32,7 +32,8 @@ int cCounterIncBoth() {return vtCountersIncBoth(1);};
 void main() {
 #ifdef FIRST_STEP // no support for steps
     if (Local_Idx == 0 && gl_WorkGroupID.x == 0) { 
-        const int hid = 0; bvhMeta[hid+0] = (0).xxxx;
+        //const int hid = 0; bvhMeta[hid+0] = (0).xxxx;
+        const int hid = 0; bvhMeta[hid+0] = ivec4(3, 4, 0, 0), bvhMeta[hid+1] = (0).xxxx;
     }
 #endif
 
