@@ -28,7 +28,7 @@ namespace _vt {
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
         vtDevice->_device = device;
 
-        vk::PhysicalDevice gpu = *vtDevice->_physicalDevice;
+        vk::PhysicalDevice gpu = vk::PhysicalDevice(*vtDevice->_physicalDevice);
         vtDevice->_vendorName = getVendorName(gpu.getProperties().vendorID);
 
         VtResult result = VK_SUCCESS;

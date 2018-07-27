@@ -36,7 +36,7 @@ namespace NSM {
 
         vk::DescriptorPool descriptorPool = nullptr;
         vk::PipelineCache pipelineCache = nullptr;
-        vk::DispatchLoaderDynamic dldid = nullptr;
+        vk::DispatchLoaderDynamic dldid = {};
         VmaAllocator allocator;
 
         std::vector<DevQueue> queues;

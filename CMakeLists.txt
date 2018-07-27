@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.10)
 set (PROJECT_NAME vRt)
 
 project (${PROJECT_NAME})
@@ -86,7 +86,7 @@ if(MSVC OR MSVS OR MSYS OR MINGW)
     set(DEFINES ${DEFINES} -DOS_WIN -DWIN32) 
 endif()
 
-if(UNIX AND NOT APPLE)
+if(UNIX OR LINUX)
     set(DEFINES ${DEFINES} -DOS_LNX) 
 endif()
 
@@ -97,7 +97,9 @@ set (CMAKE_MODULE_PATH
     "${PROJECT_SOURCE_DIR}/modules/" )
 
 find_package(Vulkan QUIET)
+if (Vulkan_LIBRARY) 
 get_filename_component(VULKAN_DIR ${Vulkan_LIBRARY} DIRECTORY )
+endif ()
 
 set (DEP_DIR "${PROJECT_SOURCE_DIR}")
 set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/src/lib"     "${VULKAN_DIR}")
@@ -105,15 +107,16 @@ set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${
 #set (LIBS glfw3 ${Vulkan_LIBRARY})
 set (LIBS glfw3)
 
+set (CMAKE_CXX_EXTENSIONS true)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_C_STANDARD 11)
 
 if (MSVC)
-    set (CMAKE_CXX_FLAGS "/std:c++latest /arch:AVX2 /EHsc /Ox /Oi /Ot /Oy /Ob2 /GL /GT")
+    set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "/std:c++latest /arch:AVX2 /EHsc /Ox /Oi /Ot /Oy /Ob2 /GL /GT")
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG /INCREMENTAL:NO")
 else()
-    set (CMAKE_CXX_FLAGS "-std=c++2a -march=skylake")
-    set (CMAKE_C_FLAGS "-std=c1x -march=skylake")
+    set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++2a -march=skylake -fpermissive -Wall -Wextra")
+    set (CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=c1x -march=skylake -fpermissive -Wall -Wextra")
 endif()
 
 
@@ -122,10 +125,11 @@ set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -Ofast")
 set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -Og")
 set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast")
 
-set (INCLUDE_LIST 
-    ${INC_DIR}
-    ${Vulkan_INCLUDE_DIRS}
-)
+set (INCLUDE_LIST ${INC_DIR})
+
+if(Vulkan_INCLUDE_DIRS)
+set (INCLUDE_LIST ${INCLUDE_LIST} ${Vulkan_INCLUDE_DIRS})
+endif()
 
 add_definitions(${DEFINES})
 link_directories(${LIB_DIR})

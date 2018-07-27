@@ -7,7 +7,7 @@ namespace _vt {
 
     // destructor of DeviceImage
     inline DeviceImage::~DeviceImage() {
-        std::async(std::launch::async | std::launch::deferred, [=]() {
+        VRT_ASYNC([=]() {
             vmaDestroyImage(_device->_allocator, _image, _allocation);
         });
     };
@@ -42,7 +42,7 @@ namespace _vt {
         imageInfo.sharingMode = vk::SharingMode::eExclusive;
         imageInfo.arrayLayers = 1; // unsupported
         imageInfo.tiling = vk::ImageTiling::eOptimal;
-        imageInfo.extent = { cinfo.size.width, cinfo.size.height, cinfo.size.depth * (isCubemap ? 6 : 1) };
+        imageInfo.extent = vk::Extent3D{ cinfo.size.width, cinfo.size.height, cinfo.size.depth * (isCubemap ? 6 : 1) };
         imageInfo.format = vk::Format(cinfo.format);
         imageInfo.mipLevels = cinfo.mipLevels;
         imageInfo.pQueueFamilyIndices = &cinfo.familyIndex;

@@ -1,4 +1,4 @@
-#include <appBase.hpp>
+#include "../base/appBase.hpp"
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -142,7 +142,7 @@ inline auto _getFormat(const tinygltf::Accessor& accs) {
 const uint32_t canvasWidth = 1280, canvasHeight = 720;
 
 
-void main() {
+int main() {
     using namespace vt;
 
     if (!glfwInit()) exit(EXIT_FAILURE);
@@ -956,5 +956,5 @@ void main() {
     glfwDestroyWindow(window); glfwTerminate();
     //system("pause");
 
-
+    return 0;
 }

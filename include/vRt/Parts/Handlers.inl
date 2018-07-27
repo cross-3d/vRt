@@ -130,6 +130,7 @@ namespace vt { // store in official namespace
         operator VkBufferView() const { return *_vtBuffer; };
         operator bool() const { return !!_vtBuffer; };
         auto* operator->() { return _vtBuffer.get(); };
+        auto* operator->() const { return _vtBuffer.get(); };
     };
 
     // advanced class (image)
@@ -141,6 +142,7 @@ namespace vt { // store in official namespace
         operator VkImageView() const { return *_vtDeviceImage; };
         operator bool() const { return !!_vtDeviceImage; };
         auto* operator->() { return _vtDeviceImage.get(); };
+        auto* operator->() const { return _vtDeviceImage.get(); };
     };
 
     struct VtDevice {

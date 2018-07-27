@@ -10,6 +10,11 @@
 #include "Parts/Structures.inl"
 #include "Parts/API.inl"
 
+// linux not support indirect implementation
+#ifdef __GNU__
+#define RVT_IMPLEMENTATION
+#endif
+
 // notify compilers or IDE about Vulkan API ray tracing (vRt) library connection
 #define RVT_API_ENABLED
 //#define RVT_USE_MORTON_32 true

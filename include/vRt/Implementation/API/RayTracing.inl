@@ -96,7 +96,7 @@ namespace _vt {
 
             // reload to caches and reset counters (if has group shaders)
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            for (int i = 0; i < std::min(4ull, rtppl->_groupPipelines.size()); i++) {
+            for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_groupPipelines.size()); i++) {
                 if (rtppl->_groupPipelines[i]) {
                     cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 16 * sizeof(uint32_t)) });
                     cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, rayCount * sizeof(uint32_t) * 4) });
@@ -113,7 +113,7 @@ namespace _vt {
                 }
 
                 // handling hits in groups
-                for (int i = 0; i < std::min(4ull, rtppl->_closestHitPipeline.size()); i++) {
+                for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
                     if (rtppl->_closestHitPipeline[i]) {
                         rtset->_cuniform.currentGroup = i;
                         vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
@@ -123,7 +123,7 @@ namespace _vt {
             }
 
             // use resolve shader for resolve ray output or pushing secondaries
-            for (int i = 0; i < std::min(4ull, rtppl->_groupPipelines.size()); i++) {
+            for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_groupPipelines.size()); i++) {
                 if (rtppl->_groupPipelines[i]) {
                     rtset->_cuniform.currentGroup = i;
                     vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);

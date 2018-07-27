@@ -1,11 +1,13 @@
 #pragma once
 
-#ifdef OS_WIN
+//#ifdef OS_WIN
+#if (defined(_WIN32) || defined(__MINGW32__) || defined(_MSC_VER_) || defined(__MINGW64__)) 
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
 #endif
 
-#ifdef OS_LNX
+//#ifdef OS_LNX
+#ifdef __linux__
 #define GLFW_EXPOSE_NATIVE_X11
 #define GLFW_EXPOSE_NATIVE_GLX
 #endif
@@ -359,7 +361,7 @@ namespace NSM
         // create window and surface for this application (multi-window not supported)
         virtual SurfaceWindow &createWindowSurface(GLFWwindow *window, uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
             applicationWindow.window = window;
-            applicationWindow.surfaceSize = { WIDTH, HEIGHT };
+            applicationWindow.surfaceSize = vk::Extent2D{ WIDTH, HEIGHT };
             auto vksurface = VkSurfaceKHR();
             auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, &vksurface);
             if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
@@ -370,7 +372,7 @@ namespace NSM
         // create window and surface for this application (multi-window not supported)
         virtual SurfaceWindow &createWindowSurface(uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
             applicationWindow.window = glfwCreateWindow(WIDTH, HEIGHT, title.c_str(), nullptr, nullptr);
-            applicationWindow.surfaceSize = { WIDTH, HEIGHT };
+            applicationWindow.surfaceSize = vk::Extent2D{ WIDTH, HEIGHT };
             auto vksurface = VkSurfaceKHR();
             auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, &vksurface);
             if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };

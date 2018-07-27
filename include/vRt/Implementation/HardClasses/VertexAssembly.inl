@@ -9,7 +9,7 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         auto& vtVertexAssembly = (_vtVertexAssembly = std::make_shared<VertexAssemblyPipeline>());
         vtVertexAssembly->_device = _vtDevice;
-        vtVertexAssembly->_pipelineLayout = info.pipelineLayout;
+        vtVertexAssembly->_pipelineLayout = info.pipelineLayout._vtPipelineLayout;
         vtVertexAssembly->_vertexAssemblyPipeline = createCompute(VkDevice(*_vtDevice), info.vertexAssemblyModule, *vtVertexAssembly->_pipelineLayout, VkPipelineCache(*_vtDevice));
         return result;
     };
