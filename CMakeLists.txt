@@ -133,6 +133,7 @@ include_directories(${INCLUDE_LIST})
 file (GLOB RSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCES_LIST})
 
 
+
 # make helloTriangle
 set (APPLICATION_NAME helloTriangle)
 add_executable(${APPLICATION_NAME} src/examples/helloTriangle.cpp ${RSOURCES})
@@ -143,6 +144,7 @@ foreach(source IN LISTS RSOURCES)
     string(REPLACE "/" "\\" source_path_msvc "${source_path}")
     source_group("${source_path_msvc}" FILES "${source}")
 endforeach()
+
 
 
 # make gltfBasic
