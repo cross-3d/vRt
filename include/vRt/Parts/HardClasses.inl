@@ -237,7 +237,7 @@ namespace _vt { // store in undercover namespace
         VkDeviceSize _size;
         auto _hostMapped() const { return _allocationInfo.pMappedData; };
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        std::shared_ptr<Device> _parent() const { return _device.lock(); };
         operator VkBuffer() const { return _buffer; }; // cast operator
         operator VkBufferView() const { return _bufferView; }; // cast operator
         auto _descriptorInfo() const {

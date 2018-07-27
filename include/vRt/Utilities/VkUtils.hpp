@@ -17,18 +17,10 @@
 #include <random>
 #include <vector>
 #include <algorithm>
+#include <execution>
 #include <iterator>
 #include <cstddef>
 #include <optional>
-
-#ifdef VRT_ENABLE_EXECUTION_POLICY
-#include <execution>
-#define VRT_ASYNC(F) std::async(std::launch::async|std::launch::deferred,F);
-#else
-#define VRT_ASYNC(F) std::async(F);
-#endif
-
-
 
 namespace _vt {
     constexpr auto DEFAULT_FENCE_TIMEOUT = 100000000000ll;
@@ -336,9 +328,9 @@ namespace _vt {
         VkFence fence = nullptr; VkFenceCreateInfo fin{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr };
         vkCreateFence(device, &fin, nullptr, &fence);
         vkQueueSubmit(queue, 1, (const VkSubmitInfo *)&smbi, fence);
-        VRT_ASYNC([=]() {
+        std::async(std::launch::async | std::launch::deferred, [=]() {
             vkWaitForFences(device, 1, &fence, true, DEFAULT_FENCE_TIMEOUT);
-            VRT_ASYNC([=]() {
+            std::async(std::launch::async | std::launch::deferred, [=]() {
                 vkDestroyFence(device, fence, nullptr);
                 if (asyncCallback) asyncCallback();
             });

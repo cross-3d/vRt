@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required (VERSION 3.0)
 set (PROJECT_NAME vRt)
 
 project (${PROJECT_NAME})
@@ -40,15 +40,15 @@ set(SOURCES_LIST
     "./include/imgui/*/*.cpp"
     "./include/vulkan/*.c"
     "./include/vulkan/*.cpp"
-    "./include/vulkan/*/*.c"
-    "./include/vulkan/*/*.cpp"
+    #"./include/vulkan/*/*.c"
+    #"./include/vulkan/*/*.cpp"
     #"./include/tinyrender/*.c"
     #"./include/tinyrender/*.cpp"
     #"./include/tinyrender/*/*.c"
     #"./include/tinyrender/*/*.cpp"
-    #"./include/vRt/*.c"
-    #"./include/vRt/*.cpp"
-    #"./include/vRt/*/*.c"
+    "./include/vRt/*.c"
+    "./include/vRt/*.cpp"
+    "./include/vRt/*/*.c"
     #"./include/vRt/*/*.cpp"
     "./include/*.h"
     "./include/*.hpp"
@@ -70,7 +70,6 @@ set(SOURCES_LIST
     "./include/*/*/*/*/*/*.inl"
 )
 
-
 set (DEFINES
     -DNOMINMAX
     -D_CRT_SECURE_NO_WARNINGS
@@ -87,7 +86,7 @@ if(MSVC OR MSVS OR MSYS OR MINGW)
     set(DEFINES ${DEFINES} -DOS_WIN -DWIN32) 
 endif()
 
-if(UNIX OR LINUX)
+if(UNIX AND NOT APPLE)
     set(DEFINES ${DEFINES} -DOS_LNX) 
 endif()
 
@@ -97,36 +96,24 @@ set (CMAKE_MODULE_PATH
     "${CMAKE_MODULE_PATH}/modules" 
     "${PROJECT_SOURCE_DIR}/modules/" )
 
-if (Vulkan_LIBRARY) 
+find_package(Vulkan QUIET)
 get_filename_component(VULKAN_DIR ${Vulkan_LIBRARY} DIRECTORY )
-endif ()
 
 set (DEP_DIR "${PROJECT_SOURCE_DIR}")
 set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/src/lib"     "${VULKAN_DIR}")
 set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/base/" "${DEP_DIR}/src/base/imgui" "${PROJECT_SOURCE_DIR}")
-
 #set (LIBS glfw3 ${Vulkan_LIBRARY})
 set (LIBS glfw3)
 
-if (UNIX OR LINUX)
-find_package(X11 QUIET)
-    if (X11_FOUND)
-        set (LIBS ${LIBS} ${X11_LIBRARIES})
-        set (INC_DIR ${INC_DIR} ${X11_INCLUDE_DIR})
-    endif()
-    set (LIBS ${LIBS} -static-libgcc -static-libstdc++ -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl)
-endif()
-
-set (CMAKE_CXX_EXTENSIONS true)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_C_STANDARD 11)
 
 if (MSVC)
-    set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "/std:c++latest /arch:AVX2 /EHsc /Ox /Oi /Ot /Oy /Ob2 /GL /GT")
+    set (CMAKE_CXX_FLAGS "/std:c++latest /arch:AVX2 /EHsc /Ox /Oi /Ot /Oy /Ob2 /GL /GT")
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG /INCREMENTAL:NO")
 else()
-    set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++2a -march=skylake -fpermissive -lpthread -w  -Werror")
-    set (CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-std=c1x -march=skylake -fpermissive -lpthread -w -Werror")
+    set (CMAKE_CXX_FLAGS "-std=c++2a -march=skylake")
+    set (CMAKE_C_FLAGS "-std=c1x -march=skylake")
 endif()
 
 
@@ -135,11 +122,10 @@ set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -Ofast")
 set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -Og")
 set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast")
 
-set (INCLUDE_LIST ${INC_DIR})
-
-if(Vulkan_INCLUDE_DIRS)
-set (INCLUDE_LIST ${INCLUDE_LIST} ${Vulkan_INCLUDE_DIRS})
-endif()
+set (INCLUDE_LIST 
+    ${INC_DIR}
+    ${Vulkan_INCLUDE_DIRS}
+)
 
 add_definitions(${DEFINES})
 link_directories(${LIB_DIR})

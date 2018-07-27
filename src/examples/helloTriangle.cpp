@@ -1,5 +1,5 @@
 
-#include "../base/appBase.hpp"
+#include <appBase.hpp>
 
 
 struct VtAppMaterial {
@@ -111,7 +111,7 @@ inline auto getShaderDir(const uint32_t& vendorID) {
     return shaderDir;
 }
 
-int main() {
+void main() {
     using namespace vt;
 
     if (!glfwInit()) exit(EXIT_FAILURE);
@@ -764,5 +764,5 @@ int main() {
     glfwDestroyWindow(window); glfwTerminate();
     //system("pause");
 
-    return 0;
+
 }

@@ -69,15 +69,6 @@
         "map": "cpp",
         "queue": "cpp",
         "xtree": "cpp",
-        "optional": "cpp",
-        "*.tcc": "cpp",
-        "cctype": "cpp",
-        "cfenv": "cpp",
-        "cinttypes": "cpp",
-        "clocale": "cpp",
-        "cwctype": "cpp",
-        "forward_list": "cpp",
-        "string_view": "cpp",
-        "valarray": "cpp"
+        "optional": "cpp"
     }
 }
