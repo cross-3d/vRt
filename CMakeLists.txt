@@ -110,7 +110,8 @@ find_package(X11 QUIET)
         set (LIBS ${LIBS} ${X11_LIBRARIES})
         set (INC_DIR ${INC_DIR} ${X11_INCLUDE_DIR})
     endif()
-    set (LIBS ${LIBS} -static-libgcc -static-libstdc++ -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl)
+    #set (LIBS ${LIBS} -static-libgcc -static-libstdc++ -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl)
+    set (LIBS ${LIBS} -static-libgcc -static-libstdc++ -lglfw3 -lX11 -lXrandr -lpthread -ldl)
 endif()
 
 
