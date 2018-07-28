@@ -21,7 +21,11 @@ namespace vt { // store in official namespace
         uint32_t mainQueueFamily = 0;
         size_t sharedCacheSize = 1024u * 1024u;
         size_t maxPrimitives = 1024u * 256u;
+#ifdef ENABLE_RVT_STRING_VIEW
         std::string_view shaderPath = "./";
+#else
+        std::string shaderPath = "./";
+#endif
         VmaAllocator allocator = nullptr;
     };
 

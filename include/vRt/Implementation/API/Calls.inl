@@ -115,7 +115,7 @@ namespace vt {
 
     // planned to merge into dedicated implementation
     inline VtResult vtCmdBindRayTracingSet(VtCommandBuffer commandBuffer, VtRayTracingSet rtset) {
-        commandBuffer->_rayTracingSet = std::shared_ptr<_vt::RayTracingSet>(rtset);
+        commandBuffer->_rayTracingSet = rtset._vtRTSet;
         return VK_SUCCESS;
     };
 

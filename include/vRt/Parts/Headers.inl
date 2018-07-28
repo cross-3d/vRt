@@ -13,6 +13,10 @@
 
 #include <map>
 #include <memory>
+
+#ifdef ENABLE_RVT_STRING_VIEW
 #include <string_view>
+#endif
+
 #include <vector>
 #include <functional>
