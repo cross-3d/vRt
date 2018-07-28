@@ -53,7 +53,8 @@ inline auto writeIntoBuffer(vte::Queue deviceQueue, const std::vector<T>& vctr, 
     VkResult result = VK_SUCCESS;
     vt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
     vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
-        vt::vtCmdCopyHostToDeviceBuffer(cmdBuf, deviceQueue->device->rtDev, dBuffer, 1, &VkBufferCopy{ 0, byteOffset, vte::strided<T>(vctr.size()) });
+        VkBufferCopy bfc = { 0, byteOffset, vte::strided<T>(vctr.size()) };
+        vt::vtCmdCopyHostToDeviceBuffer(cmdBuf, deviceQueue->device->rtDev, dBuffer, 1, &bfc);
     });
     return result;
 };
@@ -63,7 +64,8 @@ inline auto writeIntoImage(vte::Queue deviceQueue, const std::vector<T>& vctr, c
     VkResult result = VK_SUCCESS;
     vt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
     vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
-        vt::vtCmdCopyHostToDeviceImage(cmdBuf, deviceQueue->device->rtDev, dImage, 1, &VkBufferImageCopy{ 0, dImage->_extent.width, dImage->_extent.height, dImage->_subresourceRange, {0u,0u,0u}, dImage->_extent });
+        VkBufferImageCopy bfc = { 0, dImage->_extent.width, dImage->_extent.height, dImage->_subresourceLayers, VkOffset3D{0u,0u,0u}, dImage->_extent };
+        vt::vtCmdCopyHostToDeviceImage(cmdBuf, deviceQueue->device->rtDev, dImage, 1, &bfc);
     });
     return result;
 };
@@ -72,11 +74,14 @@ template<class T>
 inline auto readFromBuffer(vte::Queue deviceQueue, const vt::VtDeviceBuffer& dBuffer, std::vector<T>& vctr, size_t byteOffset = 0) {
     VkResult result = VK_SUCCESS;
     vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
-        vt::vtCmdCopyDeviceBufferToHost(cmdBuf, dBuffer, deviceQueue->device->rtDev, 1, &VkBufferCopy{ 0, byteOffset, vte::strided<T>(vctr.size()) });
+        VkBufferCopy bfc = { byteOffset, 0, vte::strided<T>(vctr.size()) };
+        vt::vtCmdCopyDeviceBufferToHost(cmdBuf, dBuffer, deviceQueue->device->rtDev, 1, &bfc);
     });
     vt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
     return result;
 };
+
+
 
 
 inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer, size_t byteSize = 1024 * 16) {
@@ -87,13 +92,6 @@ inline auto createBufferFast(vte::Queue deviceQueue, vt::VtDeviceBuffer& dBuffer
     dbs.format = VK_FORMAT_R16G16_UINT;
     vt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
 };
-
-
-
-
-
-
-
 
 inline auto getShaderDir(const uint32_t& vendorID) {
     std::string shaderDir = "./universal/";

@@ -579,11 +579,10 @@ namespace NSM
             VmaAllocationCreateInfo allocCreateInfo = {};
             allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-            VmaAllocation _allocation;
-            VkImage _image;
-            vmaCreateImage(queue->device->allocator, &(VkImageCreateInfo)imageInfo,
-                &allocCreateInfo, &_image, &_allocation,
-                nullptr); // allocators planned structs
+            VmaAllocation _allocation = {};
+            VkImage _image = {};
+            VkImageCreateInfo imageInfoVK = imageInfo;
+            vmaCreateImage(queue->device->allocator, &imageInfoVK, &allocCreateInfo, &_image, &_allocation, nullptr); // allocators planned structs
             auto depthImage = vk::Image(_image);
 
             // create image viewer
@@ -634,15 +633,14 @@ namespace NSM
                 vk::ImageUsageFlagBits::eTransferSrc,
                 vk::SharingMode::eExclusive, 1, &queue->device->queues[1]->familyIndex,
                 vk::ImageLayout::eUndefined);
+            VkImageCreateInfo imageInfoVK = imageInfo;
 
             VmaAllocationCreateInfo allocCreateInfo = {};
             allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-            VmaAllocation _allocation;
-            VkImage _image;
-            vmaCreateImage(queue->device->allocator, &(VkImageCreateInfo)imageInfo,
-                &allocCreateInfo, &_image, &_allocation,
-                nullptr); // allocators planned structs
+            VmaAllocation _allocation = {};
+            VkImage _image = {};
+            vmaCreateImage(queue->device->allocator, &imageInfoVK, &allocCreateInfo, &_image, &_allocation, nullptr); // allocators planned structs
             auto depthImage = vk::Image(_image);
 
             // create image viewer

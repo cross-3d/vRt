@@ -125,16 +125,16 @@ if (MSVC)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest /arch:AVX2 /permissive- /Ox /Ot /W3")
     #set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}"")
 else()
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -Werror")
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c1x -march=skylake -fpermissive -lpthread -w -Werror")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -Wno-address-of-temporary -w")
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c1x -march=skylake -fpermissive -lpthread -Wno-address-of-temporary -w")
 endif()
 
 
 # set optimizations for build types
 set (CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS} -Og)
-set (CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS} -O1)
+set (CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS} -O0)
 set (CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} ${CMAKE_C_FLAGS} -Og)
-set (CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS} -O1)
+set (CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS} -O0)
 
 
 # set default compiler options
