@@ -9,6 +9,8 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         auto& vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
         vtAccelerator->_device = _vtDevice;
+        auto vkDevice = _vtDevice->_device;
+        auto vkPipelineCache = _vtDevice->_pipelineCache;
         const auto& vendorName = _vtDevice->_vendorName;
 
         // build BVH builder program
@@ -24,7 +26,7 @@ namespace _vt {
                 };
 
                 // create pipeline layout
-                vtAccelerator->_buildPipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
+                vtAccelerator->_buildPipelineLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
             };
 
             {
@@ -38,21 +40,21 @@ namespace _vt {
                 };
 
                 // create pipeline layout
-                vtAccelerator->_traversePipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
+                vtAccelerator->_traversePipelineLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
             };
 
 
             // create pipelines (planned to unify between accelerator instances)
             {
-                vtAccelerator->_shorthandPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::shorthand.at(vendorName), vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_boundingPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::triangle::outerBox.at(vendorName), vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_buildPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::builder.at(vendorName), vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_buildPipelineFirst = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::builderFirst.at(vendorName), vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_fitPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::fitBox.at(vendorName), vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_leafPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::triangle::genLeafs.at(vendorName), vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_leafLinkPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::linkLeafs.at(vendorName), vtAccelerator->_buildPipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_intersectionPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::traverse.at(vendorName), vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
-                vtAccelerator->_interpolatorPipeline = createComputeMemory(VkDevice(*_vtDevice), hlbvh2::interpolator.at(vendorName), vtAccelerator->_traversePipelineLayout, VkPipelineCache(*_vtDevice));
+                vtAccelerator->_shorthandPipeline = createComputeMemory(vkDevice, hlbvh2::shorthand.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_boundingPipeline = createComputeMemory(vkDevice, hlbvh2::triangle::outerBox.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_buildPipeline = createComputeMemory(vkDevice, hlbvh2::builder.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_buildPipelineFirst = createComputeMemory(vkDevice, hlbvh2::builderFirst.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_fitPipeline = createComputeMemory(vkDevice, hlbvh2::fitBox.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_leafPipeline = createComputeMemory(vkDevice, hlbvh2::triangle::genLeafs.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_leafLinkPipeline = createComputeMemory(vkDevice, hlbvh2::linkLeafs.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_intersectionPipeline = createComputeMemory(vkDevice, hlbvh2::traverse.at(vendorName), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
+                vtAccelerator->_interpolatorPipeline = createComputeMemory(vkDevice, hlbvh2::interpolator.at(vendorName), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
             };
         };
 
@@ -62,6 +64,7 @@ namespace _vt {
     inline VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
         VtResult result = VK_SUCCESS;
         auto& vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
+        auto vkDevice = _vtDevice->_device;
         vtAccelerator->_device = _vtDevice;
         vtAccelerator->_entryID = (info.entryID>>1u)<<1u; // unpreferred to make entry ID non power of 2
 
@@ -120,7 +123,7 @@ namespace _vt {
                 };
 
                 // create pipeline layout
-                auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtAccelerator->_buildDescriptorSet = dsc[0];
 
                 auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_buildDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
@@ -135,7 +138,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(7).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_leafNodeIndices->_descriptorInfo())),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(9).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_generalBoundaryResultBuffer->_descriptorInfo())),
                 };
-                vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
+                vk::Device(vkDevice).updateDescriptorSets(writes, {});
             };
 
             // write radix sort descriptor sets
@@ -143,7 +146,7 @@ namespace _vt {
                 std::vector<vk::DescriptorSetLayout> dsLayouts = {
                     vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["radixSortBind"]),
                 };
-                auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtAccelerator->_sortDescriptorSet = dsc[0];
 
                 auto _write_tmpl = vk::WriteDescriptorSet(vtAccelerator->_sortDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
@@ -151,7 +154,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonCodesBuffer->_descriptorInfo())), //unused
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_mortonIndicesBuffer->_descriptorInfo()))
                 };
-                vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
+                vk::Device(vkDevice).updateDescriptorSets(writes, {});
             };
         };
 
@@ -187,7 +190,7 @@ namespace _vt {
                 };
 
                 // create descriptor set
-                auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtAccelerator->_descriptorSet = dsc[0];
             };
 
@@ -222,7 +225,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo(&boxBuffer),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtAccelerator->_bvhBlockUniform->_descriptorInfo())),
                 };
-                vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
+                vk::Device(vkDevice).updateDescriptorSets(writes, {});
             };
         };
 

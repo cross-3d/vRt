@@ -15,6 +15,8 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
 
         auto& vtRadix = (_vtRadix = std::make_shared<RadixSort>());
+        auto vkDevice = _vtDevice->_device;
+        auto vkPipelineCache = _vtDevice->_pipelineCache;
         vtRadix->_device = _vtDevice;
 
         const auto& vendorName = _vtDevice->_vendorName;
@@ -49,26 +51,25 @@ namespace _vt {
             vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["radixSortBind"])
         };
 
-        vtRadix->_pipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
-        vtRadix->_histogramPipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::histogram.at(vendorName), vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        vtRadix->_workPrefixPipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::workPrefix.at(vendorName), vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        vtRadix->_permutePipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::permute.at(vendorName), vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
-        vtRadix->_copyhackPipeline = createComputeMemory(VkDevice(*_vtDevice), qradix::copyhack.at(vendorName), vtRadix->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtRadix->_pipelineLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
+        vtRadix->_histogramPipeline = createComputeMemory(vkDevice, qradix::histogram.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_workPrefixPipeline = createComputeMemory(vkDevice, qradix::workPrefix.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_permutePipeline = createComputeMemory(vkDevice, qradix::permute.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_copyhackPipeline = createComputeMemory(vkDevice, qradix::copyhack.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
 
-        auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+        auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
         vtRadix->_descriptorSet = dsc[0];
 
         // write radix sort descriptor sets
         vk::WriteDescriptorSet _write_tmpl = vk::WriteDescriptorSet(vtRadix->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
         std::vector<vk::WriteDescriptorSet> writes = {
-            
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setPBufferInfo(&vk::DescriptorBufferInfo(vtRadix->_tmpKeysBuffer->_descriptorInfo())),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setPBufferInfo(&vk::DescriptorBufferInfo(vtRadix->_tmpValuesBuffer->_descriptorInfo())),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setPBufferInfo(&vk::DescriptorBufferInfo(vtRadix->_stepsBuffer->_descriptorInfo())), //unused
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setPBufferInfo(&vk::DescriptorBufferInfo(vtRadix->_histogramBuffer->_descriptorInfo())),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setPBufferInfo(&vk::DescriptorBufferInfo(vtRadix->_prefixSumBuffer->_descriptorInfo())),
         };
-        vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
+        vk::Device(vkDevice).updateDescriptorSets(writes, {});
 
         return result;
     };

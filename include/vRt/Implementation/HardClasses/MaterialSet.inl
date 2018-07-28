@@ -10,6 +10,7 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
 
         auto& vtMaterialSet = (_vtMaterialSet = std::make_shared<MaterialSet>());
+        auto vkDevice = _vtDevice->_device;
         vtMaterialSet->_device = _vtDevice;
 
         // planned variable size
@@ -30,7 +31,7 @@ namespace _vt {
                 std::vector<vk::DescriptorSetLayout> dsLayouts = {
                     vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["materialSet"]),
                 };
-                auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtMaterialSet->_descriptorSet = dsc[0];
 
                 std::vector<vk::DescriptorImageInfo> _samplers = {}, _images = {};
@@ -53,7 +54,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(3).setPBufferInfo(&vk::DescriptorBufferInfo(bufferDescriptorInfo(info.bImageSamplerCombinations))),
                     vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setPBufferInfo(&vk::DescriptorBufferInfo(vtMaterialSet->_constBuffer->_descriptorInfo())),
                 };
-                vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
+                vk::Device(vkDevice).updateDescriptorSets(writes, {});
             };
         }
 

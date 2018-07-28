@@ -52,7 +52,8 @@ namespace _vt {
         auto _device = vk::Device(vtDevice->_device);
 
         // create default pipeline cache
-        vtDevice->_pipelineCache = VkPipelineCache(_device.createPipelineCache(vk::PipelineCacheCreateInfo()));
+        auto vkPipelineCache = VkPipelineCache(_device.createPipelineCache(vk::PipelineCacheCreateInfo()));
+        vtDevice->_pipelineCache = vkPipelineCache;
 
         // make descriptor pool
         size_t mult = 8;
@@ -203,8 +204,8 @@ namespace _vt {
 
         // create dull barrier pipeline
         auto rng = vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2));
-        auto ppl = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, 0, nullptr, 0, nullptr));
-        vtDevice->_dullBarrier = createComputeMemory(VkDevice(*_vtDevice), natives::dullBarrier.at(vtDevice->_vendorName), ppl, VkPipelineCache(*_vtDevice));
+        auto ppl = vk::Device(device).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, 0, nullptr, 0, nullptr));
+        vtDevice->_dullBarrier = createComputeMemory(device, natives::dullBarrier.at(vtDevice->_vendorName), ppl, vkPipelineCache);
 
         return result;
     };

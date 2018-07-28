@@ -10,12 +10,13 @@ namespace _vt {
     inline VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& _vtVertexInput) {
         VtResult result = VK_SUCCESS;
         auto& vtVertexInput = (_vtVertexInput = std::make_shared<VertexInputSet>());
+        auto vkDevice = _vtDevice->_device;
         vtVertexInput->_device = _vtDevice;
         vtVertexInput->_vertexAssembly = info.vertexAssemblyPipeline._vtVertexAssembly;
 
         // create descriptor sets
         std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
-        auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+        auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
         vtVertexInput->_descriptorSet = dsc[0];
 
         // 
@@ -55,7 +56,7 @@ namespace _vt {
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(4).setPBufferInfo(&vk::DescriptorBufferInfo(info.bBufferAttributeBindings, 0, VK_WHOLE_SIZE).setOffset(info.attributeByteOffset)),
             vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setPBufferInfo(&vk::DescriptorBufferInfo(vtVertexInput->_uniformBlockBuffer->_descriptorInfo())),
         };
-        vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
+        vk::Device(vkDevice).updateDescriptorSets(writes, {});
 
         return result;
     };

@@ -7,6 +7,7 @@ namespace _vt {
 
     inline VtResult createPipelineLayout(std::shared_ptr<Device> _vtDevice, VtPipelineLayoutCreateInfo vtPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& _vtPipelineLayout, VtPipelineLayoutType type) {
         VtResult result = VK_SUCCESS;
+        auto vkDevice = _vtDevice->_device;
 
         auto vkPipelineLayout = vtPipelineLayoutCreateInfo.pGeneralPipelineLayout ? vk::PipelineLayoutCreateInfo(*vtPipelineLayoutCreateInfo.pGeneralPipelineLayout) : vk::PipelineLayoutCreateInfo();
 
@@ -40,7 +41,7 @@ namespace _vt {
             vkPipelineLayout.pushConstantRangeCount = 1;
         };
 
-        vtPipelineLayout->_pipelineLayout = vk::Device(*_vtDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo(vkPipelineLayout));
+        vtPipelineLayout->_pipelineLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo(vkPipelineLayout));
         return result;
     };
 

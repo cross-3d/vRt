@@ -7,16 +7,19 @@ namespace _vt {
 
     inline VtResult createVertexAssemblyPipeline(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblyPipelineCreateInfo& info, std::shared_ptr<VertexAssemblyPipeline>& _vtVertexAssembly) {
         VtResult result = VK_SUCCESS;
+        auto vkDevice = _vtDevice->_device;
+        auto vkPipelineCache = _vtDevice->_pipelineCache;
         auto& vtVertexAssembly = (_vtVertexAssembly = std::make_shared<VertexAssemblyPipeline>());
         vtVertexAssembly->_device = _vtDevice;
         vtVertexAssembly->_pipelineLayout = info.pipelineLayout._vtPipelineLayout;
-        vtVertexAssembly->_vertexAssemblyPipeline = createCompute(VkDevice(*_vtDevice), info.vertexAssemblyModule, *vtVertexAssembly->_pipelineLayout, VkPipelineCache(*_vtDevice));
+        vtVertexAssembly->_vertexAssemblyPipeline = createCompute(vkDevice, info.vertexAssemblyModule, *vtVertexAssembly->_pipelineLayout, vkPipelineCache);
         return result;
     };
 
     inline VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblySetCreateInfo &info, std::shared_ptr<VertexAssemblySet>& _vtVertexAssembly) {
         VtResult result = VK_SUCCESS;
         auto& vtVertexAssembly = (_vtVertexAssembly = std::make_shared<VertexAssemblySet>());
+        auto vkDevice = _vtDevice->_device;
         vtVertexAssembly->_device = _vtDevice;
 
         //constexpr auto maxPrimitives = 1024u * 1024u; // planned import from descriptor
@@ -70,10 +73,10 @@ namespace _vt {
                 vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
                 vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
             };
-            auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+            auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
             vtVertexAssembly->_descriptorSet = dsc[0];
 
-            vk::Sampler attributeSampler = vk::Device(*_vtDevice).createSampler(vk::SamplerCreateInfo()
+            vk::Sampler attributeSampler = vk::Device(vkDevice).createSampler(vk::SamplerCreateInfo()
                 .setAddressModeU(vk::SamplerAddressMode::eRepeat)
                 .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
                 .setMagFilter(vk::Filter::eNearest)
@@ -89,7 +92,7 @@ namespace _vt {
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(5).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtVertexAssembly->_verticeBufferSide->_bufferView)), // planned to replace
                 vk::WriteDescriptorSet(_write_tmpl).setDstBinding(6).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&vk::DescriptorImageInfo(vtVertexAssembly->_attributeTexelBuffer->_descriptorInfo()).setSampler(attributeSampler)),
             };
-            vk::Device(*_vtDevice).updateDescriptorSets(writes, {});
+            vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };
 
         return result;
