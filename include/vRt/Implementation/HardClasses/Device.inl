@@ -28,7 +28,7 @@ namespace _vt {
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
         vtDevice->_device = device;
 
-        vk::PhysicalDevice gpu = vk::PhysicalDevice(*vtDevice->_physicalDevice);
+        auto gpu = vk::PhysicalDevice(*physicalDevice);
         vtDevice->_vendorName = getVendorName(gpu.getProperties().vendorID);
 
         VtResult result = VK_SUCCESS;
@@ -99,7 +99,6 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(6, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // constant buffer
                 vk::DescriptorSetLayoutBinding(7, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // counters 
                 vk::DescriptorSetLayoutBinding(8, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // 9-line 
-                //vk::DescriptorSetLayoutBinding(9, vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // traverse cache (just have no idea to bind)
                 vk::DescriptorSetLayoutBinding(9, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute),
                 vk::DescriptorSetLayoutBinding(10, vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // ray<->hit binding payload 
                 vk::DescriptorSetLayoutBinding(11, vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute),
@@ -194,7 +193,6 @@ namespace _vt {
         // 
         VtVertexAssemblyPipelineCreateInfo simfo;
         simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, vt::natives::vertexAssembly.at(vendorName));
-        //simfo.maxPrimitives = vtExtension.maxPrimitives;
         VtPipelineLayoutCreateInfo vtpl;
         createPipelineLayout(vtDevice, vtpl, simfo.pipelineLayout, VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT);
 
@@ -213,9 +211,6 @@ namespace _vt {
 
 
     inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo vdvi, std::shared_ptr<Device>& _vtDevice) {
-        //auto& vtDevice = (_vtDevice = std::make_shared<Device>());
-        //vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
-
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
         VtArtificalDeviceExtension vtExtension; // default structure values
         auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);

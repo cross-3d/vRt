@@ -24,21 +24,21 @@ namespace _vt {
 
         // missing shaders
         if (info.pMissModules) {
-            for (int i = 0; i < std::min(1u, info.missModuleCount); i++) {
+            for (uint32_t i = 0; i < std::min(1u, info.missModuleCount); i++) {
                 if (info.pMissModules[i].module) vtPipeline->_missHitPipeline.push_back(createCompute(VkDevice(*_vtDevice), info.pMissModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice)));
             }
         }
 
         // hit shaders
         if (info.pClosestModules) {
-            for (int i = 0; i < std::min(4u, info.closestModuleCount); i++) {
+            for (uint32_t i = 0; i < std::min(4u, info.closestModuleCount); i++) {
                 if (info.pClosestModules[i].module) vtPipeline->_closestHitPipeline.push_back(createCompute(VkDevice(*_vtDevice), info.pClosestModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice)));
             }
         }
 
         // ray groups shaders
         if (info.pGroupModules) {
-            for (int i = 0; i < std::min(4u, info.groupModuleCount); i++) {
+            for (uint32_t i = 0; i < std::min(4u, info.groupModuleCount); i++) {
                 if (info.pGroupModules[i].module) vtPipeline->_groupPipelines.push_back(createCompute(VkDevice(*_vtDevice), info.pGroupModules[i], *vtPipeline->_pipelineLayout, VkPipelineCache(*_vtDevice)));
             }
         }
@@ -57,7 +57,6 @@ namespace _vt {
             const auto& rayCount = info.maxRays;
             vtRTSet->_cuniform.maxRayCount = rayCount;
             
-
             {
                 VtDeviceBufferCreateInfo bfi;
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;

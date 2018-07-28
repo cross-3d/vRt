@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <optional>
 
+
 #ifdef VRT_ENABLE_EXECUTION_POLICY
 #include <execution>
 #define VRT_ASYNC(F) std::async(std::launch::async|std::launch::deferred,F);

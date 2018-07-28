@@ -93,9 +93,9 @@ namespace NSM
 
         // instance layers
         std::vector<const char *> wantedLayers = {
-            "VK_LAYER_LUNARG_standard_validation",
-            "VK_LAYER_LUNARG_parameter_validation",
-            "VK_LAYER_LUNARG_core_validation",
+            //"VK_LAYER_LUNARG_standard_validation",
+            //"VK_LAYER_LUNARG_parameter_validation",
+            //"VK_LAYER_LUNARG_core_validation",
             //"VK_LAYER_RENDERDOC_Capture",
             //"VK_LAYER_LUNARG_assistant_layer",
             //"VK_LAYER_LUNARG_vktrace",
@@ -125,7 +125,7 @@ namespace NSM
             const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
             // add glfw extensions to list
-            for (int i = 0; i < glfwExtensionCount; i++) {
+            for (uint32_t i = 0; i < glfwExtensionCount; i++) {
                 wantedExtensions.push_back(glfwExtensions[i]);
             }
 
@@ -161,7 +161,7 @@ namespace NSM
             vk::ApplicationInfo appinfo;
             appinfo.pApplicationName = "VKTest";
             appinfo.applicationVersion = NULL;
-            appinfo.apiVersion = VK_MAKE_VERSION(1, 1, 76);
+            appinfo.apiVersion = VK_MAKE_VERSION(1, 1, 77);
 
             // create instance info
             vk::InstanceCreateInfo cinstanceinfo;

@@ -13,12 +13,8 @@ namespace _vt {
         vtVertexInput->_device = _vtDevice;
         vtVertexInput->_vertexAssembly = info.vertexAssemblyPipeline._vtVertexAssembly;
 
-        std::vector<vk::PushConstantRange> constRanges = {
-            vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(12))
-        };
-        std::vector<vk::DescriptorSetLayout> dsLayouts = {
-            vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
-        };
+        // create descriptor sets
+        std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
         auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
         vtVertexInput->_descriptorSet = dsc[0];
 
@@ -30,33 +26,24 @@ namespace _vt {
         bfi.format = VK_FORMAT_UNDEFINED;
 
         // planned add external buffer support
-        //createDeviceBuffer(_vtDevice, bfi, vtVertexInput->_uniformBlockBuffer);
-        //_vtDevice->_deviceBuffersPtrs.push_back(vtVertexInput->_uniformBlockBuffer); // pin buffer with device
         vtVertexInput->_uniformBlockBuffer = _vtDevice->_bufferTraffic->_uniformVIBuffer;
-
-        // fill uniforms 
         vtVertexInput->_uniformBlock.primitiveCount = info.primitiveCount;
         vtVertexInput->_uniformBlock.verticeAccessor = info.verticeAccessor;
         vtVertexInput->_uniformBlock.indiceAccessor = info.indiceAccessor;
         vtVertexInput->_uniformBlock.materialID = info.materialID;
-        
-        // additional block clause (16.06.2018)
         vtVertexInput->_uniformBlock.primitiveOffset = info.primitiveOffset;
         vtVertexInput->_uniformBlock.attributeOffset = info.attributeOffset;
         vtVertexInput->_uniformBlock.attributeCount = info.attributeCount;
         vtVertexInput->_uniformBlock.bitfield = info.bitfield;
-
-        
         vtVertexInput->_uniformBlock.materialAccessor = info.materialAccessor;
 
-
+        // bind input buffer sources
         const auto& vendorName = _vtDevice->_vendorName;
         const auto inputCount = vendorName == VT_VENDOR_INTEL ? 1u : 8u;
         std::vector<vk::BufferView> sourceBuffers;
         const auto sourceBufferCount = std::min(info.sourceBufferCount, inputCount);
-        for (int i = 0; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }
-        for (int i = sourceBufferCount; i < inputCount; i++) { sourceBuffers.push_back(sourceBuffers[sourceBufferCount-1]); }
-
+        for (uint32_t i = 0; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }
+        for (uint32_t i = sourceBufferCount; i < inputCount; i++) { sourceBuffers.push_back(sourceBuffers[sourceBufferCount-1]); }
 
         // write descriptors
         auto _write_tmpl = vk::WriteDescriptorSet(vtVertexInput->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);

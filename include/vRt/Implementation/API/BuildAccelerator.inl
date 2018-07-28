@@ -201,13 +201,11 @@ namespace _vt {
         accel->_bvhBlockData.transform = initialMat;
         accel->_bvhBlockData.transformInv = initialMat;
         vkCmdUpdateBuffer(*cmdBuf, *accel->_bvhBlockUniform, 0, sizeof(accel->_bvhBlockData), &accel->_bvhBlockData);
-        //updateCommandBarrier(*cmdBuf);
 
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting
         auto& bounder = accel;
         cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, *bounder->_mortonCodesBuffer);
-        //cmdFillBuffer<0u>(*cmdBuf, *bounder->_currentNodeIndices);
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_countersBuffer); // reset counters
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);
         updateCommandBarrier(*cmdBuf);

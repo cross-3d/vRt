@@ -5,7 +5,6 @@
 namespace _vt {
     using namespace vt;
 
-
     inline VtResult createPipelineLayout(std::shared_ptr<Device> _vtDevice, VtPipelineLayoutCreateInfo vtPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& _vtPipelineLayout, VtPipelineLayoutType type) {
         VtResult result = VK_SUCCESS;
 

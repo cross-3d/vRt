@@ -37,12 +37,12 @@ namespace _vt {
                 const auto samplerCount = std::min(info.samplerCount, 16u), imageCount = std::min(info.imageCount, 64u);
 
                 // fill as many as possible
-                for (int i = 0; i < samplerCount; i++) { _samplers.push_back(vk::DescriptorImageInfo().setSampler(info.pSamplers[i])); }
-                for (int i = 0; i < imageCount; i++) { _images.push_back(vk::DescriptorImageInfo(info.pImages[i])); }
+                for (uint32_t i = 0; i < samplerCount; i++) { _samplers.push_back(vk::DescriptorImageInfo().setSampler(info.pSamplers[i])); }
+                for (uint32_t i = 0; i < imageCount; i++) { _images.push_back(vk::DescriptorImageInfo(info.pImages[i])); }
 
                 // autofill for avoid validation errors
-                for (int i = samplerCount; i < 16; i++) { _samplers.push_back(vk::DescriptorImageInfo().setSampler(info.pSamplers[samplerCount-1])); }
-                for (int i = imageCount; i < 64; i++) { _images.push_back(vk::DescriptorImageInfo(info.pImages[imageCount-1])); }
+                for (uint32_t i = samplerCount; i < 16; i++) { _samplers.push_back(vk::DescriptorImageInfo().setSampler(info.pSamplers[samplerCount-1])); }
+                for (uint32_t i = imageCount; i < 64; i++) { _images.push_back(vk::DescriptorImageInfo(info.pImages[imageCount-1])); }
 
                 
                 auto _write_tmpl = vk::WriteDescriptorSet(vtMaterialSet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);

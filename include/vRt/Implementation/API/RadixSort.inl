@@ -11,6 +11,7 @@ namespace _vt {
         //constexpr auto STEPS = RVT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // QLC
         //constexpr auto STEPS = RVT_USE_MORTON_32 ? 16ull : 32ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // MLC
 
+
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
         auto radix = device->_radixSort;

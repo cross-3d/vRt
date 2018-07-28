@@ -1,10 +1,8 @@
 #pragma once
-
 #include "../../vRt_subimpl.inl"
 
 namespace _vt {
     using namespace vt;
-
 
     // destructor of advanced buffer
     template<VmaMemoryUsage U>

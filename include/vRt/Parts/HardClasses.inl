@@ -13,7 +13,6 @@ namespace _vt { // store in undercover namespace
     class Instance : public std::enable_shared_from_this<Instance> {
     public:
         VkInstance _instance = nullptr;
-
         operator VkInstance() const { return _instance; };
     };
 
@@ -25,7 +24,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Instance> _instance;
 
         operator VkPhysicalDevice() const { return _physicalDevice; };
-        std::shared_ptr<Instance> _parent() const { return _instance; };
+        auto _parent() const { return _instance; };
     };
 
     // host <-> device buffer traffic
@@ -37,9 +36,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceToHostBuffer> _downloadBuffer; // to host
 
         std::shared_ptr<DeviceBuffer> _uniformVIBuffer;
-
-
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        auto _parent() const { return _device.lock(); };
     };
 
     // ray tracing device with aggregation
@@ -72,7 +69,7 @@ namespace _vt { // store in undercover namespace
         operator VmaAllocator() const { return _allocator; };
         operator std::shared_ptr<HostToDeviceBuffer>() const { return _bufferTraffic->_uploadBuffer; };
         operator std::shared_ptr<DeviceToHostBuffer>() const { return _bufferTraffic->_downloadBuffer; };
-        std::shared_ptr<PhysicalDevice> _parent() const { return _physicalDevice; };
+        auto _parent() const { return _physicalDevice; };
     };
 
     // ray tracing command buffer interface aggregator
@@ -93,7 +90,7 @@ namespace _vt { // store in undercover namespace
         std::map<uint32_t, std::vector<VkDescriptorSet>> _perVertexInputDSC;
 
         operator VkCommandBuffer() const { return _commandBuffer; };
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
     };
 
     // ray tracing advanced pipeline layout
@@ -105,7 +102,7 @@ namespace _vt { // store in undercover namespace
         VtPipelineLayoutType _type = VT_PIPELINE_LAYOUT_TYPE_RAYTRACING;
 
         operator VkPipelineLayout() const { return _pipelineLayout; }; // no correct conversion
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
     };
 
     class RayTracingSet : public std::enable_shared_from_this<RayTracingSet> {
@@ -119,7 +116,7 @@ namespace _vt { // store in undercover namespace
         VtStageUniform _cuniform;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
     };
 
     // ray tracing advanced pipeline
@@ -139,7 +136,7 @@ namespace _vt { // store in undercover namespace
         std::vector<VkDescriptorSet> _userDefinedDescriptorSets; // beyond than 1 only
 
         operator VkPipeline() const { return _dullPipeline; };
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
     };
 
     // vertex assembly cache 
@@ -160,7 +157,7 @@ namespace _vt { // store in undercover namespace
         uint32_t _calculatedPrimitiveCount = 0;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
     };
 
     // vertex assembly program
@@ -174,7 +171,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<PipelineLayout> _pipelineLayout;
 
         operator VkPipeline() const { return _dullPipeline; };
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        auto _parent() const { return _device.lock(); };
     };
 
     // accelerator store set
@@ -197,7 +194,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
     };
 
     // ray tracing accelerator structure object
@@ -218,7 +215,7 @@ namespace _vt { // store in undercover namespace
         VkPipelineLayout _buildPipelineLayout, _traversePipelineLayout;
 
         operator VkPipeline() const { return _dullPipeline; };
-        std::shared_ptr<Device> _parent() const { return _device.lock(); };
+        auto _parent() const { return _device.lock(); };
     };
 
     // this is wrapped advanced buffer class
@@ -237,7 +234,7 @@ namespace _vt { // store in undercover namespace
         VkDeviceSize _size;
         auto _hostMapped() const { return _allocationInfo.pMappedData; };
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
         operator VkBuffer() const { return _buffer; }; // cast operator
         operator VkBufferView() const { return _bufferView; }; // cast operator
         auto _descriptorInfo() const {
@@ -263,7 +260,7 @@ namespace _vt { // store in undercover namespace
         VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
         VkExtent3D _extent = {1u, 1u, 1u};
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
         operator VkImage() const { return _image; }; // cast operator
         operator VkImageView() const { return _imageView; }; // cast operator
         auto _descriptorInfo() const {
@@ -288,7 +285,7 @@ namespace _vt { // store in undercover namespace
         VkPipelineLayout _pipelineLayout; // use unified pipeline layout 
         VkDescriptorSet _descriptorSet;
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
         operator VkPipeline() const { return _dullPipeline; };
     };
 
@@ -305,7 +302,7 @@ namespace _vt { // store in undercover namespace
         VkPipeline _bufferCopyPipeline, _bufferCopyIndirectPipeline, _imageCopyPipeline, _imageCopyIndirectPipeline;
         VkPipelineLayout _bufferCopyPipelineLayout, _imageCopyPipelineLayout;
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
         operator VkPipeline() const { return _dullPipeline; };
     };
 
@@ -325,7 +322,7 @@ namespace _vt { // store in undercover namespace
         uint32_t _materialCount = 0;
         uint32_t _materialOffset = 0;
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
         operator VkDescriptorSet() const { return _descriptorSet; };
     };
 
@@ -340,10 +337,10 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _uniformBlockBuffer;
         std::shared_ptr<VertexAssemblyPipeline> _vertexAssembly;
 
-        std::shared_ptr<Device> _parent() const { return _device; };
+        auto _parent() const { return _device; };
         operator VkDescriptorSet() const { return _descriptorSet; };
 
-        VtUniformBlock& uniform() { return _uniformBlock; };
-        VtUniformBlock uniform() const { return _uniformBlock; };
+        auto& uniform() { return _uniformBlock; };
+        auto uniform() const { return _uniformBlock; };
     };
 };

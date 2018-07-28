@@ -35,6 +35,8 @@ namespace _vt {
 
 
     VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
+        constexpr auto WG_COUNT = 64u, RADICE_AFFINE = 16u;
+
         VtResult result = VK_SUCCESS;
 
         auto device = cmdBuf->_parent();
@@ -52,8 +54,6 @@ namespace _vt {
         rtset->_cuniform.closestHitOffset = 0;
         rtset->_cuniform.currentGroup = 0;
         rtset->_cuniform.maxRayCount = rayCount; // try to
-
-        const uint32_t WG_COUNT = 64, RADICE_AFFINE = 16;
 
         // form descriptor sets
         std::vector<VkDescriptorSet> _rtSets = { rtset->_descriptorSet };
@@ -80,7 +80,7 @@ namespace _vt {
         };
 
         // ray trace command
-        for (int it = 0; it < B; it++) {
+        for (uint32_t it = 0; it < B; it++) {
             // update uniform buffer of ray tracing steps
             rtset->_cuniform.iteration = it;
             vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);

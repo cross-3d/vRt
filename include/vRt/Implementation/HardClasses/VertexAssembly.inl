@@ -21,6 +21,7 @@ namespace _vt {
 
         //constexpr auto maxPrimitives = 1024u * 1024u; // planned import from descriptor
         const auto& maxPrimitives = info.maxPrimitives;
+        constexpr auto aWidth = 4096ull * 3ull;
 
         // build vertex input assembly program
         {
@@ -49,9 +50,6 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32_UINT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_countersBuffer);
 
-
-            constexpr auto aWidth = 4096ull * 3ull;
-
             // create vertex attribute buffer
             VtDeviceImageCreateInfo tfi;
             tfi.familyIndex = _vtDevice->_mainFamilyIndex;
@@ -64,7 +62,7 @@ namespace _vt {
             createDeviceImage(_vtDevice, tfi, vtVertexAssembly->_attributeTexelBuffer);
         };
 
-        {
+        { // create desciptor set
             std::vector<vk::PushConstantRange> constRanges = {
                 vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(12))
             };
@@ -74,7 +72,6 @@ namespace _vt {
             };
             auto dsc = vk::Device(*_vtDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
             vtVertexAssembly->_descriptorSet = dsc[0];
-
 
             vk::Sampler attributeSampler = vk::Device(*_vtDevice).createSampler(vk::SamplerCreateInfo()
                 .setAddressModeU(vk::SamplerAddressMode::eRepeat)
