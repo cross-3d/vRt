@@ -122,11 +122,11 @@ set (CMAKE_C_STANDARD 11)
 
 # compiler specific options
 if (MSVC)
-    set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} /std:c++latest /arch:AVX2 /permissive- /Ox /Ot /W3)
-    #set (CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS})
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest /arch:AVX2 /permissive- /Ox /Ot /W3")
+    #set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}"")
 else()
-    set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -Werror)
-    set (CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -std=c1x -march=skylake -fpermissive -lpthread -w -Werror)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -Werror")
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c1x -march=skylake -fpermissive -lpthread -w -Werror")
 endif()
 
 
