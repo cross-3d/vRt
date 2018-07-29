@@ -6,7 +6,7 @@ namespace _vt {
     using namespace vt;
 
 
-    inline auto getVendorName(const uint32_t& vendorID) {
+    static inline auto getVendorName(const uint32_t& vendorID) {
         auto shaderDir = VT_VENDOR_UNIVERSAL;
         switch (vendorID) {
             case 4318:
@@ -23,7 +23,7 @@ namespace _vt {
     }
 
 
-    inline VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& _vtDevice) {
+    static inline VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& _vtDevice) {
         auto& vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
         vtDevice->_device = device;
@@ -211,7 +211,7 @@ namespace _vt {
     };
 
 
-    inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo vdvi, std::shared_ptr<Device>& _vtDevice) {
+    static inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo vdvi, std::shared_ptr<Device>& _vtDevice) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
         VtArtificalDeviceExtension vtExtension; // default structure values
         auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);

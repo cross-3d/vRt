@@ -12,7 +12,7 @@ namespace _vt {
         });
     };
 
-    inline VtResult createDeviceImage(std::shared_ptr<Device> device, const VtDeviceImageCreateInfo& cinfo, std::shared_ptr<DeviceImage>& _vtImage) {
+    static inline VtResult createDeviceImage(std::shared_ptr<Device> device, const VtDeviceImageCreateInfo& cinfo, std::shared_ptr<DeviceImage>& _vtImage) {
         // result will no fully handled
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 

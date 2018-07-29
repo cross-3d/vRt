@@ -7,7 +7,7 @@ namespace _vt {
 
 
     // planned type validations, also, planned advanced descriptor sets support in vertex assemblies
-    VtResult bindDescriptorSets(std::shared_ptr<CommandBuffer>& cmdBuf, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t firstSet = 0, const std::vector<VkDescriptorSet>& descriptorSets = {}, const std::vector<VkDescriptorSet>& dynamicOffsets = {}) {
+    static inline VtResult bindDescriptorSets(std::shared_ptr<CommandBuffer>& cmdBuf, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t firstSet = 0, const std::vector<VkDescriptorSet>& descriptorSets = {}, const std::vector<VkDescriptorSet>& dynamicOffsets = {}) {
         VtResult result = VK_SUCCESS;
         if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_RAYTRACING) {
             cmdBuf->_boundDescriptorSets = descriptorSets;
@@ -18,7 +18,7 @@ namespace _vt {
     }
 
     // planned type validations
-    VtResult bindPipeline(std::shared_ptr<CommandBuffer>& cmdBuf, VtPipelineBindPoint pipelineBindPoint, std::shared_ptr<Pipeline>& pipeline) {
+    static inline VtResult bindPipeline(std::shared_ptr<CommandBuffer>& cmdBuf, VtPipelineBindPoint pipelineBindPoint, std::shared_ptr<Pipeline>& pipeline) {
         VtResult result = VK_SUCCESS;
         if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_RAYTRACING) {
             cmdBuf->_rayTracingPipeline = pipeline;
@@ -27,14 +27,14 @@ namespace _vt {
     }
 
     // update material data in command
-    VtResult bindMaterialSet(std::shared_ptr<CommandBuffer>& cmdBuf, VtEntryUsageFlags usageIn, std::shared_ptr<MaterialSet> matrl) {
+    static inline VtResult bindMaterialSet(std::shared_ptr<CommandBuffer>& cmdBuf, VtEntryUsageFlags usageIn, std::shared_ptr<MaterialSet> matrl) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_materialSet = matrl;
         return result;
     }
 
 
-    VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
+    static inline VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
         constexpr auto WG_COUNT = 64u, RADICE_AFFINE = 16u;
 
         VtResult result = VK_SUCCESS;

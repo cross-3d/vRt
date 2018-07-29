@@ -7,7 +7,7 @@ namespace _vt {
 
     // TODO - add support for auto-creation of buffers in "VtVertexInputCreateInfo" from pointers and counts
     // also, planned to add support of offsets in buffers 
-    inline VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& _vtVertexInput) {
+    static inline VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& _vtVertexInput) {
         VtResult result = VK_SUCCESS;
         auto& vtVertexInput = (_vtVertexInput = std::make_shared<VertexInputSet>());
         auto vkDevice = _vtDevice->_device;

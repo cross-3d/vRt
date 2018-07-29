@@ -309,9 +309,6 @@ namespace NSM
                 allocatorInfo.pHeapSizeLimit = nullptr;
                 vmaCreateAllocator(&allocatorInfo, &devicePtr->allocator);
 
-                // init dispatch loader
-                devicePtr->dldid = vk::DispatchLoaderDynamic(instance, devicePtr->logical);
-
                 // pool sizes, and create descriptor pool
                 std::vector<vk::DescriptorPoolSize> psizes = {
                     vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 64),

@@ -5,7 +5,7 @@
 namespace _vt {
     using namespace vt;
 
-    inline VtResult createVertexAssemblyPipeline(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblyPipelineCreateInfo& info, std::shared_ptr<VertexAssemblyPipeline>& _vtVertexAssembly) {
+    static inline VtResult createVertexAssemblyPipeline(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblyPipelineCreateInfo& info, std::shared_ptr<VertexAssemblyPipeline>& _vtVertexAssembly) {
         VtResult result = VK_SUCCESS;
         auto vkDevice = _vtDevice->_device;
         auto vkPipelineCache = _vtDevice->_pipelineCache;
@@ -16,7 +16,7 @@ namespace _vt {
         return result;
     };
 
-    inline VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblySetCreateInfo &info, std::shared_ptr<VertexAssemblySet>& _vtVertexAssembly) {
+    static inline VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblySetCreateInfo &info, std::shared_ptr<VertexAssemblySet>& _vtVertexAssembly) {
         VtResult result = VK_SUCCESS;
         auto& vtVertexAssembly = (_vtVertexAssembly = std::make_shared<VertexAssemblySet>());
         auto vkDevice = _vtDevice->_device;

@@ -13,7 +13,7 @@ namespace _vt {
     };
 
     template<VmaMemoryUsage U>
-    inline VtResult createBuffer(std::shared_ptr<Device> device, const VtDeviceBufferCreateInfo& cinfo, std::shared_ptr<RoledBuffer<U>>& _vtBuffer) {
+    static inline VtResult createBuffer(std::shared_ptr<Device> device, const VtDeviceBufferCreateInfo& cinfo, std::shared_ptr<RoledBuffer<U>>& _vtBuffer) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
         auto& vtDeviceBuffer = (_vtBuffer = std::make_shared<RoledBuffer<U>>());
