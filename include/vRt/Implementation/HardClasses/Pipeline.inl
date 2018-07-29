@@ -13,7 +13,7 @@ namespace _vt {
         auto vkDevice = _vtDevice->_device;
         auto vkPipelineCache = _vtDevice->_pipelineCache;
 
-        auto& vtPipeline = (_vtPipeline = std::make_shared<Pipeline>());
+        auto vtPipeline = (_vtPipeline = std::make_shared<Pipeline>());
         vtPipeline->_device = _vtDevice;
         vtPipeline->_pipelineLayout = info.pipelineLayout._vtPipelineLayout;
         const auto& vendorName = _vtDevice->_vendorName;
@@ -54,7 +54,7 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
 
         auto vkDevice = _vtDevice->_device;
-        auto& vtRTSet = (_vtRTSet = std::make_shared<RayTracingSet>());
+        auto vtRTSet = (_vtRTSet = std::make_shared<RayTracingSet>());
         vtRTSet->_device = _vtDevice;
 
         { // planned variable size

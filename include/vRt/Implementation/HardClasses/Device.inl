@@ -24,7 +24,7 @@ namespace _vt {
 
 
     static inline VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& _vtDevice) {
-        auto& vtDevice = (_vtDevice = std::make_shared<Device>());
+        auto vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
         vtDevice->_device = device;
 

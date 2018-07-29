@@ -16,7 +16,7 @@ namespace _vt {
         // result will no fully handled
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
-        auto& vtDeviceImage = (_vtImage = std::make_shared<DeviceImage>());
+        auto vtDeviceImage = (_vtImage = std::make_shared<DeviceImage>());
         vtDeviceImage->_device = device; // delegate device by weak_ptr
         vtDeviceImage->_layout = (VkImageLayout)cinfo.layout;
 

@@ -16,7 +16,7 @@ namespace _vt {
     static inline VtResult createBuffer(std::shared_ptr<Device> device, const VtDeviceBufferCreateInfo& cinfo, std::shared_ptr<RoledBuffer<U>>& _vtBuffer) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
-        auto& vtDeviceBuffer = (_vtBuffer = std::make_shared<RoledBuffer<U>>());
+        auto vtDeviceBuffer = (_vtBuffer = std::make_shared<RoledBuffer<U>>());
         vtDeviceBuffer->_device = device; // delegate device by weak_ptr
 
         VmaAllocationCreateInfo allocCreateInfo = {};

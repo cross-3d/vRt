@@ -17,7 +17,7 @@ namespace _vt {
     static inline VtResult bindVertexInputs(std::shared_ptr<CommandBuffer> cmdBuf, const std::vector<std::shared_ptr<VertexInputSet>>& sets) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexInputs.resize(0);
-        for (auto& s : sets) { // update buffers by pushing constants
+        for (auto s : sets) { // update buffers by pushing constants
             cmdBuf->_vertexInputs.push_back(s);
         };
         return result;
@@ -62,7 +62,7 @@ namespace _vt {
         // update constants
         imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
-        for (auto& iV_ : cmdBuf->_vertexInputs) {
+        for (auto iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
             auto iV = iV_.lock();
 
@@ -91,7 +91,7 @@ namespace _vt {
             vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY, _szi, 1);
         } else {
-            for (auto& iV_ : cmdBuf->_vertexInputs) {
+            for (auto iV_ : cmdBuf->_vertexInputs) {
                 uint32_t _bnd = _bndc++;
                 auto iV = iV_.lock();
 
@@ -125,7 +125,7 @@ namespace _vt {
 
         // update constants
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
-        for (auto& iV_ : cmdBuf->_vertexInputs) {
+        for (auto iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
             auto iV = iV_.lock();
 
@@ -154,7 +154,7 @@ namespace _vt {
             vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
             cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY, multiple ? _szi : 1, 1);
         } else {
-            for (auto& iV_ : cmdBuf->_vertexInputs) {
+            for (auto iV_ : cmdBuf->_vertexInputs) {
                 uint32_t _bnd = _bndc++;
                 if (_bnd >= inputSet) {
                     auto iV = iV_.lock();
@@ -204,7 +204,7 @@ namespace _vt {
 
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting
-        auto& bounder = accel;
+        auto bounder = accel;
         cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, *bounder->_mortonCodesBuffer);
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_countersBuffer); // reset counters
         cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);

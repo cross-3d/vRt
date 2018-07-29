@@ -7,7 +7,7 @@ namespace _vt {
 
     static inline VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<AcceleratorHLBVH2>& _vtAccelerator) {
         VtResult result = VK_SUCCESS;
-        auto& vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
+        auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
         vtAccelerator->_device = _vtDevice;
         auto vkDevice = _vtDevice->_device;
         auto vkPipelineCache = _vtDevice->_pipelineCache;
@@ -63,7 +63,7 @@ namespace _vt {
 
     static inline VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
         VtResult result = VK_SUCCESS;
-        auto& vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
+        auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
         auto vkDevice = _vtDevice->_device;
         vtAccelerator->_device = _vtDevice;
         vtAccelerator->_entryID = (info.entryID>>1u)<<1u; // unpreferred to make entry ID non power of 2

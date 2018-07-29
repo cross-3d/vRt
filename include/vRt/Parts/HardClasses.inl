@@ -240,8 +240,8 @@ namespace _vt { // store in undercover namespace
         operator VkBufferView() const { return _bufferView; }; // cast operator
 
         const auto& _genDescriptorInfo() const { return VkDescriptorBufferInfo{ _buffer, 0u, VK_WHOLE_SIZE }; };
-        auto& _descriptorInfo() const { return _staticDsci; };
-        auto& _descriptorInfo() { _staticDsci = this->_genDescriptorInfo(); return _staticDsci; };
+        auto& _descriptorInfo() const { return this->_staticDsci; };
+        auto& _descriptorInfo() { this->_staticDsci = this->_genDescriptorInfo(); return this->_staticDsci; };
     };
 
     // this is wrapped advanced image class
@@ -268,8 +268,8 @@ namespace _vt { // store in undercover namespace
         operator VkImageView() const { return _imageView; }; // cast operator
 
         const auto& _genDescriptorInfo() const { return VkDescriptorImageInfo{ {}, _imageView, _layout }; };
-        auto& _descriptorInfo() const { return _staticDsci; };
-        auto& _descriptorInfo() { _staticDsci = this->_genDescriptorInfo(); return _staticDsci; };
+        auto& _descriptorInfo() const { return this->_staticDsci; };
+        auto& _descriptorInfo() { this->_staticDsci = this->_genDescriptorInfo(); return this->_staticDsci; };
     };
 
     // this class does not using in ray tracing API

@@ -14,7 +14,7 @@ namespace _vt {
 
         VtResult result = VK_SUCCESS;
 
-        auto& vtRadix = (_vtRadix = std::make_shared<RadixSort>());
+        auto vtRadix = (_vtRadix = std::make_shared<RadixSort>());
         auto vkDevice = _vtDevice->_device;
         auto vkPipelineCache = _vtDevice->_pipelineCache;
         vtRadix->_device = _vtDevice;

@@ -232,13 +232,13 @@ int main() {
 
     //model
     std::vector<VtDeviceBuffer> VDataSpace;
-    for (auto& b : model.buffers) {
+    for (auto&b : model.buffers) {
         VtDeviceBuffer buf;
         createBufferFast(deviceQueue, buf, b.data.size());
         if (b.data.size() > 0) writeIntoBuffer(deviceQueue, b.data, buf);
         VDataSpace.push_back(buf);
     }
-    std::vector<VkBufferView> bviews; for (auto&b : VDataSpace) { bviews.push_back(b); };
+    std::vector<VkBufferView> bviews; for (auto b : VDataSpace) { bviews.push_back(b); };
 
 
 
@@ -597,8 +597,8 @@ int main() {
 
             glm::dmat4 transform = inTransform * localTransform;
             if (node.mesh >= 0) {
-                auto& mesh = vertexInputs[node.mesh]; // load mesh object (it just vector of primitives)
-                for (auto& geom : mesh) {
+                auto mesh = vertexInputs[node.mesh]; // load mesh object (it just vector of primitives)
+                for (auto geom : mesh) {
                     //geom->getUniformSet()->getStructure(p).setTransform(transform); // here is bottleneck with host-GPU exchange
                     inputs.push_back(geom);
                     transforms.push_back(glm::transpose(transform));
@@ -770,7 +770,7 @@ int main() {
         samplerInfo.magFilter = vk::Filter::eLinear;
         samplerInfo.compareEnable = false;
         auto sampler = deviceQueue->device->logical.createSampler(samplerInfo); // create sampler
-        auto& image = outputImage;
+        auto image = outputImage;
 
         // desc texture texture
         vk::DescriptorImageInfo imageDesc;
@@ -788,7 +788,7 @@ int main() {
 
     auto currentContext = std::make_shared<vte::GraphicsContext>();
     { // create graphic context
-        auto& context = currentContext;
+        auto context = currentContext;
 
         // create graphics context
         context->queue = deviceQueue;
@@ -912,7 +912,7 @@ int main() {
             auto viewport = vk::Viewport(0.0f, 0.0f, appfw->size().width, appfw->size().height, 0, 1.0f);
 
             // create command buffer (with rewrite)
-            auto& commandBuffer = (currentContext->framebuffers[n_semaphore].commandBuffer = vte::createCommandBuffer(currentContext->queue->device->logical, currentContext->queue->commandPool, false)); // do reference of cmd buffer
+            auto commandBuffer = (currentContext->framebuffers[n_semaphore].commandBuffer = vte::createCommandBuffer(currentContext->queue->device->logical, currentContext->queue->commandPool, false)); // do reference of cmd buffer
             commandBuffer.beginRenderPass(vk::RenderPassBeginInfo(currentContext->renderpass, currentContext->framebuffers[currentBuffer].frameBuffer, renderArea, clearValues.size(), clearValues.data()), vk::SubpassContents::eInline);
             commandBuffer.setViewport(0, std::vector<vk::Viewport> { viewport });
             commandBuffer.setScissor(0, std::vector<vk::Rect2D> { renderArea });

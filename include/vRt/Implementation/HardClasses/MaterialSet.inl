@@ -9,7 +9,7 @@ namespace _vt {
     static inline VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice, const VtMaterialSetCreateInfo& info, std::shared_ptr<MaterialSet>& _vtMaterialSet) {
         VtResult result = VK_SUCCESS;
 
-        auto& vtMaterialSet = (_vtMaterialSet = std::make_shared<MaterialSet>());
+        auto vtMaterialSet = (_vtMaterialSet = std::make_shared<MaterialSet>());
         auto vkDevice = _vtDevice->_device;
         vtMaterialSet->_device = _vtDevice;
 

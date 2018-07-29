@@ -10,8 +10,7 @@ namespace _vt {
         auto vkDevice = _vtDevice->_device;
 
         auto vkPipelineLayout = vtPipelineLayoutCreateInfo.pGeneralPipelineLayout ? vk::PipelineLayoutCreateInfo(*vtPipelineLayoutCreateInfo.pGeneralPipelineLayout) : vk::PipelineLayoutCreateInfo();
-
-        auto& vtPipelineLayout = (_vtPipelineLayout = std::make_shared<PipelineLayout>());
+        auto vtPipelineLayout = (_vtPipelineLayout = std::make_shared<PipelineLayout>());
         vtPipelineLayout->_device = _vtDevice;
         vtPipelineLayout->_type = type;
 
