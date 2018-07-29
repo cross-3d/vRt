@@ -56,7 +56,7 @@ namespace _vt {
             }
         }
 
-        vtDeviceBuffer->_descriptorInfo();
+        vtDeviceBuffer->_staticDsci = VkDescriptorBufferInfo{ vtDeviceBuffer->_buffer, 0u, VK_WHOLE_SIZE };
         return result;
     };
 

@@ -79,7 +79,7 @@ namespace _vt {
             .setImage(vtDeviceImage->_image)
             .setFormat(vk::Format(cinfo.format)));
 
-        vtDeviceImage->_descriptorInfo();
+        vtDeviceImage->_staticDsci = VkDescriptorImageInfo{ {}, vtDeviceImage->_imageView, vtDeviceImage->_layout };
         return result;
     };
 
