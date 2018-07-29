@@ -16,7 +16,7 @@ namespace _vt {
         auto vtPipeline = (_vtPipeline = std::make_shared<Pipeline>());
         vtPipeline->_device = _vtDevice;
         vtPipeline->_pipelineLayout = info.pipelineLayout._vtPipelineLayout;
-        const auto& vendorName = _vtDevice->_vendorName;
+        const auto vendorName = _vtDevice->_vendorName;
 
         // generation shaders
         if (info.pGenerationModule) {
@@ -58,7 +58,7 @@ namespace _vt {
         vtRTSet->_device = _vtDevice;
 
         { // planned variable size
-            const auto& rayCount = info.maxRays;
+            const auto rayCount = info.maxRays;
             vtRTSet->_cuniform.maxRayCount = rayCount;
             
             {

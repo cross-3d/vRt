@@ -96,7 +96,7 @@ namespace _vt {
 
     // general command buffer barrier
     static inline void commandBarrier(const VkCommandBuffer& cmdBuffer) {
-        VkMemoryBarrier memoryBarrier;
+        VkMemoryBarrier memoryBarrier = {};
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.pNext = nullptr;
         memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -114,7 +114,7 @@ namespace _vt {
 
     // from host command buffer barrier
     static inline void fromHostCommandBarrier(const VkCommandBuffer& cmdBuffer) {
-        VkMemoryBarrier memoryBarrier;
+        VkMemoryBarrier memoryBarrier = {};
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.pNext = nullptr;
         memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_HOST_READ_BIT;
@@ -132,7 +132,7 @@ namespace _vt {
 
     // to host command buffer barrier
     static inline void toHostCommandBarrier(const VkCommandBuffer& cmdBuffer) {
-        VkMemoryBarrier memoryBarrier;
+        VkMemoryBarrier memoryBarrier = {};
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.pNext = nullptr;
         memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -156,7 +156,7 @@ namespace _vt {
     static inline auto createCommandBuffer(const VkDevice device, const VkCommandPool cmdPool, bool secondary = true, bool once = true) {
         VkCommandBuffer cmdBuffer = nullptr;
 
-        VkCommandBufferAllocateInfo cmdi;
+        VkCommandBufferAllocateInfo cmdi = {};
         cmdi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         cmdi.pNext = nullptr;
         cmdi.commandPool = cmdPool;
@@ -164,12 +164,12 @@ namespace _vt {
         cmdi.commandBufferCount = 1;
         vkAllocateCommandBuffers(device, &cmdi, &cmdBuffer);
 
-        VkCommandBufferInheritanceInfo inhi;
+        VkCommandBufferInheritanceInfo inhi = {};
         inhi.pNext = nullptr;
         inhi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
         inhi.pipelineStatistics = VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
 
-        VkCommandBufferBeginInfo bgi;
+        VkCommandBufferBeginInfo bgi = {};
         bgi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         bgi.pNext = nullptr;
         bgi.flags = {};
@@ -182,7 +182,7 @@ namespace _vt {
 
 
     static inline auto loadAndCreateShaderModuleInfo(const std::vector<uint32_t>& code) {
-        VkShaderModuleCreateInfo smi;
+        VkShaderModuleCreateInfo smi = {};
         smi.pNext = nullptr;
         smi.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         smi.pCode = (uint32_t *)code.data();
@@ -200,7 +200,7 @@ namespace _vt {
 
     // create shader module
     static inline auto loadAndCreateShaderModuleStage(VkDevice device, const std::vector<uint32_t>& code, const char * entry = "main") {
-        VkPipelineShaderStageCreateInfo spi;
+        VkPipelineShaderStageCreateInfo spi = {};
         spi.pNext = nullptr;
         spi.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         spi.flags = {};
@@ -216,7 +216,7 @@ namespace _vt {
         auto code = readBinary(path);
         auto spi = loadAndCreateShaderModuleStage(device, code);
 
-        VkComputePipelineCreateInfo cmpi;
+        VkComputePipelineCreateInfo cmpi = {};
         cmpi.pNext = nullptr;
         cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
         cmpi.flags = {};
@@ -232,7 +232,7 @@ namespace _vt {
 
     // create compute pipelines
     static inline auto createCompute(VkDevice device, const VkPipelineShaderStageCreateInfo& spi, VkPipelineLayout layout, VkPipelineCache cache) {
-        VkComputePipelineCreateInfo cmpi;
+        VkComputePipelineCreateInfo cmpi = {};
         cmpi.pNext = nullptr;
         cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
         cmpi.flags = {};
@@ -251,7 +251,7 @@ namespace _vt {
     static inline auto createComputeMemory(VkDevice device, const std::vector<uint32_t>& code, VkPipelineLayout layout, VkPipelineCache cache) {
         auto spi = loadAndCreateShaderModuleStage(device, code);
 
-        VkComputePipelineCreateInfo cmpi;
+        VkComputePipelineCreateInfo cmpi = {};
         cmpi.pNext = nullptr;
         cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
         cmpi.flags = {};
@@ -363,7 +363,7 @@ namespace _vt {
 
     // create fence function
     static inline vk::Fence createFence(VkDevice device, bool signaled = true) {
-        vk::FenceCreateInfo info;
+        vk::FenceCreateInfo info = {};
         if (signaled) info.setFlags(vk::FenceCreateFlagBits::eSignaled);
         return vk::Device(device).createFence(info);
     }

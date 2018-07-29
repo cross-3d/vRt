@@ -40,7 +40,7 @@ namespace _vt {
         if constexpr (U == VMA_MEMORY_USAGE_GPU_ONLY) { // spaghetti code, because had different qualifiers
             if (result == VK_SUCCESS && cinfo.format) {
                 vtDeviceBuffer->_bufferView;
-                VkBufferViewCreateInfo bvi;
+                VkBufferViewCreateInfo bvi = {};
                 bvi.pNext = nullptr;
                 bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
                 bvi.flags = {};

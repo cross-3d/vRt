@@ -87,7 +87,7 @@ namespace _vt {
         dbfi.format = VK_FORMAT_UNDEFINED;
         dbfi.bufferSize = strided<VtUniformBlock>(1024);
         createDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_uniformVIBuffer);
-        const auto& vendorName = _vtDevice->_vendorName;
+        const auto vendorName = _vtDevice->_vendorName;
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {

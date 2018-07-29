@@ -19,7 +19,7 @@ namespace _vt {
         auto vkPipelineCache = _vtDevice->_pipelineCache;
         vtRadix->_device = _vtDevice;
 
-        const auto& vendorName = _vtDevice->_vendorName;
+        const auto vendorName = _vtDevice->_vendorName;
 
         VtDeviceBufferCreateInfo bfi;
         bfi.familyIndex = _vtDevice->_mainFamilyIndex;

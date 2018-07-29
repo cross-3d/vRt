@@ -239,7 +239,7 @@ namespace _vt { // store in undercover namespace
         operator VkBuffer() const { return _buffer; }; // cast operator
         operator VkBufferView() const { return _bufferView; }; // cast operator
 
-        const auto& _genDescriptorInfo() const { return VkDescriptorBufferInfo{ _buffer, 0u, VK_WHOLE_SIZE }; };
+        auto _genDescriptorInfo() const { return VkDescriptorBufferInfo{ _buffer, 0u, VK_WHOLE_SIZE }; };
         auto& _descriptorInfo() const { return this->_staticDsci; };
         auto& _descriptorInfo() { this->_staticDsci = this->_genDescriptorInfo(); return this->_staticDsci; };
     };
@@ -267,7 +267,7 @@ namespace _vt { // store in undercover namespace
         operator VkImage() const { return _image; }; // cast operator
         operator VkImageView() const { return _imageView; }; // cast operator
 
-        const auto& _genDescriptorInfo() const { return VkDescriptorImageInfo{ {}, _imageView, _layout }; };
+        auto _genDescriptorInfo() const { return VkDescriptorImageInfo{ {}, _imageView, _layout }; };
         auto& _descriptorInfo() const { return this->_staticDsci; };
         auto& _descriptorInfo() { this->_staticDsci = this->_genDescriptorInfo(); return this->_staticDsci; };
     };
@@ -345,6 +345,6 @@ namespace _vt { // store in undercover namespace
         operator VkDescriptorSet() const { return _descriptorSet; };
 
         auto& uniform() { return _uniformBlock; };
-        auto uniform() const { return _uniformBlock; };
+        const auto& uniform() const { return _uniformBlock; };
     };
 };

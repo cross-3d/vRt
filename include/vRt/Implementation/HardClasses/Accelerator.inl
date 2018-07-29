@@ -11,7 +11,7 @@ namespace _vt {
         vtAccelerator->_device = _vtDevice;
         auto vkDevice = _vtDevice->_device;
         auto vkPipelineCache = _vtDevice->_pipelineCache;
-        const auto& vendorName = _vtDevice->_vendorName;
+        const auto vendorName = _vtDevice->_vendorName;
 
         // build BVH builder program
         {
@@ -69,7 +69,7 @@ namespace _vt {
         vtAccelerator->_entryID = (info.entryID>>1u)<<1u; // unpreferred to make entry ID non power of 2
 
         // planned import from descriptor
-        const auto& maxPrimitives = info.maxPrimitives;
+        const auto maxPrimitives = info.maxPrimitives;
         vtAccelerator->_primitiveCount = info.primitiveCount;
         vtAccelerator->_primitiveOffset = info.primitiveOffset;
 
@@ -160,7 +160,7 @@ namespace _vt {
 
         {
             {
-                VtDeviceBufferCreateInfo bfi;
+                VtDeviceBufferCreateInfo bfi = {};
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
@@ -195,9 +195,9 @@ namespace _vt {
             };
 
             {
-                VkBufferView bvhMetaView;
+                VkBufferView bvhMetaView = {};
                 if (info.bvhMetaBuffer) {
-                    VkBufferViewCreateInfo bvi;
+                    VkBufferViewCreateInfo bvi = {};
                     bvi.pNext = nullptr;
                     bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
                     bvi.flags = {};

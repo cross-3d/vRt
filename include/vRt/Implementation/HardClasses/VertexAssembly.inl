@@ -23,12 +23,12 @@ namespace _vt {
         vtVertexAssembly->_device = _vtDevice;
 
         //constexpr auto maxPrimitives = 1024u * 1024u; // planned import from descriptor
-        const auto& maxPrimitives = info.maxPrimitives;
+        const auto maxPrimitives = info.maxPrimitives;
         constexpr auto aWidth = 4096ull * 3ull;
 
         // build vertex input assembly program
         {
-            VtDeviceBufferCreateInfo bfi;
+            VtDeviceBufferCreateInfo bfi = {};
             bfi.familyIndex = _vtDevice->_mainFamilyIndex;
             bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
@@ -54,7 +54,7 @@ namespace _vt {
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_countersBuffer);
 
             // create vertex attribute buffer
-            VtDeviceImageCreateInfo tfi;
+            VtDeviceImageCreateInfo tfi = {};
             tfi.familyIndex = _vtDevice->_mainFamilyIndex;
             tfi.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
             tfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;

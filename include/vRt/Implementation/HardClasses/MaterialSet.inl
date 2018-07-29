@@ -18,7 +18,7 @@ namespace _vt {
             vtMaterialSet->_materialCount = info.materialCount;
 
             {
-                VtDeviceBufferCreateInfo bfi;
+                VtDeviceBufferCreateInfo bfi = {};
                 bfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
