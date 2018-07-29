@@ -6,7 +6,7 @@
 namespace _vt {
     using namespace vt;
 
-    static inline VtResult bindDescriptorSetsPerVertexInput(std::shared_ptr<CommandBuffer>& cmdBuf, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t vertexInputID = 0, uint32_t firstSet = 0, const std::vector<VkDescriptorSet>& descriptorSets = {}, const std::vector<VkDescriptorSet>& dynamicOffsets = {}) {
+    static inline VtResult bindDescriptorSetsPerVertexInput(std::shared_ptr<CommandBuffer> cmdBuf, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t vertexInputID = 0, uint32_t firstSet = 0, const std::vector<VkDescriptorSet>& descriptorSets = {}, const std::vector<VkDescriptorSet>& dynamicOffsets = {}) {
         VtResult result = VK_SUCCESS;
         if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY) {
             cmdBuf->_perVertexInputDSC[vertexInputID] = descriptorSets;
@@ -14,7 +14,7 @@ namespace _vt {
         return result;
     }
 
-    static inline VtResult bindVertexInputs(std::shared_ptr<CommandBuffer>& cmdBuf, const std::vector<std::shared_ptr<VertexInputSet>>& sets) {
+    static inline VtResult bindVertexInputs(std::shared_ptr<CommandBuffer> cmdBuf, const std::vector<std::shared_ptr<VertexInputSet>>& sets) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexInputs.resize(0);
         for (auto& s : sets) { // update buffers by pushing constants
@@ -24,14 +24,14 @@ namespace _vt {
     }
 
 
-    static inline VtResult bindAccelerator(std::shared_ptr<CommandBuffer>& cmdBuf, std::shared_ptr<AcceleratorSet>& accSet) {
+    static inline VtResult bindAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet>& accSet) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_acceleratorSet = accSet;
         return result;
     }
 
     // bind vertex assembly (also, do imageBarrier)
-    static inline VtResult bindVertexAssembly(std::shared_ptr<CommandBuffer>& cmdBuf, std::shared_ptr<VertexAssemblySet>& vasSet) {
+    static inline VtResult bindVertexAssembly(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<VertexAssemblySet>& vasSet) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexSet = vasSet;
         return result;
@@ -43,13 +43,13 @@ namespace _vt {
         return result;
     }
 
-    static inline VtResult cmdBarrierAggregated(std::shared_ptr<CommandBuffer>& cmdBuf) {
+    static inline VtResult cmdBarrierAggregated(std::shared_ptr<CommandBuffer> cmdBuf) {
         auto device = cmdBuf->_parent();
         cmdDispatch(*cmdBuf, device->_dullBarrier);
         return VK_SUCCESS;
     }
 
-    static inline VtResult buildVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
+    static inline VtResult buildVertexSet(std::shared_ptr<CommandBuffer> cmdBuf, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
         VtResult result = VK_SUCCESS;
 
         // useless to building
@@ -113,7 +113,7 @@ namespace _vt {
     }
 
     // update region of vertex set by bound input set
-    static inline VtResult updateVertexSet(std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t inputSet = 0, bool multiple = false, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
+    static inline VtResult updateVertexSet(std::shared_ptr<CommandBuffer> cmdBuf, uint32_t inputSet = 0, bool multiple = false, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
         VtResult result = VK_SUCCESS;
 
         // useless to updating
@@ -179,7 +179,7 @@ namespace _vt {
         return result;
     }
 
-    static inline VtResult buildAccelerator(std::shared_ptr<CommandBuffer>& cmdBuf) {
+    static inline VtResult buildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf) {
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
         auto acclb = device->_acceleratorBuilder;

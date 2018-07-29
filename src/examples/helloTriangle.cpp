@@ -309,11 +309,12 @@ int main() {
 
     { 
         // write ray tracing user defined descriptor set
-        auto _write_tmpl = vk::WriteDescriptorSet(usrDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+        auto writeTmpl = vk::WriteDescriptorSet(usrDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+        auto imgdi = vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler);
         std::vector<vk::WriteDescriptorSet> writes = {
-            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&vk::DescriptorBufferInfo(rtUniformBuffer->_descriptorInfo())),
-            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler)),
-            vk::WriteDescriptorSet(_write_tmpl).setDstBinding(2).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo(&vk::DescriptorImageInfo(outputImage->_descriptorInfo())),
+            vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)(&rtUniformBuffer->_descriptorInfo())),
+            vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&imgdi),
+            vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo((vk::DescriptorImageInfo*)&outputImage->_descriptorInfo()),
         };
         vk::Device(deviceQueue->device->rtDev).updateDescriptorSets(writes, {});
     }
@@ -349,12 +350,17 @@ int main() {
     }
 
     {
+        auto genShader = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/generation-shader.comp.spv"));
+        auto closestShader = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/closest-hit-shader.comp.spv"));
+        auto missShader = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/miss-hit-shader.comp.spv"));
+        auto groupShader = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/group-shader.comp.spv"));
+
         // create ray tracing pipeline
         VtRayTracingPipelineCreateInfo rtpi;
-        rtpi.pGenerationModule = &vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/generation-shader.comp.spv"));
-        rtpi.pClosestModules = &vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/closest-hit-shader.comp.spv"));
-        rtpi.pMissModules = &vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/miss-hit-shader.comp.spv"));
-        rtpi.pGroupModules = &vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/group-shader.comp.spv"));
+        rtpi.pGenerationModule = &genShader;
+        rtpi.pClosestModules = &closestShader;
+        rtpi.pMissModules = &missShader;
+        rtpi.pGroupModules = &groupShader;
 
         rtpi.closestModuleCount = 1;
         rtpi.missModuleCount = 1;
@@ -551,42 +557,45 @@ int main() {
         std::vector<vk::DynamicState> dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
 
         // create graphics pipeline
-        trianglePipeline = deviceQueue->device->logical.createGraphicsPipeline(deviceQueue->device->pipelineCache, vk::GraphicsPipelineCreateInfo()
-            .setPStages(pipelineShaderStages.data()).setStageCount(pipelineShaderStages.size())
-            .setFlags(vk::PipelineCreateFlagBits::eAllowDerivatives)
-            .setPVertexInputState(&vk::PipelineVertexInputStateCreateInfo())
-            .setPInputAssemblyState(&vk::PipelineInputAssemblyStateCreateInfo().setTopology(vk::PrimitiveTopology::eTriangleStrip))
-            .setPViewportState(&vk::PipelineViewportStateCreateInfo().setViewportCount(1).setScissorCount(1))
-            .setPRasterizationState(&vk::PipelineRasterizationStateCreateInfo()
-                .setDepthClampEnable(false)
-                .setRasterizerDiscardEnable(false)
-                .setPolygonMode(vk::PolygonMode::eFill)
-                .setCullMode(vk::CullModeFlagBits::eBack)
-                .setFrontFace(vk::FrontFace::eCounterClockwise)
-                .setDepthBiasEnable(false)
-                .setDepthBiasConstantFactor(0)
-                .setDepthBiasClamp(0)
-                .setDepthBiasSlopeFactor(0)
-                .setLineWidth(1.f))
-            .setPDepthStencilState(&vk::PipelineDepthStencilStateCreateInfo()
-                .setDepthTestEnable(false)
-                .setDepthWriteEnable(false)
-                .setDepthCompareOp(vk::CompareOp::eLessOrEqual)
-                .setDepthBoundsTestEnable(false)
-                .setStencilTestEnable(false))
-            .setPColorBlendState(&vk::PipelineColorBlendStateCreateInfo()
-                .setLogicOpEnable(false)
-                .setLogicOp(vk::LogicOp::eClear)
-                .setPAttachments(colorBlendAttachments.data())
-                .setAttachmentCount(colorBlendAttachments.size()))
-            .setLayout(pipelineLayout)
-            .setRenderPass(renderpass)
-            .setBasePipelineIndex(0)
-            .setPMultisampleState(&vk::PipelineMultisampleStateCreateInfo().setRasterizationSamples(vk::SampleCountFlagBits::e1))
-            .setPDynamicState(&vk::PipelineDynamicStateCreateInfo().setPDynamicStates(dynamicStates.data()).setDynamicStateCount(dynamicStates.size()))
-            .setPTessellationState(&vk::PipelineTessellationStateCreateInfo())
-            .setPNext(&vk::PipelineRasterizationConservativeStateCreateInfoEXT().setConservativeRasterizationMode(vk::ConservativeRasterizationModeEXT::eDisabled))
-        );
+
+        auto tesselationState = vk::PipelineTessellationStateCreateInfo();
+        auto vertexInputState = vk::PipelineVertexInputStateCreateInfo();
+        auto rasterizartionState = vk::PipelineRasterizationStateCreateInfo();
+
+            trianglePipeline = deviceQueue->device->logical.createGraphicsPipeline(deviceQueue->device->pipelineCache, vk::GraphicsPipelineCreateInfo()
+                .setPStages(pipelineShaderStages.data()).setStageCount(pipelineShaderStages.size())
+                .setFlags(vk::PipelineCreateFlagBits::eAllowDerivatives)
+                .setPVertexInputState(&vertexInputState)
+                .setPInputAssemblyState(&vk::PipelineInputAssemblyStateCreateInfo().setTopology(vk::PrimitiveTopology::eTriangleStrip))
+                .setPViewportState(&vk::PipelineViewportStateCreateInfo().setViewportCount(1).setScissorCount(1))
+                .setPRasterizationState(&vk::PipelineRasterizationStateCreateInfo()
+                    .setDepthClampEnable(false)
+                    .setRasterizerDiscardEnable(false)
+                    .setPolygonMode(vk::PolygonMode::eFill)
+                    .setCullMode(vk::CullModeFlagBits::eBack)
+                    .setFrontFace(vk::FrontFace::eCounterClockwise)
+                    .setDepthBiasEnable(false)
+                    .setDepthBiasConstantFactor(0)
+                    .setDepthBiasClamp(0)
+                    .setDepthBiasSlopeFactor(0)
+                    .setLineWidth(1.f))
+                .setPDepthStencilState(&vk::PipelineDepthStencilStateCreateInfo()
+                    .setDepthTestEnable(false)
+                    .setDepthWriteEnable(false)
+                    .setDepthCompareOp(vk::CompareOp::eLessOrEqual)
+                    .setDepthBoundsTestEnable(false)
+                    .setStencilTestEnable(false))
+                .setPColorBlendState(&vk::PipelineColorBlendStateCreateInfo()
+                    .setLogicOpEnable(false)
+                    .setLogicOp(vk::LogicOp::eClear)
+                    .setPAttachments(colorBlendAttachments.data())
+                    .setAttachmentCount(colorBlendAttachments.size()))
+                .setLayout(pipelineLayout)
+                .setRenderPass(renderpass)
+                .setBasePipelineIndex(0)
+                .setPMultisampleState(&vk::PipelineMultisampleStateCreateInfo().setRasterizationSamples(vk::SampleCountFlagBits::e1))
+                .setPDynamicState(&vk::PipelineDynamicStateCreateInfo().setPDynamicStates(dynamicStates.data()).setDynamicStateCount(dynamicStates.size()))
+                .setPTessellationState(&tesselationState));
     }
 
 

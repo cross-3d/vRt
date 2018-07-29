@@ -193,8 +193,8 @@ namespace _vt {
 
     // create shader module
     static inline auto loadAndCreateShaderModule(VkDevice device, const std::vector<uint32_t>& code) {
-        VkShaderModule sm = nullptr;
-        vkCreateShaderModule(device, &loadAndCreateShaderModuleInfo(code), nullptr, &sm);
+        VkShaderModule sm = nullptr; auto shaderModuleInfo = loadAndCreateShaderModuleInfo(code);
+        vkCreateShaderModule(device, &shaderModuleInfo, nullptr, &sm);
         return sm;
     };
 

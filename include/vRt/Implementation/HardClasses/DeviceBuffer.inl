@@ -56,6 +56,7 @@ namespace _vt {
             }
         }
 
+        vtDeviceBuffer->_descriptorInfo();
         return result;
     };
 

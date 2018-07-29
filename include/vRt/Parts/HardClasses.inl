@@ -232,14 +232,16 @@ namespace _vt { // store in undercover namespace
         VmaAllocation _allocation;
         VmaAllocationInfo _allocationInfo;
         VkDeviceSize _size;
+        VkDescriptorBufferInfo _staticDsci;
         auto _hostMapped() const { return _allocationInfo.pMappedData; };
 
         auto _parent() const { return _device; };
         operator VkBuffer() const { return _buffer; }; // cast operator
         operator VkBufferView() const { return _bufferView; }; // cast operator
-        auto _descriptorInfo() const {
-            return VkDescriptorBufferInfo{ _buffer, 0u, VK_WHOLE_SIZE };
-        };
+
+        const auto& _genDescriptorInfo() const { return VkDescriptorBufferInfo{ _buffer, 0u, VK_WHOLE_SIZE }; };
+        auto& _descriptorInfo() const { return _staticDsci; };
+        auto& _descriptorInfo() { _staticDsci = this->_genDescriptorInfo(); return _staticDsci; };
     };
 
     // this is wrapped advanced image class
@@ -259,13 +261,15 @@ namespace _vt { // store in undercover namespace
         VkImageLayout _initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, _layout = VK_IMAGE_LAYOUT_GENERAL;
         VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
         VkExtent3D _extent = {1u, 1u, 1u};
+        VkDescriptorImageInfo _staticDsci = {};
 
         auto _parent() const { return _device; };
         operator VkImage() const { return _image; }; // cast operator
         operator VkImageView() const { return _imageView; }; // cast operator
-        auto _descriptorInfo() const {
-            return VkDescriptorImageInfo{ {}, _imageView, _layout };
-        };
+
+        const auto& _genDescriptorInfo() const { return VkDescriptorImageInfo{ {}, _imageView, _layout }; };
+        auto& _descriptorInfo() const { return _staticDsci; };
+        auto& _descriptorInfo() { _staticDsci = this->_genDescriptorInfo(); return _staticDsci; };
     };
 
     // this class does not using in ray tracing API

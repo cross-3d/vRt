@@ -16,9 +16,9 @@ namespace _vt {
         // result will no fully handled
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
-        auto& texture = (_vtImage = std::make_shared<DeviceImage>());
-        texture->_device = device; // delegate device by weak_ptr
-        texture->_layout = (VkImageLayout)cinfo.layout;
+        auto& vtDeviceImage = (_vtImage = std::make_shared<DeviceImage>());
+        vtDeviceImage->_device = device; // delegate device by weak_ptr
+        vtDeviceImage->_layout = (VkImageLayout)cinfo.layout;
 
         // init image dimensional type
         vk::ImageType imageType = vk::ImageType::e2D; bool isCubemap = false;
@@ -37,7 +37,7 @@ namespace _vt {
 
         // image memory descriptor
         auto imageInfo = vk::ImageCreateInfo();
-        imageInfo.initialLayout = vk::ImageLayout(texture->_initialLayout);
+        imageInfo.initialLayout = vk::ImageLayout(vtDeviceImage->_initialLayout);
         imageInfo.imageType = imageType;
         imageInfo.sharingMode = vk::SharingMode::eExclusive;
         imageInfo.arrayLayers = 1; // unsupported
@@ -53,32 +53,33 @@ namespace _vt {
         // create image with allocation
         VmaAllocationCreateInfo allocCreateInfo = {};
         allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        if (vmaCreateImage(device->_allocator, (VkImageCreateInfo*)&imageInfo, &allocCreateInfo, (VkImage *)&texture->_image, &texture->_allocation, &texture->_allocationInfo) == VK_SUCCESS) { result = VK_SUCCESS; };
+        if (vmaCreateImage(device->_allocator, (VkImageCreateInfo*)&imageInfo, &allocCreateInfo, (VkImage *)&vtDeviceImage->_image, &vtDeviceImage->_allocation, &vtDeviceImage->_allocationInfo) == VK_SUCCESS) { result = VK_SUCCESS; };
 
         // subresource range
-        texture->_subresourceRange.levelCount = 1;
-        texture->_subresourceRange.layerCount = 1;
-        texture->_subresourceRange.baseMipLevel = 0;
-        texture->_subresourceRange.baseArrayLayer = 0;
-        texture->_subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        vtDeviceImage->_subresourceRange.levelCount = 1;
+        vtDeviceImage->_subresourceRange.layerCount = 1;
+        vtDeviceImage->_subresourceRange.baseMipLevel = 0;
+        vtDeviceImage->_subresourceRange.baseArrayLayer = 0;
+        vtDeviceImage->_subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
         // subresource layers
-        texture->_subresourceLayers.layerCount = texture->_subresourceRange.layerCount;
-        texture->_subresourceLayers.baseArrayLayer = texture->_subresourceRange.baseArrayLayer;
-        texture->_subresourceLayers.aspectMask = texture->_subresourceRange.aspectMask;
-        texture->_subresourceLayers.mipLevel = texture->_subresourceRange.baseMipLevel;
+        vtDeviceImage->_subresourceLayers.layerCount = vtDeviceImage->_subresourceRange.layerCount;
+        vtDeviceImage->_subresourceLayers.baseArrayLayer = vtDeviceImage->_subresourceRange.baseArrayLayer;
+        vtDeviceImage->_subresourceLayers.aspectMask = vtDeviceImage->_subresourceRange.aspectMask;
+        vtDeviceImage->_subresourceLayers.mipLevel = vtDeviceImage->_subresourceRange.baseMipLevel;
 
-        texture->_extent = imageInfo.extent;
+        vtDeviceImage->_extent = imageInfo.extent;
 
         // descriptor for usage 
         // (unhandled by vtResult)
-        texture->_imageView = vk::Device(device->_device).createImageView(vk::ImageViewCreateInfo()
-            .setSubresourceRange(texture->_subresourceRange)
+        vtDeviceImage->_imageView = vk::Device(device->_device).createImageView(vk::ImageViewCreateInfo()
+            .setSubresourceRange(vtDeviceImage->_subresourceRange)
             .setViewType(vk::ImageViewType(cinfo.imageViewType))
             .setComponents(vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA))
-            .setImage(texture->_image)
+            .setImage(vtDeviceImage->_image)
             .setFormat(vk::Format(cinfo.format)));
 
+        vtDeviceImage->_descriptorInfo();
         return result;
     };
 
