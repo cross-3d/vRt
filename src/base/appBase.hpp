@@ -118,6 +118,7 @@ namespace NSM
     public:
 
         vk::Instance createInstance() {
+
 #ifdef VOLK_H_
             volkInitialize();
 #endif
