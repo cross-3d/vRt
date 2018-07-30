@@ -3,7 +3,7 @@
 #include "../../vRt_subimpl.inl"
 
 namespace _vt {
-    using namespace vt;
+    using namespace vrt;
 
 
     static inline auto getVendorName(const uint32_t& vendorID) {
@@ -193,7 +193,7 @@ namespace _vt {
 
         // 
         VtVertexAssemblyPipelineCreateInfo simfo;
-        simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, vt::natives::vertexAssembly.at(vendorName));
+        simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, vrt::natives::vertexAssembly.at(vendorName));
         VtPipelineLayoutCreateInfo vtpl;
         createPipelineLayout(vtDevice, vtpl, simfo.pipelineLayout, VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT);
 

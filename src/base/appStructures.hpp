@@ -30,7 +30,7 @@ namespace NSM {
     };
 
     struct DeviceType : public std::enable_shared_from_this<DeviceType> {
-        vt::VtDevice rtDev;
+        vrt::VtDevice rtDev;
         vk::Device logical = nullptr;
         vk::PhysicalDevice physical = nullptr;
 
@@ -41,7 +41,7 @@ namespace NSM {
 
         std::vector<DevQueue> queues;
         operator vk::Device() const { return logical; }
-        operator vt::VtDevice() const { return rtDev; }
+        operator vrt::VtDevice() const { return rtDev; }
     };
 
     // combined device, command pool and queue
@@ -54,7 +54,7 @@ namespace NSM {
 
         operator Device() const { return device; }
         operator vk::Device() const { return device->logical; }
-        operator vt::VtDevice() const { return device->rtDev; }
+        operator vrt::VtDevice() const { return device->rtDev; }
         operator vk::Queue() const { return queue; }
     };
 

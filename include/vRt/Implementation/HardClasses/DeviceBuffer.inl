@@ -2,7 +2,7 @@
 #include "../../vRt_subimpl.inl"
 
 namespace _vt {
-    using namespace vt;
+    using namespace vrt;
 
     // destructor of advanced buffer
     template<VmaMemoryUsage U>

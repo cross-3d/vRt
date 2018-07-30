@@ -3,7 +3,7 @@
 #include "../../vRt_subimpl.inl"
 
 namespace _vt {
-    using namespace vt;
+    using namespace vrt;
 
     static inline VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<AcceleratorHLBVH2>& _vtAccelerator) {
         VtResult result = VK_SUCCESS;

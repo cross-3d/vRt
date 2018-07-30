@@ -3,7 +3,7 @@
 #include "../../vRt_subimpl.inl"
 
 namespace _vt {
-    using namespace vt;
+    using namespace vrt;
 
     // ray tracing pipeline
     // planned to add support of entry points

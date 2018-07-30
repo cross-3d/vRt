@@ -5,7 +5,7 @@
 #include "Enums.inl"
 #include "Handlers.inl"
 
-namespace vt { // store in official namespace
+namespace vrt { // store in official namespace
     // Description structs for make vRt objects
     // Note: structures already have default headers for identifying
 
@@ -21,7 +21,7 @@ namespace vt { // store in official namespace
         uint32_t mainQueueFamily = 0;
         size_t sharedCacheSize = 1024u * 1024u;
         size_t maxPrimitives = 1024u * 256u;
-#ifdef ENABLE_RVT_STRING_VIEW
+#ifdef ENABLE_VRT_STRING_VIEW
         std::string_view shaderPath = "./";
 #else
         std::string shaderPath = "./";

@@ -3,7 +3,7 @@
 #include "../../vRt_subimpl.inl"
 
 namespace _vt {
-    using namespace vt;
+    using namespace vrt;
 
     // ray tracing set of state
     static inline VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice, const VtMaterialSetCreateInfo& info, std::shared_ptr<MaterialSet>& _vtMaterialSet) {

@@ -3,7 +3,7 @@
 #include "../../vRt_subimpl.inl"
 
 namespace _vt {
-    using namespace vt;
+    using namespace vrt;
 
     // TODO - add support for auto-creation of buffers in "VtVertexInputCreateInfo" from pointers and counts
     // also, planned to add support of offsets in buffers 

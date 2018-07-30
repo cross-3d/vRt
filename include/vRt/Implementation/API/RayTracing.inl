@@ -3,7 +3,7 @@
 #include "../../vRt_subimpl.inl"
 
 namespace _vt {
-    using namespace vt;
+    using namespace vrt;
 
 
     // planned type validations, also, planned advanced descriptor sets support in vertex assemblies

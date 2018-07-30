@@ -4,7 +4,7 @@
 
 // C++ internal initializers for hard classes
 namespace _vt { // store in undercover namespace
-    using namespace vt;
+    using namespace vrt;
 
 
     constexpr uint32_t VtIdentifier = 0x1FFu;
@@ -209,7 +209,7 @@ namespace _vt { // store in undercover namespace
 // templates is not supported by static libs 
 // all pure C++ stuff will implementing by headers in SDK
 
-namespace vt {
+namespace vrt {
     using namespace _vt;
 
     template <class T>

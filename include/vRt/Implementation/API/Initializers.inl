@@ -4,7 +4,7 @@
 
 // C++ internal initializers for hard classes
 namespace _vt { // store in undercover namespace
-    using namespace vt;
+    using namespace vrt;
 
     // base creation functions 
     extern inline VtResult convertInstance(VkInstance vkInstance, const VtInstanceConversionInfo& vtInstanceCreateInfo, std::shared_ptr<Instance>& vtInstance);

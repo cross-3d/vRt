@@ -14,7 +14,7 @@
 #include <map>
 #include <memory>
 
-#ifdef ENABLE_RVT_STRING_VIEW
+#ifdef ENABLE_VRT_STRING_VIEW
 #include <string_view>
 #endif
 

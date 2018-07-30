@@ -2,7 +2,7 @@
 #include "Headers.inl"
 #include "StructuresLow.inl"
 
-namespace vt { // store in official namespace
+namespace vrt { // store in official namespace
     // for not confusing with Vulkan API enums
     // use 0x11E for VtResult
     // use 0x11F for VtStructureType

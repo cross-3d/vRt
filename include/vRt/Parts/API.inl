@@ -6,7 +6,7 @@
 #include "Enums.inl"
 
 
-namespace vt { // store in official namespace
+namespace vrt { // store in official namespace
 
     // wrapped API for create device, instance and physical device 
     // planned wrapped instance creator with required extensions support

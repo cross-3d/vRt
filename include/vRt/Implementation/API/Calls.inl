@@ -5,7 +5,7 @@
 #include "./RayTracing.inl"
 #include "./RadixSort.inl"
 
-namespace vt {
+namespace vrt {
     using namespace _vt;
 
     static inline VtResult vtCreateDevice(VtPhysicalDevice vtPhysicalDevice, const VkDeviceCreateInfo * deviceCreateInfo, VtDevice * vtDevice) {

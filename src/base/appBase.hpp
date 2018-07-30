@@ -12,14 +12,14 @@
 #define GLFW_EXPOSE_NATIVE_GLX
 #endif
 
-#define RVT_IMPLEMENTATION
+#define VRT_IMPLEMENTATION
 #include "appStructures.hpp"
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
 namespace NSM
 {
-    using namespace vt;
+    using namespace vrt;
 
     class ApplicationBase : public std::enable_shared_from_this<ApplicationBase> {
     protected:
@@ -334,20 +334,20 @@ namespace NSM
 
 
             { // create ray tracing instances and devices
-                vt::VtInstanceConversionInfo cinfo;
-                vt::VtInstance cinstance;
-                vt::vtConvertInstance(instance, &cinfo, &cinstance);
+                vrt::VtInstanceConversionInfo cinfo;
+                vrt::VtInstance cinstance;
+                vrt::vtConvertInstance(instance, &cinfo, &cinstance);
 
-                vt::VtPhysicalDevice pdevice;
-                vt::vtConvertPhysicalDevice(cinstance, gpu, &pdevice);
+                vrt::VtPhysicalDevice pdevice;
+                vrt::vtConvertPhysicalDevice(cinstance, gpu, &pdevice);
 
-                vt::VtArtificalDeviceExtension dbi;
+                vrt::VtArtificalDeviceExtension dbi;
                 dbi.mainQueueFamily = deviceQueuePtr->familyIndex;
                 dbi.shaderPath = shaderPath;
                 dbi.allocator = devicePtr->allocator;
                 dbi.sharedCacheSize = 1024 * 1024 * 64; // 512Mb?
                 dbi.maxPrimitives = 1024 * 1024 * 4;
-                vt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
+                vrt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
 
                 //devicePtr->allocator = deviceQueuePtr->device->rtDev->_allocator;
             }

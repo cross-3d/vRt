@@ -2,7 +2,7 @@
 #include "Headers.inl"
 #include "StructuresLow.inl"
 
-namespace vt { // store in official namespace
+namespace vrt { // store in official namespace
 
     // in general that is conversion
     struct VtInstanceConversionInfo;

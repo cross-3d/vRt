@@ -2,7 +2,7 @@
 #include "Headers.inl"
 
 // store in official namespace
-namespace vt {
+namespace vrt {
 
     // any other vertex bindings can be used by attributes
     struct VtVertexRegionBinding {

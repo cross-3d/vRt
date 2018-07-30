@@ -3,13 +3,13 @@
 #include "../../vRt_subimpl.inl"
 
 namespace _vt {
-    using namespace vt;
+    using namespace vrt;
 
     // radix sorting command (qRadix)
     static inline VtResult radixSort(std::shared_ptr<CommandBuffer> cmdBuf, const VkDescriptorSet& inputSet, uint32_t primCount = 2) {
-        constexpr auto STEPS = RVT_USE_MORTON_32 ? 4ull : 8ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull;
-        //constexpr auto STEPS = RVT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // QLC
-        //constexpr auto STEPS = RVT_USE_MORTON_32 ? 16ull : 32ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // MLC
+        constexpr auto STEPS = VRT_USE_MORTON_32 ? 4ull : 8ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull;
+        //constexpr auto STEPS = VRT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // QLC
+        //constexpr auto STEPS = VRT_USE_MORTON_32 ? 16ull : 32ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // MLC
 
 
         VtResult result = VK_SUCCESS;

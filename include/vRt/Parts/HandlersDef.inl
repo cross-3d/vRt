@@ -3,7 +3,7 @@
 #include "HardClassesDef.inl"
 
 // store in official namespace
-namespace vt {
+namespace vrt {
     struct VtInstance;
     struct VtPhysicalDevice;
     struct VtDevice;

@@ -7,7 +7,7 @@
 
 // C++ hard interfaces (which will storing)
 namespace _vt { // store in undercover namespace
-    using namespace vt;
+    using namespace vrt;
 
     // ray tracing instance aggregation
     class Instance : public std::enable_shared_from_this<Instance> {
