@@ -397,28 +397,25 @@ namespace NSM
 
         // create window and surface for this application (multi-window not supported)
         virtual SurfaceWindow &createWindowSurface(GLFWwindow *window, uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
-            if (!applicationWindow.window) {
-                applicationWindow.window = window;
-                auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, (VkSurfaceKHR*)&applicationWindow.surface);
-                if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
-            }
-            
+            applicationWindow.window = window;
             applicationWindow.surfaceSize = vk::Extent2D{ WIDTH, HEIGHT };
+            VkSurfaceKHR vksurface = VK_NULL_HANDLE;
+            auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, &vksurface);
+            if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
+            applicationWindow.surface = vksurface;
             return applicationWindow;
         }
 
         // create window and surface for this application (multi-window not supported)
         virtual SurfaceWindow &createWindowSurface(uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
-            if (!applicationWindow.window) {
-                applicationWindow.window = glfwCreateWindow(WIDTH, HEIGHT, title.c_str(), nullptr, nullptr);
-                auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, (VkSurfaceKHR*)&applicationWindow.surface);
-                if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
-            }
-            
+            applicationWindow.window = glfwCreateWindow(WIDTH, HEIGHT, title.c_str(), nullptr, nullptr);
             applicationWindow.surfaceSize = vk::Extent2D{ WIDTH, HEIGHT };
+            VkSurfaceKHR vksurface = VK_NULL_HANDLE;
+            auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, &vksurface);
+            if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
+            applicationWindow.surface = vksurface;
             return applicationWindow;
         }
-
 
         // getters
         vk::SurfaceKHR surface() const {
