@@ -13,10 +13,11 @@ namespace _vt {
     };
 
     template<VmaMemoryUsage U>
-    static inline VtResult createBuffer(std::shared_ptr<Device> device, const VtDeviceBufferCreateInfo& cinfo, std::shared_ptr<RoledBuffer<U>>& _vtBuffer) {
+    static inline VtResult createBuffer(std::shared_ptr<Device> device, const VtDeviceBufferCreateInfo& cinfo, std::shared_ptr<RoledBuffer<U>>& vtDeviceBuffer) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
-        auto vtDeviceBuffer = (_vtBuffer = std::make_shared<RoledBuffer<U>>());
+        //auto vtDeviceBuffer = (_vtBuffer = std::make_shared<RoledBuffer<U>>());
+        vtDeviceBuffer = std::make_shared<RoledBuffer<U>>();
         vtDeviceBuffer->_device = device; // delegate device by weak_ptr
 
         VmaAllocationCreateInfo allocCreateInfo = {};
@@ -33,8 +34,13 @@ namespace _vt {
         };
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
+        VezMemoryFlags mem = VEZ_MEMORY_GPU_ONLY;
+        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) mem = VEZ_MEMORY_CPU_TO_GPU;
+        if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) mem = VEZ_MEMORY_GPU_TO_CPU;
+        if constexpr (U == VMA_MEMORY_USAGE_CPU_ONLY) mem = VEZ_MEMORY_CPU_ONLY;
+
         auto binfo = VezBufferCreateInfo{ nullptr, cinfo.bufferSize, usageFlag, 1, &cinfo.familyIndex };
-        result = vezCreateBuffer(device->_device, (U - 1), &binfo, &vtDeviceBuffer->_buffer);
+        result = vezCreateBuffer(device->_device, mem, &binfo, &vtDeviceBuffer->_buffer);
 #else
         auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, cinfo.bufferSize, usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &cinfo.familyIndex };
         result = vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo);

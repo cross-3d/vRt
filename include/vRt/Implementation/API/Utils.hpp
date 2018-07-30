@@ -189,20 +189,51 @@ namespace _vt { // store in undercover namespace
     template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_CPU_TO_GPU>
     static inline void setBufferSubData(const std::vector<T> &hostdata, std::shared_ptr<RoledBuffer<U>> buffer, intptr_t offset = 0) {
         const size_t bufferSize = hostdata.size() * sizeof(T);
+#ifdef VRT_ENABLE_VEZ_INTEROP
+        if (bufferSize > 0) {
+            uint8_t * uPtr = nullptr;
+            vezMapBuffer(*buffer->_device, buffer->_buffer, offset, bufferSize, (void**)&uPtr);
+            memcpy(uPtr, hostdata.data(), bufferSize);
+
+            auto region = VezMappedBufferRange{};
+            region.buffer = buffer->_buffer;
+            region.offset = offset;
+            region.size = bufferSize;
+            //vezFlushMappedBufferRanges(*buffer->_device, 1, &region);
+            vezUnmapBuffer(*buffer->_device, buffer->_buffer);
+        }
+#else
         if (bufferSize > 0) memcpy((uint8_t *)buffer->_hostMapped() + offset, hostdata.data(), bufferSize);
+#endif
     }
 
     // get buffer data function (defaultly from DeviceToHost)
     template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
     static inline void getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, std::vector<T> &hostdata, intptr_t offset = 0) {
-        if (hostdata.size() > 0) memcpy(hostdata.data(), (const uint8_t *)buffer->_hostMapped() + offset, hostdata.size() * sizeof(T));
+        const size_t bufferSize = hostdata.size() * sizeof(T);
+#ifdef VRT_ENABLE_VEZ_INTEROP
+        if (bufferSize > 0) {
+            uint8_t * uPtr = nullptr;
+            vezMapBuffer(*buffer->_device, buffer->_buffer, offset, bufferSize, &uPtr);
+            memcpy(hostdata.data(), uPtr, bufferSize);
+
+            auto region = VezMappedBufferRange{};
+            region.buffer = buffer->_buffer;
+            region.offset = offset;
+            region.size = bufferSize;
+            //vezFlushMappedBufferRanges(*buffer->_device, 1, &region);
+            vezUnmapBuffer(*buffer->_device, buffer->_buffer);
+        }
+#else
+        if (hostdata.size() > 0) memcpy(hostdata.data(), (const uint8_t *)buffer->_hostMapped() + offset, bufferSize);
+#endif
     }
 
     // get buffer data function (defaultly from DeviceToHost)
     template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
     static inline auto getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, size_t count = 1, intptr_t offset = 0) {
         std::vector<T> hostdata(count);
-        if (hostdata.size() > 0) memcpy(hostdata.data(), (const uint8_t *)buffer->_hostMapped() + offset, count * sizeof(T));
+        getBufferSubData(buffer, hostdata, 0);
         return hostdata; // in return will copying, C++ does not made mechanism for zero-copy of anything
     }
 };

@@ -5,9 +5,10 @@
 namespace _vt {
     using namespace vrt;
 
-    static inline VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<AcceleratorHLBVH2>& _vtAccelerator) {
+    static inline VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<AcceleratorHLBVH2>& vtAccelerator) {
         VtResult result = VK_SUCCESS;
-        auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
+        //auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
+        vtAccelerator = std::make_shared<AcceleratorHLBVH2>();
         vtAccelerator->_device = _vtDevice;
         auto vkDevice = _vtDevice->_device;
         auto vkPipelineCache = _vtDevice->_pipelineCache;

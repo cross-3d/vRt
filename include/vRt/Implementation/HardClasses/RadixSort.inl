@@ -6,7 +6,7 @@ namespace _vt {
     using namespace vrt;
 
     // planned add hardcodes for radix sorting
-    static inline VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<RadixSort>& _vtRadix) {
+    static inline VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<RadixSort>& vtRadix) {
         constexpr auto STEPS = VRT_USE_MORTON_32 ? 4ull : 8ull, WG_COUNT = 64ull, RADICE_AFFINE = 256ull; // 8-bit
         //constexpr auto STEPS = VRT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 16ull; // QLC
         //constexpr auto STEPS = VRT_USE_MORTON_32 ? 16ull : 32ull, WG_COUNT = 64ull, RADICE_AFFINE = 4ull; // MLC
@@ -14,9 +14,10 @@ namespace _vt {
 
         VtResult result = VK_SUCCESS;
 
-        auto vtRadix = (_vtRadix = std::make_shared<RadixSort>());
+        //auto vtRadix = (_vtRadix = std::make_shared<RadixSort>());
         auto vkDevice = _vtDevice->_device;
         auto vkPipelineCache = _vtDevice->_pipelineCache;
+        vtRadix = std::make_shared<RadixSort>();
         vtRadix->_device = _vtDevice;
 
         const auto vendorName = _vtDevice->_vendorName;

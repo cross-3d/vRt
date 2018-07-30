@@ -23,8 +23,9 @@ namespace _vt {
     }
 
 
-    static inline VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& _vtDevice) {
-        auto vtDevice = (_vtDevice = std::make_shared<Device>());
+    static inline VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& vtDevice) {
+        //auto vtDevice = (_vtDevice = std::make_shared<Device>());
+        vtDevice = std::make_shared<Device>();
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
         vtDevice->_device = device;
 
@@ -87,7 +88,7 @@ namespace _vt {
         dbfi.format = VK_FORMAT_UNDEFINED;
         dbfi.bufferSize = strided<VtUniformBlock>(1024);
         createDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_uniformVIBuffer);
-        const auto vendorName = _vtDevice->_vendorName;
+        const auto vendorName = vtDevice->_vendorName;
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {

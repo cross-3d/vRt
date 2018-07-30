@@ -5,12 +5,13 @@
 namespace _vt {
     using namespace vrt;
 
-    static inline VtResult createPipelineLayout(std::shared_ptr<Device> _vtDevice, VtPipelineLayoutCreateInfo vtPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& _vtPipelineLayout, VtPipelineLayoutType type) {
+    static inline VtResult createPipelineLayout(std::shared_ptr<Device> _vtDevice, VtPipelineLayoutCreateInfo vtPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& vtPipelineLayout, VtPipelineLayoutType type) {
         VtResult result = VK_SUCCESS;
         auto vkDevice = _vtDevice->_device;
 
         auto vkPipelineLayout = vtPipelineLayoutCreateInfo.pGeneralPipelineLayout ? vk::PipelineLayoutCreateInfo(*vtPipelineLayoutCreateInfo.pGeneralPipelineLayout) : vk::PipelineLayoutCreateInfo();
-        auto vtPipelineLayout = (_vtPipelineLayout = std::make_shared<PipelineLayout>());
+        //auto vtPipelineLayout = (_vtPipelineLayout = std::make_shared<PipelineLayout>());
+        vtPipelineLayout = std::make_shared<PipelineLayout>();
         vtPipelineLayout->_device = _vtDevice;
         vtPipelineLayout->_type = type;
 

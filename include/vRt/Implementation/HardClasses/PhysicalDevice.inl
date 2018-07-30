@@ -5,9 +5,9 @@
 namespace _vt {
     using namespace vrt;
 
-    static inline VtResult convertPhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, std::shared_ptr<PhysicalDevice>& _vtPhysicalDevice) {
-        _vtPhysicalDevice = std::make_shared<PhysicalDevice>();
-        _vtPhysicalDevice->_physicalDevice = physical; // assign a Vulkan physical device
+    static inline VtResult convertPhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, std::shared_ptr<PhysicalDevice>& vtPhysicalDevice) {
+        vtPhysicalDevice = std::make_shared<PhysicalDevice>();
+        vtPhysicalDevice->_physicalDevice = physical; // assign a Vulkan physical device
         return VK_SUCCESS;
     };
 };

@@ -12,11 +12,12 @@ namespace _vt {
         });
     };
 
-    static inline VtResult createDeviceImage(std::shared_ptr<Device> device, const VtDeviceImageCreateInfo& cinfo, std::shared_ptr<DeviceImage>& _vtImage) {
+    static inline VtResult createDeviceImage(std::shared_ptr<Device> device, const VtDeviceImageCreateInfo& cinfo, std::shared_ptr<DeviceImage>& vtDeviceImage) {
         // result will no fully handled
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
-        auto vtDeviceImage = (_vtImage = std::make_shared<DeviceImage>());
+        //auto vtDeviceImage = (_vtImage = std::make_shared<DeviceImage>());
+        vtDeviceImage = std::make_shared<DeviceImage>();
         vtDeviceImage->_device = device; // delegate device by weak_ptr
         vtDeviceImage->_layout = (VkImageLayout)cinfo.layout;
 
@@ -61,10 +62,10 @@ namespace _vt {
         imageInfo.samples = VkSampleCountFlagBits(vk::SampleCountFlagBits::e1); // at now not supported MSAA
         imageInfo.usage = VkImageUsageFlags(usage);
 
-
         // create image with allocation
 #ifdef VRT_ENABLE_VEZ_INTEROP
-        if ( vezCreateImage(device->_device, VEZ_MEMORY_GPU_ONLY, &imageInfo, &vtDeviceImage->_image) == VK_SUCCESS ) { result = VK_SUCCESS; };
+        VezMemoryFlags mem = VEZ_MEMORY_GPU_ONLY;
+        if ( vezCreateImage(device->_device, mem, &imageInfo, &vtDeviceImage->_image) == VK_SUCCESS ) { result = VK_SUCCESS; };
 #else
         VmaAllocationCreateInfo allocCreateInfo = {};
         allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
