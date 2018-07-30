@@ -18,7 +18,7 @@
 //#endif
 
 // if vulkan header included, make compatible with volk.h
-#if (defined(VULKAN_H_) && !defined(VRT_DONT_USE_VOLK))
+#ifdef VULKAN_H_
 #define VK_NO_PROTOTYPES
 #endif
 
