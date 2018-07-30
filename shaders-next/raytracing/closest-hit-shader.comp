@@ -123,11 +123,9 @@ void main() {
             vec3 tangent = imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz; //hit.attributes[TANGENT_TID].xyz;
 
             // use HW intersected normal if something wrong
-            normal.xyz = normalize(length(normal.xyz) <= 1e-5 ? hit.vdat.xyz : normal.xyz);
-            //normal.xyz = faceforward(normal.xyz, normal.xyz, viewVec);
+            float nlen = length(normal.xyz);
+            normal.xyz = nlen <= 1e-5 ? hit.vdat.xyz : (normal.xyz/nlen);
             normal.xyz = faceforward(normal.xyz, normal.xyz, -hit.vdat.xyz);
-            //normal.xyz = hit.vdat.xyz;
-            
 
             mat3 tbn = transpose(mat3(tangent.xyz, bitang.xyz, normal.xyz));
             vec3 pV = normalize(tbn * (-viewVec * hit.uvt.z));
