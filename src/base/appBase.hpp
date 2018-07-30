@@ -118,7 +118,9 @@ namespace NSM
     public:
 
         vk::Instance createInstance() {
+#ifdef VOLK_H_
             volkInitialize();
+#endif
             
             // get required extensions
             unsigned int glfwExtensionCount = 0;
@@ -173,7 +175,9 @@ namespace NSM
 
             // create instance
             instance = vk::createInstance(cinstanceinfo);
+#ifdef VOLK_H_
             volkLoadInstance(instance);
+#endif
 
             // get physical device for application
             return instance;
@@ -265,6 +269,11 @@ namespace NSM
                     .setPpEnabledExtensionNames(deviceExtensions.data()).setEnabledExtensionCount(deviceExtensions.size())
                     .setPpEnabledLayerNames(deviceValidationLayers.data()).setEnabledLayerCount(deviceValidationLayers.size()));
 
+                // init dispatch loader
+                devicePtr->dldid = vk::DispatchLoaderDynamic(instance, devicePtr->logical);
+                VmaVulkanFunctions vfuncs = {};
+
+#ifdef VOLK_H_
                 // load API calls for context
                 volkLoadDevice(devicePtr->logical);
 
@@ -272,15 +281,11 @@ namespace NSM
                 VolkDeviceTable vktable;
                 volkLoadDeviceTable(&vktable, devicePtr->logical);
 
-                // init dispatch loader
-                devicePtr->dldid = vk::DispatchLoaderDynamic(instance, devicePtr->logical);
-
                 // getting queues by family
                 // don't get it now
                 //for (int i = 0; i < queues.size(); i++) { queues[i]->queue = devicePtr->logical.getQueue(queues[i]->familyIndex, 0); }
 
                 // mapping volk with VMA functions
-                VmaVulkanFunctions vfuncs;
                 vfuncs.vkAllocateMemory = vktable.vkAllocateMemory;
                 vfuncs.vkBindBufferMemory = vktable.vkBindBufferMemory;
                 vfuncs.vkBindImageMemory = vktable.vkBindImageMemory;
@@ -297,10 +302,15 @@ namespace NSM
                 vfuncs.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
                 vfuncs.vkMapMemory = vktable.vkMapMemory;
                 vfuncs.vkUnmapMemory = vktable.vkUnmapMemory;
+#endif
 
                 // create allocator
                 VmaAllocatorCreateInfo allocatorInfo = {};
+#ifdef VOLK_H_
                 allocatorInfo.pVulkanFunctions = &vfuncs;
+#else
+                allocatorInfo.pVulkanFunctions = nullptr;
+#endif
                 allocatorInfo.physicalDevice = devicePtr->physical;
                 allocatorInfo.device = devicePtr->logical;
                 allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb

@@ -175,7 +175,7 @@ namespace vrt { // store in official namespace
         auto* operator->() const { return _vtDevice.get(); };
 
         // getter of descriptor layout from device VtDevice
-#ifdef ENABLE_VRT_STRING_VIEW
+#ifdef VRT_ENABLE_STRING_VIEW
         auto getDescriptorLayout(const std::string_view& name) const {
 #else
         auto getDescriptorLayout(const std::string& name) const {
