@@ -35,25 +35,42 @@ namespace _vt {
         // additional usage
         auto usage = vk::ImageUsageFlags(cinfo.usage) | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
 
+
         // image memory descriptor
-        auto imageInfo = vk::ImageCreateInfo();
-        imageInfo.initialLayout = vk::ImageLayout(vtDeviceImage->_initialLayout);
-        imageInfo.imageType = imageType;
-        imageInfo.sharingMode = vk::SharingMode::eExclusive;
+#ifdef VRT_ENABLE_VEZ_INTEROP
+        auto imageInfo = VezImageCreateInfo{};
+#else
+        auto imageInfo = VkImageCreateInfo(vk::ImageCreateInfo{});
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.initialLayout = VkImageLayout(vtDeviceImage->_initialLayout);
+        imageInfo.sharingMode = VkSharingMode(vk::SharingMode::eExclusive);
+
+#endif
+
+
+        // unified create structure
+        imageInfo.pNext = nullptr;
+        imageInfo.imageType = VkImageType(imageType);
         imageInfo.arrayLayers = 1; // unsupported
-        imageInfo.tiling = vk::ImageTiling::eOptimal;
-        imageInfo.extent = vk::Extent3D{ cinfo.size.width, cinfo.size.height, cinfo.size.depth * (isCubemap ? 6 : 1) };
-        imageInfo.format = vk::Format(cinfo.format);
+        imageInfo.tiling = VkImageTiling(vk::ImageTiling::eOptimal);
+        imageInfo.extent = VkExtent3D{ cinfo.size.width, cinfo.size.height, cinfo.size.depth * (isCubemap ? 6 : 1) };
+        imageInfo.format = cinfo.format;
         imageInfo.mipLevels = cinfo.mipLevels;
         imageInfo.pQueueFamilyIndices = &cinfo.familyIndex;
         imageInfo.queueFamilyIndexCount = 1;
-        imageInfo.samples = vk::SampleCountFlagBits::e1; // at now not supported MSAA
-        imageInfo.usage = usage;
+        imageInfo.samples = VkSampleCountFlagBits(vk::SampleCountFlagBits::e1); // at now not supported MSAA
+        imageInfo.usage = VkImageUsageFlags(usage);
+
 
         // create image with allocation
+#ifdef VRT_ENABLE_VEZ_INTEROP
+        if ( vezCreateImage(device->_device, VEZ_MEMORY_GPU_ONLY, &imageInfo, &(vtDeviceImage->_image)) == VK_SUCCESS ) { result = VK_SUCCESS; };
+#else
         VmaAllocationCreateInfo allocCreateInfo = {};
         allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        if (vmaCreateImage(device->_allocator, (VkImageCreateInfo*)&imageInfo, &allocCreateInfo, (VkImage *)&vtDeviceImage->_image, &vtDeviceImage->_allocation, &vtDeviceImage->_allocationInfo) == VK_SUCCESS) { result = VK_SUCCESS; };
+        if ( vmaCreateImage(device->_allocator, &imageInfo, &allocCreateInfo, &(vtDeviceImage->_image), &vtDeviceImage->_allocation, &vtDeviceImage->_allocationInfo) == VK_SUCCESS ) { result = VK_SUCCESS; };
+#endif
+
 
         // subresource range
         vtDeviceImage->_subresourceRange.levelCount = 1;
@@ -70,7 +87,8 @@ namespace _vt {
 
         vtDeviceImage->_extent = imageInfo.extent;
 
-        // descriptor for usage 
+        // descriptor for usage
+        // TODO to add support for V-EZ
         // (unhandled by vtResult)
         vtDeviceImage->_imageView = vk::Device(device->_device).createImageView(vk::ImageViewCreateInfo()
             .setSubresourceRange(vtDeviceImage->_subresourceRange)
@@ -79,7 +97,11 @@ namespace _vt {
             .setImage(vtDeviceImage->_image)
             .setFormat(vk::Format(cinfo.format)));
 
+#ifdef VRT_ENABLE_VEZ_INTEROP
+        vtDeviceImage->_initialLayout = vtDeviceImage->_layout;
+#else
         vtDeviceImage->_staticDsci = VkDescriptorImageInfo{ {}, vtDeviceImage->_imageView, vtDeviceImage->_layout };
+#endif
         return result;
     };
 

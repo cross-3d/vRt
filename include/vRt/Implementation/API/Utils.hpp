@@ -57,6 +57,8 @@ namespace _vt { // store in undercover namespace
     // transition texture layout
     static inline auto imageBarrier(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> image) {
         VtResult result = VK_SUCCESS; // planned to complete
+
+#ifndef VRT_ENABLE_VEZ_INTEROP
         if (image->_initialLayout == image->_layout) return result; // no need transfering more
 
         vk::ImageMemoryBarrier imageMemoryBarriers = {};
@@ -111,6 +113,7 @@ namespace _vt { // store in undercover namespace
         // barrier
         vk::CommandBuffer(cmd).pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, std::array<vk::ImageMemoryBarrier, 1>{imageMemoryBarriers});
         image->_initialLayout = (VkImageLayout)imageMemoryBarriers.newLayout;
+#endif
 
         return result;
     };

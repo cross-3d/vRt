@@ -1,22 +1,5 @@
 #pragma once
 
-/*
-// compatible with API 
-#ifdef VK_VERSION_1_0
-#undef VK_VERSION_1_0
-#endif
-
-// compatible with API 1.1
-#ifdef VK_VERSION_1_1
-#undef VK_VERSION_1_1
-#endif
-*/
-
-// use Vulkan API 1.1
-//#ifndef VK_VERSION_1_1
-//#define VK_VERSION_1_1
-//#endif
-
 // if vulkan header included, make compatible with volk.h
 #ifdef VULKAN_H_
 #define VK_NO_PROTOTYPES
@@ -33,7 +16,9 @@
 
 // include VEZ for interop
 #ifdef VRT_ENABLE_VEZ_INTEROP
+#ifndef VEZ_H
 #include <VEZ/VEZ.h>
+#endif
 #endif
 
 // if no defined VEZ, and not included VMA, include it
