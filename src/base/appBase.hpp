@@ -108,11 +108,11 @@ namespace NSM
 
 
         struct SurfaceWindow {
-            SurfaceFormat surfaceFormat;
-            vk::Extent2D surfaceSize;
-            vk::SurfaceKHR surface;
-            GLFWwindow *window;
-        } applicationWindow;
+            SurfaceFormat surfaceFormat = {};
+            vk::Extent2D surfaceSize = vk::Extent2D{0u, 0u};
+            vk::SurfaceKHR surface = {};
+            GLFWwindow *window = nullptr;
+        } applicationWindow = {};
 
     public:
 
@@ -397,23 +397,25 @@ namespace NSM
 
         // create window and surface for this application (multi-window not supported)
         virtual SurfaceWindow &createWindowSurface(GLFWwindow *window, uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
-            applicationWindow.window = window;
+            if (!applicationWindow.window) {
+                applicationWindow.window = window;
+                auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, (VkSurfaceKHR*)&applicationWindow.surface);
+                if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
+            }
+            
             applicationWindow.surfaceSize = vk::Extent2D{ WIDTH, HEIGHT };
-            auto vksurface = VkSurfaceKHR();
-            auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, &vksurface);
-            if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
-            applicationWindow.surface = vksurface;
             return applicationWindow;
         }
 
         // create window and surface for this application (multi-window not supported)
         virtual SurfaceWindow &createWindowSurface(uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
-            applicationWindow.window = glfwCreateWindow(WIDTH, HEIGHT, title.c_str(), nullptr, nullptr);
+            if (!applicationWindow.window) {
+                applicationWindow.window = glfwCreateWindow(WIDTH, HEIGHT, title.c_str(), nullptr, nullptr);
+                auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, (VkSurfaceKHR*)&applicationWindow.surface);
+                if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
+            }
+            
             applicationWindow.surfaceSize = vk::Extent2D{ WIDTH, HEIGHT };
-            auto vksurface = VkSurfaceKHR();
-            auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, &vksurface);
-            if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
-            applicationWindow.surface = vksurface;
             return applicationWindow;
         }
 
@@ -602,6 +604,23 @@ namespace NSM
             auto gpuMemoryProps = queue->device->physical.getMemoryProperties();
             auto formats = applicationWindow.surfaceFormat;
 
+            VkImage _image = {};
+
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            auto imageInfo = VezImageCreateInfo{};
+            imageInfo.pNext = nullptr;
+            imageInfo.arrayLayers = 1;
+            imageInfo.extent = VkExtent3D{ applicationWindow.surfaceSize.width, applicationWindow.surfaceSize.height, 1 };
+            imageInfo.format = VkFormat(formats.depthFormat);
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageInfo.mipLevels = 1;
+            imageInfo.pQueueFamilyIndices = &queue->device->queues[1]->familyIndex;
+            imageInfo.queueFamilyIndexCount = 1;
+            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            vezCreateImage(queue->device->logical, VEZ_MEMORY_GPU_ONLY, &imageInfo, &_image);
+#else
             // create depth image
             auto imageInfo = vk::ImageCreateInfo(
                 vk::ImageCreateFlags(), vk::ImageType::e2D, formats.depthFormat,
@@ -616,9 +635,10 @@ namespace NSM
             allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
             VmaAllocation _allocation = {};
-            VkImage _image = {};
             VkImageCreateInfo imageInfoVK = imageInfo;
             vmaCreateImage(queue->device->allocator, &imageInfoVK, &allocCreateInfo, &_image, &_allocation, nullptr); // allocators planned structs
+#endif
+
             auto depthImage = vk::Image(_image);
 
             // create image viewer
@@ -771,7 +791,7 @@ namespace NSM
             swapchainCreateInfo.clipped = true;
 
             // create swapchain
-            return queue->device->logical.createSwapchainKHR(swapchainCreateInfo);
+            return queue->device->logical.createSwapchainKHR(swapchainCreateInfo, nullptr);
         }
     };
 

@@ -59,12 +59,13 @@ namespace NSM {
     };
 
     // application surface format information structure
-    struct SurfaceFormat : public std::enable_shared_from_this<SurfaceFormat> {
-        vk::Format colorFormat;
-        vk::Format depthFormat;
-        vk::Format stencilFormat;
-        vk::ColorSpaceKHR colorSpace;
-        vk::FormatProperties colorFormatProperties;
+    //struct SurfaceFormat : public std::enable_shared_from_this<SurfaceFormat> {
+    struct SurfaceFormat {
+        vk::Format colorFormat = {};
+        vk::Format depthFormat = {};
+        vk::Format stencilFormat = {};
+        vk::ColorSpaceKHR colorSpace = {};
+        vk::FormatProperties colorFormatProperties = {};
     };
 
     // framebuffer with command buffer and fence
