@@ -1,14 +1,21 @@
 #pragma once
 
-// undev Vulkan API 1.0
+/*
+// compatible with API 
 #ifdef VK_VERSION_1_0
 #undef VK_VERSION_1_0
 #endif
 
-// use Vulkan API 1.1
-#ifndef VK_VERSION_1_1
-#define VK_VERSION_1_1
+// compatible with API 1.1
+#ifdef VK_VERSION_1_1
+#undef VK_VERSION_1_1
 #endif
+*/
+
+// use Vulkan API 1.1
+//#ifndef VK_VERSION_1_1
+//#define VK_VERSION_1_1
+//#endif
 
 // if vulkan header included, make compatible with volk.h
 #if (defined(VULKAN_H_) && !defined(VRT_DONT_USE_VOLK))
