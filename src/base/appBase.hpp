@@ -24,7 +24,6 @@ namespace NSM
     class ApplicationBase : public std::enable_shared_from_this<ApplicationBase> {
     protected:
 
-
         // application binding
         vk::Instance instance;
 
@@ -161,21 +160,39 @@ namespace NSM
             }
 
             // app info
-            vk::ApplicationInfo appinfo;
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            VezApplicationInfo appinfo = {};
+#else
+            vk::ApplicationInfo appinfo = {};
+#endif
+            appinfo.pNext = nullptr;
             appinfo.pApplicationName = "VKTest";
             appinfo.applicationVersion = NULL;
+#ifndef VRT_ENABLE_VEZ_INTEROP
             appinfo.apiVersion = VK_MAKE_VERSION(1, 1, 77);
+#endif
 
             // create instance info
-            vk::InstanceCreateInfo cinstanceinfo;
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            VezInstanceCreateInfo cinstanceinfo = {};
             cinstanceinfo.pApplicationInfo = &appinfo;
+#else
+            VkInstanceCreateInfo cinstanceinfo = VkInstanceCreateInfo(vk::InstanceCreateInfo{});
+            cinstanceinfo.pApplicationInfo = (VkApplicationInfo*)&appinfo;
+#endif
+
             cinstanceinfo.enabledExtensionCount = extensions.size();
             cinstanceinfo.ppEnabledExtensionNames = extensions.data();
             cinstanceinfo.enabledLayerCount = layers.size();
             cinstanceinfo.ppEnabledLayerNames = layers.data();
 
             // create instance
-            instance = vk::createInstance(cinstanceinfo);
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            vezCreateInstance(&cinstanceinfo, (VkInstance*)&instance);
+#else
+            instance = vk::createInstance(vk::InstanceCreateInfo(cinstanceinfo));
+#endif
+
 #ifdef VOLK_H_
             volkLoadInstance(instance);
 #endif
@@ -264,11 +281,22 @@ namespace NSM
             if (queueCreateInfos.size() > 0) {
                 // create device
                 devicePtr->physical = gpu;
+
+#ifdef VRT_ENABLE_VEZ_INTEROP
+                //devicePtr->logical = 
+                VezDeviceCreateInfo dvz = {};
+                dvz.enabledExtensionCount = deviceExtensions.size();
+                dvz.ppEnabledExtensionNames = deviceExtensions.data();
+                dvz.enabledLayerCount = deviceValidationLayers.size();
+                dvz.ppEnabledLayerNames = deviceValidationLayers.data();
+                vezCreateDevice(gpu, &dvz, (VkDevice*)&devicePtr->logical);
+#else
                 devicePtr->logical = gpu.createDevice(vk::DeviceCreateInfo().setFlags(vk::DeviceCreateFlags())
                     .setPEnabledFeatures(&gpuFeatures)
                     .setPQueueCreateInfos(queueCreateInfos.data()).setQueueCreateInfoCount(queueCreateInfos.size())
                     .setPpEnabledExtensionNames(deviceExtensions.data()).setEnabledExtensionCount(deviceExtensions.size())
                     .setPpEnabledLayerNames(deviceValidationLayers.data()).setEnabledLayerCount(deviceValidationLayers.size()));
+#endif
 
                 // init dispatch loader
                 devicePtr->dldid = vk::DispatchLoaderDynamic(instance, devicePtr->logical);

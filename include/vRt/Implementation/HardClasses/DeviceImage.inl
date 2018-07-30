@@ -64,11 +64,11 @@ namespace _vt {
 
         // create image with allocation
 #ifdef VRT_ENABLE_VEZ_INTEROP
-        if ( vezCreateImage(device->_device, VEZ_MEMORY_GPU_ONLY, &imageInfo, &(vtDeviceImage->_image)) == VK_SUCCESS ) { result = VK_SUCCESS; };
+        if ( vezCreateImage(device->_device, VEZ_MEMORY_GPU_ONLY, &imageInfo, &vtDeviceImage->_image) == VK_SUCCESS ) { result = VK_SUCCESS; };
 #else
         VmaAllocationCreateInfo allocCreateInfo = {};
         allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        if ( vmaCreateImage(device->_allocator, &imageInfo, &allocCreateInfo, &(vtDeviceImage->_image), &vtDeviceImage->_allocation, &vtDeviceImage->_allocationInfo) == VK_SUCCESS ) { result = VK_SUCCESS; };
+        if ( vmaCreateImage(device->_allocator, &imageInfo, &allocCreateInfo, &vtDeviceImage->_image, &vtDeviceImage->_allocation, &vtDeviceImage->_allocationInfo) == VK_SUCCESS ) { result = VK_SUCCESS; };
 #endif
 
 
@@ -88,14 +88,25 @@ namespace _vt {
         vtDeviceImage->_extent = imageInfo.extent;
 
         // descriptor for usage
-        // TODO to add support for V-EZ
+        // TODO to reduce code of image view creation
         // (unhandled by vtResult)
+#ifdef VRT_ENABLE_VEZ_INTEROP
+        VezImageViewCreateInfo vinfo = {};
+        vinfo.components = VkComponentMapping{VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
+        vinfo.format = cinfo.format;
+        vinfo.image = vtDeviceImage->_image;
+        vinfo.pNext = nullptr;
+        vinfo.subresourceRange = *(VezImageSubresourceRange*)(&vtDeviceImage->_subresourceRange.baseMipLevel);
+        vinfo.viewType = cinfo.imageViewType;
+        vezCreateImageView(device->_device, &vinfo, &vtDeviceImage->_imageView);
+#else
         vtDeviceImage->_imageView = vk::Device(device->_device).createImageView(vk::ImageViewCreateInfo()
             .setSubresourceRange(vtDeviceImage->_subresourceRange)
             .setViewType(vk::ImageViewType(cinfo.imageViewType))
             .setComponents(vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA))
             .setImage(vtDeviceImage->_image)
             .setFormat(vk::Format(cinfo.format)));
+#endif
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
         vtDeviceImage->_initialLayout = vtDeviceImage->_layout;

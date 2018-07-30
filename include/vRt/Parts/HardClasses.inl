@@ -12,7 +12,7 @@ namespace _vt { // store in undercover namespace
     // ray tracing instance aggregation
     class Instance : public std::enable_shared_from_this<Instance> {
     public:
-        VkInstance _instance = nullptr;
+        VkInstance _instance = VK_NULL_HANDLE;
         operator VkInstance() const { return _instance; };
     };
 
@@ -20,7 +20,7 @@ namespace _vt { // store in undercover namespace
     class PhysicalDevice : public std::enable_shared_from_this<PhysicalDevice> {
     public:
         friend Instance;
-        VkPhysicalDevice _physicalDevice = nullptr;
+        VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
         std::shared_ptr<Instance> _instance;
 
         operator VkPhysicalDevice() const { return _physicalDevice; };
@@ -43,14 +43,14 @@ namespace _vt { // store in undercover namespace
     class Device : public std::enable_shared_from_this<Device> {
     public:
         friend PhysicalDevice;
-        VkDevice _device = nullptr;
+        VkDevice _device = VK_NULL_HANDLE;
         std::shared_ptr<PhysicalDevice> _physicalDevice;
 
         uint32_t _mainFamilyIndex = 0;
         std::string _shadersPath = "./";
-        VmaAllocator _allocator;
-        VkPipelineCache _pipelineCache; // store native pipeline cache
-        VkDescriptorPool _descriptorPool;
+        VmaAllocator _allocator = {};
+        VkPipelineCache _pipelineCache = VK_NULL_HANDLE; // store native pipeline cache
+        VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
 
         std::shared_ptr<RadixSort> _radixSort;
         std::shared_ptr<AcceleratorHLBVH2> _acceleratorBuilder; // planned to rename
@@ -76,7 +76,7 @@ namespace _vt { // store in undercover namespace
     class CommandBuffer : public std::enable_shared_from_this<CommandBuffer> {
     public:
         friend Device;
-        VkCommandBuffer _commandBuffer = nullptr;
+        VkCommandBuffer _commandBuffer = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
 
         std::weak_ptr<RayTracingSet> _rayTracingSet;
@@ -97,7 +97,7 @@ namespace _vt { // store in undercover namespace
     class PipelineLayout : public std::enable_shared_from_this<PipelineLayout> {
     public:
         friend Device;
-        VkPipelineLayout _pipelineLayout = nullptr; // replaced set 0 and 1
+        VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE; // replaced set 0 and 1
         std::shared_ptr<Device> _device;
         VtPipelineLayoutType _type = VT_PIPELINE_LAYOUT_TYPE_RAYTRACING;
 
@@ -108,12 +108,12 @@ namespace _vt { // store in undercover namespace
     class RayTracingSet : public std::enable_shared_from_this<RayTracingSet> {
     public:
         friend Device;
-        VkDescriptorSet _descriptorSet = nullptr;
+        VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
 
         // in-set buffers
         std::shared_ptr<DeviceBuffer> _rayBuffer, _groupIndicesBuffer, _groupIndicesBufferRead, _hitBuffer, _countersBuffer, _groupCountersBuffer, _groupCountersBufferRead, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer, _rayLinkPayload, _attribBuffer;
-        VtStageUniform _cuniform;
+        VtStageUniform _cuniform = {};
 
         operator VkDescriptorSet() const { return _descriptorSet; };
         auto _parent() const { return _device; };
@@ -123,7 +123,7 @@ namespace _vt { // store in undercover namespace
     class Pipeline : public std::enable_shared_from_this<Pipeline> {
     public:
         friend Device;
-        const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
+        const VkPipeline _dullPipeline = VK_NULL_HANDLE; // protect from stupid casting
 
         std::shared_ptr<Device> _device;
         std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout, when pipeline was created
@@ -143,7 +143,7 @@ namespace _vt { // store in undercover namespace
     class VertexAssemblySet : public std::enable_shared_from_this<VertexAssemblySet> {
     public:
         friend Device;
-        VkDescriptorSet _descriptorSet = nullptr;
+        VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
 
         // vertex and bvh export 
@@ -164,10 +164,10 @@ namespace _vt { // store in undercover namespace
     class VertexAssemblyPipeline : public std::enable_shared_from_this<VertexAssemblyPipeline> {
     public:
         friend Device;
-        const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
+        const VkPipeline _dullPipeline = VK_NULL_HANDLE; // protect from stupid casting
         std::weak_ptr<Device> _device;
 
-        VkPipeline _vertexAssemblyPipeline;
+        VkPipeline _vertexAssemblyPipeline = VK_NULL_HANDLE;
         std::shared_ptr<PipelineLayout> _pipelineLayout;
 
         operator VkPipeline() const { return _dullPipeline; };
@@ -178,7 +178,7 @@ namespace _vt { // store in undercover namespace
     class AcceleratorSet : public std::enable_shared_from_this<AcceleratorSet> {
     public:
         friend Device;
-        VkDescriptorSet _descriptorSet; // protect from stupid casting
+        VkDescriptorSet _descriptorSet = VK_NULL_HANDLE; // protect from stupid casting
         std::shared_ptr<Device> _device;
 
         // vertex and bvh export 
@@ -187,8 +187,8 @@ namespace _vt { // store in undercover namespace
         VtBvhBlock _bvhBlockData;
 
         // build descriptor set 
-        VkDescriptorSet _buildDescriptorSet;
-        VkDescriptorSet _sortDescriptorSet;
+        VkDescriptorSet _buildDescriptorSet = VK_NULL_HANDLE;
+        VkDescriptorSet _sortDescriptorSet = VK_NULL_HANDLE;
 
         // internal buffers
         std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
@@ -202,17 +202,17 @@ namespace _vt { // store in undercover namespace
     class AcceleratorHLBVH2 : public std::enable_shared_from_this<AcceleratorHLBVH2> {
     public:
         friend Device;
-        const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
+        const VkPipeline _dullPipeline = VK_NULL_HANDLE; // protect from stupid casting
         std::weak_ptr<Device> _device;
 
         // traverse pipeline
-        VkPipeline _intersectionPipeline, _interpolatorPipeline;
+        VkPipeline _intersectionPipeline = VK_NULL_HANDLE, _interpolatorPipeline = VK_NULL_HANDLE;
 
         // build BVH stages (few stages, in sequences)
-        VkPipeline _boundingPipeline, _shorthandPipeline, _leafPipeline, /*...radix sort between*/ _buildPipeline, _buildPipelineFirst, _fitPipeline, _leafLinkPipeline;
+        VkPipeline _boundingPipeline = VK_NULL_HANDLE, _shorthandPipeline = VK_NULL_HANDLE, _leafPipeline = VK_NULL_HANDLE, /*...radix sort between*/ _buildPipeline = VK_NULL_HANDLE, _buildPipelineFirst = VK_NULL_HANDLE, _fitPipeline = VK_NULL_HANDLE, _leafLinkPipeline = VK_NULL_HANDLE;
 
         // static pipeline layout for stages 
-        VkPipelineLayout _buildPipelineLayout, _traversePipelineLayout;
+        VkPipelineLayout _buildPipelineLayout = VK_NULL_HANDLE, _traversePipelineLayout = VK_NULL_HANDLE;
 
         operator VkPipeline() const { return _dullPipeline; };
         auto _parent() const { return _device.lock(); };
@@ -225,14 +225,14 @@ namespace _vt { // store in undercover namespace
         ~RoledBuffer();
 
         friend Device;
-        VkBuffer _buffer = nullptr;
+        VkBuffer _buffer = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
 
-        VkBufferView _bufferView;
-        VmaAllocation _allocation;
-        VmaAllocationInfo _allocationInfo;
-        VkDeviceSize _size;
-        VkDescriptorBufferInfo _staticDsci;
+        VkBufferView _bufferView = VK_NULL_HANDLE;
+        VmaAllocation _allocation = {};
+        VmaAllocationInfo _allocationInfo = {};
+        VkDeviceSize _size = 0;
+        VkDescriptorBufferInfo _staticDsci = {};
         auto _hostMapped() const { return _allocationInfo.pMappedData; };
 
         auto _parent() const { return _device; };
@@ -250,14 +250,14 @@ namespace _vt { // store in undercover namespace
         ~DeviceImage();
 
         friend Device;
-        VkImage _image = nullptr;
+        VkImage _image = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
 
-        VkImageView _imageView;
-        VmaAllocation _allocation;
-        VmaAllocationInfo _allocationInfo;
-        VkImageSubresourceRange _subresourceRange;
-        VkImageSubresourceLayers _subresourceLayers;
+        VkImageView _imageView = {};
+        VmaAllocation _allocation = {};
+        VmaAllocationInfo _allocationInfo = {};
+        VkImageSubresourceRange _subresourceRange = {};
+        VkImageSubresourceLayers _subresourceLayers = {};
         VkImageLayout _initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, _layout = VK_IMAGE_LAYOUT_GENERAL;
         VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
         VkExtent3D _extent = {1u, 1u, 1u};
@@ -277,7 +277,7 @@ namespace _vt { // store in undercover namespace
     class RadixSort : public std::enable_shared_from_this<RadixSort> {
     public:
         friend Device;
-        const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
+        const VkPipeline _dullPipeline = VK_NULL_HANDLE; // protect from stupid casting
         std::shared_ptr<Device> _device;
 
         std::shared_ptr<DeviceBuffer> _histogramBuffer;
@@ -285,9 +285,9 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _stepsBuffer; // constant buffer
         std::shared_ptr<DeviceBuffer> _tmpKeysBuffer; // cache keys between stages (avoid write conflict)
         std::shared_ptr<DeviceBuffer> _tmpValuesBuffer; // cache values between stages (avoid write conflict)
-        VkPipeline _histogramPipeline, _workPrefixPipeline, _permutePipeline, _copyhackPipeline; // radix sort pipelines
-        VkPipelineLayout _pipelineLayout; // use unified pipeline layout 
-        VkDescriptorSet _descriptorSet;
+        VkPipeline _histogramPipeline = VK_NULL_HANDLE, _workPrefixPipeline = VK_NULL_HANDLE, _permutePipeline = VK_NULL_HANDLE, _copyhackPipeline = VK_NULL_HANDLE; // radix sort pipelines
+        VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE; // use unified pipeline layout 
+        VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
 
         auto _parent() const { return _device; };
         operator VkPipeline() const { return _dullPipeline; };
@@ -300,7 +300,7 @@ namespace _vt { // store in undercover namespace
     class CopyProgram : public std::enable_shared_from_this<CopyProgram> {
     public:
         friend Device;
-        const VkPipeline _dullPipeline = nullptr; // protect from stupid casting
+        const VkPipeline _dullPipeline = VK_NULL_HANDLE; // protect from stupid casting
         std::shared_ptr<Device> _device;
 
         VkPipeline _bufferCopyPipeline, _bufferCopyIndirectPipeline, _imageCopyPipeline, _imageCopyIndirectPipeline;
@@ -313,7 +313,7 @@ namespace _vt { // store in undercover namespace
     class MaterialSet : public std::enable_shared_from_this<MaterialSet> {
     public:
         friend Device;
-        VkDescriptorSet _descriptorSet = nullptr;
+        VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
 
         // textures and samplers bound in descriptor set directly
@@ -333,9 +333,9 @@ namespace _vt { // store in undercover namespace
     class VertexInputSet : public std::enable_shared_from_this<VertexInputSet> {
     public:
         friend Device;
-        VkDescriptorSet _descriptorSet = nullptr;
+        VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
-        VtUniformBlock _uniformBlock;
+        VtUniformBlock _uniformBlock = {};
 
         // vertex assembly pipeline bound
         std::shared_ptr<DeviceBuffer> _uniformBlockBuffer;

@@ -32,10 +32,9 @@ namespace _vt {
             }; // bidirectional
         };
 
-
 #ifdef VRT_ENABLE_VEZ_INTEROP
         auto binfo = VezBufferCreateInfo{ nullptr, cinfo.bufferSize, usageFlag, 1, &cinfo.familyIndex };
-        result = vezCreateBuffer(device->_device, (U - 1), &binfo, &(vtDeviceBuffer->_buffer));
+        result = vezCreateBuffer(device->_device, (U - 1), &binfo, &vtDeviceBuffer->_buffer);
 #else
         auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, cinfo.bufferSize, usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &cinfo.familyIndex };
         result = vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo);
@@ -44,16 +43,26 @@ namespace _vt {
         // if format is known, make bufferView
         if constexpr (U == VMA_MEMORY_USAGE_GPU_ONLY) { // spaghetti code, because had different qualifiers
             if (result == VK_SUCCESS && cinfo.format) {
-                vtDeviceBuffer->_bufferView;
+                vtDeviceBuffer->_bufferView = {};
+
+#ifdef VRT_ENABLE_VEZ_INTEROP
+                VezBufferViewCreateInfo bvi = {};
+#else
                 VkBufferViewCreateInfo bvi = {};
-                bvi.pNext = nullptr;
                 bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
                 bvi.flags = {};
+#endif
+                bvi.pNext = nullptr;
                 bvi.buffer = vtDeviceBuffer->_buffer;
                 bvi.format = cinfo.format;
                 bvi.offset = 0;
                 bvi.range = VK_WHOLE_SIZE;
+
+#ifdef VRT_ENABLE_VEZ_INTEROP
+                if (vezCreateBufferView(device->_device, &bvi, &vtDeviceBuffer->_bufferView) == VK_SUCCESS) {
+#else
                 if (vkCreateBufferView(device->_device, &bvi, nullptr, &vtDeviceBuffer->_bufferView) == VK_SUCCESS) {
+#endif
                     result = VK_SUCCESS;
                 } else {
                     result = VK_INCOMPLETE;
