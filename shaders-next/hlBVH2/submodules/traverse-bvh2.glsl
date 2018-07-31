@@ -143,11 +143,11 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     traverseState.boxSide.xyz = bsgn;
 
     // begin of traverse BVH
-#ifdef USE_STACKLESS_BVH
-    ivec4 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
-#else
-    ivec2 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
-#endif
+//#ifdef USE_STACKLESS_BVH
+//    ivec4 cnode = (-1).xxxx;
+//#else
+//    ivec2 cnode = (-1).xx;
+//#endif
 
     [[dependency_infinite]]
     for (int hi=0;hi<max_iteraction;hi++) {
@@ -155,6 +155,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
         if (traverseState.idx >= 0 && traverseState.defTriangleID < 0) 
         { [[dependency_infinite]] for (;hi<max_iteraction;hi++) {
             bool _continue = false;
+
+#ifdef USE_STACKLESS_BVH
+            ivec4 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
+#else
+            ivec2 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
+#endif
 
             [[flatten]]
             if (cnode.x == cnode.y) { // if leaf, defer for intersection 
@@ -196,11 +202,6 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                         //traverseState.idx = fmask == 0 ? cnode.x : cnode.y;
                     }
 
-#ifdef USE_STACKLESS_BVH
-                    cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
-#else
-                    cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
-#endif
                     _continue = true; 
                     //continue;
                 }
@@ -230,11 +231,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                     traverseState.idx = -1;
                 }
 #endif
-#ifdef USE_STACKLESS_BVH
-                    cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
-#else
-                    cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
-#endif
+
             }
 
             // if all threads had intersection, or does not given any results, break for processing
