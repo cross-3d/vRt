@@ -48,7 +48,11 @@ namespace _vt { // store in undercover namespace
 
         uint32_t _mainFamilyIndex = 0;
         std::string _shadersPath = "./";
+
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         VmaAllocator _allocator = {};
+#endif
+
         VkPipelineCache _pipelineCache = VK_NULL_HANDLE; // store native pipeline cache
         VkDescriptorPool _descriptorPool = VK_NULL_HANDLE;
 
@@ -66,7 +70,11 @@ namespace _vt { // store in undercover namespace
         operator VkDevice() const { return _device; };
         operator VkPipelineCache() const { return _pipelineCache; };
         operator VkDescriptorPool() const { return _descriptorPool; };
+
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         operator VmaAllocator() const { return _allocator; };
+#endif
+
         operator std::shared_ptr<HostToDeviceBuffer>() const { return _bufferTraffic->_uploadBuffer; };
         operator std::shared_ptr<DeviceToHostBuffer>() const { return _bufferTraffic->_downloadBuffer; };
         auto _parent() const { return _physicalDevice; };
@@ -229,8 +237,12 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _device;
 
         VkBufferView _bufferView = VK_NULL_HANDLE;
+
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         VmaAllocation _allocation = {};
         VmaAllocationInfo _allocationInfo = {};
+#endif
+
         VkDeviceSize _size = 0;
         VkDescriptorBufferInfo _staticDsci = {};
         auto _hostMapped() const { return _allocationInfo.pMappedData; };
@@ -254,8 +266,11 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _device;
 
         VkImageView _imageView = {};
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         VmaAllocation _allocation = {};
         VmaAllocationInfo _allocationInfo = {};
+#endif
+
         VkImageSubresourceRange _subresourceRange = {};
         VkImageSubresourceLayers _subresourceLayers = {};
         VkImageLayout _initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, _layout = VK_IMAGE_LAYOUT_GENERAL;

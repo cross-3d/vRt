@@ -34,6 +34,7 @@ namespace _vt {
 
         VtResult result = VK_SUCCESS;
 
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         VmaAllocatorCreateInfo allocatorInfo = {};
         allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice);
         allocatorInfo.device = vtDevice->_device;
@@ -48,6 +49,7 @@ namespace _vt {
         } else {
             if (vmaCreateAllocator(&allocatorInfo, &vtDevice->_allocator) == VK_SUCCESS) { result = VK_SUCCESS; };
         }
+#endif
 
         // link device with vulkan.hpp
         auto _device = vk::Device(vtDevice->_device);

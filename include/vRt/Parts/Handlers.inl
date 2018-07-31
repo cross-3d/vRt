@@ -164,7 +164,10 @@ namespace vrt { // store in official namespace
         operator VkDevice() const { return *_vtDevice; }
         operator VkPipelineCache() const { return *_vtDevice; };
         operator VkDescriptorPool() const { return *_vtDevice; };
+
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         operator VmaAllocator() const { return *_vtDevice; }
+#endif
 
         // casting operators with traffic buffers
         operator VtHostToDeviceBuffer() const { return VtHostToDeviceBuffer{ _vtDevice->_bufferTraffic->_uploadBuffer }; };

@@ -39,6 +39,9 @@
 // include ray tracing library
 #include "vRt/vRt.h"
 
+// include VMA for compatibility
+#include <vulkan/vk_mem_alloc.h>
+
 // include inner utils from library (for development purpose)
 #include "vRt/Utilities/VkUtils.hpp"
 
