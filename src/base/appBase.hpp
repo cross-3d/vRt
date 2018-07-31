@@ -677,6 +677,7 @@ namespace NSM
             auto swapchainImages = queue->device->logical.getSwapchainImagesKHR(swapchain);
             auto gpuMemoryProps = queue->device->physical.getMemoryProperties();
 
+            // TODO - add using VEZ image allocator 
             // create depth image
             auto imageInfo = vk::ImageCreateInfo(
                 vk::ImageCreateFlags(), vk::ImageType::e2D, formats.depthFormat,
