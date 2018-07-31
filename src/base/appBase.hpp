@@ -201,7 +201,7 @@ namespace NSM
             return instance;
         };
 
-        virtual Queue createDeviceQueue(vk::PhysicalDevice gpu, bool isComputePrior = false, std::string shaderPath = "./") {
+        inline Queue createDeviceQueue(vk::PhysicalDevice gpu, bool isComputePrior = false, std::string shaderPath = "./") {
             // use extensions
             auto deviceExtensions = std::vector<const char *>();
             auto gpuExtensions = gpu.enumerateDeviceExtensionProperties();
@@ -396,7 +396,7 @@ namespace NSM
         }
 
         // create window and surface for this application (multi-window not supported)
-        virtual SurfaceWindow &createWindowSurface(GLFWwindow *window, uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
+        inline SurfaceWindow &createWindowSurface(GLFWwindow *window, uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
             applicationWindow.window = window;
             applicationWindow.surfaceSize = vk::Extent2D{ WIDTH, HEIGHT };
             VkSurfaceKHR vksurface = VK_NULL_HANDLE;
@@ -407,7 +407,7 @@ namespace NSM
         }
 
         // create window and surface for this application (multi-window not supported)
-        virtual SurfaceWindow &createWindowSurface(uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
+        inline SurfaceWindow &createWindowSurface(uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
             applicationWindow.window = glfwCreateWindow(WIDTH, HEIGHT, title.c_str(), nullptr, nullptr);
             applicationWindow.surfaceSize = vk::Extent2D{ WIDTH, HEIGHT };
             VkSurfaceKHR vksurface = VK_NULL_HANDLE;
@@ -445,7 +445,7 @@ namespace NSM
         }
 
 
-        virtual SurfaceFormat getSurfaceFormat(vk::PhysicalDevice gpu)
+        inline SurfaceFormat getSurfaceFormat(vk::PhysicalDevice gpu)
         {
             auto surfaceFormats = gpu.getSurfaceFormatsKHR(applicationWindow.surface);
 
@@ -511,7 +511,7 @@ namespace NSM
             return sfd;
         }
 
-        virtual vk::RenderPass createRenderpass(Queue queue)
+        inline vk::RenderPass createRenderpass(Queue queue)
         {
             auto formats = applicationWindow.surfaceFormat;
 
@@ -594,157 +594,95 @@ namespace NSM
         }
 
         // update swapchain framebuffer
-        virtual void updateSwapchainFramebuffer(Queue queue, vk::SwapchainKHR &swapchain, vk::RenderPass &renderpass, std::vector<Framebuffer> &swapchainBuffers)
+        inline void updateSwapchainFramebuffer(Queue queue, vk::SwapchainKHR &swapchain, vk::RenderPass &renderpass, std::vector<Framebuffer> &swapchainBuffers)
         {
             // The swapchain handles allocating frame images.
-            auto swapchainImages = queue->device->logical.getSwapchainImagesKHR(swapchain);
-            auto gpuMemoryProps = queue->device->physical.getMemoryProperties();
             auto formats = applicationWindow.surfaceFormat;
-
-            VkImage _image = {};
+            auto gpuMemoryProps = queue->device->physical.getMemoryProperties();
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
-            auto imageInfo = VezImageCreateInfo{};
-            imageInfo.pNext = nullptr;
-            imageInfo.arrayLayers = 1;
-            imageInfo.extent = VkExtent3D{ applicationWindow.surfaceSize.width, applicationWindow.surfaceSize.height, 1 };
-            imageInfo.format = VkFormat(formats.depthFormat);
-            imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.mipLevels = 1;
-            imageInfo.pQueueFamilyIndices = &queue->device->queues[1]->familyIndex;
-            imageInfo.queueFamilyIndexCount = 1;
-            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-            vezCreateImage(queue->device->logical, VEZ_MEMORY_GPU_ONLY, &imageInfo, &_image);
+            auto imageInfoVK = VezImageCreateInfo{};
 #else
-            // create depth image
-            auto imageInfo = vk::ImageCreateInfo(
-                vk::ImageCreateFlags(), vk::ImageType::e2D, formats.depthFormat,
-                vk::Extent3D(applicationWindow.surfaceSize.width, applicationWindow.surfaceSize.height, 1),
-                1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
-                vk::ImageUsageFlagBits::eDepthStencilAttachment |
-                vk::ImageUsageFlagBits::eTransferSrc,
-                vk::SharingMode::eExclusive, 1, &queue->device->queues[1]->familyIndex,
-                vk::ImageLayout::eUndefined);
+            auto imageInfoVK = VkImageCreateInfo(vk::ImageCreateInfo{});
+            imageInfoVK.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfoVK.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfoVK.flags = 0;
+#endif
 
+            imageInfoVK.pNext = nullptr;
+            imageInfoVK.arrayLayers = 1;
+            imageInfoVK.extent = VkExtent3D{ applicationWindow.surfaceSize.width, applicationWindow.surfaceSize.height, 1 };
+            imageInfoVK.format = VkFormat(formats.depthFormat);
+            imageInfoVK.imageType = VK_IMAGE_TYPE_2D;
+            imageInfoVK.mipLevels = 1;
+            imageInfoVK.pQueueFamilyIndices = &queue->device->queues[1]->familyIndex;
+            imageInfoVK.queueFamilyIndexCount = 1;
+            imageInfoVK.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfoVK.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageInfoVK.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+            VkImage depthImage = {};
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            vezCreateImage(queue->device->logical, VEZ_MEMORY_GPU_ONLY, &imageInfoVK, &depthImage);
+#else
             VmaAllocationCreateInfo allocCreateInfo = {};
             allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
             VmaAllocation _allocation = {};
-            VkImageCreateInfo imageInfoVK = imageInfo;
-            vmaCreateImage(queue->device->allocator, &imageInfoVK, &allocCreateInfo, &_image, &_allocation, nullptr); // allocators planned structs
+            vmaCreateImage(queue->device->allocator, &imageInfoVK, &allocCreateInfo, &depthImage, &_allocation, nullptr); // allocators planned structs
 #endif
 
-            auto depthImage = vk::Image(_image);
+            // image view for usage
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            auto vinfo = VezImageViewCreateInfo{};
+            vinfo.subresourceRange = VezImageSubresourceRange{ 0, 1, 0, 1 };
+#else
+            auto vinfo = VkImageViewCreateInfo(vk::ImageViewCreateInfo{});
+            vinfo.subresourceRange = vk::ImageSubresourceRange{ vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil, 0, 1, 0, 1 };
+            vinfo.flags = 0;
+#endif
 
-            // create image viewer
-            auto depthImageView =
-                queue->device->logical.createImageView(vk::ImageViewCreateInfo(
-                    vk::ImageViewCreateFlags(), depthImage, vk::ImageViewType::e2D,
-                    formats.depthFormat, vk::ComponentMapping(),
-                    vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth |
-                        vk::ImageAspectFlagBits::eStencil,
-                        0, 1, 0, 1)));
+            vinfo.pNext = nullptr;
+            vinfo.components = VkComponentMapping{ VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
+            vinfo.format = VkFormat(formats.depthFormat);
+            vinfo.image = depthImage;
+            vinfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-            // create framebuffers
+            VkImageView depthImageView = {};
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            vezCreateImageView(queue->device->logical, &vinfo, &depthImageView);
+#else
+            depthImageView = vk::Device(queue->device->logical).createImageView(vk::ImageViewCreateInfo(vinfo));
+#endif
+
+            auto swapchainImages = queue->device->logical.getSwapchainImagesKHR(swapchain);
+            swapchainBuffers.resize(swapchainImages.size());
             for (int i = 0; i < swapchainImages.size(); i++)
-            {
-                vk::Image &image = swapchainImages[i]; // prelink images
-                std::array<vk::ImageView, 2> views;    // predeclare views
-                views[1] = depthImageView;
+            { // create framebuffers
+                vk::Image image = swapchainImages[i]; // prelink images
+                std::array<vk::ImageView, 2> views; // predeclare views
+                views[0] = queue->device->logical.createImageView(vk::ImageViewCreateInfo{ vk::ImageViewCreateFlags{}, image, vk::ImageViewType::e2D, formats.colorFormat, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1) }); // color view
+                views[1] = depthImageView; // depth view
 
-                // color view
-                views[0] = queue->device->logical.createImageView(vk::ImageViewCreateInfo(
-                    vk::ImageViewCreateFlags(), image, vk::ImageViewType::e2D,
-                    formats.colorFormat, vk::ComponentMapping(),
-                    vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0,
-                        1)));
-
-                // create framebuffers
-                swapchainBuffers[i].frameBuffer =
-                    queue->device->logical.createFramebuffer(vk::FramebufferCreateInfo(
-                        vk::FramebufferCreateFlags(), renderpass, views.size(),
-                        views.data(), applicationWindow.surfaceSize.width,
-                        applicationWindow.surfaceSize.height, 1));
+                auto bufferCreateInfo = vk::FramebufferCreateInfo{ vk::FramebufferCreateFlags(), renderpass, uint32_t(views.size()), views.data(), applicationWindow.surfaceSize.width, applicationWindow.surfaceSize.height, 1 };
+                swapchainBuffers[i].frameBuffer = queue->device->logical.createFramebuffer(bufferCreateInfo);
             }
         }
 
-        virtual std::vector<Framebuffer> createSwapchainFramebuffer(Queue queue, vk::SwapchainKHR swapchain, vk::RenderPass renderpass) {
-            auto &formats = applicationWindow.surfaceFormat;
-
-            // The swapchain handles allocating frame images.
-            auto swapchainImages = queue->device->logical.getSwapchainImagesKHR(swapchain);
-            auto gpuMemoryProps = queue->device->physical.getMemoryProperties();
-
-            // TODO - add using VEZ image allocator 
-            // create depth image
-            auto imageInfo = vk::ImageCreateInfo(
-                vk::ImageCreateFlags(), vk::ImageType::e2D, formats.depthFormat,
-                vk::Extent3D(applicationWindow.surfaceSize.width, applicationWindow.surfaceSize.height, 1),
-                1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
-                vk::ImageUsageFlagBits::eDepthStencilAttachment |
-                vk::ImageUsageFlagBits::eTransferSrc,
-                vk::SharingMode::eExclusive, 1, &queue->device->queues[1]->familyIndex,
-                vk::ImageLayout::eUndefined);
-            VkImageCreateInfo imageInfoVK = imageInfo;
-
-            VmaAllocationCreateInfo allocCreateInfo = {};
-            allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-            VmaAllocation _allocation = {};
-            VkImage _image = {};
-            vmaCreateImage(queue->device->allocator, &imageInfoVK, &allocCreateInfo, &_image, &_allocation, nullptr); // allocators planned structs
-            auto depthImage = vk::Image(_image);
-
-            // create image viewer
-            auto depthImageView =
-                queue->device->logical.createImageView(vk::ImageViewCreateInfo(
-                    vk::ImageViewCreateFlags(), depthImage, vk::ImageViewType::e2D,
-                    formats.depthFormat, vk::ComponentMapping(),
-                    vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eDepth |
-                        vk::ImageAspectFlagBits::eStencil,
-                        0, 1, 0, 1)));
-
+        inline std::vector<Framebuffer> createSwapchainFramebuffer(Queue queue, vk::SwapchainKHR swapchain, vk::RenderPass renderpass) {
             // framebuffers vector
             std::vector<Framebuffer> swapchainBuffers;
-            swapchainBuffers.resize(swapchainImages.size());
-
-            // create framebuffers
-            for (int i = 0; i < swapchainImages.size(); i++)
-            {
-                vk::Image &image = swapchainImages[i]; // prelink images
-                std::array<vk::ImageView, 2> views;    // predeclare views
-
-                // depth view
-                views[1] = depthImageView;
-
-                // color view
-                views[0] = queue->device->logical.createImageView(vk::ImageViewCreateInfo(
-                    vk::ImageViewCreateFlags(), image, vk::ImageViewType::e2D,
-                    formats.colorFormat, vk::ComponentMapping(),
-                    vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0,
-                        1)));
-
-                // create framebuffers
-                swapchainBuffers[i].frameBuffer =
-                    queue->device->logical.createFramebuffer(vk::FramebufferCreateInfo(
-                        vk::FramebufferCreateFlags(), renderpass, views.size(),
-                        views.data(), applicationWindow.surfaceSize.width,
-                        applicationWindow.surfaceSize.height, 1));
-
-                // create semaphore
-                swapchainBuffers[i].semaphore =
-                    queue->device->logical.createSemaphore(vk::SemaphoreCreateInfo());
-                swapchainBuffers[i].waitFence = queue->device->logical.createFence(
-                    vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled));
+            updateSwapchainFramebuffer(queue, swapchain, renderpass, swapchainBuffers);
+            for (int i = 0; i < swapchainBuffers.size(); i++)
+            { // create semaphore
+                swapchainBuffers[i].semaphore = queue->device->logical.createSemaphore(vk::SemaphoreCreateInfo());
+                swapchainBuffers[i].waitFence = queue->device->logical.createFence(vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled));
             }
-
             return swapchainBuffers;
         }
 
         // create swapchain template
-        virtual vk::SwapchainKHR createSwapchain(Queue queue)
+        inline vk::SwapchainKHR createSwapchain(Queue queue)
         {
             vk::SurfaceKHR surface = applicationWindow.surface;
             SurfaceFormat &formats = applicationWindow.surfaceFormat;

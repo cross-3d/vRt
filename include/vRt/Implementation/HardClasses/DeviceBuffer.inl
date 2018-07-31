@@ -56,10 +56,9 @@ namespace _vt {
                 vtDeviceBuffer->_bufferView = {};
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
-                VezBufferViewCreateInfo bvi = {};
+                auto bvi = VezBufferViewCreateInfo{};
 #else
-                VkBufferViewCreateInfo bvi = {};
-                bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+                auto bvi = VkBufferViewCreateInfo(vk::BufferViewCreateInfo{});
                 bvi.flags = {};
 #endif
                 bvi.pNext = nullptr;

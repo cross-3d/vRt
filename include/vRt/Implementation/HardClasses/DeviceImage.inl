@@ -37,9 +37,10 @@ namespace _vt {
             case vk::ImageViewType::eCubeArray: imageType = vk::ImageType::e3D; isCubemap = true; break;
         };
 
-        // additional usage
-        auto usage = vk::ImageUsageFlags(cinfo.usage) | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
 
+        // additional usage
+        //auto usage = vk::ImageUsageFlags(cinfo.usage) | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc;
+        auto usage = cinfo.usage | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
         // image memory descriptor
 #ifdef VRT_ENABLE_VEZ_INTEROP
@@ -49,22 +50,20 @@ namespace _vt {
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.initialLayout = VkImageLayout(vtDeviceImage->_initialLayout);
         imageInfo.sharingMode = VkSharingMode(vk::SharingMode::eExclusive);
-
 #endif
-
 
         // unified create structure
         imageInfo.pNext = nullptr;
         imageInfo.imageType = VkImageType(imageType);
         imageInfo.arrayLayers = 1; // unsupported
-        imageInfo.tiling = VkImageTiling(vk::ImageTiling::eOptimal);
+        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageInfo.extent = VkExtent3D{ cinfo.size.width, cinfo.size.height, cinfo.size.depth * (isCubemap ? 6 : 1) };
         imageInfo.format = cinfo.format;
         imageInfo.mipLevels = cinfo.mipLevels;
         imageInfo.pQueueFamilyIndices = &cinfo.familyIndex;
         imageInfo.queueFamilyIndexCount = 1;
-        imageInfo.samples = VkSampleCountFlagBits(vk::SampleCountFlagBits::e1); // at now not supported MSAA
-        imageInfo.usage = VkImageUsageFlags(usage);
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.usage = usage;
 
         // create image with allocation
 #ifdef VRT_ENABLE_VEZ_INTEROP
@@ -89,35 +88,33 @@ namespace _vt {
         vtDeviceImage->_subresourceLayers.baseArrayLayer = vtDeviceImage->_subresourceRange.baseArrayLayer;
         vtDeviceImage->_subresourceLayers.aspectMask = vtDeviceImage->_subresourceRange.aspectMask;
         vtDeviceImage->_subresourceLayers.mipLevel = vtDeviceImage->_subresourceRange.baseMipLevel;
-
         vtDeviceImage->_extent = imageInfo.extent;
 
-        // descriptor for usage
-        // TODO to reduce code of image view creation
-        // (unhandled by vtResult)
+
+        // image view for usage
 #ifdef VRT_ENABLE_VEZ_INTEROP
-        VezImageViewCreateInfo vinfo = {};
+        auto vinfo = VezImageViewCreateInfo{};
+        vinfo.subresourceRange = *(VezImageSubresourceRange*)(&vtDeviceImage->_subresourceRange.baseMipLevel);
+#else
+        auto vinfo = VkImageViewCreateInfo(vk::ImageViewCreateInfo{});
+        vinfo.subresourceRange = vtDeviceImage->_subresourceRange;
+        vinfo.flags = {};
+#endif
+        vinfo.pNext = nullptr;
         vinfo.components = VkComponentMapping{VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
         vinfo.format = cinfo.format;
         vinfo.image = vtDeviceImage->_image;
-        vinfo.pNext = nullptr;
-        vinfo.subresourceRange = *(VezImageSubresourceRange*)(&vtDeviceImage->_subresourceRange.baseMipLevel);
         vinfo.viewType = cinfo.imageViewType;
-        vezCreateImageView(device->_device, &vinfo, &vtDeviceImage->_imageView);
-#else
-        vtDeviceImage->_imageView = vk::Device(device->_device).createImageView(vk::ImageViewCreateInfo()
-            .setSubresourceRange(vtDeviceImage->_subresourceRange)
-            .setViewType(vk::ImageViewType(cinfo.imageViewType))
-            .setComponents(vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA))
-            .setImage(vtDeviceImage->_image)
-            .setFormat(vk::Format(cinfo.format)));
-#endif
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
+        vezCreateImageView(device->_device, &vinfo, &vtDeviceImage->_imageView);
         vtDeviceImage->_initialLayout = vtDeviceImage->_layout;
 #else
-        vtDeviceImage->_staticDsci = VkDescriptorImageInfo{ {}, vtDeviceImage->_imageView, vtDeviceImage->_layout };
+        vtDeviceImage->_imageView = vk::Device(device->_device).createImageView(vk::ImageViewCreateInfo(vinfo));
 #endif
+
+        // anyways create static descriptor
+        vtDeviceImage->_staticDsci = VkDescriptorImageInfo{ {}, vtDeviceImage->_imageView, vtDeviceImage->_layout };
         return result;
     };
 
