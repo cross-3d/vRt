@@ -399,10 +399,8 @@ namespace NSM
         inline SurfaceWindow &createWindowSurface(GLFWwindow *window, uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
             applicationWindow.window = window;
             applicationWindow.surfaceSize = vk::Extent2D{ WIDTH, HEIGHT };
-            VkSurfaceKHR vksurface = VK_NULL_HANDLE;
-            auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, &vksurface);
+            auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, (VkSurfaceKHR*)&applicationWindow.surface);
             if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
-            applicationWindow.surface = vksurface;
             return applicationWindow;
         }
 
@@ -410,10 +408,8 @@ namespace NSM
         inline SurfaceWindow &createWindowSurface(uint32_t WIDTH, uint32_t HEIGHT, std::string title = "TestApp") {
             applicationWindow.window = glfwCreateWindow(WIDTH, HEIGHT, title.c_str(), nullptr, nullptr);
             applicationWindow.surfaceSize = vk::Extent2D{ WIDTH, HEIGHT };
-            VkSurfaceKHR vksurface = VK_NULL_HANDLE;
-            auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, &vksurface);
+            auto result = glfwCreateWindowSurface(instance, applicationWindow.window, nullptr, (VkSurfaceKHR*)&applicationWindow.surface);
             if (result != VK_SUCCESS) { glfwTerminate(); exit(result); };
-            applicationWindow.surface = vksurface;
             return applicationWindow;
         }
 
