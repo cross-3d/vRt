@@ -78,7 +78,8 @@ set (DEFINES
     -DEXPERIMENTAL_GLTF
     -DNSM=vte
     -DTINY_RENDERER_VK
-#    -DVRT_ENABLE_VEZ_INTEROP
+    -DVRT_ENABLE_VEZ_INTEROP
+#    -DVRT_DONT_USE_VOLK
 )
 
 
@@ -100,8 +101,8 @@ set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/src/lib")
 set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/base/" "${DEP_DIR}/src/base/imgui" "${PROJECT_SOURCE_DIR}")
 
 # set required libs
-#set (LIBS glfw3 VEZ)
-set (LIBS glfw3 VEZ vulkan-1)
+set (LIBS glfw3 VEZ)
+#set (LIBS glfw3 VEZ vulkan-1)
 
 # set GCC8 (Linux) libs
 # MingW-W64 TODO

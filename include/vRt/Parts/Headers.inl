@@ -17,7 +17,6 @@
 
 
 
-
 // if vulkan header included, make compatible with volk.h
 #ifdef VULKAN_H_
 #define VK_NO_PROTOTYPES
