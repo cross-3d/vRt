@@ -142,8 +142,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     traverseState.minusOrig.xyz = fma(fvec3_(torig), fvec3_(dirproj), fvec3_(diffOffset).xxx);
     traverseState.boxSide.xyz = bsgn;
 
-    // begin of traverse BVH 
+    // begin of traverse BVH
+#ifdef USE_STACKLESS_BVH
     ivec4 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
+#else
+    ivec2 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
+#endif
 
     [[dependency_infinite]]
     for (int hi=0;hi<max_iteraction;hi++) {
@@ -179,8 +183,8 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
                     [[flatten]]
                     if (fmask == 2) { // if both has intersection
-                        //ivec2 ordered = cnode.xx + (nears.x<=nears.y ? ivec2(0,1) : ivec2(1,0));
-                        ivec2 ordered = nears.x<=nears.y ? cnode.xy : cnode.yx;
+                        ivec2 ordered = cnode.xx + (nears.x<=nears.y ? ivec2(0,1) : ivec2(1,0));
+                        //ivec2 ordered = nears.x<=nears.y ? cnode.xy : cnode.yx;
                         traverseState.idx = ordered.x;
 #ifdef USE_STACKLESS_BVH
                         IF (all(childIntersect)) traverseState.bitStack |= 1ul; 
@@ -188,11 +192,15 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                         IF (all(childIntersect) & bool_(!stackIsFull())) storeStack(ordered.y);
 #endif
                     } else {
-                        //traverseState.idx = cnode.x + fmask;
-                        traverseState.idx = fmask == 0 ? cnode.x : cnode.y;
+                        traverseState.idx = cnode.x + fmask;
+                        //traverseState.idx = fmask == 0 ? cnode.x : cnode.y;
                     }
 
+#ifdef USE_STACKLESS_BVH
                     cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
+#else
+                    cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
+#endif
                     _continue = true; 
                     //continue;
                 }
@@ -222,7 +230,11 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                     traverseState.idx = -1;
                 }
 #endif
-                cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
+#ifdef USE_STACKLESS_BVH
+                    cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
+#else
+                    cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
+#endif
             }
 
             // if all threads had intersection, or does not given any results, break for processing
