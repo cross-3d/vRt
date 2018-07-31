@@ -7,8 +7,12 @@ namespace _vt {
     // destructor of advanced buffer
     template<VmaMemoryUsage U>
     inline RoledBuffer<U>::~RoledBuffer() {
-        VRT_ASYNC([=]() {
+        std::async([=]() {
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            vezDestroyBuffer(_device->_device, _buffer);
+#else
             vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
+#endif
         });
     };
 

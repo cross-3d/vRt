@@ -7,8 +7,12 @@ namespace _vt {
 
     // destructor of DeviceImage
     inline DeviceImage::~DeviceImage() {
-        VRT_ASYNC([=]() {
+        std::async([=]() {
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            vezDestroyImage(_device->_device, _image);
+#else
             vmaDestroyImage(_device->_allocator, _image, _allocation);
+#endif
         });
     };
 
