@@ -196,7 +196,7 @@ namespace _vt {
 
         // 
         VtVertexAssemblyPipelineCreateInfo simfo;
-        simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, vrt::natives::vertexAssembly.at(vendorName));
+        simfo.vertexAssemblyModule = loadAndCreateShaderModuleStage(*vtDevice, natives::vertexAssembly.at(vendorName));
         VtPipelineLayoutCreateInfo vtpl;
         createPipelineLayout(vtDevice, vtpl, simfo.pipelineLayout, VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT);
 

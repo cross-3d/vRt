@@ -838,7 +838,7 @@ int main() {
         // update start position
         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
             vkCmdUpdateBuffer(cmdBuf, rtUniformBuffer, 0, sizeof(VtCameraUniform), &cameraUniformData);
-            updateCommandBarrier(cmdBuf);
+            _vt::updateCommandBarrier(cmdBuf);
         });
 
         

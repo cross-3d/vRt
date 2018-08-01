@@ -1,25 +1,20 @@
 #pragma once
 
-#include <stdio.h>
-#include <vulkan/vulkan.hpp> // only for inner usage
-#include <vulkan/vk_mem_alloc.h>
+// Include headers
+#include "../vRt.h"
+
+// Vulkan API for C++
+#include <vulkan/vulkan.hpp>
 
 // include STL
-#include <chrono>
 #include <fstream>
-#include <functional>
 #include <future>
 #include <iostream>
 #include <stdexcept>
-#include <memory>
 #include <array>
-#include <map>
 #include <random>
-#include <vector>
 #include <algorithm>
 #include <iterator>
-#include <cstddef>
-//#include <optional>
 
 
 #ifdef VRT_ENABLE_EXECUTION_POLICY
@@ -28,7 +23,6 @@
 #else
 #define VRT_ASYNC(F) std::async(F);
 #endif
-
 
 
 namespace _vt {

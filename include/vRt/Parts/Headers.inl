@@ -56,4 +56,3 @@
 #ifdef VRT_ENABLE_STRING_VIEW
 #include <string_view>
 #endif
-
