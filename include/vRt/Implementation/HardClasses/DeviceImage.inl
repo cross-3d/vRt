@@ -60,8 +60,8 @@ namespace _vt {
         imageInfo.extent = VkExtent3D{ cinfo.size.width, cinfo.size.height, cinfo.size.depth * (isCubemap ? 6 : 1) };
         imageInfo.format = cinfo.format;
         imageInfo.mipLevels = cinfo.mipLevels;
-        imageInfo.pQueueFamilyIndices = &cinfo.familyIndex;
-        imageInfo.queueFamilyIndexCount = 1;
+        //imageInfo.pQueueFamilyIndices = &cinfo.familyIndex;
+        //imageInfo.queueFamilyIndexCount = 1; 
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageInfo.usage = usage;
 

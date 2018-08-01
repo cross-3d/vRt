@@ -43,10 +43,20 @@ namespace _vt {
         if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) mem = VEZ_MEMORY_GPU_TO_CPU;
         if constexpr (U == VMA_MEMORY_USAGE_CPU_ONLY) mem = VEZ_MEMORY_CPU_ONLY;
 
-        auto binfo = VezBufferCreateInfo{ nullptr, cinfo.bufferSize, usageFlag, 1, &cinfo.familyIndex };
+        auto binfo = VezBufferCreateInfo{};
+        binfo.pNext = nullptr;
+#else
+        auto binfo = VkBufferCreateInfo(vk::BufferCreateInfo{});
+        binfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+#endif
+        //binfo.queueFamilyIndexCount = 1;
+        //binfo.pQueueFamilyIndices = &cinfo.familyIndex;
+        binfo.size = cinfo.bufferSize;
+        binfo.usage = usageFlag;
+
+#ifdef VRT_ENABLE_VEZ_INTEROP
         result = vezCreateBuffer(device->_device, mem, &binfo, &vtDeviceBuffer->_buffer);
 #else
-        auto binfo = VkBufferCreateInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, cinfo.bufferSize, usageFlag, VK_SHARING_MODE_EXCLUSIVE, 1, &cinfo.familyIndex };
         result = vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo);
 #endif
 

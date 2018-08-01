@@ -12,7 +12,7 @@
 #define GLFW_EXPOSE_NATIVE_GLX
 #endif
 
-#define VRT_IMPLEMENTATION
+//#define VRT_IMPLEMENTATION
 #include "appStructures.hpp"
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -611,8 +611,8 @@ namespace NSM
             imageInfoVK.format = VkFormat(formats.depthFormat);
             imageInfoVK.imageType = VK_IMAGE_TYPE_2D;
             imageInfoVK.mipLevels = 1;
-            imageInfoVK.pQueueFamilyIndices = &queue->device->queues[1]->familyIndex;
-            imageInfoVK.queueFamilyIndexCount = 1;
+            //imageInfoVK.pQueueFamilyIndices = &queue->device->queues[1]->familyIndex;
+            //imageInfoVK.queueFamilyIndexCount = 1;
             imageInfoVK.samples = VK_SAMPLE_COUNT_1_BIT;
             imageInfoVK.tiling = VK_IMAGE_TILING_OPTIMAL;
             imageInfoVK.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
@@ -715,8 +715,8 @@ namespace NSM
             swapchainCreateInfo.imageArrayLayers = 1;
             swapchainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
             swapchainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
-            swapchainCreateInfo.queueFamilyIndexCount = 1;
-            swapchainCreateInfo.pQueueFamilyIndices = &queue->device->queues[1]->familyIndex;
+            //swapchainCreateInfo.queueFamilyIndexCount = 1;
+            //swapchainCreateInfo.pQueueFamilyIndices = &queue->device->queues[1]->familyIndex;
             swapchainCreateInfo.preTransform = vk::SurfaceTransformFlagBitsKHR::eIdentity;
             swapchainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
             swapchainCreateInfo.presentMode = presentMode;
