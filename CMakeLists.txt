@@ -125,12 +125,12 @@ set (CMAKE_C_STANDARD 11)
 
 # compiler specific options
 if (MSVC)
-    #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -Wa,-mbig-obj -mfpmath=sse,387") # Clang in Visual Studio 2017
+    #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -Wa,-mbig-obj -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx") # Clang in Visual Studio 2017
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest /arch:AVX2 /fp:strict /permissive- /Ot /W3 /NODEFAULTLIB:library") # Native compiler of Visual Studio 2017
     #set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}"")
 else()
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -Wa,-mbig-obj -mfpmath=sse,387")
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c1x -march=skylake -fpermissive -lpthread -w -Wa,-mbig-obj -mfpmath=sse,387")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -Wa,-mbig-obj -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
+    set (CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -std=c1x   -march=skylake -fpermissive -lpthread -w -Wa,-mbig-obj -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
 endif()
 
 
