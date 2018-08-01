@@ -10,7 +10,22 @@ const float PI = 3.1415926535897932384626422832795028841971f;
 const float TWO_PI = 6.2831853071795864769252867665590057683943f;
 const float SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
 const float E = 2.7182818284590452353602874713526624977572f;
-const float PREC_FIX = 1024.f;
+
+
+const float N1024 = 1024.f;
+#ifdef ENABLE_AMD_INSTRUCTION_SET
+const float16_t InZero = 0.0009765625hf, InOne = 1.0009765625hf;
+#else
+const float InZero = 0.00000011920928955078125f, InOne = 1.00000011920928955078125f;
+#endif
+
+
+#ifdef ENABLE_AMD_INSTRUCTION_SET
+const float16_t One1024 = 0.0009765625hf;
+#else
+const float One1024 = 0.0009765625f;
+#endif
+
 
 // float 16 or 32 bit types
 #ifdef AMD_F16_BVH
@@ -452,19 +467,16 @@ vec2 fast32swap(in vec2 b64, in lowp bool_ nswp) {
 // single float 32-bit box intersection
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
-lowp bool_ intersectCubeF32Single(const mediump vec3 origin, const mediump vec3 dr, inout lowp bvec3_ sgn, const mediump mat3x2 tMinMaxMem, inout float near, inout float far) {
-    mediump mat3x2 tMinMax = mat3x2(
+lowp bool_ intersectCubeF32Single(const vec3 origin, const vec3 dr, inout lowp bvec3_ sgn, const mat3x2 tMinMaxMem, inout float near, inout float far) {
+    mat3x2 tMinMax = mat3x2(
         fma(SSC(sgn.x) ? tMinMaxMem[0].xy : tMinMaxMem[0].yx, dr.xx, origin.xx),
         fma(SSC(sgn.y) ? tMinMaxMem[1].xy : tMinMaxMem[1].yx, dr.yy, origin.yy),
         fma(SSC(sgn.z) ? tMinMaxMem[2].xy : tMinMaxMem[2].yx, dr.zz, origin.zz)
     );
 
-    mediump float 
-        tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y),
+    float 
+        tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y)*InOne,
         tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x);
-
-    // precise error correct
-    tFar *= 1.00000024f;
 
     // resolve hit
     const lowp bool_ isCube = bool_(tFar>tNear) & bool_(tFar>0.f) & bool_(abs(tNear) <= INFINITY-PRECERR);
@@ -497,15 +509,8 @@ lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr,
     mediump fvec2_ 
 #endif
 
-    tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw),
+    tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw)*InOne.xx,
     tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy);
-
-    // precise error correct
-#ifdef AMD_F16_BVH
-    tFar *= 1.0009765625hf.xx;
-#else
-    tFar *= 1.0000001192092896f.xx;
-#endif
 
     const lowp bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(abs(tNear), fvec2_(INFINITY-PRECERR)));
     const vec2 inf = vec2(INFINITY);

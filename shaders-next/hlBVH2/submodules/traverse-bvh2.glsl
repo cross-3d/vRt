@@ -139,12 +139,14 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     //traverseState.diffOffset = diffOffset;
     traverseState.stackPtr = 0, traverseState.pageID = 0;
 
-#ifdef USE_F32_BVH
-    traverseState.directInv.xyz = fvec3_(dirproj);
-#else
-    const float inprec = 1.f/PREC_FIX;
-    traverseState.directInv.xyz = fvec3_(dirproj*inprec);
-#endif
+//#ifdef USE_F32_BVH
+//    traverseState.directInv.xyz = fvec3_(dirproj);
+//#else
+//    const float inprec = 1.f/N1024;
+//    traverseState.directInv.xyz = fvec3_(dirproj*inprec);
+//#endif
+
+    traverseState.directInv.xyz = fvec3_(dirproj)*One1024.xxx;
     traverseState.minusOrig.xyz = fma(fvec3_(torig), fvec3_(dirproj), fvec3_(diffOffset.xxx));
     //traverseState.minusOrig.xyz = fvec3_(fma(torig, dirproj, diffOffset.xxx));
     traverseState.boxSide.xyz = bsgn;
