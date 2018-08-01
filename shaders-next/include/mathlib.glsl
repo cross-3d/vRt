@@ -10,6 +10,7 @@ const float PI = 3.1415926535897932384626422832795028841971f;
 const float TWO_PI = 6.2831853071795864769252867665590057683943f;
 const float SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
 const float E = 2.7182818284590452353602874713526624977572f;
+const float PREC_FIX = 1024.f;
 
 // float 16 or 32 bit types
 #ifdef AMD_F16_BVH
@@ -465,10 +466,8 @@ lowp bool_ intersectCubeF32Single(const mediump vec3 origin, const mediump vec3 
     // precise error correct
     tFar *= 1.00000024f;
 
-    // validate hit
-    lowp bool_ isCube = bool_(tFar>tNear) & bool_(tFar>0.f) & bool_(abs(tNear) <= INFINITY-PRECERR);
-
     // resolve hit
+    const lowp bool_ isCube = bool_(tFar>tNear) & bool_(tFar>0.f) & bool_(abs(tNear) <= INFINITY-PRECERR);
     const float inf = float(INFINITY);
     near = mix(inf, tNear, isCube), far = mix(inf, tFar, isCube);
     return isCube;
@@ -503,13 +502,12 @@ lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr,
 
     // precise error correct
 #ifdef AMD_F16_BVH
-    tFar *= 1.001953125hf.xx;
+    tFar *= 1.0009765625hf.xx;
 #else
-    tFar *= 1.00000024f.xx;
+    tFar *= 1.0000001192092896f.xx;
 #endif
 
-    lowp bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(abs(tNear), fvec2_(INFINITY-PRECERR)));
-
+    const lowp bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(abs(tNear), fvec2_(INFINITY-PRECERR)));
     const vec2 inf = vec2(INFINITY);
     near = mix(inf, vec2(tNear), isCube), 
      far = mix(inf, vec2( tFar), isCube);

@@ -200,7 +200,7 @@ int main() {
 
     // create image output
     VtDeviceImageCreateInfo dii;
-    dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    dii.format = VK_FORMAT_R16G16B16A16_SFLOAT;
     dii.familyIndex = deviceQueue->familyIndex;
     dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
     dii.layout = VK_IMAGE_LAYOUT_GENERAL;
