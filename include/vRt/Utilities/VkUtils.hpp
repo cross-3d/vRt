@@ -346,7 +346,7 @@ namespace _vt {
     // List of all possible required extensions
     // Raytracing itself should support extension filtering and NVidia GPU alongside of RX Vega
     // Can work in single GPU systems (AMD or NVidia)
-    static inline std::vector<const char *> raytracingRequiredExtensions = {
+    static inline const std::vector<const char *> raytracingRequiredExtensions = {
         "VK_AMD_gpu_shader_int16",
         "VK_AMD_gpu_shader_half_float",
         "VK_AMD_buffer_marker",
