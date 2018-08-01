@@ -78,6 +78,8 @@
         "cwctype": "cpp",
         "forward_list": "cpp",
         "string_view": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "resumable": "cpp",
+        "xthread": "cpp"
     }
 }

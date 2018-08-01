@@ -50,44 +50,6 @@ namespace _vt {
         } },
         };
 
-
-
-        namespace triangle {
-
-            static inline const std::map<VtVendor, std::vector<uint32_t>> outerBox = {
-                { VT_VENDOR_AMD,{
-    #include "../HardCodes/amd/hlBVH2/triangle/bound-calc.comp.inl"
-            } },
-            { VT_VENDOR_NVIDIA,{
-    #include "../HardCodes/nvidia/hlBVH2/triangle/bound-calc.comp.inl"
-            } },
-            { VT_VENDOR_INTEL,{
-    #include "../HardCodes/intel/hlBVH2/triangle/bound-calc.comp.inl"
-            } },
-            { VT_VENDOR_UNIVERSAL,{
-    #include "../HardCodes/universal/hlBVH2/triangle/bound-calc.comp.inl"
-            } },
-            };
-
-            static inline const std::map<VtVendor, std::vector<uint32_t>> genLeafs = {
-                { VT_VENDOR_AMD,{
-    #include "../HardCodes/amd/hlBVH2/triangle/leaf-gen.comp.inl"
-            } },
-            { VT_VENDOR_NVIDIA,{
-    #include "../HardCodes/nvidia/hlBVH2/triangle/leaf-gen.comp.inl"
-            } },
-            { VT_VENDOR_INTEL,{
-    #include "../HardCodes/intel/hlBVH2/triangle/leaf-gen.comp.inl"
-            } },
-            { VT_VENDOR_UNIVERSAL,{
-    #include "../HardCodes/universal/hlBVH2/triangle/leaf-gen.comp.inl"
-            } },
-            };
-
-        };
-
-
-
         static inline const std::map<VtVendor, std::vector<uint32_t>> linkLeafs = {
             { VT_VENDOR_AMD,{
 #include "../HardCodes/amd/hlBVH2/leaf-link.comp.inl"
@@ -146,6 +108,40 @@ namespace _vt {
         { VT_VENDOR_UNIVERSAL,{
 #include "../HardCodes/universal/hlBVH2/interpolator.comp.inl"
         } },
+        };
+
+        namespace triangle {
+
+            static inline const std::map<VtVendor, std::vector<uint32_t>> outerBox = {
+                { VT_VENDOR_AMD,{
+#include "../HardCodes/amd/hlBVH2/triangle/bound-calc.comp.inl"
+            } },
+            { VT_VENDOR_NVIDIA,{
+#include "../HardCodes/nvidia/hlBVH2/triangle/bound-calc.comp.inl"
+            } },
+            { VT_VENDOR_INTEL,{
+#include "../HardCodes/intel/hlBVH2/triangle/bound-calc.comp.inl"
+            } },
+            { VT_VENDOR_UNIVERSAL,{
+#include "../HardCodes/universal/hlBVH2/triangle/bound-calc.comp.inl"
+            } },
+            };
+
+            static inline const std::map<VtVendor, std::vector<uint32_t>> genLeafs = {
+                { VT_VENDOR_AMD,{
+#include "../HardCodes/amd/hlBVH2/triangle/leaf-gen.comp.inl"
+            } },
+            { VT_VENDOR_NVIDIA,{
+#include "../HardCodes/nvidia/hlBVH2/triangle/leaf-gen.comp.inl"
+            } },
+            { VT_VENDOR_INTEL,{
+#include "../HardCodes/intel/hlBVH2/triangle/leaf-gen.comp.inl"
+            } },
+            { VT_VENDOR_UNIVERSAL,{
+#include "../HardCodes/universal/hlBVH2/triangle/leaf-gen.comp.inl"
+            } },
+            };
+
         };
     };
 
@@ -264,5 +260,5 @@ namespace _vt {
         } },
         };
 
-    }
+    };
 };

@@ -53,10 +53,10 @@ namespace _vt {
         };
 
         vtRadix->_pipelineLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
-        vtRadix->_histogramPipeline = createComputeMemory(vkDevice, qradix::histogram.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
-        vtRadix->_workPrefixPipeline = createComputeMemory(vkDevice, qradix::workPrefix.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
-        vtRadix->_permutePipeline = createComputeMemory(vkDevice, qradix::permute.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
-        vtRadix->_copyhackPipeline = createComputeMemory(vkDevice, qradix::copyhack.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_histogramPipeline = createComputeHC(vkDevice, qradix::histogram.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_workPrefixPipeline = createComputeHC(vkDevice, qradix::workPrefix.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_permutePipeline = createComputeHC(vkDevice, qradix::permute.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_copyhackPipeline = createComputeHC(vkDevice, qradix::copyhack.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
 
         auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
         vtRadix->_descriptorSet = dsc[0];

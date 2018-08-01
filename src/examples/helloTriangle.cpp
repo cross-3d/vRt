@@ -52,7 +52,7 @@ template<class T>
 inline auto writeIntoBuffer(vte::Queue deviceQueue, const std::vector<T>& vctr, const vrt::VtDeviceBuffer& dBuffer, size_t byteOffset = 0) {
     VkResult result = VK_SUCCESS;
     vrt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
-    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
         VkBufferCopy bfc = { 0, byteOffset, vte::strided<T>(vctr.size()) };
         vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, deviceQueue->device->rtDev, dBuffer, 1, &bfc);
     });
@@ -63,7 +63,7 @@ template<class T>
 inline auto writeIntoImage(vte::Queue deviceQueue, const std::vector<T>& vctr, const vrt::VtDeviceImage& dImage, size_t byteOffset = 0) {
     VkResult result = VK_SUCCESS;
     vrt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
-    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
         VkBufferImageCopy bfc = { 0, dImage->_extent.width, dImage->_extent.height, dImage->_subresourceLayers, VkOffset3D{0u,0u,0u}, dImage->_extent };
         vrt::vtCmdCopyHostToDeviceImage(cmdBuf, deviceQueue->device->rtDev, dImage, 1, &bfc);
     });
@@ -73,7 +73,7 @@ inline auto writeIntoImage(vte::Queue deviceQueue, const std::vector<T>& vctr, c
 template<class T>
 inline auto readFromBuffer(vte::Queue deviceQueue, const vrt::VtDeviceBuffer& dBuffer, std::vector<T>& vctr, size_t byteOffset = 0) {
     VkResult result = VK_SUCCESS;
-    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
         VkBufferCopy bfc = { byteOffset, 0, vte::strided<T>(vctr.size()) };
         vrt::vtCmdCopyDeviceBufferToHost(cmdBuf, dBuffer, deviceQueue->device->rtDev, 1, &bfc);
     });
@@ -172,7 +172,7 @@ int main() {
     vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outputImage);
 
     // dispatch image barrier
-    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
         vtCmdImageBarrier(cmdBuf, outputImage);
     });
 
@@ -223,7 +223,7 @@ int main() {
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &dullImage);
 
         // dispatch image barrier
-        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
             vtCmdImageBarrier(cmdBuf, dullImage);
         });
     }
@@ -287,7 +287,7 @@ int main() {
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &envImage);
 
         // dispatch image barrier
-        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](const VkCommandBuffer& cmdBuf) {
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
             vtCmdImageBarrier(cmdBuf, envImage);
         });
     }
@@ -351,10 +351,10 @@ int main() {
     }
 
     {
-        auto genShader = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/generation-shader.comp.spv"));
-        auto closestShader = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/closest-hit-shader.comp.spv"));
-        auto missShader = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/miss-hit-shader.comp.spv"));
-        auto groupShader = vte::loadAndCreateShaderModuleStage(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/group-shader.comp.spv"));
+        auto genShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/generation-shader.comp.spv"));
+        auto closestShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/closest-hit-shader.comp.spv"));
+        auto missShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/miss-hit-shader.comp.spv"));
+        auto groupShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "rayTracing/group-shader.comp.spv"));
 
         // create ray tracing pipeline
         VtRayTracingPipelineCreateInfo rtpi;
@@ -541,8 +541,8 @@ int main() {
     {
         // pipeline stages
         std::vector<vk::PipelineShaderStageCreateInfo> pipelineShaderStages = {
-            vk::PipelineShaderStageCreateInfo().setModule(vte::loadAndCreateShaderModule(deviceQueue->device->logical, vte::readBinary(shaderPack + "/output/render.vert.spv"))).setPName("main").setStage(vk::ShaderStageFlagBits::eVertex),
-            vk::PipelineShaderStageCreateInfo().setModule(vte::loadAndCreateShaderModule(deviceQueue->device->logical, vte::readBinary(shaderPack + "/output/render.frag.spv"))).setPName("main").setStage(vk::ShaderStageFlagBits::eFragment)
+            vk::PipelineShaderStageCreateInfo().setModule(vte::createShaderModule(deviceQueue->device->logical, vte::readBinary(shaderPack + "/output/render.vert.spv"))).setPName("main").setStage(vk::ShaderStageFlagBits::eVertex),
+            vk::PipelineShaderStageCreateInfo().setModule(vte::createShaderModule(deviceQueue->device->logical, vte::readBinary(shaderPack + "/output/render.frag.spv"))).setPName("main").setStage(vk::ShaderStageFlagBits::eFragment)
         };
 
         // blend modes per framebuffer targets

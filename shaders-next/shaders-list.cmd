@@ -1,5 +1,14 @@
 :: It is helper for compilation shaders to SPIR-V
 
+set INDIR=.\
+set OUTDIR=..\build\shaders\%VNDR%\
+::set HRDDIR=%OUTDIR%
+::set HRDDIR=..\include\vRt\HardCodes\%VNDR%\
+set HRDDIR=..\build\intrusive\%VNDR%\
+set OUTSHR=..\build\shaders\
+
+
+
 set NTVE=native\
 set VRTX=vertex\
 set RNDR=rayTracing\
@@ -11,20 +20,20 @@ set CMPPROF=-fshader-stage=compute
 set FRGPROF=-fshader-stage=fragment
 set VRTPROF=-fshader-stage=vertex
 set GMTPROF=-fshader-stage=geometry
+::set HEXT=.inl
+set HEXT=.spv
 
 mkdir %OUTDIR%
 mkdir %OUTDIR%%VRTX%
 mkdir %OUTDIR%%RNDR%
-mkdir %OUTDIR%%HLBV%
-mkdir %OUTDIR%%RDXI%
 mkdir %OUTDIR%%OUTP%
-mkdir %OUTDIR%%GENG%
 
 mkdir %HRDDIR%%HLBV%\\AABB\\
 mkdir %HRDDIR%%HLBV%\\triangle\\
 mkdir %HRDDIR%%HLBV%
 mkdir %HRDDIR%%RDXI%
 mkdir %HRDDIR%%NTVE%
+
 
 
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%OUTP%render.frag        -o %OUTDIR%%OUTP%render.frag.spv
@@ -36,33 +45,33 @@ start /b /wait glslangValidator %CFLAGSV% %INDIR%%RNDR%miss-hit-shader.comp    -
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%RNDR%group-shader.comp       -o %OUTDIR%%RNDR%group-shader.comp.spv
 start /b /wait glslangValidator %CFLAGSV% %INDIR%%VRTX%vtransformed.comp       -o %OUTDIR%%VRTX%vtransformed.comp.spv
 
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%vinput.comp       -x -o %HRDDIR%%NTVE%vinput.comp.inl
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%dull.comp         -x -o %HRDDIR%%NTVE%dull.comp.inl
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%triplet.comp      -x -o %HRDDIR%%NTVE%triplet.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%vinput.comp        -o %HRDDIR%%NTVE%vinput.comp%HEXT%
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%dull.comp          -o %HRDDIR%%NTVE%dull.comp%HEXT%
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%NTVE%triplet.comp       -o %HRDDIR%%NTVE%triplet.comp%HEXT%
 
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%\\triangle\\bound-calc.comp   -x -o %HRDDIR%%HLBV%\\triangle\\bound-calc.comp.inl
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%\\triangle\\leaf-gen.comp     -x -o %HRDDIR%%HLBV%\\triangle\\leaf-gen.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%\\triangle\\bound-calc.comp    -o %HRDDIR%%HLBV%\\triangle\\bound-calc.comp%HEXT%
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%\\triangle\\leaf-gen.comp      -o %HRDDIR%%HLBV%\\triangle\\leaf-gen.comp%HEXT%
 
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-build-td.comp    -x -o %HRDDIR%%HLBV%bvh-build-first.comp.inl -DFIRST_STEP
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-build-td.comp    -x -o %HRDDIR%%HLBV%bvh-build.comp.inl 
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-fit.comp      -x -o %HRDDIR%%HLBV%bvh-fit.comp.inl
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%leaf-link.comp    -x -o %HRDDIR%%HLBV%leaf-link.comp.inl
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%shorthand.comp    -x -o %HRDDIR%%HLBV%shorthand.comp.inl
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%traverse-bvh.comp -x -o %HRDDIR%%HLBV%traverse-bvh.comp.inl 
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%interpolator.comp -x -o %HRDDIR%%HLBV%interpolator.comp.inl
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-build-td.comp     -o %HRDDIR%%HLBV%bvh-build-first.comp%HEXT% -DFIRST_STEP
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-build-td.comp     -o %HRDDIR%%HLBV%bvh-build.comp%HEXT%
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%bvh-fit.comp       -o %HRDDIR%%HLBV%bvh-fit.comp%HEXT%
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%leaf-link.comp     -o %HRDDIR%%HLBV%leaf-link.comp%HEXT%
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%shorthand.comp     -o %HRDDIR%%HLBV%shorthand.comp%HEXT%
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%traverse-bvh.comp  -o %HRDDIR%%HLBV%traverse-bvh.comp%HEXT% 
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%HLBV%interpolator.comp  -o %HRDDIR%%HLBV%interpolator.comp%HEXT%
 
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%permute.comp      -x -o %HRDDIR%%RDXI%permute.comp.inl
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%histogram.comp    -x -o %HRDDIR%%RDXI%histogram.comp.inl
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%pfx-work.comp     -x -o %HRDDIR%%RDXI%pfx-work.comp.inl
-start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%copyhack.comp     -x -o %HRDDIR%%RDXI%copyhack.comp.inl
-
-:: --ccp not supported by that renderer 
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%permute.comp       -o %HRDDIR%%RDXI%permute.comp%HEXT%
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%histogram.comp     -o %HRDDIR%%RDXI%histogram.comp%HEXT%
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%pfx-work.comp      -o %HRDDIR%%RDXI%pfx-work.comp%HEXT%
+start /b /wait glslangValidator %CFLAGSV% %INDIR%%RDXI%copyhack.comp      -o %HRDDIR%%RDXI%copyhack.comp%HEXT%
 
 set FIXFLAGS = -Os 
 set OPTFLAGS = -O 
 
-::call spirv-opt %FIXFLAGS% %OUTDIR%%HLBV%interpolator.comp.spv    -o %OUTDIR%%HLBV%interpolator.comp.spv
-::call spirv-opt %FIXFLAGS% %OUTDIR%%HLBV%traverse-bvh.comp.spv    -o %OUTDIR%%HLBV%traverse-bvh.comp.spv
-::call spirv-opt %FIXFLAGS% %OUTDIR%%HLBV%bvh-build.comp.spv       -o %OUTDIR%%HLBV%bvh-build.comp.spv
-::call spirv-opt %FIXFLAGS% %OUTDIR%%HLBV%bound-calc.comp.spv      -o %OUTDIR%%HLBV%bound-calc.comp.spv
-::call spirv-opt %FIXFLAGS% %OUTDIR%%HLBV%leaf-gen.comp.spv        -o %OUTDIR%%HLBV%leaf-gen.comp.spv
+
+call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%interpolator.comp.spv    -o %HRDDIR%%HLBV%interpolator.comp.spv
+call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%traverse-bvh.comp.spv    -o %HRDDIR%%HLBV%traverse-bvh.comp.spv
+call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%bvh-build.comp.spv       -o %HRDDIR%%HLBV%bvh-build.comp.spv
+call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%bvh-build-first.comp.spv -o %HRDDIR%%HLBV%bvh-build-first.comp.spv
+call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%\\triangle\\bound-calc.comp.spv      -o %HRDDIR%%HLBV%\\triangle\\bound-calc.comp.spv
+call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%\\triangle\\leaf-gen.comp.spv        -o %HRDDIR%%HLBV%\\triangle\\leaf-gen.comp.spv

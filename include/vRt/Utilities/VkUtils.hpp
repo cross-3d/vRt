@@ -51,7 +51,6 @@ namespace _vt {
     template <class T>
     static inline size_t strided(size_t sizeo) { return sizeof(T) * sizeo; }
 
-
     // read binary (for SPIR-V)
     static inline auto readBinary(std::string filePath) {
         std::ifstream file(filePath, std::ios::in | std::ios::binary | std::ios::ate);
@@ -69,13 +68,11 @@ namespace _vt {
     };
 
     // read source (unused)
-    static inline std::string readSource(const std::string &filePath, const bool &lineDirective = false) {
+    static inline auto readSource(const std::string &filePath, const bool &lineDirective = false) {
         std::string content = "";
         std::ifstream fileStream(filePath, std::ios::in);
         if (!fileStream.is_open()) {
-            std::cerr << "Could not read file " << filePath << ". File does not exist."
-                << std::endl;
-            return "";
+            std::cerr << "Could not read file " << filePath << ". File does not exist." << std::endl; return content;
         }
         std::string line = "";
         while (!fileStream.eof()) {
@@ -87,9 +84,8 @@ namespace _vt {
         return content;
     };
 
-
     // general command buffer barrier
-    static inline void commandBarrier(const VkCommandBuffer& cmdBuffer) {
+    static inline void commandBarrier(VkCommandBuffer cmdBuffer) {
         VkMemoryBarrier memoryBarrier = {};
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.pNext = nullptr;
@@ -107,7 +103,7 @@ namespace _vt {
     };
 
     // from host command buffer barrier
-    static inline void fromHostCommandBarrier(const VkCommandBuffer& cmdBuffer) {
+    static inline void fromHostCommandBarrier(VkCommandBuffer cmdBuffer) {
         VkMemoryBarrier memoryBarrier = {};
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.pNext = nullptr;
@@ -125,7 +121,7 @@ namespace _vt {
     };
 
     // to host command buffer barrier
-    static inline void toHostCommandBarrier(const VkCommandBuffer& cmdBuffer) {
+    static inline void toHostCommandBarrier(VkCommandBuffer cmdBuffer) {
         VkMemoryBarrier memoryBarrier = {};
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.pNext = nullptr;
@@ -142,12 +138,12 @@ namespace _vt {
             0, nullptr);
     };
 
-    static inline void updateCommandBarrier(const VkCommandBuffer& cmdBuffer) {
+    static inline void updateCommandBarrier(VkCommandBuffer cmdBuffer) {
         commandBarrier(cmdBuffer);
     };
 
     // create secondary command buffers for batching compute invocations
-    static inline auto createCommandBuffer(const VkDevice device, const VkCommandPool cmdPool, bool secondary = true, bool once = true) {
+    static inline auto createCommandBuffer(VkDevice device, VkCommandPool cmdPool, bool secondary = true, bool once = true) {
         VkCommandBuffer cmdBuffer = nullptr;
 
         VkCommandBufferAllocateInfo cmdi = {};
@@ -174,8 +170,7 @@ namespace _vt {
         return cmdBuffer;
     };
 
-
-    static inline auto loadAndCreateShaderModuleInfo(const std::vector<uint32_t>& code) {
+    static inline auto makeShaderModuleInfo(const std::vector<uint32_t>& code) {
         VkShaderModuleCreateInfo smi = {};
         smi.pNext = nullptr;
         smi.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -183,46 +178,30 @@ namespace _vt {
         smi.codeSize = code.size()*4;
         smi.flags = {};
         return smi;
-    }
-
-    // create shader module
-    static inline auto loadAndCreateShaderModule(VkDevice device, const std::vector<uint32_t>& code) {
-        VkShaderModule sm = nullptr; auto shaderModuleInfo = loadAndCreateShaderModuleInfo(code);
-        vkCreateShaderModule(device, &shaderModuleInfo, nullptr, &sm);
-        return sm;
     };
 
     // create shader module
-    static inline auto loadAndCreateShaderModuleStage(VkDevice device, const std::vector<uint32_t>& code, const char * entry = "main") {
+    static inline auto createShaderModuleIntrusive(VkDevice device, const std::vector<uint32_t>& code, VkShaderModule& hndl) {
+        auto shaderModuleInfo = makeShaderModuleInfo(code);
+        vkCreateShaderModule(device, &shaderModuleInfo, nullptr, &hndl); return hndl;
+    };
+
+    static inline auto createShaderModule(VkDevice device, const std::vector<uint32_t>& code) {
+        auto sm = VkShaderModule{}; return createShaderModuleIntrusive(device, code, sm); return sm;
+    };
+
+    // create shader module
+    static inline auto makeComputePipelineStageInfo(VkDevice device, const std::vector<uint32_t>& code, const char * entry = "main") {
         VkPipelineShaderStageCreateInfo spi = {};
         spi.pNext = nullptr;
         spi.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         spi.flags = {};
-        spi.module = loadAndCreateShaderModule(device, code);
+        createShaderModuleIntrusive(device, code, spi.module);
         spi.pName = entry;
         spi.stage = VK_SHADER_STAGE_COMPUTE_BIT;
         spi.pSpecializationInfo = nullptr;
         return spi;
     };
-
-    // create compute pipelines
-    static inline auto createCompute(VkDevice device, std::string path, VkPipelineLayout layout, VkPipelineCache cache) {
-        auto code = readBinary(path);
-        auto spi = loadAndCreateShaderModuleStage(device, code);
-
-        VkComputePipelineCreateInfo cmpi = {};
-        cmpi.pNext = nullptr;
-        cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-        cmpi.flags = {};
-        cmpi.layout = layout;
-        cmpi.stage = spi;
-        cmpi.basePipelineHandle = {};
-        cmpi.basePipelineIndex = -1;
-
-        VkPipeline pipeline = nullptr;
-        vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);
-        return pipeline;
-    }
 
     // create compute pipelines
     static inline auto createCompute(VkDevice device, const VkPipelineShaderStageCreateInfo& spi, VkPipelineLayout layout, VkPipelineCache cache) {
@@ -240,24 +219,26 @@ namespace _vt {
         return pipeline;
     }
 
+    // create compute pipelines
+    static inline auto createCompute(VkDevice device, const std::vector<uint32_t>& code, VkPipelineLayout layout, VkPipelineCache cache) {
+        return createCompute(device, makeComputePipelineStageInfo(device, code), layout, cache);
+    }
 
     // create compute pipelines
-    static inline auto createComputeMemory(VkDevice device, const std::vector<uint32_t>& code, VkPipelineLayout layout, VkPipelineCache cache) {
-        auto spi = loadAndCreateShaderModuleStage(device, code);
-
-        VkComputePipelineCreateInfo cmpi = {};
-        cmpi.pNext = nullptr;
-        cmpi.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-        cmpi.flags = {};
-        cmpi.layout = layout;
-        cmpi.stage = spi;
-        cmpi.basePipelineHandle = {};
-        cmpi.basePipelineIndex = -1;
-
-        VkPipeline pipeline = nullptr;
-        vkCreateComputePipelines(device, cache, 1, &cmpi, nullptr, &pipeline);
-        return pipeline;
+    static inline auto createCompute(VkDevice device, const std::string& path, VkPipelineLayout layout, VkPipelineCache cache) {
+        return createCompute(device, readBinary(path), layout, cache);
     }
+
+
+
+
+
+#ifdef VRT_ENABLE_HARDCODED_SPV_CORE
+    #define createComputeHC createComputeMemory
+#else
+    #define createComputeHC createCompute
+#endif
+
 
     // add dispatch in command buffer (with default pipeline barrier)
     static inline VkResult cmdDispatch(VkCommandBuffer cmd, VkPipeline pipeline, uint32_t x = 1, uint32_t y = 1, uint32_t z = 1, bool barrier = true) {
@@ -270,7 +251,7 @@ namespace _vt {
     }
 
     // low level copy command between (prefer for host and device)
-    static inline VkResult cmdCopyBufferL(VkCommandBuffer cmd, vk::Buffer srcBuffer, vk::Buffer dstBuffer, const std::vector<vk::BufferCopy>& regions, const std::function<void(const VkCommandBuffer&)>& barrierFn = commandBarrier) {
+    static inline VkResult cmdCopyBufferL(VkCommandBuffer cmd, vk::Buffer srcBuffer, vk::Buffer dstBuffer, const std::vector<vk::BufferCopy>& regions, const std::function<void(VkCommandBuffer)>& barrierFn = commandBarrier) {
         vk::CommandBuffer(cmd).copyBuffer(srcBuffer, dstBuffer, regions);
         barrierFn(cmd); // put copy barrier
         return VK_SUCCESS;
@@ -314,7 +295,7 @@ namespace _vt {
     };
 
     // once submit command buffer
-    static inline void submitOnce(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(const VkCommandBuffer&)> cmdFn = {}, vk::SubmitInfo smbi = {}) {
+    static inline void submitOnce(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, vk::SubmitInfo smbi = {}) {
         auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf); vkEndCommandBuffer(cmdBuf);
         submitCmd(device, queue, { cmdBuf });
         vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer
@@ -341,7 +322,7 @@ namespace _vt {
     };
 
     // once submit command buffer
-    static inline void submitOnceAsync(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, std::function<void(const VkCommandBuffer&)> asyncCallback = {}, vk::SubmitInfo smbi = {}) {
+    static inline void submitOnceAsync(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, std::function<void(VkCommandBuffer)> asyncCallback = {}, vk::SubmitInfo smbi = {}) {
         auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf); vkEndCommandBuffer(cmdBuf);
         submitCmdAsync(device, queue, { cmdBuf }, [=]() {
             asyncCallback(cmdBuf); // call async callback

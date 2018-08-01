@@ -1,0 +1,4 @@
+- Rewrite to PowerShell 6.x
+- Add more options for shader building
+- Add compatibility for Linux systems
+- Add SPIR-V optimizations support
