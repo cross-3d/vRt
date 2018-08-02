@@ -6,16 +6,14 @@
 
 ## Features and advantages
 
-- Low level API for ray tracing (even lower than Embree)
+- Low-level library for ray tracing (compute workflow)
 - Much more Vulkan API 1.1 capable (at 2018 year)
 - Higher extensibility than original project
 - Fixed issues of previous projects
 - Reduced overheads, include dispatch calls
-
-## Silver box
-
-- Around 96 million rays per second (more than old project)
-- Around (up to) 90Hz in Sponza scene (RX Vega 64, 1280x720, without rebuilding BVH, primary rays, no sorting)
+- No depends by first GPU (but indev apps may have)
+- Support by common modern compilers (Visual Studio 2017, GCC 8.1)
+- Support by modern graphics/compute accelerators (NVidia Pascal, AMD Radeon Vega, next-gens...)
 
 ## Repositories
 
