@@ -657,11 +657,9 @@ namespace NSM
             { // create framebuffers
                 vk::Image image = swapchainImages[i]; // prelink images
                 std::array<vk::ImageView, 2> views; // predeclare views
-                views[0] = queue->device->logical.createImageView(vk::ImageViewCreateInfo{ vk::ImageViewCreateFlags{}, image, vk::ImageViewType::e2D, formats.colorFormat, vk::ComponentMapping(), vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1) }); // color view
+                views[0] = queue->device->logical.createImageView(vk::ImageViewCreateInfo{ {}, image, vk::ImageViewType::e2D, formats.colorFormat, vk::ComponentMapping(), vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1} }); // color view
                 views[1] = depthImageView; // depth view
-
-                auto bufferCreateInfo = vk::FramebufferCreateInfo{ vk::FramebufferCreateFlags(), renderpass, uint32_t(views.size()), views.data(), applicationWindow.surfaceSize.width, applicationWindow.surfaceSize.height, 1 };
-                swapchainBuffers[i].frameBuffer = queue->device->logical.createFramebuffer(bufferCreateInfo);
+                swapchainBuffers[i].frameBuffer = queue->device->logical.createFramebuffer(vk::FramebufferCreateInfo{ {}, renderpass, uint32_t(views.size()), views.data(), applicationWindow.surfaceSize.width, applicationWindow.surfaceSize.height, 1 });
             }
         }
 
