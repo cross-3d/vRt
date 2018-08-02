@@ -35,7 +35,7 @@ namespace _vt {
 
 
     static inline VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer> cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
-        constexpr auto WG_COUNT = 64u, RADICE_AFFINE = 16u;
+        constexpr const auto WG_COUNT = 64u, RADICE_AFFINE = 16u;
 
         VtResult result = VK_SUCCESS;
 

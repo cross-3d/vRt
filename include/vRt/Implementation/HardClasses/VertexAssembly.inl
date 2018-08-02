@@ -24,9 +24,8 @@ namespace _vt {
         vtVertexAssembly = std::make_shared<VertexAssemblySet>();
         vtVertexAssembly->_device = _vtDevice;
 
-        //constexpr auto maxPrimitives = 1024u * 1024u; // planned import from descriptor
         const auto maxPrimitives = info.maxPrimitives;
-        constexpr auto aWidth = 4096ull * 3ull;
+        constexpr const auto aWidth = 4096ull * 3ull;
 
         // build vertex input assembly program
         {

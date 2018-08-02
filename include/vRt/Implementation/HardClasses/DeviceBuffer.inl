@@ -28,14 +28,16 @@ namespace _vt {
         allocCreateInfo.usage = U;
 
         // make memory usages 
-        auto usageFlag = cinfo.usageFlag;
+        auto usageFlagCstr = 0u;
         if constexpr (U != VMA_MEMORY_USAGE_GPU_ONLY) { allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT; }
-        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { usageFlag |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; } else {
-            if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { usageFlag |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; } else {
-                usageFlag |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-                if (cinfo.format) { usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT; } // if has format, add texel storage usage
-            }; // bidirectional
+        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; } else {
+            if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; } else {
+                usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+            };
         };
+
+        auto usageFlag = cinfo.usageFlag | usageFlagCstr;
+        if (cinfo.format) { usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT; } // if has format, add texel storage usage
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
         VezMemoryFlags mem = VEZ_MEMORY_GPU_ONLY;

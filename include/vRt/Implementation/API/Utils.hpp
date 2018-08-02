@@ -7,7 +7,7 @@ namespace _vt { // store in undercover namespace
     using namespace vrt;
 
 
-    constexpr uint32_t VtIdentifier = 0x1FFu;
+    constexpr const static inline uint32_t VtIdentifier = 0x1FFu;
     struct VkShortHead {
         //uint32_t sublevel : 24, identifier : 12;
         uint32_t identifier : 12, sublevel : 24; // I don't know ordering of bits
@@ -176,10 +176,10 @@ namespace _vt { // store in undercover namespace
     using cmdCopyBufferToImage_T = void(*)(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> srcBuffer, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::BufferImageCopy>& regions);
 
     // aliased low level calls
-    constexpr cmdCopyBufferToImage_T<VMA_MEMORY_USAGE_GPU_ONLY> copyDeviceBufferToImage = &cmdCopyBufferToImage<VMA_MEMORY_USAGE_GPU_ONLY>;
-    constexpr cmdCopyImageToBuffer_T<VMA_MEMORY_USAGE_GPU_ONLY> copyImageToDeviceBuffer = &cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
-    constexpr cmdCopyBufferToImage_T<VMA_MEMORY_USAGE_CPU_TO_GPU> copyHostBufferToImage = &cmdCopyBufferToImage<VMA_MEMORY_USAGE_CPU_TO_GPU>;
-    constexpr cmdCopyImageToBuffer_T<VMA_MEMORY_USAGE_GPU_TO_CPU> copyImageToHostBuffer = &cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
+    constexpr const static inline cmdCopyBufferToImage_T<VMA_MEMORY_USAGE_GPU_ONLY> copyDeviceBufferToImage = &cmdCopyBufferToImage<VMA_MEMORY_USAGE_GPU_ONLY>;
+    constexpr const static inline cmdCopyImageToBuffer_T<VMA_MEMORY_USAGE_GPU_ONLY> copyImageToDeviceBuffer = &cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
+    constexpr const static inline cmdCopyBufferToImage_T<VMA_MEMORY_USAGE_CPU_TO_GPU> copyHostBufferToImage = &cmdCopyBufferToImage<VMA_MEMORY_USAGE_CPU_TO_GPU>;
+    constexpr const static inline cmdCopyImageToBuffer_T<VMA_MEMORY_USAGE_GPU_TO_CPU> copyImageToHostBuffer = &cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
 
 
 

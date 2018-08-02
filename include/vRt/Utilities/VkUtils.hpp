@@ -26,12 +26,12 @@
 
 
 namespace _vt {
-    constexpr auto DEFAULT_FENCE_TIMEOUT = 100000000000ll;
-    constexpr auto INTENSIVITY = 4096ull;
-    constexpr auto ATTRIB_EXTENT = 8ull; // no way to set more than it now
+    constexpr const static inline auto DEFAULT_FENCE_TIMEOUT = 100000000000ll;
+    constexpr const static inline auto INTENSIVITY = 4096ull;
+    constexpr const static inline auto ATTRIB_EXTENT = 8ull; // no way to set more than it now
 
     template <typename T>
-    inline auto sgn(T val) { return (T(0) < val) - (val < T(0)); }
+    static inline auto sgn(T val) { return (T(0) < val) - (val < T(0)); }
 
     template<class T = uint32_t>
     static inline T tiled(T sz, T gmaxtile) {

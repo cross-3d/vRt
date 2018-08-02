@@ -41,7 +41,7 @@ namespace vrt { // store in official namespace
     using VtFormat = VtFormatDecomp;
 
     // use constexpr VtFormat constants
-    constexpr auto
+    constexpr const static inline auto
         VT_FORMAT_R32G32B32A32_SFLOAT = VtFormatDecomp(4u, VT_TYPE_FLOAT),
         VT_FORMAT_R32G32B32_SFLOAT = VtFormatDecomp(3u, VT_TYPE_FLOAT),
         VT_FORMAT_R32G32_SFLOAT = VtFormatDecomp(2u, VT_TYPE_FLOAT),
