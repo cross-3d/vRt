@@ -168,6 +168,7 @@ int main() {
     // create vulkan and ray tracing instance
     auto appfw = std::make_shared<vte::ApplicationBase>();
     auto instance = appfw->createInstance();
+    if (!instance) { glfwTerminate(); exit(EXIT_FAILURE); }
 
     // get physical devices
     auto physicalDevices = instance.enumeratePhysicalDevices();

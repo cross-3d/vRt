@@ -25,7 +25,7 @@ namespace NSM
     protected:
 
         // application binding
-        vk::Instance instance;
+        vk::Instance instance = {};
 
         // cached Vulkan API data
         std::vector<Queue> devices;
@@ -92,9 +92,9 @@ namespace NSM
 
         // instance layers
         std::vector<const char *> wantedLayers = {
-            "VK_LAYER_LUNARG_standard_validation",
-            "VK_LAYER_LUNARG_parameter_validation",
-            "VK_LAYER_LUNARG_core_validation",
+            //"VK_LAYER_LUNARG_standard_validation",
+            //"VK_LAYER_LUNARG_parameter_validation",
+            //"VK_LAYER_LUNARG_core_validation",
             //"VK_LAYER_RENDERDOC_Capture",
             //"VK_LAYER_LUNARG_assistant_layer",
             //"VK_LAYER_LUNARG_vktrace",
@@ -121,6 +121,10 @@ namespace NSM
 #ifdef VOLK_H_
             volkInitialize();
 #endif
+
+            auto supportedVkApiVersion = 0u;
+            auto apiResult = vkEnumerateInstanceVersion(&supportedVkApiVersion);
+            if (supportedVkApiVersion < VK_MAKE_VERSION(1, 1, 0)) return instance;
             
             // get required extensions
             unsigned int glfwExtensionCount = 0;
@@ -161,26 +165,25 @@ namespace NSM
 
             // app info
 #ifdef VRT_ENABLE_VEZ_INTEROP
-            VezApplicationInfo appinfo = {};
+            auto appinfo = VezApplicationInfo{};
 #else
-            vk::ApplicationInfo appinfo = {};
+            auto appinfo = VkApplicationInfo(vk::ApplicationInfo{});
 #endif
             appinfo.pNext = nullptr;
             appinfo.pApplicationName = "VKTest";
             appinfo.applicationVersion = NULL;
 #ifndef VRT_ENABLE_VEZ_INTEROP
-            appinfo.apiVersion = VK_MAKE_VERSION(1, 1, 77);
+            appinfo.apiVersion = VK_MAKE_VERSION(1, 1, 0);
 #endif
 
             // create instance info
 #ifdef VRT_ENABLE_VEZ_INTEROP
-            VezInstanceCreateInfo cinstanceinfo = {};
-            cinstanceinfo.pApplicationInfo = &appinfo;
+            auto cinstanceinfo = VezInstanceCreateInfo{};
 #else
-            VkInstanceCreateInfo cinstanceinfo = VkInstanceCreateInfo(vk::InstanceCreateInfo{});
-            cinstanceinfo.pApplicationInfo = (VkApplicationInfo*)&appinfo;
+            auto cinstanceinfo = VkInstanceCreateInfo(vk::InstanceCreateInfo{});
 #endif
 
+            cinstanceinfo.pApplicationInfo = &appinfo;
             cinstanceinfo.enabledExtensionCount = extensions.size();
             cinstanceinfo.ppEnabledExtensionNames = extensions.data();
             cinstanceinfo.enabledLayerCount = layers.size();
