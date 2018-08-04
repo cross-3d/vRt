@@ -7,7 +7,7 @@ namespace _vt {
 
     // ray tracing pipeline
     // planned to add support of entry points
-    static inline VtResult createRayTracingPipeline(std::shared_ptr<Device> _vtDevice, const VtRayTracingPipelineCreateInfo& info, std::shared_ptr<Pipeline>& vtPipeline) {
+    inline VtResult createRayTracingPipeline(std::shared_ptr<Device> _vtDevice, const VtRayTracingPipelineCreateInfo& info, std::shared_ptr<Pipeline>& vtPipeline) {
         VtResult result = VK_SUCCESS;
 
         auto vkDevice = _vtDevice->_device;
@@ -51,7 +51,7 @@ namespace _vt {
     }
 
     // ray tracing set of state
-    static inline VtResult createRayTracingSet(std::shared_ptr<Device> _vtDevice, const VtRayTracingSetCreateInfo& info, std::shared_ptr<RayTracingSet>& _vtRTSet) {
+    inline VtResult createRayTracingSet(std::shared_ptr<Device> _vtDevice, const VtRayTracingSetCreateInfo& info, std::shared_ptr<RayTracingSet>& _vtRTSet) {
         VtResult result = VK_SUCCESS;
 
         auto vkDevice = _vtDevice->_device;

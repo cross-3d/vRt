@@ -5,10 +5,7 @@
 namespace _vt {
     using namespace vrt;
 
-
-    
-
-    static inline VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<AcceleratorHLBVH2>& vtAccelerator) {
+    inline VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<AcceleratorHLBVH2>& vtAccelerator) {
         VtResult result = VK_SUCCESS;
         //auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
         vtAccelerator = std::make_shared<AcceleratorHLBVH2>();
@@ -65,7 +62,7 @@ namespace _vt {
         return result;
     };
 
-    static inline VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
+    inline VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
         VtResult result = VK_SUCCESS;
         auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
         auto vkDevice = _vtDevice->_device;

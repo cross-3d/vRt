@@ -171,7 +171,6 @@ namespace NSM
 #endif
             appinfo.pNext = nullptr;
             appinfo.pApplicationName = "VKTest";
-            appinfo.applicationVersion = NULL;
 #ifndef VRT_ENABLE_VEZ_INTEROP
             appinfo.apiVersion = VK_MAKE_VERSION(1, 1, 0);
 #endif

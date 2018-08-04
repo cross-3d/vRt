@@ -5,7 +5,7 @@
 namespace _vt {
     using namespace vrt;
 
-    static inline VtResult convertPhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, std::shared_ptr<PhysicalDevice>& vtPhysicalDevice) {
+    inline VtResult convertPhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, std::shared_ptr<PhysicalDevice>& vtPhysicalDevice) {
         vtPhysicalDevice = std::make_shared<PhysicalDevice>();
         vtPhysicalDevice->_physicalDevice = physical; // assign a Vulkan physical device
         return VK_SUCCESS;

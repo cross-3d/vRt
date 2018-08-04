@@ -53,8 +53,8 @@ namespace vrt {
         //VtVirtualCombinedImage() {};
 
         // component setters
-        VtVirtualCombinedImage& setTextureID(uint32_t textureID = 0) { _combination.textureID = textureID + 1u; }
-        VtVirtualCombinedImage& setSamplerID(uint32_t samplerID = 0) { _combination.samplerID = samplerID + 1u; }
+        VtVirtualCombinedImage& setTextureID(uint32_t textureID = 0) { _combination.textureID = textureID + 1u; return *this; }
+        VtVirtualCombinedImage& setSamplerID(uint32_t samplerID = 0) { _combination.samplerID = samplerID + 1u; return *this; }
 
         // component getters
         uint32_t getTextureID() const { return uint32_t(_combination.textureID) - 1u; }
