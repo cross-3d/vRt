@@ -14,22 +14,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="901a3fd4-e237-48ee-8bf1-848ea35addad" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/API/Calls.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/API/Calls.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/API/Initializers.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/API/Initializers.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Accelerator.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Accelerator.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Device.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Device.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/DeviceImage.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/DeviceImage.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Instance.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Instance.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/MaterialSet.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/MaterialSet.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/PhysicalDevice.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/PhysicalDevice.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Pipeline.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Pipeline.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/PipelineLayout.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/PipelineLayout.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/RadixSort.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/RadixSort.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexAssembly.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexAssembly.inl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexInput.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexInput.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/vRt/Parts/StructuresLow.inl" beforeDir="false" afterPath="$PROJECT_DIR$/include/vRt/Parts/StructuresLow.inl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/libglfw3.a" beforeDir="false" afterPath="$PROJECT_DIR$/lib/libglfw3.a" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/base/appBase.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/base/appBase.hpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/cmake-build-relwithdebinfo/" />
@@ -57,7 +42,7 @@
           <entry key="cbp" value="1" />
           <entry key="cpp" value="2" />
           <entry key="hpp" value="1" />
-          <entry key="inl" value="18" />
+          <entry key="inl" value="19" />
           <entry key="txt" value="2" />
         </counts>
       </usages-collector>
@@ -65,7 +50,7 @@
         <counts>
           <entry key="CMakeCache.txt" value="1" />
           <entry key="CMakeLists.txt" value="1" />
-          <entry key="ObjectiveC" value="21" />
+          <entry key="ObjectiveC" value="22" />
           <entry key="PLAIN_TEXT" value="1" />
         </counts>
       </usages-collector>
@@ -83,97 +68,16 @@
       </usages-collector>
     </session>
   </component>
+  <component name="FavoritesManager">
+    <favorites_list name="vRt" />
+  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/API/Initializers.inl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="608">
-              <caret line="38" selection-start-line="38" selection-end-line="38" />
-              <folding>
-                <element signature="e#708#754#0" expanded="true" />
-                <element signature="e#948#966#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/examples/gltfBasic.cpp">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/API/Calls.inl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="16">
-              <caret line="103" column="13" selection-start-line="103" selection-start-column="4" selection-end-line="103" selection-end-column="13" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/base/appBase.hpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="269">
-              <caret line="172" column="48" selection-start-line="172" selection-start-column="48" selection-end-line="172" selection-end-column="48" />
-              <folding>
-                <element signature="e#5522#5578#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Instance.inl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="128">
-              <caret line="8" column="4" selection-start-line="8" selection-start-column="4" selection-end-line="8" selection-end-column="4" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/HardClasses/PhysicalDevice.inl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="112">
-              <caret line="7" column="4" selection-start-line="7" selection-start-column="4" selection-end-line="7" selection-end-column="4" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Device.inl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="189">
-              <caret line="221" column="4" selection-start-line="221" selection-start-column="4" selection-end-line="221" selection-end-column="4" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexAssembly.inl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="189">
-              <caret line="19" selection-start-line="19" selection-end-line="19" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Accelerator.inl">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="141">
-              <caret line="64" column="4" selection-start-line="64" selection-start-column="4" selection-end-line="64" selection-end-column="4" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexInput.inl">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
-              <caret line="9" column="4" selection-start-line="9" selection-start-column="4" selection-end-line="9" selection-end-column="4" />
+            <state relative-caret-position="96">
+              <caret line="6" selection-start-line="6" selection-end-line="6" />
             </state>
           </provider>
         </entry>
@@ -185,6 +89,7 @@
       <find>inline VtResult</find>
       <find>extern inline</find>
       <find>extern inline</find>
+      <find>VtResult</find>
     </findStrings>
     <replaceStrings>
       <replace>static inline VtResult</replace>
@@ -192,6 +97,7 @@
       <replace>static inline VtResult vrt::</replace>
       <replace>extern</replace>
       <replace>extern</replace>
+      <replace>inline VtResult</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -209,7 +115,6 @@
         <option value="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Pipeline.inl" />
         <option value="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/MaterialSet.inl" />
         <option value="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/RadixSort.inl" />
-        <option value="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexInput.inl" />
         <option value="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexAssembly.inl" />
         <option value="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/Accelerator.inl" />
         <option value="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/PhysicalDevice.inl" />
@@ -218,6 +123,7 @@
         <option value="$PROJECT_DIR$/src/base/appBase.hpp" />
         <option value="$PROJECT_DIR$/include/vRt/Implementation/API/Initializers.inl" />
         <option value="$PROJECT_DIR$/include/vRt/Implementation/API/Calls.inl" />
+        <option value="$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexInput.inl" />
       </list>
     </option>
   </component>
@@ -395,12 +301,12 @@
       <workItem from="1533154993668" duration="921000" />
       <workItem from="1533156267356" duration="706000" />
       <workItem from="1533206685779" duration="70000" />
-      <workItem from="1533380103949" duration="677000" />
+      <workItem from="1533380103949" duration="1059000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="9360000" />
+    <option name="totallyTimeSpent" value="9742000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -415,22 +321,22 @@
     <frame x="-6" y="-6" width="1933" height="1053" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21066667" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4992343" visible="true" weight="0.21066667" />
+      <window_info id="Structure" order="1" sideWeight="0.5007657" side_tool="true" weight="0.21066667" />
+      <window_info id="Favorites" order="2" sideWeight="0.5007657" side_tool="true" weight="0.21066667" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4912" weight="0.32936078" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.32936078" />
+      <window_info anchor="bottom" id="Debug" order="2" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="3" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="4" weight="0.4" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.4896" weight="0.29252437" />
+      <window_info active="true" anchor="bottom" id="TODO" order="6" sideWeight="0.4992" visible="true" weight="0.32936078" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.49226665" weight="0.32936078" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50986665" side_tool="true" visible="true" weight="0.32936078" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5008" side_tool="true" visible="true" weight="0.32936078" />
       <window_info anchor="bottom" id="Version Control" order="10" sideWeight="0.49973333" weight="0.32936078" />
       <window_info anchor="bottom" id="CMake" order="11" sideWeight="0.4944" weight="0.29577464" />
-      <window_info active="true" anchor="bottom" id="Messages" order="12" sideWeight="0.49013335" visible="true" weight="0.32936078" />
+      <window_info anchor="bottom" id="Messages" order="12" sideWeight="0.4896" weight="0.32936078" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -535,13 +441,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexInput.inl">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="9" column="4" selection-start-line="9" selection-start-column="4" selection-end-line="9" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexAssembly.inl">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="189">
@@ -603,8 +502,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/API/Calls.inl">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="16">
-          <caret line="103" column="13" selection-start-line="103" selection-start-column="4" selection-end-line="103" selection-end-column="13" />
+        <state relative-caret-position="240">
+          <caret line="114" lean-forward="true" selection-start-line="114" selection-end-line="114" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/vRt/Implementation/HardClasses/VertexInput.inl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="96">
+          <caret line="6" selection-start-line="6" selection-end-line="6" />
         </state>
       </provider>
     </entry>

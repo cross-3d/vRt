@@ -5,7 +5,6 @@
 namespace _vt {
     using namespace vrt;
 
-    // TODO - add support for auto-creation of buffers in "VtVertexInputCreateInfo" from pointers and counts
     // also, planned to add support of offsets in buffers 
     inline VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& vtVertexInput) {
         VtResult result = VK_SUCCESS;
@@ -49,7 +48,6 @@ namespace _vt {
         for (uint32_t i = sourceBufferCount; i < inputCount; i++) { sourceBuffers.push_back(sourceBuffers[sourceBufferCount-1]); }
 
         // write descriptors
-
         auto d1 = vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset);
         auto d2 = vk::DescriptorBufferInfo(info.bBufferViews, 0, VK_WHOLE_SIZE).setOffset(info.bufferViewByteOffset);
         auto d3 = vk::DescriptorBufferInfo(info.bBufferAccessors, 0, VK_WHOLE_SIZE).setOffset(info.bufferAccessorByteOffset);
