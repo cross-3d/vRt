@@ -131,8 +131,12 @@ if (MSVC)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest /arch:AVX2 /fp:strict /permissive- /Ot /W3 /NODEFAULTLIB:library") # Native compiler of Visual Studio 2017
     #set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}"")
 else()
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -Wa,-mbig-obj -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
-    set (CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -std=c1x   -march=skylake -fpermissive -lpthread -w -Wa,-mbig-obj -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
+    set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=c1x   -march=skylake -fpermissive -lpthread -w -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
+    if (WIN32)
+        set (CMAKE_CXX_FLAGS "${CMAK_CXX_FLAGS} -Wa,-mbig-obj")
+        set (CMAKE_C_FLAGS "${CMAK_C_FLAGS} -Wa,-mbig-obj")
+    endif()
 endif()
 
 
