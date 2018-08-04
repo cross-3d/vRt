@@ -12,7 +12,7 @@
 
 // notify compilers or IDE about Vulkan API ray tracing (vRt) library connection
 #define VRT_API_ENABLED
-constexpr const static inline auto VRT_USE_MORTON_32 = true;
+constexpr const static inline auto VRT_USE_MORTON_32 = false;
 
 // implementators
 #ifdef VRT_IMPLEMENTATION
