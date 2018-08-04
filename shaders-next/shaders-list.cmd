@@ -11,7 +11,7 @@ set OUTSHR=..\build\shaders\
 
 set NTVE=native\
 set VRTX=vertex\
-set RNDR=rayTracing\
+set RNDR=ray-tracing\
 set HLBV=hlBVH2\
 set RDXI=radix\
 set OUTP=output\
