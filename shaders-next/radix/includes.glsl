@@ -92,7 +92,7 @@ layout (std430, binding = 3, set = 0 )  restrict buffer HistogramB {uint Histogr
 layout (std430, binding = 4, set = 0 )  restrict buffer PrefixSumB {uint PrefixSum[]; };
 
 // push constant in radix sort
-layout(push_constant) uniform PushBlock { uint NumKeys; int Shift; } push_block;
+layout (push_constant) uniform PushBlock { uint NumKeys; int Shift; } push_block;
 
 // division of radix sort
 struct blocks_info { uint count; uint offset; uint limit; uint r0; };

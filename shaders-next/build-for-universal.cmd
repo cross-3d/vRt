@@ -4,8 +4,8 @@
 set PATH=C:\Users\elvir\msvc\glslang\bin;%PATH%
 
 cd %~dp0
-  set CFLAGSV= --target-env vulkan1.1 --client vulkan100 -d -t --aml --nsf -DUNIVERSAL_PLATFORM -DUSE_F32_BVH
-  
+set CFLAGSV= --target-env vulkan1.1 --client vulkan100 -d -t --aml --nsf -DUSE_MORTON_32 -DUSE_F32_BVH -DUNIVERSAL_PLATFORM
+
 set VNDR=universal
 call shaders-list.cmd
 pause

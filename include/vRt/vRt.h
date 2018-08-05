@@ -11,8 +11,7 @@
 #include "Parts/API.inl"
 
 // notify compilers or IDE about Vulkan API ray tracing (vRt) library connection
-#define VRT_API_ENABLED
-constexpr const static inline auto VRT_USE_MORTON_32 = false;
+#define VRT_API_ENABLED VK_TRUE
 
 // implementators
 #ifdef VRT_IMPLEMENTATION
