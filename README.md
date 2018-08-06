@@ -52,12 +52,8 @@ We still working on forming of ray tracing API.
 
 ### August 2018 ("Helium")
 
-- Add V-EZ support, add interoperability with V-EZ by GPUOpen
-- Make support of all Vulkan API 1.1 (or newer) supported platforms
-- Add texturing, materials and PBR support and example
-- Make example renderer, based on hybrid ray tracing
-- Add controllers, update all possible libraries
-- Add reflections and shadows examples
+- Make first example renderer, based on hybrid ray tracing, with shadows and reflections
+- Improve interoperability and portability
 
 ### 2018 Q4 ("Lithium")
 
