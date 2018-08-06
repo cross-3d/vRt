@@ -47,7 +47,7 @@ We still working on forming of ray tracing API.
 
 ### About old project... 
 
-- https://github.com/archive-w8th/satellite-deprecated/blob/99c8a86085b45e0a3a6b37e4afdc841510a142d6/README.md (7 Jun 2018)
+- [Satellite README](https://github.com/archive-w8th/satellite-deprecated/blob/99c8a86085b45e0a3a6b37e4afdc841510a142d6/README.md) (7 Jun 2018)
 
 ### August 2018 ("Helium")
 
