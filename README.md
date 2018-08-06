@@ -14,6 +14,7 @@
 - No depends by first GPU (but indev apps may have)
 - Support by common modern compilers (Visual Studio 2017, GCC 8.1)
 - Support by modern graphics/compute accelerators (NVidia Pascal, AMD Radeon Vega, next-gens...)
+- Roundly 100Mrays/s for primary rays in top GPU's (alike RX Vega 64, NVidia Titan Volta)
 
 ## Repositories
 
