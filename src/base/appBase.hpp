@@ -33,57 +33,49 @@ namespace NSM
         // instance extensions
         std::vector<const char *> wantedExtensions = {
             "VK_KHR_get_physical_device_properties2",
-            "VK_EXT_debug_report"
+            "VK_KHR_get_surface_capabilities2",
+            "VK_EXT_direct_mode_display",
+            "VK_EXT_swapchain_colorspace",
+            "VK_KHR_surface"
         };
 
         // default device extensions
         std::vector<const char *> wantedDeviceExtensions = {
             "VK_EXT_swapchain_colorspace",
-            "VK_EXT_direct_mode_display",
-            "VK_EXT_debug_marker",
-            "VK_EXT_debug_report",
-            "VK_EXT_sample_locations",
-            "VK_EXT_shader_subgroup_vote",
-            "VK_EXT_shader_subgroup_ballot",
             "VK_EXT_external_memory_host",
+            "VK_EXT_sample_locations",
             "VK_EXT_conservative_rasterization",
             "VK_EXT_hdr_metadata",
             "VK_EXT_queue_family_foreign",
             "VK_EXT_sampler_filter_minmax",
 
-            "VK_KHR_8bit_storage",
-            "VK_KHR_16bit_storage",
             "VK_AMD_gpu_shader_int16",
             "VK_AMD_gpu_shader_half_float",
+            "VK_KHR_16bit_storage",
+            "VK_KHR_8bit_storage",
 
+            "VK_AMD_gcn_shader",
             "VK_AMD_buffer_marker",
             "VK_AMD_shader_info",
-            "VK_AMD_shader_ballot",
             "VK_AMD_texture_gather_bias_lod",
             "VK_AMD_shader_image_load_store_lod",
-            "VK_AMD_gcn_shader",
             "VK_AMD_shader_trinary_minmax",
             "VK_AMD_draw_indirect_count",
 
-            "VK_KHR_descriptor_update_template",
-            "VK_KHR_dedicated_allocation",
             "VK_KHR_incremental_present",
             "VK_KHR_push_descriptor",
             "VK_KHR_swapchain",
             "VK_KHR_sampler_ycbcr_conversion",
             "VK_KHR_image_format_list",
-            "VK_KHR_sampler_mirror_clamp_to_edge",
             "VK_KHR_shader_draw_parameters",
-            "VK_KHR_storage_buffer_storage_class",
             "VK_KHR_variable_pointers",
+            "VK_KHR_dedicated_allocation",
             "VK_KHR_relaxed_block_layout",
-            "VK_KHR_display"
-            "VK_KHR_display_swapchain"
-
+            "VK_KHR_descriptor_update_template",
+            "VK_KHR_sampler_mirror_clamp_to_edge",
+            "VK_KHR_storage_buffer_storage_class",
 
             "VK_KHR_get_memory_requirements2",
-            "VK_KHR_get_physical_device_properties2",
-            "VK_KHR_get_surface_capabilities2",
             "VK_KHR_bind_memory2",
             "VK_KHR_maintenance1",
             "VK_KHR_maintenance2",
