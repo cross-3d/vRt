@@ -1,7 +1,6 @@
 #ifndef _DRIVER_H
 #define _DRIVER_H
 
-
 // AMuDe extensions
 #ifdef ENABLE_AMD_INSTRUCTION_SET
 #extension GL_AMD_shader_trinary_minmax : enable
@@ -10,12 +9,12 @@
 #extension GL_AMD_gcn_shader : enable
 #extension GL_AMD_gpu_shader_half_float : enable
 #extension GL_AMD_gpu_shader_int16 : enable
-#extension GL_KHX_shader_explicit_arithmetic_types : enable
-#extension GL_EXT_shader_16bit_storage : require
-#extension GL_EXT_shader_8bit_storage : enable // nothing to implement?
 #endif
 
 // ARB and ext
+#extension GL_KHX_shader_explicit_arithmetic_types : enable
+#extension GL_EXT_shader_16bit_storage : require
+#extension GL_EXT_shader_8bit_storage : enable
 #extension GL_ARB_gpu_shader_int64 : enable
 #extension GL_EXT_control_flow_attributes : enable
 #extension GL_EXT_shader_image_load_formatted : enable

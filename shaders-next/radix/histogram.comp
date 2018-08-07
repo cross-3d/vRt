@@ -9,6 +9,7 @@ shared uint localHistogram[RADICES];
 
 // wide of 128 elements
 shared highp uint_rdc_wave_lcm _data[Wave_Size];
+//uint_rdc_wave_lcm _data[Wave_Size];
 
 #define key _data[Lane_Idx]
 
@@ -38,12 +39,13 @@ void main() {
         IFALL(all(not(validAddress))) break;
 
         if (Wave_Idx == 0) {
-            key = p2x_8(uvec2(
+            key = uint_rdc_wave_lcm(p2x_8(uvec2(
+            //key = (p2x_8(uvec2(
                 BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
                 BFE(validAddress.y ? KeyIn[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
                 //validAddress.x ? BFE(KeyIn[addr.x], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK,
                 //validAddress.y ? BFE(KeyIn[addr.y], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK
-            ));
+            )));
         }
         LGROUP_BARRIER
 
