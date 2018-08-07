@@ -11,7 +11,7 @@
 #extension GL_AMD_gpu_shader_half_float : enable
 #extension GL_AMD_gpu_shader_int16 : enable
 #extension GL_KHX_shader_explicit_arithmetic_types : enable
-#extension GL_EXT_shader_16bit_storage : enable
+#extension GL_EXT_shader_16bit_storage : require
 #extension GL_EXT_shader_8bit_storage : enable // nothing to implement?
 #endif
 
@@ -21,10 +21,10 @@
 #extension GL_EXT_shader_image_load_formatted : enable
 
 // subgroup operations
-#extension GL_KHR_shader_subgroup_basic            : enable
-#extension GL_KHR_shader_subgroup_vote             : enable
+#extension GL_KHR_shader_subgroup_basic            : require
+#extension GL_KHR_shader_subgroup_vote             : require
+#extension GL_KHR_shader_subgroup_ballot           : require
 #extension GL_KHR_shader_subgroup_arithmetic       : enable
-#extension GL_KHR_shader_subgroup_ballot           : enable
 #extension GL_KHR_shader_subgroup_shuffle          : enable
 #extension GL_KHR_shader_subgroup_shuffle_relative : enable
 #extension GL_KHR_shader_subgroup_clustered        : enable
