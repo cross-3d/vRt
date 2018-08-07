@@ -31,13 +31,13 @@
 
 
     #ifdef VERTEX_FILLING
-    layout ( binding = 3, set = VTX_SET, rgba32f  ) uniform imageBuffer lvtxIn;
+    layout ( binding = 3, set = VTX_SET, rgba32f  ) coherent uniform imageBuffer lvtxIn;
     #else
     layout ( binding = 3, set = VTX_SET           ) readonly uniform imageBuffer lvtxIn;
     #endif
 
     #ifdef LEAF_GEN
-    layout ( binding = 5, set = VTX_SET           ) uniform imageBuffer lvtx;
+    layout ( binding = 5, set = VTX_SET           ) coherent uniform imageBuffer lvtx;
     #else
     layout ( binding = 5, set = VTX_SET, rgba32f  ) readonly uniform imageBuffer lvtx;
     #endif
@@ -52,7 +52,7 @@
 
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION))
 // bvh uniform unified
-layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB { 
+layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { 
     mat4x4 transform;
     mat4x4 transformInv;
     mat4x4 projection;
@@ -69,9 +69,9 @@ layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB {
     layout ( binding = 1, set = 1 ) uniform isamplerBuffer bvhMeta;
 
     #ifdef USE_F32_BVH
-    layout ( binding = 2, set = 1, std430 ) readonly buffer bvhBoxesB { mediump vec4 bvhBoxes[][4]; };
+    layout ( binding = 2, set = 1, std430 ) readonly coherent buffer bvhBoxesB { mediump vec4 bvhBoxes[][4]; };
     #else
-    layout ( binding = 2, set = 1, std430 ) readonly buffer bvhBoxesB { f16vec4 bvhBoxes[][4]; };
+    layout ( binding = 2, set = 1, std430 ) readonly coherent buffer bvhBoxesB { f16vec4 bvhBoxes[][4]; };
     //layout ( binding = 2, set = 1, std430 ) readonly buffer bvhBoxesB { uvec2 bvhBoxes[][4]; }; 
     #endif
 #endif
