@@ -30,8 +30,8 @@ bool validateTexture(const uint tbinding) {
     return _binding >= 0;
 }
 
-//#define vSampler2D(m) sampler2D(textures[vtexures[nonuniformEXT(m)].x], samplers[vtexures[nonuniformEXT(m)].y]) // reserved
-#define vSampler2D(m) sampler2D(textures[vtexures[m].x], samplers[vtexures[m].y])
+#define vSampler2D(m) sampler2D(textures[vtexures[nonuniformEXT(m)].x], samplers[vtexures[nonuniformEXT(m)].y]) // reserved
+//#define vSampler2D(m) sampler2D(textures[vtexures[m].x], samplers[vtexures[m].y])
 #define fetchTexture(tbinding, tcoord) textureLod(vSampler2D(tbinding-1), tcoord, 0)
 #define fetchTextureOffset(tbinding, tcoord, toffset) textureLodOffset(vSampler2D(tbinding-1), tcoord, 0, toffset)
 

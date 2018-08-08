@@ -131,15 +131,15 @@ void main() {
             vec3 pV = normalize(tbn * (-viewVec * hit.uvt.z));
             float hW = 0.f;
 
-#ifndef PLAIN_BINDLESS_TEXTURE_FETCH
-            bool wasTextured = false;
-            [[unroll]]
-            for (int wl=0;wl<Wave_Size_RT;wl++) {
-                //IFALL(wasTextured) break;
-                if (wasTextured) break;
-                if (!wasTextured && readLane(matID, wl) == matID) { // don't occupy warpy
-                    wasTextured = true;
-#endif
+//#ifndef PLAIN_BINDLESS_TEXTURE_FETCH
+//            bool wasTextured = false;
+//            [[unroll]]
+//            for (int wl=0;wl<Wave_Size_RT;wl++) {
+//                //IFALL(wasTextured) break;
+//                if (wasTextured) break;
+//                if (!wasTextured && readLane(matID, wl) == matID) { // don't occupy warpy
+//                    wasTextured = true;
+//#endif
 #ifdef ENABLE_POM
                     texcoord = parallaxMapping(pV, texcoord, hW);
 #endif
@@ -147,11 +147,13 @@ void main() {
                     textured.diffuse = fetchDiffuse(texcoord);
                     textured.specular = fetchSpecular(texcoord);
                     textured.emissive = fetchEmission(texcoord);
-#ifndef PLAIN_BINDLESS_TEXTURE_FETCH
-                }
-            }
+//#ifndef PLAIN_BINDLESS_TEXTURE_FETCH
+//                }
+//            }
+//            SB_BARRIER
+//#endif
+
             SB_BARRIER
-#endif
 
             vec4 diffuse = textured.diffuse; diffuse.xyz = toLinear(max(diffuse.xyz, vec3(0.f)));
             vec4 emission = textured.emissive; emission.xyz = toLinear(max(emission.xyz, vec3(0.f)));
