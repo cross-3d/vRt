@@ -158,22 +158,18 @@ file (GLOB RSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCES_LIST})
 set (APPLICATION_NAME helloTriangle)
 add_executable(${APPLICATION_NAME} src/examples/helloTriangle.cpp ${RSOURCES})
 target_link_libraries(${APPLICATION_NAME} ${LIBS})
-foreach(source IN LISTS RSOURCES)
-    get_filename_component(source_path "${source}" PATH)
-    string(REPLACE "/" "\\" source_path_msvc "${source_path}")
-    source_group("${source_path_msvc}" FILES "${source}")
-endforeach()
 
 
 # make gltfBasic
 set (APPLICATION_NAME gltfBasic)
 add_executable(${APPLICATION_NAME} src/examples/gltfBasic.cpp ${RSOURCES})
-target_link_libraries(${APPLICATION_NAME} ${LIBS})
-foreach(source IN LISTS RSOURCES)
-    get_filename_component(source_path "${source}" PATH)
-    string(REPLACE "/" "\\" source_path_msvc "${source_path}")
-    source_group("${source_path_msvc}" FILES "${source}")
-endforeach()
+target_link_libraries(${APPLICATION_NAME} ${LIBS} vRt)
+
+
+# make gltfPBR
+set (APPLICATION_NAME gltfPBR)
+add_executable(${APPLICATION_NAME} src/examples/gltfPBR.cpp ${RSOURCES})
+target_link_libraries(${APPLICATION_NAME} ${LIBS} vRt)
 
 
 # make static library
