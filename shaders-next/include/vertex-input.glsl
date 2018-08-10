@@ -50,19 +50,19 @@ int aNormalized(in uint bitfield) {
 }
 
 
-#ifdef INTEL_PLATFORM
-#define BFS bufferSpace
-#else
-#define BFS bufferSpace[bufferID]
-#endif
+//#ifdef INTEL_PLATFORM
+//#define BFS bufferSpace
+//#else
+#define BFS bufferSpace[nonuniformEXT(bufferID)]
+//#endif
 
 // input data of vertex instance
 //layout ( binding = 0, set = 1, std430 ) readonly buffer bufferSpaceB {INDEX16 bufferSpace[]; };
-#ifdef INTEL_PLATFORM
-layout ( binding = 0, set = 1 ) uniform usamplerBuffer bufferSpace;
-#else
+//#ifdef INTEL_PLATFORM
+//layout ( binding = 0, set = 1 ) uniform usamplerBuffer bufferSpace;
+//#else
 layout ( binding = 0, set = 1 ) uniform usamplerBuffer bufferSpace[8]; // vertex model v1.4
-#endif
+//#endif
 //layout ( binding = 1, set = 1, std430 ) readonly buffer VT_BUFFER_REGION {VtBufferRegion bufferRegions[]; };
 layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
 layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR {VtAccessor accessors[]; };

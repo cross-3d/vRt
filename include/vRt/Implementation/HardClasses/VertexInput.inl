@@ -41,7 +41,8 @@ namespace _vt {
 
         // bind input buffer sources
         const auto vendorName = _vtDevice->_vendorName;
-        const auto inputCount = vendorName == VT_VENDOR_INTEL ? 1u : 8u;
+        //const auto inputCount = vendorName == VT_VENDOR_INTEL ? 1u : 8u;
+        const auto inputCount = 8u;
         std::vector<vk::BufferView> sourceBuffers;
         const auto sourceBufferCount = std::min(info.sourceBufferCount, inputCount);
         for (uint32_t i = 0; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }
