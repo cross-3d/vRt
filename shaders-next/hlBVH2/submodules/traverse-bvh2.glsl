@@ -147,7 +147,11 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 //    traverseState.directInv.xyz = fvec3_(dirproj*inprec);
 //#endif
 
+#ifdef USE_F32_BVH
+    traverseState.directInv.xyz = fvec3_(dirproj);
+#else
     traverseState.directInv.xyz = fvec3_(dirproj)*One1024.xxx;
+#endif
     traverseState.minusOrig.xyz = fma(fvec3_(torig), fvec3_(dirproj), fvec3_(diffOffset.xxx));
     //traverseState.minusOrig.xyz = fvec3_(fma(torig, dirproj, diffOffset.xxx));
     traverseState.boxSide.xyz = bsgn;
@@ -257,5 +261,5 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     }
 
     // correction of hit distance
-    primitiveState.lastIntersection.z = max(fma(primitiveState.lastIntersection.z-diffOffset-1e-3f, 1.f/dirlen, 0.f), 1e-4f);
+    primitiveState.lastIntersection.z = max(fma(primitiveState.lastIntersection.z-diffOffset, 1.f/(dirlen*1.0009765625f), -1e-4f), 1e-4f);
 }
