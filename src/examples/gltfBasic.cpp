@@ -250,8 +250,12 @@ int main() {
     //////////////////////////////////////
 
     VtDeviceImage envImage;
-    VtDeviceImage dullImage;
     VkSampler dullSampler;
+    //VtDeviceImage dullImage;
+    //VkSampler dullSampler;
+    std::vector<VtDeviceImage> mImages;
+    std::vector<VkSampler> mSamplers;
+
     VtDeviceBuffer materialDescs;
     VtDeviceBuffer materialCombImages;
     VkDescriptorSet usrDescSet, vtxDescSet;
@@ -278,8 +282,119 @@ int main() {
         createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexBufferView) * model.bufferViews.size());
         createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024 * 1024);
         createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4) * 1024 * 1024);
+
+        // material buffers
+        createBufferFast(deviceQueue, materialDescs, vte::strided<VtAppMaterial>(128));
+        createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImage>(64));
     }
 
+    // create images
+    for (auto& I: model.images) 
+    {
+        mImages.push_back(VtDeviceImage{});
+        auto& image = mImages[mImages.size()-1];
+
+        VtDeviceImageCreateInfo dii;
+        //dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        dii.format = VK_FORMAT_R8G8B8A8_UNORM;
+        dii.familyIndex = deviceQueue->familyIndex;
+        dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+        dii.layout = VK_IMAGE_LAYOUT_GENERAL;
+        dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        dii.size = { uint32_t(I.width), uint32_t(I.height), 1 };
+        vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
+
+        writeIntoImage<uint8_t>(deviceQueue, I.image, image, 0);
+    }
+
+    // dispatch image barrier
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
+        for (auto& mI : mImages) { vtCmdImageBarrier(cmdBuf, mI); }
+    });
+
+
+
+    for (auto& S : model.samplers)
+    {
+        mSamplers.push_back(VkSampler{});
+        auto& sampler = mSamplers[mSamplers.size()-1];
+
+        // TODO: add full sampler support
+        vk::SamplerCreateInfo samplerInfo = {};
+        samplerInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
+        samplerInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
+        samplerInfo.minFilter = vk::Filter::eLinear;
+        samplerInfo.magFilter = vk::Filter::eLinear;
+        samplerInfo.compareEnable = false;
+
+        // create sampler
+        sampler = deviceQueue->device->logical.createSampler(samplerInfo);
+    }
+
+    {
+        std::vector<VtAppMaterial> materials;
+        for (auto& M : model.materials)
+        {
+            materials.push_back(VtAppMaterial{});
+            auto& material = materials[materials.size() - 1];
+            material.diffuse = glm::vec4(1.f);
+            material.diffuseTexture = 0;
+
+            if (M.values.find("baseColorTexture") != M.values.end()) material.diffuseTexture = M.values.at("baseColorTexture").TextureIndex() + 1;
+            if (M.values.find("emissiveTexture") != M.values.end()) material.emissiveTexture = M.values.at("emissiveTexture").TextureIndex() + 1;
+            if (M.values.find("normalTexture") != M.values.end()) material.roughness = M.values.at("normalTexture").TextureIndex() + 1;
+            if (M.values.find("metallicRoughnessTexture") != M.values.end()) material.specularTexture = M.values.at("metallicRoughnessTexture").TextureIndex() + 1;
+            if (M.values.find("baseColorFactor") != M.values.end()) material.diffuse = glm::vec4(glm::make_vec3(&M.values.at("baseColorFactor").number_array[0]), 1.0f);
+
+            material.specular.z = M.values.at("metallicFactor").number_value;
+            material.specular.y = M.values.at("roughnessFactor").number_value;
+        }
+        writeIntoBuffer<VtAppMaterial>(deviceQueue, materials, materialDescs, 0);
+    }
+
+
+
+    {
+        std::vector<VtVirtualCombinedImage> textures;
+        for (auto& T : model.textures)
+        {
+            textures.push_back(VtVirtualCombinedImage{});
+            textures[textures.size() - 1].setTextureID(T.source).setSamplerID(T.sampler);
+        }
+        writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, textures, materialCombImages, 0);
+    }
+
+    {
+        // create dull sampler
+        vk::SamplerCreateInfo samplerInfo;
+        samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;
+        samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;
+        samplerInfo.minFilter = vk::Filter::eLinear;
+        samplerInfo.magFilter = vk::Filter::eLinear;
+        samplerInfo.compareEnable = false;
+        dullSampler = deviceQueue->device->logical.createSampler(samplerInfo); // create sampler
+    }
+
+    {
+        // create env image
+        VtDeviceImageCreateInfo dii;
+        dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        dii.familyIndex = deviceQueue->familyIndex;
+        dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+        dii.layout = VK_IMAGE_LAYOUT_GENERAL;
+        dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        dii.size = { 2, 2, 1 };
+        vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &envImage);
+
+        // dispatch image barrier
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
+            vtCmdImageBarrier(cmdBuf, envImage);
+        });
+    }
+
+
+
+    /*
     {
         // create dull image
         VtDeviceImageCreateInfo dii;
@@ -309,9 +424,6 @@ int main() {
     }
 
     {
-        // create dull material description set
-        createBufferFast(deviceQueue, materialDescs, vte::strided<VtAppMaterial>(1));
-
         // set first buffer data
         VtAppMaterial redEmission, greenEmission;
         greenEmission.emissive = glm::vec4(0.1f, 0.5f, 0.1f, 1.f);
@@ -319,34 +431,14 @@ int main() {
         writeIntoBuffer<VtAppMaterial>(deviceQueue, { greenEmission, redEmission }, materialDescs, 0);
     }
 
-
     {
-        // create dull material description set
-        createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImage>(1));
 
         // set first buffer data
         VtVirtualCombinedImage initialMaterialDesc;
         writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, { initialMaterialDesc }, materialCombImages,  0);
     }
+    */
 
-
-
-    {
-        // create env image
-        VtDeviceImageCreateInfo dii;
-        dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-        dii.familyIndex = deviceQueue->familyIndex;
-        dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
-        dii.layout = VK_IMAGE_LAYOUT_GENERAL;
-        dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-        dii.size = { 2, 2, 1 };
-        vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &envImage);
-
-        // dispatch image barrier
-        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
-            vtCmdImageBarrier(cmdBuf, envImage);
-        });
-    }
 
 
     glm::vec3 eyePos = glm::vec3(0.f, 10.5f, -40.6f).zyx();
@@ -471,13 +563,16 @@ int main() {
     }
 
     {
+        std::vector<VkDescriptorImageInfo> dsi;
+        for (auto& Tr: mImages) { dsi.push_back(Tr->_descriptorInfo()); }
+
         // create material set
         VtMaterialSetCreateInfo mtsi;
-        mtsi.imageCount = 1; mtsi.pImages = &dullImage->_descriptorInfo();
-        mtsi.samplerCount = 1; mtsi.pSamplers = (VkSampler *)&dullSampler;
+        mtsi.imageCount = dsi.size(); mtsi.pImages = dsi.data();
+        mtsi.samplerCount = mSamplers.size(); mtsi.pSamplers = (VkSampler *)mSamplers.data();
         mtsi.bMaterialDescriptionsBuffer = materialDescs;
         mtsi.bImageSamplerCombinations = materialCombImages;
-        mtsi.materialCount = 2;
+        mtsi.materialCount = model.materials.size();
         vtCreateMaterialSet(deviceQueue->device->rtDev, &mtsi, &materialSet);
     }
 

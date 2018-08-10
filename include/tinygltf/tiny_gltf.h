@@ -1292,7 +1292,7 @@ bool LoadImageData(Image *image, std::string *err, int req_width,
   // image->uri references
   // an image file, it should be left as it is. Image loading should not be
   // mandatory (to support other formats)
-  unsigned char *data = stbi_load_from_memory(bytes, size, &w, &h, &comp, 0);
+  unsigned char *data = stbi_load_from_memory(bytes, size, &w, &h, &comp, STBI_rgb_alpha);
   if (!data) {
     if (err) {
       (*err) += "Unknown image format.\n";

@@ -155,7 +155,7 @@ void main() {
 
             SB_BARRIER
 
-            vec4 diffuse = textured.diffuse; diffuse.xyz = toLinear(max(diffuse.xyz, vec3(0.f)));
+            vec4 diffuse = textured.diffuse; //diffuse.xyz = toLinear(max(diffuse.xyz, vec3(0.f)));
             vec4 emission = textured.emissive; emission.xyz = toLinear(max(emission.xyz, vec3(0.f)));
             vec4 spc = clamp01(textured.specular);
 
@@ -179,8 +179,9 @@ void main() {
 
             vec3 fresnelColor = clamp01(fmix(max_fresnel_color * 0.9f, min_fresnel_color * 0.04f, fresnel.xxx));
             vec3 specularColor = clamp01(mix(fresnelColor, diffuse.xyz, metallic.xxx)); // use correct specular
-            diffuse.xyz *= (1.f - metallic); // dim diffuse by metallic
             vec4 specularGlossiness = vec4(specularColor, roughness);
+            
+            //diffuse.xyz *= (1.f - metallic); // dim diffuse by metallic
 
             // normalize normal again
             hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz);
@@ -191,7 +192,8 @@ void main() {
             // triangle intersection test
             IFANY (cameraUniform.variant == 1) {
                 //hitp.emission = vec4(vec3(0.5f, 0.5f, 1.0f), 1.f);
-                hitp.emission = vec4(hitp.normalHeight.xyz * 0.5f + 0.5f, 1.f);
+                //hitp.emission = vec4(hitp.normalHeight.xyz * 0.5f + 0.5f, 1.f);
+                hitp.emission = vec4(hitp.albedo);
             } else {
                 hitp.emission = vec4(imageLoad(attributes, makeAttribID(hit.attribID, VCOLOR_TID)).xyz, 1.f);
             }

@@ -26,12 +26,11 @@ int matID = -1;
 
 // validate texture object
 bool validateTexture(const uint tbinding) {
-    int _binding = int(tbinding)-1;
-    return _binding >= 0;
+    return int(tbinding) > 0;
 }
 
-#define vSampler2D(m) sampler2D(textures[vtexures[nonuniformEXT(m)].x], samplers[vtexures[nonuniformEXT(m)].y]) // reserved
-//#define vSampler2D(m) sampler2D(textures[vtexures[m].x], samplers[vtexures[m].y])
+#define vSampler2D(m) sampler2D(textures[vtexures[nonuniformEXT(m)].x-1], samplers[vtexures[nonuniformEXT(m)].y-1]) // reserved
+//#define vSampler2D(m) sampler2D(textures[vtexures[m].x-1], samplers[vtexures[m].y-1])
 #define fetchTexture(tbinding, tcoord) textureLod(vSampler2D(tbinding-1), tcoord, 0)
 #define fetchTextureOffset(tbinding, tcoord, toffset) textureLodOffset(vSampler2D(tbinding-1), tcoord, 0, toffset)
 

@@ -91,7 +91,7 @@ namespace vrt { // store in official namespace
         uint32_t primitiveOffset = 0;
         uint32_t attributeOffset = 0;
         uint32_t attributeCount = 8;
-        uint32_t materialAccessor = 0;
+        uint32_t materialAccessor = 0xFFFFFFFF;
 
         // default hit group
         union {

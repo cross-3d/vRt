@@ -39,7 +39,7 @@ namespace _vt {
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_bitfieldBuffer);
 
             bfi.bufferSize = maxPrimitives * sizeof(uint32_t);
-            bfi.format = VK_FORMAT_UNDEFINED;
+            bfi.format = VK_FORMAT_R32_SINT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_materialBuffer);
 
             bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull;
