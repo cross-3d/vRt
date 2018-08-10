@@ -15,13 +15,14 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D ColorOutput;
 LOCAL_SIZE_LAYOUT;
 
 #define wgs gl_NumWorkGroups.x
-#define wsize rayTypedCounterRead[stageUniform.currentGroup]
+//#define wsize rayTypedCounterRead[stageUniform.currentGroup]
 
 #define hitp hitPayload[hitpId]
 #define hit hits[hitIdc]
 
 // 
 void main() {
+    const int wsize = min(rayTypedCounterRead[stageUniform.currentGroup], MAX_RAYS);
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     [[unroll, dependency_length(4)]]
     for (uint w=0;w<wcount;w+=wgs) {
