@@ -26,9 +26,10 @@ VtHitPayload hitp;
 LOCAL_SIZE_LAYOUT;
 
 #define wgs gl_NumWorkGroups.x
-#define wsize missHitTypedCounterRead[stageUniform.currentGroup]
+//#define wsize missHitTypedCounterRead[stageUniform.currentGroup]
 
 void main() {
+    const int wsize = min(missHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS);
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     [[unroll, dependency_length(4)]]
     for (uint w=0;w<wcount;w+=wgs) {

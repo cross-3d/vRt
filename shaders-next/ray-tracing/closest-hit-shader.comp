@@ -74,10 +74,11 @@ layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
 
 
 #define wgs gl_NumWorkGroups.x
-#define wsize closestHitTypedCounterRead[stageUniform.currentGroup]
 
 
 void main() {
+    const int wsize = min(closestHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS);
+
     // constants
     const float IOR = 1.400f;
     const float diffuse_min_importance = 0.5f;

@@ -18,9 +18,11 @@
 
 LOCAL_SIZE_LAYOUT;
 
-#define wsize closestHitCounterCurrent
+//#define wsize closestHitCounterCurrent
 
 void main() {
+    const int wsize = min(closestHitCounterCurrent, MAX_HITS);
+
     // accumulate closest hits
     if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { add(closestHitCounter, closestHitCounterCurrent); }
     SB_BARRIER
