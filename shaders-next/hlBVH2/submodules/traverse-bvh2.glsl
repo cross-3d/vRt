@@ -133,7 +133,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2,bndsf2,bndsf2), nears.x, fars.x)) ? entry : -1; 
     
     //float diffOffset = -(1e-3f+max(nears.x, 0.f));
-    float diffOffset = max(nears.x, 0.f);
+    float diffOffset = -max(nears.x, 0.f);
     primitiveState.orig = fma(direct, diffOffset.xxx, torig);//vec4(fma(direct, diffOffset.xxx, torig), 1.f);
     primitiveState.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO), primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z, dirlen, diffOffset);
 
@@ -257,5 +257,5 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     }
 
     // correction of hit distance
-    primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z-diffOffset-1e-3f, 1.f/dirlen, 0.f);
+    primitiveState.lastIntersection.z = max(fma(primitiveState.lastIntersection.z-diffOffset-1e-3f, 1.f/dirlen, 0.f), 1e-4f);
 }

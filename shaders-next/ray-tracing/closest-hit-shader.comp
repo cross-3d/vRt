@@ -180,6 +180,7 @@ void main() {
                 //hitp.emission = vec4(hitp.normalHeight.xyz * 0.5f + 0.5f, 1.f);
                 hitp.emission = vec4(hitp.albedo);
             } else {
+                hitp.specularGlossiness = vec4(0.f);
                 hitp.emission = vec4(imageLoad(attributes, makeAttribID(hit.attribID, VCOLOR_TID)).xyz, 1.f);
             }
 
