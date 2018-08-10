@@ -42,7 +42,7 @@ void main() {
         
         #define triverts trivertsUnit
         const bbox_t lbox = calcTriBox(triverts);
-        bcenter.w = fma(distance(lbox.mn, lbox.mx), SQRT_OF_ONE_THIRD, -1.f);
+        bcenter.w = fma(sqrt(dot(lbox.mx-lbox.mn,lbox.mx-lbox.mn) * 0.08333333333333333f), 2.0f, -1.f);
 
         {
 #ifdef VTX_TRANSPLIT
