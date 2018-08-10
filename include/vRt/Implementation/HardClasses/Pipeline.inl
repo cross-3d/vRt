@@ -73,12 +73,12 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayBuffer);
 
 
-                bfi.bufferSize = rayCount * 4ull * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupIndicesBuffer);
 
 
-                bfi.bufferSize = rayCount * 4ull * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupIndicesBufferRead);
 

@@ -767,6 +767,9 @@ int main() {
     }
 
     {
+        // use reflectionss for test
+        const uint32_t iterationCount = 2;
+
         // make ray tracing command buffer
         rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
@@ -776,7 +779,7 @@ int main() {
         vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
         vtCmdBindAccelerator(qRtCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qRtCmdBuf, vertexAssembly);
-        vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight);
+        vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, iterationCount);
         vkEndCommandBuffer(qRtCmdBuf);
     }
 

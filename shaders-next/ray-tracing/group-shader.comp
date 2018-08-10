@@ -17,6 +17,9 @@ LOCAL_SIZE_LAYOUT;
 #define wgs gl_NumWorkGroups.x
 #define wsize rayTypedCounterRead[stageUniform.currentGroup]
 
+#define hitp hitPayload[hitpId]
+#define hit hits[hitIdc]
+
 // 
 void main() {
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
@@ -24,20 +27,41 @@ void main() {
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        int rayID = rayGroupIndicesRead[globalID*4+stageUniform.currentGroup]-1;
+        int rayID = rayGroupIndicesRead[globalID*5+(stageUniform.currentGroup+1)]-1;
         bool overflow = globalID >= wsize || globalID < 0 || rayID < 0;
 
         // get ray by id
-        VtRay ray = vtFetchRay(rayID);
+        VtRay ray = rays[rayID];//vtFetchRay(rayID);
         int hitIdc = vtFetchHitIdc(rayID);
-        vec4 emisson = hitPayload[hits[hitIdc].payloadID-1].emission;
+        int hitpId = hits[hitIdc].payloadID-1;
+        vec4 emisson = hitp.emission; //* vec4(1.f - hitp.specularGlossiness.xyz, 1.f);
 
         // get output image 2D coord
         uvec2 icoord = vtFetchIndex(rayID);
 
         // save result of ray tracing by ray saved indice
         //if (!overflow) { imageStore(ColorOutput, icoord, vec4(f16_f32(ray.dcolor).xyz, 1.f)); }
-        if (!overflow) { imageStore(ColorOutput, ivec2(icoord), vec4(emisson.xyz, 1.f)); }
+        
+        // add support for multi-passing
+        if (!overflow) {
+            const vec4 bcolor = imageLoad(ColorOutput, ivec2(icoord));
+            imageStore(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz, f16_f32(ray.dcolor).xyz, bcolor.xyz), 1.f));
+
+            // debug
+            //if (stageUniform.iteration == 1) imageStore(ColorOutput, ivec2(icoord), vec4(1.f, 0.f, 1.f, 1.f) * vec4(f16_f32(ray.dcolor).xyz, 1.f));
+            //if (stageUniform.iteration == 1) imageStore(ColorOutput, ivec2(icoord), vec4(f16_f32(ray.dcolor).xyz * (fma(dcts(ray.cdirect.xy).xyz, 0.5f.xxx, 0.5f.xxx)), 1.f));
+
+            // generate secondary rays (reflections)
+            VtRay newray = ray;
+            newray.origin.xyz = fma(dcts(newray.cdirect.xy), hit.uvt.zzz, newray.origin.xyz);
+            newray.cdirect.xy = lcts(reflect(dcts(newray.cdirect.xy), hitp.normalHeight.xyz));
+            writeColor(newray.dcolor, vec4(f16_f32(newray.dcolor).xyz * hitp.specularGlossiness.xyz, 1.f));
+            
+            // add ray error offset
+            newray.origin.xyz = fma(dcts(newray.cdirect.xy), 5e-4f.xxx, newray.origin.xyz);
+            vtReuseRays(newray, icoord.xy, 0, rayID);
+            //vtEmitRays(newray, icoord.xy, 0);
+        }
     }
 
     LGROUP_BARRIER;

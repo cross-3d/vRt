@@ -25,8 +25,11 @@
 
 LOCAL_SIZE_LAYOUT;
 
+//int RTP(in uint groupID) { return groupID < 4 ? rayTypedCounterRead[groupID] : 0; };
 void main() {
-    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    //const uint wsize = uint(subgroupAdd(RTP(Lane_Idx))); // use subgroup for fast getting of all groups count
+    //const uint wsize = rayCounter;
+    const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
     traverseState.cacheID = int(gl_GlobalInvocationID.x);
 
     [[unroll, dependency_length(4)]]
@@ -36,9 +39,8 @@ void main() {
         bool overflow = it >= wsize; IFALL(overflow) break;
 
         // do BVH traversing 
-        //currentRayTmp = rays[it]; // fix SPIR-V error
-        int hid = vtFetchHitIdc(it);
-        traverseBvh2(!overflow, hid, rays[it].origin.xyz, rays[it].cdirect.xy);
+        int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID);
+        traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
         if (!overflow) { // verify intersection
             const int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
             if (hid < 0) hid = it;
@@ -48,7 +50,7 @@ void main() {
 #else
             VtHitData hit;
 #endif
-            hit.rayID = it+1;
+            hit.rayID = rayID+1;
             hit.uvt = primitiveState.lastIntersection;
             hit.payloadID = 0;
             //hit.materialID = vmaterials[triID];
@@ -59,11 +61,14 @@ void main() {
 #endif
 
             // identify intersection
-            imageStore(rayLink, it, uvec4(hid+1, imageLoad(rayLink, it).y, 0u.xx));
+            imageStore(rayLink, rayID, uvec4(hid+1, imageLoad(rayLink, rayID).y, 0u.xx));
             IF (triID >= 0) {
-                hits[hid].attribID = vtVerifyClosestHit(hid)+1; // better link directly, because extra atomics (even with subgroups) also hits to performances
+                const int gID = 0;
+                hits[hid].attribID = vtVerifyClosestHit(hid, -1)+1;  // better link directly, because extra atomics (even with subgroups) also hits to performances
+                vtVerifyClosestHit(hid, gID); // add hit to group
             } else {
-                const int rID = 0; vtVerifyMissedHit(hid, rID);
+                const int rID = 0; 
+                vtVerifyMissedHit(hid, rID);
             }
         }
     }

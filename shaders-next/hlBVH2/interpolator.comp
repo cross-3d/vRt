@@ -31,7 +31,7 @@ void main() {
         SB_BARRIER
         int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         bool overflow = globalID >= wsize; IFALL(overflow) break;
-        int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID);
+        int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
         
 #ifdef DMA_HIT
         #define hit hits[hitID]

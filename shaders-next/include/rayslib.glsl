@@ -90,17 +90,25 @@ int atomicIncPayloadHitCount() {return atomicIncVtCounters(5);}
 int atomicIncblockSpaceCount() {return atomicIncVtCounters(6);}
 int atomicIncAttribCount() {return atomicIncVtCounters(7);}
 
-// alpha version of low level ray emitter
-int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint type) {
-    const int rayID = atomicIncRayCount();
+
+
+
+int vtReuseRays(in VtRay ray, in uvec2 c2d, in uint type, in int rayID) {
     parameteri(RAY_TYPE, ray.dcolor.y, int(type));
     
-    rays[rayID] = ray; 
+    int rID = atomicIncRayCount();
+    rayID = rayID < 0 ? rID : rayID; rays[rayID] = ray;
     imageStore(rayLink, rayID, uvec4(0u, p2x_16(c2d), 0u.xx));
     int gID = atomicIncRayTypedCount(type);
-    if (gID < stageUniform.maxRayCount) rayGroupIndices[gID*4+type] = (rayID+1);
+    if (gID < stageUniform.maxRayCount) rayGroupIndices[gID*5+(type+1)] = (rayID+1);
+    if (rID < stageUniform.maxRayCount) rayGroupIndices[rID*5] = (rayID+1);
     return rayID;
 }
+
+int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint type) {
+    return vtReuseRays(ray, c2d, type, -1);
+}
+
 
 
 int vtFetchHitIdc(in int lidx) {
@@ -113,9 +121,14 @@ uvec2 vtFetchIndex(in int lidx) {
 }
 
 
-VtRay vtFetchRay(in int lidx) {
-    return rays[lidx];
+int vtRayIdx(in int lidx){
+    return (rayGroupIndices[lidx*5]-1);
+    //return lidx;
 }
+
+//VtRay vtFetchRay(in int lidx) {
+//    return rays[vtRayIdx(lidx)];
+//}
 
 
 int vtVerifyClosestHit(in int closestId, in int g) {
@@ -133,10 +146,5 @@ int vtVerifyMissedHit(in int missId, in int g) {
 
 int vtClosestId(in int id, in int g) {return closestHits[id*5+(g+1)]-1; }
 int vtMissId(in int id, in int g) { return missHits[id*5+(g+1)]-1; }
-int vtVerifyClosestHit(in int closestId) { int id = atomicIncClosestHitCount(); closestHits[id*5] = closestId+1; return id; }
-int vtVerifyMissedHit(in int missId) { int id = atomicIncMissHitCount(); missHits[id*5] = missId+1; return id; }
-int vtClosestId(in int id) { return vtClosestId(id, -1); }
-int vtMissId(in int id) { return vtMissId(id, -1); }
-
 
 #endif
