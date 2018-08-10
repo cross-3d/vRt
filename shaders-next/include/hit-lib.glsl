@@ -2,11 +2,11 @@
 #define _HITLIB_H
 
 #define SETS_DESC_SET_ID 1
-const uint MAX_TEXTURES = 64, MAX_SAMPLERS = 16;
+const uint MAX_IMAGES = 256, MAX_SAMPLERS = 16;
 
 
 // textrue/sampler set
-layout ( binding = 0, set = SETS_DESC_SET_ID ) uniform texture2D textures[MAX_TEXTURES];
+layout ( binding = 0, set = SETS_DESC_SET_ID ) uniform texture2D images[MAX_IMAGES];
 layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[MAX_SAMPLERS];
 
 // material set (in main descriptor set)
@@ -29,8 +29,8 @@ bool validateTexture(const uint tbinding) {
     return int(tbinding) > 0;
 }
 
-#define vSampler2D(m) sampler2D(textures[vtexures[nonuniformEXT(m)].x-1], samplers[vtexures[nonuniformEXT(m)].y-1]) // reserved
-//#define vSampler2D(m) sampler2D(textures[vtexures[m].x-1], samplers[vtexures[m].y-1])
+#define vSampler2D(m) sampler2D(images[vtexures[nonuniformEXT(m)].x-1], samplers[vtexures[nonuniformEXT(m)].y-1]) // reserved
+//#define vSampler2D(m) sampler2D(images[vtexures[m].x-1], samplers[vtexures[m].y-1])
 #define fetchTexture(tbinding, tcoord) textureLod(vSampler2D(tbinding-1), tcoord, 0)
 #define fetchTextureOffset(tbinding, tcoord, toffset) textureLodOffset(vSampler2D(tbinding-1), tcoord, 0, toffset)
 
@@ -113,8 +113,8 @@ vec3 getNormalMapping(in vec2 texcoordi) {
 
     vec3 normal = vec3(0.f,0.f,1.f);
     IF (equalF(tc.x, tc.y) & equalF(tc.x, tc.z)) {
-        //vec2 txs = 1.f/textureSize(sampler2D(textures[tbinding], samplers[0]), 0);
-        vec2 txs = 1.f/textureSize(textures[tbinding], 0);
+        //vec2 txs = 1.f/textureSize(sampler2D(images[tbinding], samplers[0]), 0);
+        vec2 txs = 1.f/textureSize(images[tbinding], 0);
         vec4 tx4 = vec4(-txs.xy, txs.xy)*0.5f;
         vec4 txu = vec4(-1.f,-1.f,1.f,1.f)*0.5f;
 
