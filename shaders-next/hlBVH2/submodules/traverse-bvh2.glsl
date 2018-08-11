@@ -261,5 +261,5 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     }
 
     // correction of hit distance
-    primitiveState.lastIntersection.z = max(fma(primitiveState.lastIntersection.z-diffOffset, 1.f/(dirlen*1.0009765625f), -1e-4f), 1e-4f);
+    primitiveState.lastIntersection.z = max(fma(primitiveState.lastIntersection.z-diffOffset, 1.f/(dirlen*1.0009765625f), 1e-4f), 1e-4f);
 }
