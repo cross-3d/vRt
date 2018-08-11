@@ -63,9 +63,8 @@ void main() {
             // identify intersection
             imageStore(rayLink, rayID, uvec4(hid+1, imageLoad(rayLink, rayID).y, 0u.xx));
             IF (triID >= 0) {
-                const int gID = 0;
                 hits[hid].attribID = vtVerifyClosestHit(hid, -1)+1;  // better link directly, because extra atomics (even with subgroups) also hits to performances
-                vtVerifyClosestHit(hid, gID); // add hit to group
+                //const int gID = 0; vtVerifyClosestHit(hid, gID); // add hit to group
             } else {
                 const int rID = 0; 
                 vtVerifyMissedHit(hid, rID);
