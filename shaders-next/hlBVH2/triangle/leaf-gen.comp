@@ -56,14 +56,14 @@ void main() {
             // http://jcgt.org/published/0005/03/03/paper.pdf
             
             // triangle elements
-            mat3 vc = mat3(triverts[0].xyz, triverts[1].xyz, triverts[2].xyz);
-            vec3 e1 = triverts[1].xyz - triverts[0].xyz, e2 = triverts[2].xyz - triverts[0].xyz;
-            vec3 n = cross(e1, e2), ni = 1.f/n;
+            const mat3 vc = mat3(triverts[0].xyz, triverts[1].xyz, triverts[2].xyz);
+            const vec3 e1 = triverts[1].xyz - triverts[0].xyz, e2 = triverts[2].xyz - triverts[0].xyz;
+            const vec3 n = cross(e1, e2), ni = 1.f/n, na = abs(n);
             
             // pre-calculate vectors
-            vec3 v0n = -dot(vc[0], n).xxx*ni, v1n = cross(vc[0], vc[1])*ni, v2n = cross(vc[2], vc[0])*ni;
-            vec3 e2d = e2.zxy*ni, e2m = -e2.yzx*ni, e1d = e1.yzx*ni, e1m = -e1.zxy*ni;
-            vec3 n1f = n.yzx*ni, n2f = n.zxy*ni, na = abs(n);
+            const vec3 v0n = -dot(vc[0], n).xxx*ni, v1n = cross(vc[0], vc[1])*ni, v2n = cross(vc[2], vc[0])*ni;
+            const vec3 e2d = e2.zxy*ni, e2m = -e2.yzx*ni, e1d = e1.yzx*ni, e1m = -e1.zxy*ni;
+            const vec3 n1f = n.yzx*ni, n2f = n.zxy*ni;
             
             mat4x3 TVI = { vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f) };
             if ( na.x > na.y && na.x > na.z ) {

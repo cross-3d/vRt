@@ -164,15 +164,14 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
     const int itri = tri*3;
     const mat3x4 vT = mat3x4(TLOAD(lvtx, itri+0), TLOAD(lvtx, itri+1), TLOAD(lvtx, itri+2));
     
-    float dz = dot(vec4(dir,0.f),vT[2]), oz = dot(vec4(orig,-1.f),vT[2]), T = oz/dz;
+    const float dz = dot(vec4(dir,0.f),vT[2]), oz = dot(vec4(orig,-1.f),vT[2]), T = oz/dz;
     if (T >= INFINITY || T < 0.f) { _valid = false; }
     
-    vec4 hit = vec4(fma(dir,T.xxx,-orig), 1.f);
+    const vec4 hit = vec4(fma(dir,T.xxx,-orig), 1.f);
     uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
     if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
 
-    if (!_valid) T = INFINITY;
-    return T;
+    return (_valid ? T : INFINITY);
 }
 #endif
 #endif
