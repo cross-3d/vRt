@@ -108,7 +108,7 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 #ifndef BVH_CREATION
 #ifdef ENABLE_VSTORAGE_DATA
 
-#ifndef USE_FAST_INTERSECTION
+#ifndef VRT_USE_FAST_INTERSECTION
 float intersectTriangle(const vec3 orig, const mat3 M, const int axis, in int tri, inout vec2 UV, in bool valid) {
     float T = INFINITY;
     IFANY (valid) {
@@ -130,7 +130,8 @@ float intersectTriangle(const vec3 orig, const mat3 M, const int axis, in int tr
 }
 #endif
 
-#ifdef USE_FAST_INTERSECTION
+#ifdef VRT_USE_FAST_INTERSECTION
+#ifdef VTX_USE_LEGACY_METHOD
 float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout vec2 uv, in bool _valid) {
     const int itri = tri*3;
     const mat3 vT = mat3(TLOAD(lvtx, itri+0).xyz, TLOAD(lvtx, itri+1).xyz, TLOAD(lvtx, itri+2).xyz);
@@ -155,6 +156,23 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
     if (!_valid) T = INFINITY;
     return T;
 }
+#else
+// intersect triangle by transform
+float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout vec2 uv, in bool _valid) {
+    const int itri = tri*3;
+    const mat3x4 vT = mat3x4(TLOAD(lvtx, itri+0), TLOAD(lvtx, itri+1), TLOAD(lvtx, itri+2));
+    
+    float dz = dot(vec4(dir,0.f),vT[2]), oz = dot(vec4(orig,-1.f),vT[2]), T = oz/dz;
+    if (T >= INFINITY || T < 0.f) { _valid = false; }
+    
+    vec4 hit = vec4(fma(dir,T.xxx,-orig), 1.f);
+    uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
+    if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
+
+    if (!_valid) T = INFINITY;
+    return T;
+}
+#endif
 #endif
 
 #endif

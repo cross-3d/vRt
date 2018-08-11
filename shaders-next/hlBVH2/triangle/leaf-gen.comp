@@ -1,7 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-//#define VTX_TRANSPLIT
+#define VRT_USE_FAST_INTERSECTION
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 #define LEAF_GEN
@@ -45,11 +45,50 @@ void main() {
         bcenter.w = fma(sqrt(dot(lbox.mx-lbox.mn,lbox.mx-lbox.mn) * 0.08333333333333333f), 2.0f, -1.f);
 
         {
-#ifdef VTX_TRANSPLIT
+#ifndef VRT_USE_FAST_INTERSECTION
             const mat4x3 triverts = transpose(triverts);
             imageStore(lvtx, itri+0, vec4(triverts[0].xyz, 1.f)), imageStore(lvtx, itri+1, vec4(triverts[1].xyz, 1.f)), imageStore(lvtx, itri+2, vec4(triverts[2].xyz, 1.f));
 #else
+#ifdef VTX_USE_LEGACY_METHOD
             imageStore(lvtx, itri+0, triverts[0]), imageStore(lvtx, itri+1, triverts[1]), imageStore(lvtx, itri+2, triverts[2]);
+#else
+            // experimental coordinate transform of triangle
+            // http://jcgt.org/published/0005/03/03/paper.pdf
+            
+            // triangle elements
+            mat3 vc = mat3(triverts[0].xyz, triverts[1].xyz, triverts[2].xyz);
+            vec3 e1 = triverts[1].xyz - triverts[0].xyz, e2 = triverts[2].xyz - triverts[0].xyz;
+            vec3 n = cross(e1, e2), ni = 1.f/n;
+            
+            // pre-calculate vectors
+            vec3 v0n = -dot(vc[0], n).xxx*ni, v1n = cross(vc[0], vc[1])*ni, v2n = cross(vc[2], vc[0])*ni;
+            vec3 e2d = e2.zxy*ni, e2m = -e2.yzx*ni, e1d = e1.yzx*ni, e1m = -e1.zxy*ni;
+            vec3 n1f = n.yzx*ni, n2f = n.zxy*ni, na = abs(n);
+            
+            mat4x3 TVI = { vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f) };
+            if ( na.x > na.y && na.x > na.z ) {
+                TVI[0] = vec3(0.f,0.f,1.f);
+                TVI[1] = vec3(e2d.x,e1m.x,n1f.x);
+                TVI[2] = vec3(e2m.x,e1d.x,n2f.x);
+                TVI[3] = vec3(v2n.x,v1n.x,v0n.x);
+            } else 
+            if ( na.y > na.z ) {
+                TVI[0] = vec3(e2m.y,e1d.y,n2f.y);
+                TVI[1] = vec3(0.f,0.f,1.f);
+                TVI[2] = vec3(e2d.y,e1m.y,n1f.y);
+                TVI[3] = vec3(v2n.y,v1n.y,v0n.y);
+            } else 
+            if ( na.z > 0.f ) {
+                TVI[0] = vec3(e2d.z,e1m.z,n1f.z);
+                TVI[1] = vec3(e2m.z,e1d.z,n2f.z);
+                TVI[2] = vec3(0.f,0.f,1.f);
+                TVI[3] = vec3(v2n.z,v1n.z,v0n.z);
+            }
+            
+            // get transposed version (for full-filling)
+            const mat3x4 TVIt = transpose(TVI);
+            imageStore(lvtx, itri+0, TVIt[0]), imageStore(lvtx, itri+1, TVIt[1]), imageStore(lvtx, itri+2, TVIt[2]);
+#endif
 #endif
         }
 

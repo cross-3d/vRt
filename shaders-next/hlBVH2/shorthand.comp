@@ -1,7 +1,6 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-#define VTX_TRANSPLIT
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 #define LEAF_GEN

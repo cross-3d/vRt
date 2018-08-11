@@ -33,7 +33,7 @@ struct BvhTraverseState {
 struct PrimitiveState {
     vec4 lastIntersection;
     vec3 orig;
-#ifdef USE_FAST_INTERSECTION
+#ifdef VRT_USE_FAST_INTERSECTION
     vec3 dir;
 #else
     int axis; mat3 iM;
@@ -66,7 +66,7 @@ bool stackIsEmpty() { return traverseState.stackPtr <= 0 && traverseState.pageID
 void doIntersection() {
     const bool isvalid = true; //traverseState.defTriangleID >= 0;
     vec2 uv = vec2(0.f.xx); const float d = 
-#ifdef USE_FAST_INTERSECTION
+#ifdef VRT_USE_FAST_INTERSECTION
         intersectTriangle(primitiveState.orig.xyz, primitiveState.dir.xyz, traverseState.defTriangleID, uv.xy, isvalid);
 #else
         intersectTriangle(primitiveState.orig.xyz, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID, uv.xy, isvalid);
@@ -104,7 +104,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     traverseState.bitStack = 0ul;
 #endif
 
-#ifdef USE_FAST_INTERSECTION
+#ifdef VRT_USE_FAST_INTERSECTION
     primitiveState.dir = direct;//vec4(direct, 1.f);
 #else
     // calculate longest axis
