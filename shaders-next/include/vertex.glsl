@@ -31,15 +31,17 @@
 
 
     #ifdef VERTEX_FILLING
-    layout ( binding = 3, set = VTX_SET, rgba32f  ) coherent uniform imageBuffer lvtxIn;
+    layout ( binding = 3, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtxIn;
     #else
-    layout ( binding = 3, set = VTX_SET           ) readonly uniform imageBuffer lvtxIn;
+    layout ( binding = 3, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lvtxIn;
     #endif
 
     #ifdef LEAF_GEN
-    layout ( binding = 5, set = VTX_SET           ) coherent uniform imageBuffer lvtx;
+    layout ( binding = 5, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtx;
+    layout ( binding = 7, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lnrm;
     #else
-    layout ( binding = 5, set = VTX_SET, rgba32f  ) readonly uniform imageBuffer lvtx;
+    layout ( binding = 5, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lvtx;
+    layout ( binding = 7, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lnrm;
     #endif
 
 

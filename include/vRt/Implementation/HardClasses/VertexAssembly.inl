@@ -42,6 +42,11 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32_SINT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_materialBuffer);
 
+            // accelerate normal calculation by storing of
+            bfi.bufferSize = maxPrimitives * sizeof(float) * 4ull;
+            bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+            createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_normalBuffer);
+
             bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBuffer);
@@ -77,6 +82,7 @@ namespace _vt {
             auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
             vtVertexAssembly->_descriptorSet = dsc[0];
 
+
             vk::Sampler attributeSampler = vk::Device(vkDevice).createSampler(vk::SamplerCreateInfo()
                 .setAddressModeU(vk::SamplerAddressMode::eRepeat)
                 .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
@@ -94,6 +100,7 @@ namespace _vt {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo((vk::DescriptorImageInfo*)&vtVertexAssembly->_attributeTexelBuffer->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&vtVertexAssembly->_verticeBufferSide->_bufferView), // planned to replace
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&attrbView),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(7).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&vtVertexAssembly->_normalBuffer->_bufferView),
             };
             vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };

@@ -156,7 +156,7 @@ namespace _vt { // store in undercover namespace
 
         // vertex and bvh export 
         std::shared_ptr<DeviceImage> _attributeTexelBuffer;
-        std::shared_ptr<DeviceBuffer> _verticeBuffer, _verticeBufferSide, _verticeBufferIn, _materialBuffer, _bitfieldBuffer, _countersBuffer;
+        std::shared_ptr<DeviceBuffer> _verticeBuffer, _verticeBufferSide, _verticeBufferIn, _materialBuffer, _bitfieldBuffer, _countersBuffer, _normalBuffer;
 
         // input of vertex source data
         std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs;

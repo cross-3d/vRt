@@ -100,6 +100,11 @@ void main() {
 
 #define to globalID
 
+        { // pre-compute normals
+            const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz; const uint rID = parameteri(VTX_TYPE, uint(vbitfields[tri]));
+            imageStore(lnrm, int(tri), vec4(normalize(cross(TLOAD(lvtxIn, itri+1).xyz-v0, TLOAD(lvtxIn, itri+2).xyz-v0)), uintBitsToFloat(rID)));
+        }
+
         // store leaf data
         [[flatten]]
         if (globalID < wsize && globalID >= 0) {

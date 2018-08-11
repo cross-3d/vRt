@@ -42,19 +42,19 @@ void main() {
 #endif
 
         if (!overflow) { // verify intersection
-            const int triID = floatBitsToInt(hit.uvt.w)-1, rID = parameteri(VTX_TYPE, uint(vbitfields[triID]));
+            const int triID = floatBitsToInt(hit.uvt.w)-1;
 
             // interpolate hit
             if (triID >= 0) {
-                const int itri = triID*3; const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
                 hit.uvt.w = intBitsToFloat(vmaterials[triID]);
-                hit.vdat = vec4(normalize(cross(TLOAD(lvtxIn, itri+1).xyz-v0, TLOAD(lvtxIn, itri+2).xyz-v0)), uintBitsToFloat(rID));
+                hit.vdat = TLOAD(lnrm, triID); // pick-up pre-computed physical normal
                 interpolateMeshData(hit, triID);
 #ifndef DMA_HIT
                 hits[hitID] = hit;
 #endif
             }
 
+            const uint rID = parameteri(VTX_TYPE, uint(vbitfields[triID]));
             [[unroll]]
             for (int i=0;i<4;i++) {
                 [[flatten]]
