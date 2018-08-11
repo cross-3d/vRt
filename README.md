@@ -31,8 +31,8 @@
 
 ## Compatibility confirmed
 
-- RX Vega 64 (Windows 10)
-- GTX 1070 (Windows 10, need newer tests)
+- RX Vega 64 
+- GTX 1070 
 
 ## Current API
 
