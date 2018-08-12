@@ -48,6 +48,7 @@ void main() {
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
                     storeAttribute(ivec3(wofft, attributes[a].attributeID, i), attribValue);
                 }
+                storeAttribute(ivec3(wofft, attributes[a].attributeID, 3), 0.f.xxxx);
             }
 
             // load vertex data

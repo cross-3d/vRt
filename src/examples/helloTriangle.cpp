@@ -439,13 +439,21 @@ int main() {
             glm::vec3( 0.f, -1.f,  1.f),
         };
         std::vector<glm::vec3> colors = {
-            glm::vec3(1.f, 0.f, 0.f), 
-            glm::vec3(0.f, 1.f, 0.f), 
-            glm::vec3(0.f, 0.f, 1.f),
+            //glm::vec3(1.f, 0.5f, 0.f), // bottom right vertice
+            //glm::vec3(1.f, 0.5f, 1.f), // bottom left vertice
+            //glm::vec3(0.f, 0.5f, 1.f), // center upper vertice
 
-            glm::vec3(1.f, 0.f, 0.f),
-            glm::vec3(0.f, 1.f, 0.f),
-            glm::vec3(0.f, 0.f, 1.f),
+            glm::vec3(1.f, 0.f, 0.f), // bottom right vertice
+            glm::vec3(0.f, 1.f, 0.f), // bottom left vertice
+            glm::vec3(0.f, 0.f, 1.f), // center upper vertice
+
+            glm::vec3(0.f),
+            glm::vec3(0.f),
+            glm::vec3(0.f),
+
+            //glm::vec3(1.f, 0.f, 0.f),
+            //glm::vec3(0.f, 1.f, 0.f),
+            //glm::vec3(0.f, 0.f, 1.f),
         };
         std::vector<glm::vec3> zeros = {
             glm::vec3(0.f), 

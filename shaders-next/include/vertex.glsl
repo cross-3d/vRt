@@ -11,6 +11,10 @@
 #endif
 
 
+//have very bad quality of texel interpolation
+//#define VRT_INTERPOLATOR_TEXEL
+
+
 // Geometry Zone
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION) || defined(VERTEX_FILLING))
     #ifdef VERTEX_FILLING
@@ -48,8 +52,12 @@
     //#define TLOAD_I(img,t) imageLoad(img,t)
     #define TLOAD(img,t) imageLoad(img,t)
 
-    layout ( binding = 4, set = VTX_SET, rgba32ui ) uniform uimage2D attrib_texture_out;
-    layout ( binding = 6, set = VTX_SET           ) uniform usampler2D attrib_texture;
+    layout ( binding = 4, set = VTX_SET, rgba32f ) uniform highp image2D attrib_texture_out;
+    layout ( binding = 6, set = VTX_SET          ) uniform highp sampler2D attrib_texture;
+
+//    layout ( binding = 4, set = VTX_SET, rgba32ui ) uniform uimage2D attrib_texture_out;
+//    layout ( binding = 6, set = VTX_SET           ) uniform usampler2D attrib_texture;
+
 #endif
 
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION))
@@ -82,10 +90,29 @@ layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB {
 
 
 
-#define _SWIZV xyz
+
+
+#ifdef VRT_INTERPOLATOR_TEXEL
+//const int WARPED_WIDTH = 4096;
+const int WARPED_WIDTH = 6144;
+//const ivec2 mit[4] = { ivec2(1,0), ivec2(0,0), ivec2(0,1),  ivec2(1,1) };
+const ivec2 mit[4] = { ivec2(0,0), ivec2(1,0), ivec2(0,1),  ivec2(1,1) };
+ivec2 gatherMosaic(in ivec2 uniformCoord) {
+    //return ivec2((uniformCoord.x * 3) + (uniformCoord.y % 3), uniformCoord.y);
+    return ivec2(uniformCoord)<<1;
+}
+
+#else
 
 const int WARPED_WIDTH = 4096;
-const ivec2 mit[3] = {ivec2(0,1), ivec2(1,1), ivec2(1,0)};
+const ivec2 mit[4] = {ivec2(0,1), ivec2(1,1), ivec2(1,0), ivec2(0,0)};
+ivec2 gatherMosaic(in ivec2 uniformCoord) {
+    return ivec2((uniformCoord.x * 3) + (uniformCoord.y % 3), uniformCoord.y);
+}
+
+#endif
+
+
 
 ivec2 mosaicIdc(in ivec2 mosaicCoord, const uint idc) {
     mosaicCoord += mit[idc];
@@ -93,10 +120,6 @@ ivec2 mosaicIdc(in ivec2 mosaicCoord, const uint idc) {
     mosaicCoord.x %= int(imageSize(attrib_texture_out).x);
 #endif
     return mosaicCoord;
-}
-
-ivec2 gatherMosaic(in ivec2 uniformCoord) {
-    return ivec2((uniformCoord.x * 3) + (uniformCoord.y % 3), uniformCoord.y);
 }
 
 ivec2 getUniformCoord(in int indice) {
@@ -131,6 +154,7 @@ float intersectTriangle(const vec3 orig, const mat3 M, const int axis, in int tr
     return T;
 }
 #endif
+
 
 #ifdef VRT_USE_FAST_INTERSECTION
 #ifdef VTX_USE_LEGACY_METHOD
@@ -184,22 +208,32 @@ float intersectTriangle(const vec4 orig, const vec4 dir, const int tri, inout ve
 
 #ifdef ENABLE_VSTORAGE_DATA
 #ifdef ENABLE_VERTEX_INTERPOLATOR
+#define _SWIZV xyz
 // barycentric map (for corrections tangents in POM)
 void interpolateMeshData(inout VtHitData ht, in int tri) {
     //const int tri = floatBitsToInt(ht.uvt.w)-1;
     const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
+#ifdef VRT_INTERPOLATOR_TEXEL
+    const vec2 sz = 1.f.xx;
+#else
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
+#endif
     [[flatten]]
     if (ht.attribID > 0) {
         [[unroll]]
         for (int i=0;i<ATTRIB_EXTENT;i++) {
-            const vec2 trig = fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, sz*0.5f);
+#ifdef VRT_INTERPOLATOR_TEXEL
+            const vec2 trig = fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, sz*(vs.yz+0.4999f));
+            imageStore(attributes, makeAttribID(ht.attribID, i), textureLod(attrib_texture, trig, 0));
+#else
+            const vec2 trig = fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, sz*0.4999f);
             imageStore(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(
                 SGATHER(attrib_texture, trig, 0)._SWIZV,
                 SGATHER(attrib_texture, trig, 1)._SWIZV,
                 SGATHER(attrib_texture, trig, 2)._SWIZV,
                 SGATHER(attrib_texture, trig, 3)._SWIZV
             ));
+#endif
         }
     }
 }
@@ -210,7 +244,20 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
 #ifdef VERTEX_FILLING
 void storeAttribute(in ivec3 cdata, in vec4 fval) {
     ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(cdata.x*ATTRIB_EXTENT+cdata.y));
-    ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_, cdata.z), floatBitsToUint(fval));
+
+    [[flatten]]
+    if (cdata.z < 3) {
+        ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,cdata.z), (fval));
+    } else {
+#ifdef VRT_INTERPOLATOR_TEXEL
+        const vec3 vs = vec3(-1.f,1.f,1.f);
+        ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,3), mat3x4(
+            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,0)),
+            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,1)),
+            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,2))
+        ) * vs);
+#endif
+    }
 }
 
 void storePosition(in ivec2 cdata, in vec4 fval) {

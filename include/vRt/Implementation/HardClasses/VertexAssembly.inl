@@ -63,11 +63,12 @@ namespace _vt {
             VtDeviceImageCreateInfo tfi = {};
             tfi.familyIndex = _vtDevice->_mainFamilyIndex;
             tfi.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-            tfi.format = VK_FORMAT_R32G32B32A32_UINT;
+            tfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             tfi.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             tfi.layout = VK_IMAGE_LAYOUT_GENERAL;
             tfi.mipLevels = 1;
-            tfi.size = { uint32_t(aWidth), uint32_t(tiled(maxPrimitives * 3ull * ATTRIB_EXTENT, aWidth)+1ull), 1u };
+            tfi.size = { uint32_t(aWidth), uint32_t(tiled(maxPrimitives * 3ull * ATTRIB_EXTENT, aWidth) + 1ull), 1u };
+            //tfi.size = { uint32_t(aWidth), uint32_t(tiled(maxPrimitives * 4ull * ATTRIB_EXTENT, aWidth) + 1ull), 1u };
             createDeviceImage(_vtDevice, tfi, vtVertexAssembly->_attributeTexelBuffer);
         };
 
@@ -84,10 +85,9 @@ namespace _vt {
 
 
             vk::Sampler attributeSampler = vk::Device(vkDevice).createSampler(vk::SamplerCreateInfo()
-                .setAddressModeU(vk::SamplerAddressMode::eRepeat)
                 .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
-                .setMagFilter(vk::Filter::eNearest)
-                .setMinFilter(vk::Filter::eNearest)
+                .setMagFilter(vk::Filter::eNearest).setMinFilter(vk::Filter::eNearest).setAddressModeU(vk::SamplerAddressMode::eRepeat)
+                //.setMagFilter(vk::Filter::eLinear ).setMinFilter(vk::Filter::eLinear ).setAddressModeU(vk::SamplerAddressMode::eClampToEdge).setUnnormalizedCoordinates(VK_TRUE)
             );
             auto writeTmpl = vk::WriteDescriptorSet(vtVertexAssembly->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
             auto attrbView = vk::DescriptorImageInfo(vtVertexAssembly->_attributeTexelBuffer->_descriptorInfo()).setSampler(attributeSampler);
