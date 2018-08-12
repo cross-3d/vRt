@@ -210,12 +210,12 @@ float intersectTriangle(const vec4 orig, const vec4 dir, const int tri, inout ve
 
 vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     //const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz;
-    const vec2 sz = 1.f.xx, si = 1.f.xx/sz;
-    const vec4 ft = vec4(0.5f.xx, -0.5f.xx)*si.xyxy;
-    const vec2 tx = sz * TXL - 0.5f, lp = fract(tx), tl = (ceil(tx))*si.xy;
-    return mix(mix(textureLod(SMP, tl + ft.zw, LOD), textureLod(SMP, tl + ft.xw, LOD), lp.x), mix(textureLod(SMP, tl + ft.zy, LOD), textureLod(SMP, tl + ft.xy, LOD), lp.x), lp.y);
-    //const ivec4 ft = ivec4((1).xx, (0).xx); const ivec2 tl = ivec2(round(TXL-1.f)); const vec2 lp = fract(TXL-0.5f.xx);
-    //return mix(mix(texelFetch(SMP, tl + ft.zw, LOD), texelFetch(SMP, tl + ft.xw, LOD), lp.x), mix(texelFetch(SMP, tl + ft.zy, LOD), texelFetch(SMP, tl + ft.xy, LOD), lp.x), lp.y);
+    //const vec2 sz = 1.f.xx, si = 1.f.xx/sz;
+    //const vec4 ft = vec4(0.5f.xx, -0.5f.xx)*si.xyxy;
+    //const vec2 tx = sz * TXL - 0.5f, lp = fract(tx), tl = (ceil(tx))*si.xy;
+    //return mix(mix(textureLod(SMP, tl + ft.zw, LOD), textureLod(SMP, tl + ft.xw, LOD), lp.x), mix(textureLod(SMP, tl + ft.zy, LOD), textureLod(SMP, tl + ft.xy, LOD), lp.x), lp.y);
+    const ivec4 ft = ivec4((1).xx, (0).xx); const ivec2 tl = ivec2(round(TXL-1.f)); const vec2 lp = fract(TXL-0.5f.xx);
+    return mix(mix(texelFetch(SMP, tl + ft.zw, LOD), texelFetch(SMP, tl + ft.xw, LOD), lp.x), mix(texelFetch(SMP, tl + ft.zy, LOD), texelFetch(SMP, tl + ft.xy, LOD), lp.x), lp.y);
 }
 
 

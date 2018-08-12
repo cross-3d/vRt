@@ -41,6 +41,7 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
+        [[flatten]]
         if (!overflow) { // verify intersection
             const int triID = floatBitsToInt(hit.uvt.w)-1;
 
