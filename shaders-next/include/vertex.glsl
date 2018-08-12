@@ -11,8 +11,8 @@
 #endif
 
 
-//have very bad quality of texel interpolation
-//#define VRT_INTERPOLATOR_TEXEL
+//have very bad quality of native texel interpolation
+#define VRT_INTERPOLATOR_TEXEL
 
 
 // Geometry Zone
@@ -206,6 +206,23 @@ float intersectTriangle(const vec4 orig, const vec4 dir, const int tri, inout ve
 
 
 
+
+
+vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
+    //const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz;
+    //const vec2 sz = 1.f.xx, si = 1.f.xx/sz;
+    //const vec4 ft = vec4(0.5f.xx, -0.5f.xx)*si.xyxy;
+    //const vec2 tx = sz * TXL - 0.5f, lp = fract(tx), tl = (ceil(tx))*si.xy;
+    //const vec4 c00 = textureLod(SMP, tl + ft.zw, 0), c10 = textureLod(SMP, tl + ft.xw, 0),
+    //           c01 = textureLod(SMP, tl + ft.zy, 0), c11 = textureLod(SMP, tl + ft.xy, 0);
+    const ivec4 ft = ivec4((1).xx, (0).xx); const vec2 lp = fract(TXL-0.5f.xx); const ivec2 tl = ivec2(round(TXL-1.f));
+    const vec4 c00 = texelFetch(SMP, tl + ft.zw, LOD), c10 = texelFetch(SMP, tl + ft.xw, LOD),
+               c01 = texelFetch(SMP, tl + ft.zy, LOD), c11 = texelFetch(SMP, tl + ft.xy, LOD);
+    return mix(mix(c00, c10, lp.x), mix(c01, c11, lp.x), lp.y);
+}
+
+
+
 #ifdef ENABLE_VSTORAGE_DATA
 #ifdef ENABLE_VERTEX_INTERPOLATOR
 #define _SWIZV xyz
@@ -224,7 +241,7 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
         for (int i=0;i<ATTRIB_EXTENT;i++) {
 #ifdef VRT_INTERPOLATOR_TEXEL
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + vs.yz + 0.5f) * sz;
-            imageStore(attributes, makeAttribID(ht.attribID, i), textureLod(attrib_texture, trig, 0));
+            imageStore(attributes, makeAttribID(ht.attribID, i), textureHQ(attrib_texture, trig, 0));
 #else
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
             imageStore(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(

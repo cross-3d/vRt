@@ -70,7 +70,7 @@ namespace _vt { // store in undercover namespace
         imageMemoryBarriers.subresourceRange = image->_subresourceRange;
 
         // Put barrier on top
-        vk::PipelineStageFlags srcStageMask{ vk::PipelineStageFlagBits::eTopOfPipe };
+        vk::PipelineStageFlags srcStageMask{ vk::PipelineStageFlagBits::eBottomOfPipe };
         vk::PipelineStageFlags dstStageMask{ vk::PipelineStageFlagBits::eTopOfPipe };
         vk::DependencyFlags dependencyFlags{};
         vk::AccessFlags srcMask{};
@@ -112,9 +112,8 @@ namespace _vt { // store in undercover namespace
 
         // barrier
         vk::CommandBuffer(cmd).pipelineBarrier(vk::PipelineStageFlagBits::eAllCommands, vk::PipelineStageFlagBits::eAllCommands, {}, {}, {}, std::array<vk::ImageMemoryBarrier, 1>{imageMemoryBarriers});
-        image->_initialLayout = (VkImageLayout)imageMemoryBarriers.newLayout;
 #endif
-
+        image->_initialLayout = (VkImageLayout)imageMemoryBarriers.newLayout;
         return result;
     };
 

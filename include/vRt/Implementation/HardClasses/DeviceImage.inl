@@ -24,6 +24,7 @@ namespace _vt {
         vtDeviceImage = std::make_shared<DeviceImage>();
         vtDeviceImage->_device = device; // delegate device by weak_ptr
         vtDeviceImage->_layout = (VkImageLayout)cinfo.layout;
+        vtDeviceImage->_initialLayout = VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED;
 
         // init image dimensional type
         vk::ImageType imageType = vk::ImageType::e2D; bool isCubemap = false;

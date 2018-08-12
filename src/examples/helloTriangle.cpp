@@ -386,6 +386,12 @@ int main() {
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
 
+    // dispatch image barrier for vertex assembly
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
+        vtCmdImageBarrier(cmdBuf, vrt::VtDeviceImage{ vertexAssembly->_attributeTexelBuffer });
+    });
+
+
 
     { // use two angled triangles
         // all available accessors

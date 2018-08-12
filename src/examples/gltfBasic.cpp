@@ -200,14 +200,14 @@ int main() {
 
 
     // create image output
-    VtDeviceImageCreateInfo dii;
+    VtDeviceImageCreateInfo dii = {};
     dii.format = VK_FORMAT_R16G16B16A16_SFLOAT;
     dii.familyIndex = deviceQueue->familyIndex;
     dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
     dii.layout = VK_IMAGE_LAYOUT_GENERAL;
     dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     dii.size = { canvasWidth, canvasHeight, 1 };
-    VtDeviceImage outputImage;
+    VtDeviceImage outputImage = {};
     vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outputImage);
 
     // dispatch image barrier
@@ -294,7 +294,7 @@ int main() {
         mImages.push_back(VtDeviceImage{});
         auto& image = mImages[mImages.size()-1];
 
-        VtDeviceImageCreateInfo dii;
+        VtDeviceImageCreateInfo dii = {};
         //dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         dii.format = VK_FORMAT_R8G8B8A8_UNORM;
         dii.familyIndex = deviceQueue->familyIndex;
@@ -304,13 +304,15 @@ int main() {
         dii.size = { uint32_t(I.width), uint32_t(I.height), 1 };
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
 
+        // dispatch image barrier
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
+            for (auto& mI : mImages) { vtCmdImageBarrier(cmdBuf, mI); }
+        });
+
         writeIntoImage<uint8_t>(deviceQueue, I.image, image, 0);
     }
 
-    // dispatch image barrier
-    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
-        for (auto& mI : mImages) { vtCmdImageBarrier(cmdBuf, mI); }
-    });
+
 
 
 
@@ -608,6 +610,12 @@ int main() {
     VtVertexAssemblySetCreateInfo vtsi;
     vtsi.maxPrimitives = 1024 * 2048;
     vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
+
+
+    // dispatch image barrier for vertex assembly
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
+        vtCmdImageBarrier(cmdBuf, vrt::VtDeviceImage{ vertexAssembly->_attributeTexelBuffer });
+    });
 
 
 
