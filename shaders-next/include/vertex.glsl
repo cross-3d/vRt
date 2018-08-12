@@ -223,10 +223,10 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
         [[unroll]]
         for (int i=0;i<ATTRIB_EXTENT;i++) {
 #ifdef VRT_INTERPOLATOR_TEXEL
-            const vec2 trig = fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, sz*(vs.yz+0.4999f));
+            const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + vs.yz + 0.5f) * sz;
             imageStore(attributes, makeAttribID(ht.attribID, i), textureLod(attrib_texture, trig, 0));
 #else
-            const vec2 trig = fma(vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))), sz, sz*0.4999f);
+            const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
             imageStore(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(
                 SGATHER(attrib_texture, trig, 0)._SWIZV,
                 SGATHER(attrib_texture, trig, 1)._SWIZV,
