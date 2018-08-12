@@ -114,7 +114,7 @@ ivec2 gatherMosaic(in ivec2 uniformCoord) {
 
 
 
-ivec2 mosaicIdc(in ivec2 mosaicCoord, const uint idc) {
+ivec2 mosaicIdc(in ivec2 mosaicCoord, in uint idc) {
     mosaicCoord += mit[idc];
 #ifdef VERTEX_FILLING
     mosaicCoord.x %= int(imageSize(attrib_texture_out).x);
@@ -134,7 +134,7 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 #ifdef ENABLE_VSTORAGE_DATA
 
 #ifndef VRT_USE_FAST_INTERSECTION
-float intersectTriangle(const vec3 orig, const mat3 M, const int axis, in int tri, inout vec2 UV, in bool valid) {
+float intersectTriangle(in vec3 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, in bool valid) {
     float T = INFINITY;
     IFANY (valid) {
         // gather patterns
@@ -158,7 +158,7 @@ float intersectTriangle(const vec3 orig, const mat3 M, const int axis, in int tr
 
 #ifdef VRT_USE_FAST_INTERSECTION
 #ifdef VTX_USE_LEGACY_METHOD
-float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout vec2 uv, in bool _valid) {
+float intersectTriangle(in vec3 orig, in vec3 dir, in int tri, inout vec2 uv, in bool _valid) {
     const int itri = tri*3;
     const mat3 vT = mat3(TLOAD(lvtx, itri+0).xyz, TLOAD(lvtx, itri+1).xyz, TLOAD(lvtx, itri+2).xyz);
     const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
@@ -184,7 +184,7 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
 }
 #else
 // intersect triangle by transform
-float intersectTriangle(const vec4 orig, const vec4 dir, const int tri, inout vec2 uv, in bool _valid) {
+float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid) {
     const int itri = tri*3;
     const mat3x4 vT = mat3x4(TLOAD(lvtx, itri+0), TLOAD(lvtx, itri+1), TLOAD(lvtx, itri+2));
 
