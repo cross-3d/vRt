@@ -40,6 +40,7 @@ void main() {
 
         // get output image 2D coord
         uvec2 icoord = vtFetchIndex(rayID);
+        float alph = (emisson.a > 0.9f || stageUniform.iteration == 1) ? 1.f : 0.f;
 
         // save result of ray tracing by ray saved indice
         //if (!overflow) { imageStore(ColorOutput, icoord, vec4(f16_f32(ray.dcolor).xyz, 1.f)); }
@@ -47,18 +48,27 @@ void main() {
         // add support for multi-passing
         if (!overflow) {
             const vec4 bcolor = imageLoad(ColorOutput, ivec2(icoord));
-            imageStore(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz, f16_f32(ray.dcolor).xyz, bcolor.xyz), 1.f));
+            imageStore(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz * alph, f16_f32(ray.dcolor).xyz, bcolor.xyz), 1.f));
 
             // debug
             //if (stageUniform.iteration == 1) imageStore(ColorOutput, ivec2(icoord), vec4(1.f, 0.f, 1.f, 1.f) * vec4(f16_f32(ray.dcolor).xyz, 1.f));
             //if (stageUniform.iteration == 1) imageStore(ColorOutput, ivec2(icoord), vec4(f16_f32(ray.dcolor).xyz * (fma(dcts(ray.cdirect.xy).xyz, 0.5f.xxx, 0.5f.xxx)), 1.f));
 
+            
+
             // generate secondary rays (reflections)
             VtRay newray = ray;
             newray.origin.xyz = fma(dcts(newray.cdirect.xy), hit.uvt.zzz, newray.origin.xyz);
-            newray.cdirect.xy = lcts(reflect(dcts(newray.cdirect.xy), hitp.normalHeight.xyz));
-            writeColor(newray.dcolor, vec4(f16_f32(newray.dcolor).xyz * hitp.specularGlossiness.xyz, 1.f));
-            
+
+            // support of transparency
+            [[flatten]]
+            if (alph > 0.5f) {
+                newray.cdirect.xy = lcts(reflect(dcts(newray.cdirect.xy), hitp.normalHeight.xyz));
+                writeColor(newray.dcolor, vec4(f16_f32(newray.dcolor).xyz * hitp.specularGlossiness.xyz, 1.f));
+            } else {
+                
+            }
+
             // add ray error offset
             if (max3_vec(f16_f32(newray.dcolor)) >= 1e-4f) {
                 newray.origin.xyz = fma(dcts(newray.cdirect.xy), 1e-4f.xxx, newray.origin.xyz);
