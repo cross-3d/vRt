@@ -10,19 +10,13 @@
 #endif
 
 #ifndef USE_STACKLESS_BVH
-//const int localStackSize = 8, extStackSize = 32, computedStackSize = localStackSize+extStackSize;
-const int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount;
-
-const int max_iteraction = 8192;
-//layout ( r32i, binding = _CACHE_BINDING, set = 0 ) uniform iimageBuffer texelPages;
+const int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount, max_iteraction = 8192;
 layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYSTEM { int pages[][8]; };
 #endif
 
-//_RAY_TYPE currentRayTmp;
 
 struct BvhTraverseState {
     int idx, defTriangleID, stackPtr, cacheID, pageID; lowp bvec4_ boxSide;
-    //float distMult, diffOffset, cutOut;
     fvec4_ minusOrig, directInv;
 
 #ifdef USE_STACKLESS_BVH
@@ -32,9 +26,9 @@ struct BvhTraverseState {
 
 struct PrimitiveState {
     vec4 lastIntersection;
-    vec3 orig;
+    vec4 orig;
 #ifdef VRT_USE_FAST_INTERSECTION
-    vec3 dir;
+    vec4 dir;
 #else
     int axis; mat3 iM;
 #endif
@@ -67,45 +61,40 @@ void doIntersection() {
     const bool isvalid = true; //traverseState.defTriangleID >= 0;
     vec2 uv = vec2(0.f.xx); const float d = 
 #ifdef VRT_USE_FAST_INTERSECTION
-        intersectTriangle(primitiveState.orig.xyz, primitiveState.dir.xyz, traverseState.defTriangleID, uv.xy, isvalid);
+        intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID, uv.xy, isvalid);
 #else
-        intersectTriangle(primitiveState.orig.xyz, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID, uv.xy, isvalid);
+        intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID, uv.xy, isvalid);
 #endif
 #define nearhit primitiveState.lastIntersection.z
-
-    //[[flatten]]
-    //if (d < nearhit) { traverseState.cutOut = fma(d, traverseState.distMult, -traverseState.diffOffset); }
 
     [[flatten]]
     if (d < INFINITY && d <= nearhit) { primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID+1)); } traverseState.defTriangleID=-1;
 }
 
 void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
-    //const vec3 origin = currentRayTmp.origin.xyz, direct = dcts(currentRayTmp.cdirect.xy);
 
     // test constants
-    //vec3 torig = -orig.xyz, dirproj = dcts(pdir.xy);
-    vec3 torig = -divW(mult4( bvhBlock.transform, vec4(orig.xyz, 1.0f))).xyz,
-         torigTo = divW(mult4( bvhBlock.transform, vec4(orig.xyz+dcts(pdir.xy), 1.0f))).xyz,
-         dirproj = torigTo+torig;
+    const vec4 
+        torig = -divW(mult4( bvhBlock.transform, vec4(orig, 1.0f))),
+        torigTo = divW(mult4( bvhBlock.transform, vec4(orig, 1.0f) + vec4(dcts(pdir.xy), 0.f))),
+        tdir = torigTo+torig;
 
-    // make vector for box intersection
-    const float dirlen = length(dirproj);
-    //const float dirlen = 1.f;
-    dirproj /= dirlen; const vec3 direct = dirproj; dirproj = 1.f.xxx / vec3(precIssue(dirproj.x), precIssue(dirproj.y), precIssue(dirproj.z));
+    // make vector for box and triangle intersection
+    const float dirlen = length(tdir);
+    const vec4 direct = tdir / dirlen;
+    const vec4 dirproj = 1.f / (max(abs(direct), 1e-4f)*sign(direct));
 
     // limitation of distance
-    lowp bvec3_ bsgn = (bvec3_(sign(dirproj)*ftype_(1.0001f))+true_)>>true_;
+    const lowp bvec3_ bsgn = (bvec3_(sign(dirproj.xyz)*ftype_(1.0001f))+true_)>>true_;
 
     // initial state
     traverseState.defTriangleID = -1;
-    //traverseState.distMult = dirlen;
 #ifdef USE_STACKLESS_BVH
     traverseState.bitStack = 0ul;
 #endif
 
 #ifdef VRT_USE_FAST_INTERSECTION
-    primitiveState.dir = direct;//vec4(direct, 1.f);
+    primitiveState.dir = direct;
 #else
     // calculate longest axis
     primitiveState.axis = 2;
@@ -129,39 +118,22 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     vec2 nears = (-INFINITY).xx, fars = INFINITY.xx;
     const vec2 bndsf2 = vec2(-1.0005f, 1.0005f);
     const int entry = (valid ? BVH_ENTRY : -1), _cmp = entry >> 1;
-    //traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x4(bvhBoxes[_cmp][0], bvhBoxes[_cmp][1], bvhBoxes[_cmp][2]), nears.x, fars.x)) ? entry : -1;
-    traverseState.idx = SSC(intersectCubeF32Single(torig*dirproj, dirproj, bsgn, mat3x2(bndsf2,bndsf2,bndsf2), nears.x, fars.x)) ? entry : -1; 
-    
-    //float diffOffset = -(1e-3f+max(nears.x, 0.f));
-    float diffOffset = -max(nears.x, 0.f);
-    primitiveState.orig = fma(direct, diffOffset.xxx, torig);//vec4(fma(direct, diffOffset.xxx, torig), 1.f);
-    primitiveState.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO), primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z, dirlen, diffOffset);
-
-    //traverseState.diffOffset = diffOffset;
+    traverseState.idx = SSC(intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, mat3x2(bndsf2,bndsf2,bndsf2), nears.x, fars.x)) ? entry : -1; 
     traverseState.stackPtr = 0, traverseState.pageID = 0;
 
-//#ifdef USE_F32_BVH
-//    traverseState.directInv.xyz = fvec3_(dirproj);
-//#else
-//    const float inprec = 1.f/N1024;
-//    traverseState.directInv.xyz = fvec3_(dirproj*inprec);
-//#endif
+    const float diffOffset = -max(nears.x, 0.f);
+    primitiveState.orig = fma(direct, diffOffset.xxxx, torig);
+    primitiveState.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO), primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z, dirlen, diffOffset);
 
+    
 #ifdef USE_F32_BVH
-    traverseState.directInv.xyz = fvec3_(dirproj);
+    traverseState.directInv = fvec4_(dirproj);
 #else
-    traverseState.directInv.xyz = fvec3_(dirproj)*One1024.xxx;
+    traverseState.directInv = fvec4_(dirproj)*One1024.xxxx;
 #endif
-    traverseState.minusOrig.xyz = fma(fvec3_(torig), fvec3_(dirproj), fvec3_(diffOffset.xxx));
-    //traverseState.minusOrig.xyz = fvec3_(fma(torig, dirproj, diffOffset.xxx));
+    traverseState.minusOrig = fma(fvec4_(torig), fvec4_(dirproj), fvec4_(diffOffset.xxxx));
     traverseState.boxSide.xyz = bsgn;
 
-    // begin of traverse BVH
-//#ifdef USE_STACKLESS_BVH
-//    ivec4 cnode = (-1).xxxx;
-//#else
-//    ivec2 cnode = (-1).xx;
-//#endif
 
     [[dependency_infinite]]
     for (int hi=0;hi<max_iteraction;hi++) {
@@ -171,9 +143,9 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
             bool _continue = false;
 
 #ifdef USE_STACKLESS_BVH
-            ivec4 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
+            const ivec4 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
 #else
-            ivec2 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
+            const ivec2 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
 #endif
 
             [[flatten]]
@@ -193,7 +165,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
                 // it increase FPS by filtering nodes by first triangle intersection
                 childIntersect &= bvec2_(lessThanEqual(nears, primitiveState.lastIntersection.zz));
-                int fmask = int(childIntersect.x + childIntersect.y*2u)-1; // mask of intersection
+                const int fmask = int(childIntersect.x + childIntersect.y*2u)-1; // mask of intersection
 
                 [[flatten]]
                 if (fmask >= 0) {

@@ -160,14 +160,14 @@ float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout ve
 }
 #else
 // intersect triangle by transform
-float intersectTriangle(const vec3 orig, const vec3 dir, const int tri, inout vec2 uv, in bool _valid) {
+float intersectTriangle(const vec4 orig, const vec4 dir, const int tri, inout vec2 uv, in bool _valid) {
     const int itri = tri*3;
     const mat3x4 vT = mat3x4(TLOAD(lvtx, itri+0), TLOAD(lvtx, itri+1), TLOAD(lvtx, itri+2));
-    
-    const float dz = dot(vec4(dir,0.f),vT[2]), oz = dot(vec4(orig,-1.f),vT[2]), T = oz/dz;
+
+    const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]), T = oz/dz;
     if (T >= INFINITY || T < 0.f) { _valid = false; }
-    
-    const vec4 hit = vec4(fma(dir,T.xxx,-orig), 1.f);
+
+    const vec4 hit = fma(dir,T.xxxx,-orig);
     uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
     if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
 

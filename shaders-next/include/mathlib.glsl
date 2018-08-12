@@ -176,7 +176,8 @@ lowp bool_ greaterF     (in float a, in float b) { return bool_(   (a-b) >   PRE
 lowp bool_ equalF       (in float a, in float b) { return bool_(abs(a-b) <=  PRECERR); }
 
 // precision utils
-float precIssue(in float a) { if (isnan(a)) a = 1.f; if (isinf(a)) a = 1.f*sign(a); return max(abs(a),1e-5f)*(a>=0.f?1.f:-1.f); }
+float precIssue(in float a) { return max(abs(a),1e-4f)*sign(a); }
+//float precIssue(in float a) { if (isnan(a)) a = 1.f; if (isinf(a)) a = 1.f*sign(a); return max(abs(a),1e-5f)*(a>=0.f?1.f:-1.f); }
 //float precIssue(in float a) { return max(abs(a),1e-5f)*(a>=0.f?1.f:-1.f); }
 
 // vector math utils
@@ -463,7 +464,7 @@ vec2 fast32swap(in vec2 b64, in lowp bool_ nswp) {
 // single float 32-bit box intersection
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
-lowp bool_ intersectCubeF32Single(const vec3 origin, const vec3 dr, inout lowp bvec3_ sgn, const mat3x2 tMinMaxMem, inout float near, inout float far) {
+lowp bool_ intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec3_ sgn, const mat3x2 tMinMaxMem, inout float near, inout float far) {
     mat3x2 tMinMax = mat3x2(
         fma(SSC(sgn.x) ? tMinMaxMem[0].xy : tMinMaxMem[0].yx, dr.xx, origin.xx),
         fma(SSC(sgn.y) ? tMinMaxMem[1].xy : tMinMaxMem[1].yx, dr.yy, origin.yy),
@@ -489,9 +490,9 @@ lowp bool_ intersectCubeF32Single(const vec3 origin, const vec3 dr, inout lowp b
 // compatible with NVidia GPU too
 
 #if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
-lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, inout lowp bvec3_ sgn, in highp fmat3x4_ tMinMax, inout vec2 near, inout vec2 far)
+lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, in lowp bvec3_ sgn, in highp fmat3x4_ tMinMax, inout vec2 near, inout vec2 far)
 #else
-lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, inout lowp bvec3_ sgn, in fmat3x4_ tMinMax, inout vec2 near, inout vec2 far)
+lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in lowp bvec3_ sgn, in fmat3x4_ tMinMax, inout vec2 near, inout vec2 far)
 #endif
 {
     tMinMax = fmat3x4_(
@@ -540,7 +541,8 @@ vec2 lcts(in vec3 direct) {
 }
 
 vec3 dcts(in vec2 hr) {
-    return normalize(vec3(cos(hr.x)*sin(hr.y), sin(hr.x)*sin(hr.y), cos(hr.y))).xzy * vec3(1.f,-1.f,1.f);
+    //return normalize(vec3(cos(hr.x)*sin(hr.y), sin(hr.x)*sin(hr.y), cos(hr.y))).xzy * vec3(1.f,-1.f,1.f);
+    return (vec3(cos(hr.x)*sin(hr.y), sin(hr.x)*sin(hr.y), cos(hr.y))).xzy * vec3(1.f,-1.f,1.f);
 }
 
 
