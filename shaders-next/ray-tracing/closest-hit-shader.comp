@@ -187,7 +187,7 @@ void main() {
             // additional validation of hit (hit point interpolated offset test)
             [[flatten]]
             if (!overflow && hit.rayID > 0) {
-                const int pid = hitID; imageStore(rayLink, rayID, uvec4(hitID+1, imageLoad(rayLink, rayID).y, 0u.xx));
+                const int pid = hitID; imageStore(rayLink, rayID<<1, (hitID+1).xxxx);
 
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT

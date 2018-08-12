@@ -21,12 +21,12 @@ const int R_BLOCK_WIDTH = 8, R_BLOCK_HEIGHT = 8;
 const int R_BLOCK_SIZE = R_BLOCK_WIDTH * R_BLOCK_HEIGHT;
 
 // basic ray tracing buffers
-layout ( std430, binding = 0, set = 0 ) coherent buffer VT_RAYS {VtRay rays[];};
-layout ( std430, binding = 1, set = 0 ) coherent buffer VT_HITS {VtHitData hits[];};
-layout ( std430, binding = 2, set = 0 ) coherent buffer VT_CLOSEST_HITS {int closestHits[];};
-layout ( std430, binding = 3, set = 0 ) coherent buffer VT_MISS_HITS {int missHits[];};
+layout ( std430, binding = 0, set = 0 ) coherent buffer VT_RAYS { VtRay rays[]; };
+layout ( std430, binding = 1, set = 0 ) coherent buffer VT_HITS { VtHitData hits[]; };
+layout ( std430, binding = 2, set = 0 ) coherent buffer VT_CLOSEST_HITS { int closestHits[]; };
+layout ( std430, binding = 3, set = 0 ) coherent buffer VT_MISS_HITS { int missHits[]; };
 layout ( std430, binding = 4, set = 0 ) coherent buffer VT_HIT_PAYLOAD { VtHitPayload hitPayload[]; };
-layout ( std430, binding = 5, set = 0 ) coherent buffer VT_RAY_INDICES {int rayGroupIndices[];};
+layout ( std430, binding = 5, set = 0 ) coherent buffer VT_RAY_INDICES { int rayGroupIndices[]; };
 
 // system canvas info
 layout ( std430, binding = 6, set = 0 ) readonly restrict buffer VT_CANVAS_INFO {
@@ -53,8 +53,9 @@ layout ( std430, binding = 8, set = 0 ) coherent buffer VT_9_LINE { highp uint i
 #endif
 
 // ray and hit linking buffer
-layout ( rgba32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
-layout ( rgba32f,  binding = 11, set = 0 ) uniform imageBuffer attributes;
+//layout ( rgba32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
+layout ( r32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
+layout ( rgba32f, binding = 11, set = 0 ) uniform imageBuffer attributes;
 
 layout ( std430, binding = 12, set = 0 ) restrict buffer VT_GROUPS_COUNTERS {
     int rayTypedCounter[4];
@@ -102,7 +103,8 @@ int vtReuseRays(in VtRay ray, in uvec2 c2d, in uint type, in int rayID) {
     
     int rID = atomicIncRayCount();
     rayID = rayID < 0 ? rID : rayID; rays[rayID] = ray;
-    imageStore(rayLink, rayID, uvec4(0u, p2x_16(c2d), 0u.xx));
+    imageStore(rayLink, rayID<<1, 0u.xxxx),imageStore(rayLink, (rayID<<1)|1, p2x_16(c2d).xxxx);
+    
     int gID = atomicIncRayTypedCount(type);
     //if (gID < MAX_RAYS) rayGroupIndices[gID*5+(type+1)] = (rayID+1);
     //if (rID < MAX_RAYS) rayGroupIndices[rID*5] = (rayID+1);
@@ -118,11 +120,11 @@ int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint type) {
 
 
 int vtFetchHitIdc(in int lidx) {
-    return int(imageLoad(rayLink, lidx).x)-1;
+    return int(imageLoad(rayLink, lidx<<1).x)-1;
 }
 
 uvec2 vtFetchIndex(in int lidx) {
-    uint c2dp = imageLoad(rayLink, lidx).y;
+    uint c2dp = imageLoad(rayLink, (lidx<<1)|1).x;
     return up2x_16(c2dp);
 }
 

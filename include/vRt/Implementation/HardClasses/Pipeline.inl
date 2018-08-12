@@ -119,7 +119,7 @@ namespace _vt {
 
 
                 bfi.bufferSize = rayCount * 2ull * sizeof(uint32_t);
-                bfi.format = VK_FORMAT_R32G32_UINT;
+                bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayLinkPayload);
 
 
