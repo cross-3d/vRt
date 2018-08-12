@@ -35,13 +35,14 @@ void main() {
     [[unroll, dependency_length(4)]]
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
-        int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+        const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         bool overflow = it >= wsize; IFALL(overflow) break;
 
         // do BVH traversing 
-        int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID);
+        const int rayID = vtRayIdx(it); int hid = vtFetchHitIdc(rayID);
         traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
 
+        // planned multiple-hits support
         [[flatten]]
         if (!overflow) { // verify intersection
             const int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
@@ -55,18 +56,15 @@ void main() {
             hit.rayID = rayID+1;
             hit.uvt = primitiveState.lastIntersection;
             hit.payloadID = 0;
-            //hit.materialID = vmaterials[triID];
-            //hit.next = 0;
             hit.attribID = 0;
 #ifndef DMA_HIT
             hits[hid] = hit;
 #endif
 
             // identify intersection
-            imageStore(rayLink, rayID, uvec4(hid+1, imageLoad(rayLink, rayID).y, 0u.xx));
+            [[flatten]]
             IF (triID >= 0) {
-                hits[hid].attribID = vtVerifyClosestHit(hid, -1)+1;  // better link directly, because extra atomics (even with subgroups) also hits to performances
-                //const int gID = 0; vtVerifyClosestHit(hid, gID); // add hit to group
+                hits[hid].attribID = vtVerifyClosestHit(hid, -1)+1;
             } else {
                 const int rID = 0; 
                 vtVerifyMissedHit(hid, rID);

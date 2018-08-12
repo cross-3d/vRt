@@ -47,6 +47,7 @@ void main() {
     ray.cdirect = lcts(dir.xyz);
 
     // filtering off rays by resolution
+    [[flatten]]
     if (xy.x < wh.x && xy.y < wh.y) { 
         imageStore(ColorOutput, ivec2(Global_Idx.xy), vec4(0.f.xxx, 1.f));
         vtReuseRays(ray, Global_Idx.xy, 0, xy.y * wh.x + xy.x); // prefer strict layout

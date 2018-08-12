@@ -90,9 +90,9 @@ void main() {
     [[unroll, dependency_length(4)]]
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
-        int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+        const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         bool overflow = globalID >= wsize || globalID < 0;
-        int hitID = overflow ? -1 : vtClosestId(globalID, stageUniform.currentGroup);
+        const int hitID = overflow ? -1 : vtClosestId(globalID, stageUniform.currentGroup);
         IFALL(overflow) break;
         {
 #ifdef DMA_HIT
@@ -101,7 +101,7 @@ void main() {
             VtHitData hit = hits[hitID];
 #endif
 
-            int rayID = hit.rayID-1;
+            const int rayID = hit.rayID-1;
             hitp = hitPayload[hit.payloadID-1];
 
             vec3 viewVec = dcts(cray.cdirect.xy), rorigin = cray.origin.xyz;
@@ -185,8 +185,10 @@ void main() {
             }
 
             // additional validation of hit (hit point interpolated offset test)
+            [[flatten]]
             if (!overflow && hit.rayID > 0) {
-                int pid = hitID;
+                const int pid = hitID; imageStore(rayLink, rayID, uvec4(hitID+1, imageLoad(rayLink, rayID).y, 0u.xx));
+
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT
                 hits[hitID] = hit;

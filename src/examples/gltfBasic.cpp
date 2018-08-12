@@ -443,7 +443,7 @@ int main() {
 
 
 
-    glm::vec3 eyePos = glm::vec3(0.1f, 10.5f, -50.6f).zyx();
+    glm::vec3 eyePos = glm::vec3(-3.5f, 10.5f, -50.6f).zyx();
     glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
     glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
 
