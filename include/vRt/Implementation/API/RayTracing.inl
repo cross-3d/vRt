@@ -93,8 +93,8 @@ namespace _vt {
                 // reset hit counter before new intersections
                 auto zero = 0u; vkCmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer->_buffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
                 cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, INTENSIVITY); // traverse BVH
-                cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), strided<uint32_t>(1)) });
                 cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, INTENSIVITY); // interpolate intersections
+                cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), strided<uint32_t>(1)) });
             }
 
             // reload to caches and reset counters (if has group shaders)
