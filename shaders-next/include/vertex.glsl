@@ -138,8 +138,7 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
     float T = INFINITY;
     IFANY (valid) {
         // gather patterns
-        const int itri = tri*3;
-        const mat3 ABC = mat3(TLOAD(lvtx, itri+0).xyz+orig.xxx, TLOAD(lvtx, itri+1).xyz+orig.yyy, TLOAD(lvtx, itri+2).xyz+orig.zzz)*M;
+        const mat3 ABC = mat3(TLOAD(lvtx, tri*3+0).xyz+orig.xxx, TLOAD(lvtx, tri*3+1).xyz+orig.yyy, TLOAD(lvtx, tri*3+2).xyz+orig.zzz)*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf
@@ -159,8 +158,7 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
 #ifdef VRT_USE_FAST_INTERSECTION
 #ifdef VTX_USE_LEGACY_METHOD
 float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid) {
-    const int itri = tri*3;
-    const mat3 vT = mat3(TLOAD(lvtx, itri+0).xyz, TLOAD(lvtx, itri+1).xyz, TLOAD(lvtx, itri+2).xyz);
+    const mat3 vT = mat3(TLOAD(lvtx, tri*3+0).xyz, TLOAD(lvtx, tri*3+1).xyz, TLOAD(lvtx, tri*3+2).xyz);
     const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
     const vec3 h = cross(dir.xyz, e2);
     const float a = dot(e1,h);
@@ -185,8 +183,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 #else
 // intersect triangle by transform
 float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid) {
-    const int itri = tri*3;
-    const mat3x4 vT = mat3x4(TLOAD(lvtx, itri+0), TLOAD(lvtx, itri+1), TLOAD(lvtx, itri+2));
+    const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
 
     const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]), T = oz/dz;
     if (T >= INFINITY || T < 0.f) { _valid = false; }
