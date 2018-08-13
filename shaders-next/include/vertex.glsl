@@ -134,7 +134,7 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 #ifdef ENABLE_VSTORAGE_DATA
 
 #ifndef VRT_USE_FAST_INTERSECTION
-float intersectTriangle(in vec3 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, in bool valid) {
+float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, in bool valid) {
     float T = INFINITY;
     IFANY (valid) {
         // gather patterns
@@ -158,11 +158,11 @@ float intersectTriangle(in vec3 orig, in mat3 M, in int axis, in int tri, inout 
 
 #ifdef VRT_USE_FAST_INTERSECTION
 #ifdef VTX_USE_LEGACY_METHOD
-float intersectTriangle(in vec3 orig, in vec3 dir, in int tri, inout vec2 uv, in bool _valid) {
+float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid) {
     const int itri = tri*3;
     const mat3 vT = mat3(TLOAD(lvtx, itri+0).xyz, TLOAD(lvtx, itri+1).xyz, TLOAD(lvtx, itri+2).xyz);
     const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
-    const vec3 h = cross(dir, e2);
+    const vec3 h = cross(dir.xyz, e2);
     const float a = dot(e1,h);
 
 #ifdef BACKFACE_CULLING
@@ -172,8 +172,8 @@ float intersectTriangle(in vec3 orig, in vec3 dir, in int tri, inout vec2 uv, in
 #endif
 
     const float f = 1.f/a;
-    const vec3 s = -(orig+vT[0]), q = cross(s, e1);
-    uv = f * vec2(dot(s,h),dot(dir,q));
+    const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1);
+    uv = f * vec2(dot(s,h),dot(dir.xyz,q));
 
     if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
 

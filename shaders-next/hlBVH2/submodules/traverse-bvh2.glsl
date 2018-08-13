@@ -16,7 +16,7 @@ layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYS
 
 
 struct BvhTraverseState {
-    int idx, defTriangleID, stackPtr, cacheID, pageID; lowp bvec4_ boxSide;
+    int idx, defTriangleID, stackPtr, cacheID, pageID; lowp bvec4_ boxSide; float minDist;
     fvec4_ minusOrig, directInv;
 
 #ifdef USE_STACKLESS_BVH
@@ -68,7 +68,9 @@ void doIntersection() {
 #define nearhit primitiveState.lastIntersection.z
 
     [[flatten]]
-    if (d < INFINITY && d <= nearhit) { primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID+1)); } traverseState.defTriangleID=-1;
+    if (d < INFINITY && d <= nearhit && d >= traverseState.minDist.x) {
+        primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID+1)); 
+    } traverseState.defTriangleID=-1;
 }
 
 void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
@@ -125,6 +127,8 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     primitiveState.orig = fma(direct, diffOffset.xxxx, torig);
     primitiveState.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO), primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z, dirlen, diffOffset);
 
+    // setup min dist for limiting traverse
+    traverseState.minDist = fma(traverseState.minDist, dirlen, diffOffset);
     
 #ifdef USE_F32_BVH
     traverseState.directInv = fvec4_(dirproj);
@@ -165,6 +169,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
                 // it increase FPS by filtering nodes by first triangle intersection
                 childIntersect &= bvec2_(lessThanEqual(nears, primitiveState.lastIntersection.zz));
+                childIntersect &= bvec2_(greaterThanEqual(fars, traverseState.minDist.xx));
                 const int fmask = int(childIntersect.x + childIntersect.y*2u)-1; // mask of intersection
 
                 [[flatten]]
