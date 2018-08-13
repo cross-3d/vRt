@@ -9,58 +9,53 @@ const uint WG_COUNT = 64u;
 
 // shared memory of...
 shared uint localHistogram[RADICES];
-layout (local_size_x = RADICES) in;
 
+//layout (local_size_x = Wave_Size, local_size_y = 16) in;
+layout (local_size_x = 1024) in; // use many as possible
+
+// X axis is workgroup count, Y is radices
 void main() {
     IFALL (gl_WorkGroupID.y < 1) {
-        
-        // calculate prefix-sums of all work groups
-        localHistogram[Local_Idx] = 0;
+        localHistogram[Local_Idx] = 0u;
         LGROUP_BARRIER
 
-        // calculate local prefix-sum in each work of each radice
-        uint awHistogram = 0; // sum of work-group histograms (globalized histograms)
         [[unroll]]
-        for (uint wk=0;wk<WG_COUNT;wk++) {
-            const uint widx = Local_Idx + RADICES * wk;
-            if (Local_Idx < RADICES) PrefixSum[widx] = add(awHistogram, Histogram[widx]);
-        }
+        for (uint rk=0u;rk<RADICES;rk+=Wave_Count_RX) {
+            const uint radice = rk + Wave_Idx;
 
-        // calculate prefix-sum of all work-groups for each radice
-        if (Local_Idx < RADICES) localHistogram[Local_Idx] = awHistogram;
-        uint rdcAwPrefixOffset = 0u;//prefixScan(RADICES);
-        LGROUP_BARRIER
-
-        {
-            const uint limit = RADICES;
-            uvec_wave ldx = Local_Idx;
-            LGROUP_BARRIER
-            {
-                const uint prv = ldx >= 1 ? ldx-1 : 0;
-                const uint tmp = ldx >= 1 && ldx < limit ? localHistogram[prv] : 0;
-                LGROUP_BARRIER
-                if (ldx < limit) localHistogram[ldx] = tmp;
-                LGROUP_BARRIER
-            }
-
-            // reduction prefix-scan
+            // calculate prefix-sums by work-groups for every radice
+            uint radcount = 0u;
             [[unroll]]
-            for (int i=1;i<limit;i<<=1) {
-                const uint prv = ldx >= i ? ldx-i : 0;
-                const uint off = ldx >= i && ldx < limit ? localHistogram[prv] : 0, 
-                           hst =             ldx < limit ? localHistogram[ldx] : 0;
-                LGROUP_BARRIER
-                if (ldx < limit) localHistogram[ldx] = off + hst;
-                LGROUP_BARRIER
+            for (uint gp=0u;gp<WG_COUNT;gp+=Wave_Size) {
+                const uint workgroup = gp+Lane_Idx, widx = workgroup*RADICES + radice;
+
+                [[flatten]]
+                if (workgroup < WG_COUNT) {
+                    PrefixSum[widx] = subgroupExclusiveAdd(Histogram[widx]) + add(radcount, subgroupAdd(Histogram[widx]));
+                }
             }
 
-            rdcAwPrefixOffset = localHistogram[ldx];
+            [[flatten]]
+            if (electedInvoc()) localHistogram[radice] = radcount; // collect all radice counts
         }
+
+        LGROUP_BARRIER
         
-        // add work-group prefix-sum of radice to in-group prefix-sum
         [[unroll]]
-        for (uint wk=0;wk<WG_COUNT;wk++) {
-            if (Local_Idx < RADICES) PrefixSum[Local_Idx + RADICES * wk] += rdcAwPrefixOffset;
+        for (uint gp=0u;gp<WG_COUNT;gp+=Wave_Count_RX) {
+            const uint workgroup = gp + Wave_Idx;
+            
+            // calculate prefix-sums of every radice
+            uint gprefix = 0u;
+            [[unroll]]
+            for (uint rk=0u;rk<RADICES;rk+=Wave_Size) {
+                const uint radice = rk + Lane_Idx, widx = workgroup*RADICES + radice;
+
+                [[flatten]]
+                if (radice < RADICES) {
+                    PrefixSum[widx] += subgroupExclusiveAdd(localHistogram[radice]) + add(gprefix, subgroupAdd(localHistogram[radice]));
+                }
+            }
         }
     }
 

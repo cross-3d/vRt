@@ -72,7 +72,7 @@ T fname(in uint WHERE) {\
 T2 fname(in uint WHERE, in bvec2 a) {\
     const mediump uvec4 pfx2 = uvec4(bPrefixSum(a.x), bPrefixSum(a.y));\
     T gadd = 0;\
-    if (subgroupElect() && any(greaterThan(pfx2.xz, (0u).xx))) {gadd = atomicAdd(mem, T(pfx2.x+pfx2.z)*T(by));}\
+    if (subgroupElect() && any(greaterThan(pfx2.xz, (0u).xx))) {gadd = add(mem, T(pfx2.x+pfx2.z)*T(by));}\
     return T(by).xx * T2(pfx2.y, pfx2.w+pfx2.x) + readFLane(gadd).xx;\
 }
 
