@@ -24,7 +24,7 @@ void main() {
     const int wsize = min(closestHitCounterCurrent, MAX_HITS);
 
     // accumulate closest hits
-    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { add(closestHitCounter, closestHitCounterCurrent); }
+    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(closestHitCounter, closestHitCounterCurrent); }
     SB_BARRIER
 
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);

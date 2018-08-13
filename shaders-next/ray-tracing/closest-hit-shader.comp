@@ -161,6 +161,7 @@ void main() {
             // convert metallic roughness to glossiness specular PBR model
             float roughness = clamp01(spc.y), metallic = clamp01(spc.z);
             float fresnel = clamp01(pow(abs(dot(dcts(cray.cdirect.xy), normal.xyz)), IOR - 1.f));
+            //float fresnel = 0.5f; // debug
 
             vec3 fresnelColor = clamp01(fmix(max_fresnel_color * 0.9f, min_fresnel_color * 0.04f, fresnel.xxx));
             vec3 specularColor = clamp01(mix(fresnelColor, diffuse.xyz, metallic.xxx)); // use correct specular
