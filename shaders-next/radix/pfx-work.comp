@@ -15,7 +15,7 @@ layout (local_size_x = 1024) in; // use many as possible
 
 // X axis is workgroup count, Y is radices
 void main() {
-    IFALL (gl_WorkGroupID.y < 1) {
+    //IFALL (gl_WorkGroupID.y < 1) {
         localHistogram[Local_Idx] = 0u;
         LGROUP_BARRIER
 
@@ -26,7 +26,7 @@ void main() {
             // calculate prefix-sums by work-groups for every radice
             uint radcount = 0u;
             [[unroll]]
-            for (uint gp=0u;gp<WG_COUNT;gp+=Wave_Size) {
+            for (uint gp=0u;gp<WG_COUNT;gp+=Wave_Size_RX) {
                 const uint workgroup = gp+Lane_Idx, widx = workgroup*RADICES + radice;
 
                 [[flatten]]
@@ -40,7 +40,7 @@ void main() {
         }
 
         LGROUP_BARRIER
-        
+
         [[unroll]]
         for (uint gp=0u;gp<WG_COUNT;gp+=Wave_Count_RX) {
             const uint workgroup = gp + Wave_Idx;
@@ -48,7 +48,7 @@ void main() {
             // calculate prefix-sums of every radice
             uint gprefix = 0u;
             [[unroll]]
-            for (uint rk=0u;rk<RADICES;rk+=Wave_Size) {
+            for (uint rk=0u;rk<RADICES;rk+=Wave_Size_RX) {
                 const uint radice = rk + Lane_Idx, widx = workgroup*RADICES + radice;
 
                 [[flatten]]
@@ -57,7 +57,7 @@ void main() {
                 }
             }
         }
-    }
+    //}
 
     LGROUP_BARRIER
 }
