@@ -9,19 +9,14 @@
 #define _RAY_TYPE VtRay
 #endif
 
-#ifndef USE_STACKLESS_BVH
+
 const int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount, max_iteraction = 8192;
 layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYSTEM { int pages[][8]; };
-#endif
 
 
 struct BvhTraverseState {
     int idx, defTriangleID, stackPtr, cacheID, pageID; lowp bvec4_ boxSide; float minDist;
     fvec4_ minusOrig, directInv;
-
-#ifdef USE_STACKLESS_BVH
-    uint64_t bitStack, bitStack2;
-#endif
 } traverseState;
 
 struct PrimitiveState {
@@ -35,7 +30,6 @@ struct PrimitiveState {
 } primitiveState;
 
 
-#ifndef USE_STACKLESS_BVH
 shared int localStack[WORK_SIZE][localStackSize];
 #define lstack localStack[Local_Idx]
 
@@ -55,8 +49,6 @@ void storeStack(in int rsl) {
 
 bool stackIsFull() { return traverseState.stackPtr >= localStackSize && traverseState.pageID >= pageCount; }
 bool stackIsEmpty() { return traverseState.stackPtr <= 0 && traverseState.pageID <= 0; }
-#endif
-
 void doIntersection() {
     const bool isvalid = true; //traverseState.defTriangleID >= 0;
     vec2 uv = vec2(0.f.xx); const float d = 
@@ -91,9 +83,6 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // initial state
     traverseState.defTriangleID = -1;
-#ifdef USE_STACKLESS_BVH
-    traverseState.bitStack = 0ul;
-#endif
 
 #ifdef VRT_USE_FAST_INTERSECTION
     primitiveState.dir = direct;
@@ -145,12 +134,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
         if (traverseState.idx >= 0 && traverseState.defTriangleID < 0) 
         { [[dependency_infinite]] for (;hi<max_iteraction;hi++) {
             bool _continue = false;
-
-#ifdef USE_STACKLESS_BVH
-            const ivec4 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx)-1) : (-1).xxxx;
-#else
             const ivec2 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
-#endif
 
             [[flatten]]
             if (cnode.x == cnode.y) { // if leaf, defer for intersection 
@@ -174,20 +158,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
                 [[flatten]]
                 if (fmask >= 0) {
-#ifdef USE_STACKLESS_BVH
-                    traverseState.bitStack <<= 1;
-#endif
-
                     [[flatten]]
                     if (fmask == 2) { // if both has intersection
                         ivec2 ordered = cnode.xx + (nears.x<=nears.y ? ivec2(0,1) : ivec2(1,0));
                         //ivec2 ordered = nears.x<=nears.y ? cnode.xy : cnode.yx;
                         traverseState.idx = ordered.x;
-#ifdef USE_STACKLESS_BVH
-                        IF (all(childIntersect)) traverseState.bitStack |= 1ul; 
-#else
                         IF (all(childIntersect) & bool_(!stackIsFull())) storeStack(ordered.y);
-#endif
                     } else {
                         traverseState.idx = cnode.x + fmask;
                         //traverseState.idx = fmask == 0 ? cnode.x : cnode.y;
@@ -200,29 +176,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
             [[flatten]]
             if (!_continue) {
-#ifdef USE_STACKLESS_BVH
-                // stackless
-                for (int bi=0;bi<64;bi++) {
-                    if ((traverseState.bitStack&1ul)!=0ul || traverseState.bitStack==0ul) break;
-                    traverseState.bitStack >>= 1;
-                    traverseState.idx = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).z-1) : -1;
-                }
-
-                // goto to sibling or break travers
-                if (traverseState.bitStack!=0ul && traverseState.idx >= 0) {
-                    traverseState.idx += traverseState.idx%2==0?1:-1; traverseState.bitStack &= ~1ul;
-                } else {
-                    traverseState.idx = -1;
-                }
-#else
                 // stacked 
                 if (!stackIsEmpty()) {
                     traverseState.idx = loadStack();
                 } else {
                     traverseState.idx = -1;
                 }
-#endif
-
             }
 
             // if all threads had intersection, or does not given any results, break for processing
