@@ -146,9 +146,9 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                     //continue; 
                 }
             } else { // if not leaf, intersect with nodes
-                const int _cmp = cnode.x >> 1; // intersect boxes
+                //const int _cmp = cnode.x >> 1; // intersect boxes
                 lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, traverseState.boxSide.xyz, 
-                    fmat3x4_(bvhBoxes[_cmp][0], bvhBoxes[_cmp][1], bvhBoxes[_cmp][2])
+                    fmat3x4_(bvhBoxes[traverseState.idx][0], bvhBoxes[traverseState.idx][1], bvhBoxes[traverseState.idx][2])
                 , nears, fars);
 
                 // it increase FPS by filtering nodes by first triangle intersection

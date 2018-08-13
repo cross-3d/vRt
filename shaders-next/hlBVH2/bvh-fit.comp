@@ -33,10 +33,10 @@ void unifyNodeBox(inout int idx) {
 
         // transposed save
 #ifdef USE_F32_BVH
-        bvhBoxesResulting[comp.x >> 1] = fvec4_[4](fvec4_(lrbox[0]), fvec4_(lrbox[1]), fvec4_(lrbox[2]), fvec4_(lrbox[3]));
+        bvhBoxesResulting[idx] = fvec4_[4](fvec4_(lrbox[0]), fvec4_(lrbox[1]), fvec4_(lrbox[2]), fvec4_(lrbox[3]));
 #else
         //bvhBoxesResulting[comp.x >> 1] = uvec2[4](packHalf4x16(lrbox[0]), packHalf4x16(lrbox[1]), packHalf4x16(lrbox[2]), packHalf4x16(lrbox[3]));
-        bvhBoxesResulting[comp.x >> 1] = uvec2[4](packHalf4x16(lrbox[0]*N1024), packHalf4x16(lrbox[1]*N1024), packHalf4x16(lrbox[2]*N1024), packHalf4x16(lrbox[3]*N1024));
+        bvhBoxesResulting[idx] = uvec2[4](packHalf4x16(lrbox[0]*N1024), packHalf4x16(lrbox[1]*N1024), packHalf4x16(lrbox[2]*N1024), packHalf4x16(lrbox[3]*N1024));
 #endif
     }
 }
