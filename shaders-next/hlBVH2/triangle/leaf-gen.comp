@@ -101,10 +101,10 @@ void main() {
 
 #define to globalID
 
-        { // pre-compute normals
-            const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
-            imageStore(lnrm, int(tri), vec4(normalize(cross(TLOAD(lvtxIn, itri+1).xyz-v0, TLOAD(lvtxIn, itri+2).xyz-v0)), uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[tri])))));
-        }
+        //{ // pre-compute normals
+        //    const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
+        //    imageStore(lnrm, int(tri), vec4(normalize(cross(TLOAD(lvtxIn, itri+1).xyz-v0, TLOAD(lvtxIn, itri+2).xyz-v0)), uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[tri])))));
+        //}
 
         // store leaf data
         [[flatten]]

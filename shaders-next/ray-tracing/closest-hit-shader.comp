@@ -103,97 +103,61 @@ void main() {
 
             const int rayID = hit.rayID-1;
             hitp = hitPayload[hit.payloadID-1];
-
-            vec3 viewVec = dcts(cray.cdirect.xy), rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;
 
-            matID = floatBitsToInt(hit.uvt.w);//hit.materialID;// - materialOffset;
-            //bool overflow = overflow || rayID < 0 || (matID >= materialCount || matID < 0);
+            matID = floatBitsToInt(hit.uvt.w);
             bool overflow = overflow || rayID < 0;
 
-            // static colors
-            textured.diffuse = material.diffuse;
-            textured.bump = vec4(0.f, 0.f, 1.f, 1.f);
-            textured.specular = material.specular;
-            textured.emissive = material.emissive;
-
             // AMD not supported per-lane texture data loading, if texture index is not constant
-            vec2 texcoord = imageLoad(attributes, makeAttribID(hit.attribID, TEXCOORD_TID)).xy; //hit.attributes[TEXCOORD_TID].xy; //hit.texcoord.xy;
-            vec3 normal = imageLoad(attributes, makeAttribID(hit.attribID, NORMAL_TID)).xyz; //hit.attributes[NORMAL_TID].xyz;
-            //vec3 bitang = imageLoad(attributes, makeAttribID(hit.attribID, BITANGENT_TID)).xyz; //hit.attributes[BITANGENT_TID].xyz;
-            vec3 tangent = imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz; //hit.attributes[TANGENT_TID].xyz;
-            vec3 bitang = normalize(cross(tangent, normal));
-
-
-            // use HW intersected normal if something wrong
-            float nlen = length(normal.xyz);
-            normal.xyz = nlen <= 1e-5 ? hit.vdat.xyz : (normal.xyz/nlen);
-            normal.xyz = faceforward(normal.xyz, normal.xyz, -hit.vdat.xyz);
-            //normal.xyz = faceforward(normal.xyz, dcts(cray.cdirect.xy), normal.xyz);
-
+            vec2 texcoord = imageLoad(attributes, makeAttribID(hit.attribID, TEXCOORD_TID)).xy;
+            vec3 normal = imageLoad(attributes, makeAttribID(hit.attribID, NORMAL_TID)).xyz;
+            vec3 bitang = imageLoad(attributes, makeAttribID(hit.attribID, BITANGENT_TID)).xyz;
+            vec3 tangent = imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz;
             mat3 tbn = transpose(mat3(tangent.xyz, bitang.xyz, normal.xyz));
-            vec3 pV = normalize(tbn * (-viewVec * hit.uvt.z));
-            float hW = 0.f;
 
-#ifdef ENABLE_POM
-            texcoord = parallaxMapping(pV, texcoord, hW);
-#endif
+            // get textured data
             textured.bump.xyz = getNormalMapping(texcoord);
             textured.diffuse = fetchDiffuse(texcoord);
             textured.specular = fetchSpecular(texcoord);
             textured.emissive = fetchEmission(texcoord);
 
-            SB_BARRIER
-
-            vec4 diffuse = textured.diffuse; //diffuse.xyz = toLinear(max(diffuse.xyz, vec3(0.f)));
-            vec4 emission = textured.emissive; //emission.xyz = toLinear(max(emission.xyz, vec3(0.f)));
-            vec4 spc = clamp01(textured.specular);
-
-            
-            // TODO: dynamic light
-            const vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f));
-
             // default normal
-            hitp.normalHeight.xyz = normal.xyz;
-/*
+            hitp.normalHeight.xyz = 0.f.xxx;
+
             // block TBN change manually if non valid normal mapped texture
             if (validateTexture(material.bumpTexture)) {
                 hitp.normalHeight.xyz = textured.bump.xyz * tbn; // apply TBN with normal mapping
             }
 
             // if normal goes wrong, restore normal
-            if ((length(hitp.normalHeight.xyz) <= 1e-5) || (length(hitp.normalHeight.xyz) >= INFINITY) || any(isnan(hitp.normalHeight.xyz)) || any(isinf(hitp.normalHeight.xyz))) {
+            if (dot(hitp.normalHeight.xyz,hitp.normalHeight.xyz) < 1e-4 || any(isnan(hitp.normalHeight.xyz)) || any(isinf(hitp.normalHeight.xyz))) {
                 hitp.normalHeight.xyz = normal.xyz;
             }
-*/
 
-            // dim by light 
-            hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz);
-            diffuse.xyz *= clamp(fma(dot(hitp.normalHeight.xyz, lightVector), 0.5f, 0.5f), 0.f, 1.f);
-
+            // facing of normal
+            hitp.normalHeight.xyz = faceforward(normalize(hitp.normalHeight.xyz), dcts(cray.cdirect.xy), normal.xyz);
 
 
             // convert metallic roughness to glossiness specular PBR model
-            float roughness = clamp01(spc.y), metallic = clamp01(spc.z);
+            float roughness = clamp01(textured.specular.y), metallic = clamp01(textured.specular.z);
             float fresnel = clamp01(pow(abs(dot(dcts(cray.cdirect.xy), normal.xyz)), IOR - 1.f));
-            //float fresnel = 0.5f; // debug
-
             vec3 fresnelColor = clamp01(fmix(max_fresnel_color * 0.9f, min_fresnel_color * 0.04f, fresnel.xxx));
-            vec3 specularColor = clamp01(mix(fresnelColor, diffuse.xyz, metallic.xxx)); // use correct specular
+            vec3 specularColor = clamp01(mix(fresnelColor, textured.diffuse.xyz, metallic.xxx)); // use correct specular
             vec4 specularGlossiness = vec4(specularColor, roughness);
             
-            //diffuse.xyz *= (1.f - metallic); // dim diffuse by metallic
+            // TODO: dynamic light
+            const vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f));
+            hitp.albedo = textured.diffuse * vec4(clamp(fma(dot(hitp.normalHeight.xyz, lightVector), 0.5f, 0.5f), 0.f, 1.f).xxx, 1.f);
 
-            // normalize normal again
-            hitp.emission = emission.xyzw;
-            hitp.albedo = diffuse.xyzw;
+            // set emission and specularity
+            hitp.emission = textured.emissive;
             hitp.specularGlossiness = specularGlossiness;
 
             // triangle intersection test
             IFANY (cameraUniform.variant == 1) {
-                //hitp.emission = vec4(vec3(0.5f, 0.5f, 1.0f), 1.f);
-                //hitp.emission = vec4(hitp.normalHeight.xyz * 0.5f + 0.5f, 1.f);
                 hitp.emission = vec4(hitp.albedo);
+                //hitp.specularGlossiness = vec4(0.f);
+                //hitp.emission = vec4(fma(hitp.normalHeight.xyz,0.5f.xxx,0.5f.xxx),1.f);
             } else {
                 hitp.specularGlossiness = vec4(0.f);
                 hitp.emission = vec4(imageLoad(attributes, makeAttribID(hit.attribID, VCOLOR_TID)).xyz, 1.f);

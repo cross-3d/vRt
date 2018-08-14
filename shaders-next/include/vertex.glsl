@@ -40,7 +40,7 @@
     layout ( binding = 3, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lvtxIn;
     #endif
 
-    #ifdef LEAF_GEN
+    #if (defined(LEAF_GEN) || defined(VERTEX_FILLING))
     layout ( binding = 5, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtx;
     layout ( binding = 7, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lnrm;
     #else
@@ -273,7 +273,6 @@ void storeAttribute(in ivec3 cdata, in vec4 fval) {
 void storePosition(in ivec2 cdata, in vec4 fval) {
     imageStore(lvtxIn, cdata.x*3+cdata.y, fval);
 }
+
 #endif
-
-
 #endif

@@ -22,6 +22,69 @@ const int BITANGENT_TID = 3;
 const int VCOLOR_TID = 4;
 const int VCOUNT = 3;
 
+
+bool nvlda(in vec4 a) { return (dot(a,a)<1e-4f || any(isnan(a)) || any(isinf(a))); }
+void calculateTBN(in int trip){
+    const int itri = trip*3;
+    const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
+
+    // alloc arrays
+    vec4 normals[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
+    vec4 texcoord[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
+    vec4 vertice[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
+    
+    // get vertices
+    [[unroll]] for (int i=0;i<3;i++) {vertice[i] = imageLoad(lvtxIn, itri+i);}
+
+    // calculate geometrical normal
+    mat3x3 dlps = mat3x3(vertice[0].xyz, vertice[1].xyz, vertice[2].xyz); dlps[1] -= dlps[0], dlps[2] -= dlps[0];
+    const vec4 gnormal = vec4(normalize(cross(dlps[1], dlps[2])), 0.f);
+    imageStore(lnrm, trip, vec4(gnormal.xyz, uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[trip])))));
+
+    // fix zero normals and get texcoords with vertices
+    const ivec2 NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID));
+    const ivec2 TEXCOORD_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TEXCOORD_TID));
+    [[unroll]] for (int i=0;i<3;i++) {
+        const ivec2 nmi = mosaicIdc(NORMAL_,i); vec4 normal = TLOAD(attrib_texture_out, nmi);
+        [[flatten]] if (nvlda(normal)) ISTORE(attrib_texture_out, nmi, normal = gnormal);
+        normals[i] = normal, texcoord[i] = TLOAD(attrib_texture_out, mosaicIdc(TEXCOORD_,i));
+    }
+
+    // getting tangents and bitangents
+    mat3x2 dlts = mat3x2(texcoord[0].xy, texcoord[1].xy, texcoord[2].xy); dlts[1] -= dlts[0], dlts[2] -= dlts[0];
+    const ivec2 TANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TANGENT_TID));
+    const ivec2 BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
+    [[unroll]] for (int i=0;i<3;i++) {
+        // calc raw TBN 
+        float idet = 1.f/precIssue(determinant(mat2(dlts[1],dlts[2]))); // inv determinant
+        vec3 t = fma(dlts[2].yyy, dlps[1], -dlts[1].y * dlps[2]), b = fma(dlts[1].xxx, dlps[2], -dlts[2].x * dlps[1]), n = normals[i].xyz; // pre-tbn
+
+        // if texcoord not found or incorrect, calculate by axis
+        [[flatten]] if (
+            all(lessThanEqual(abs(dlts[1]), 1e-5f.xx)) || 
+            all(lessThanEqual(abs(dlts[2]), 1e-5f.xx)) || 
+            all(lessThanEqual(abs(dlps[1]), 1e-5f.xxx)) || 
+            all(lessThanEqual(abs(dlps[2]), 1e-5f.xxx))
+        ) {
+            const vec3 c0 = cross(n, vec3(0.f, 0.f, 1.f)), c1 = cross(n, vec3(0.f, 1.f, 0.f));
+            t = length(c0) >= length(c1) ? c0 : c1, b = cross(t, n);
+            idet = 1.f;
+        }
+        
+        { // orthonormalization process
+            t -= n * dot( t, n );
+            b -= n * dot( b, n );
+            b -= t * dot( b, t );
+        }
+
+        const ivec2 tmi = mosaicIdc(TANGENT_, i);
+        ISTORE(attrib_texture_out, mosaicIdc(BITANGENT_, i), vec4(normalize(idet*b), 0.0f));
+        [[flatten]] if (nvlda(TLOAD(attrib_texture_out, tmi))) {
+            ISTORE(attrib_texture_out, tmi, vec4(normalize(idet*t), 0.0f));
+        }
+    }
+}
+
 struct Transforms { mat4 transform, transformNrm; };
 layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { Transforms vTransforms[]; };
 
@@ -50,6 +113,15 @@ void main() {
             // 
             const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
 
+            // load vertex data
+            [[unroll]]
+            for (int i=0;i<3;i++) {
+                vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = rofft * VCOUNT + i;
+                readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
+                readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice);
+                storePosition(ivec2(wofft, i), mult4(vTransforms[inputID].transform, vertice));
+            }
+
             // load attrib data
             [[unroll]]
             for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
@@ -59,21 +131,14 @@ void main() {
                     vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
                     readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-                    if (ai == NORMAL_TID || ai == TANGENT_TID || ai == BITANGENT_TID) { attribValue = mult4(vTransforms[inputID].transformNrm, attribValue); }
+                    if (ai == NORMAL_TID || ai == TANGENT_TID || ai == BITANGENT_TID) { attribValue = vec4(normalize(mult4(vTransforms[inputID].transformNrm, attribValue).xyz), 0.f); }
                     storeAttribute(ivec3(wofft, ai, i), attribValue);
                 }
                 storeAttribute(ivec3(wofft, ai, 3), 0.f.xxxx);
             }
 
-            // load vertex data
-            [[unroll]]
-            for (int i=0;i<3;i++) {
-                vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = rofft * VCOUNT + i;
-                readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
-                readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice);
-                storePosition(ivec2(wofft, i), mult4(vTransforms[inputID].transform, vec4(vertice.xyz, 1.f)));
-            }
-            
+            // 
+            calculateTBN(int(wofft));
         }
     }
 }
