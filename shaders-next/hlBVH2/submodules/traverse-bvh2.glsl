@@ -57,11 +57,12 @@ void doIntersection() {
 #else
         intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID, uv.xy, isvalid);
 #endif
-#define nearhit primitiveState.lastIntersection.z
+#define nearhit (primitiveState.lastIntersection.z+(1e-4f))
 
-    [[flatten]]
-    if (d < INFINITY && d <= nearhit && d >= traverseState.minDist.x) {
-        primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID+1)); 
+    [[flatten]] if (d < INFINITY && d <= nearhit && d >= traverseState.minDist.x) {
+        [[flatten]] if (abs(primitiveState.lastIntersection.z-d) > 1e-4f || (traverseState.defTriangleID+1) > floatBitsToInt(primitiveState.lastIntersection.w)) {
+            primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID+1));
+        }
     } traverseState.defTriangleID=-1;
 }
 
@@ -117,7 +118,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     primitiveState.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO), primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z, dirlen, diffOffset);
 
     // setup min dist for limiting traverse
-    traverseState.minDist = fma(traverseState.minDist, dirlen, diffOffset);
+    traverseState.minDist = fma(traverseState.minDist, dirlen, diffOffset-(1e-4f));
     
 #ifdef USE_F32_BVH
     traverseState.directInv = fvec4_(dirproj);
