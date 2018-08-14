@@ -166,7 +166,8 @@ namespace _vt {
                 bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
                 if (!info.bvhMetaBuffer) {
-                    bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 4ull * 2ull;
+                    //bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 4ull * 2ull;
+                    bfi.bufferSize = sizeof(uint32_t);
                     bfi.format = VK_FORMAT_R32G32B32A32_SINT;
                     createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhMetaBuffer);
                 }
