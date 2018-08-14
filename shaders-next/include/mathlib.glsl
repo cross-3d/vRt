@@ -467,7 +467,7 @@ vec2 fast32swap(in vec2 b64, in lowp bool_ nswp) {
 // single float 32-bit box intersection
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
-lowp bool_ intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec3_ sgn, const mat3x2 tMinMaxMem, inout float near, inout float far) {
+bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec3_ sgn, const mat3x2 tMinMaxMem, inout float near, inout float far) {
     mat3x2 tMinMax = mat3x2(
         fma(SSC(sgn.x) ? tMinMaxMem[0].xy : tMinMaxMem[0].yx, dr.xx, origin.xx),
         fma(SSC(sgn.y) ? tMinMaxMem[1].xy : tMinMaxMem[1].yx, dr.yy, origin.yy),
@@ -479,9 +479,9 @@ lowp bool_ intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec
         tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x);
 
     // resolve hit
-    const lowp bool_ isCube = bool_(tFar>tNear) & bool_(tFar>0.f) & bool_(abs(tNear) <= INFINITY-PRECERR);
+    const bool isCube = tFar>=tNear && tFar>=0.f && tNear < INFINITY;
     const float inf = float(INFINITY);
-    near = mix(inf, tNear, isCube), far = mix(inf, tFar, isCube);
+    near = mix(-inf, tNear, isCube), far = mix(inf, tFar, isCube);
     return isCube;
 }
 

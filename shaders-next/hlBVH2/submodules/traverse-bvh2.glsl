@@ -110,10 +110,10 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     vec2 nears = (-INFINITY).xx, fars = INFINITY.xx;
     const vec2 bndsf2 = vec2(-1.0005f, 1.0005f);
     const int entry = (valid ? BVH_ENTRY : -1), _cmp = entry >> 1;
-    traverseState.idx = SSC(intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, mat3x2(bndsf2,bndsf2,bndsf2), nears.x, fars.x)) ? entry : -1; 
+    traverseState.idx = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, mat3x2(bndsf2,bndsf2,bndsf2), nears.x, fars.x) ? entry : -1;
     traverseState.stackPtr = 0, traverseState.pageID = 0;
-
-    const float diffOffset = -max(nears.x, 0.f);
+    
+    const float diffOffset = min(-nears.x, 0.f);
     primitiveState.orig = fma(direct, diffOffset.xxxx, torig);
     primitiveState.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO), primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z, dirlen, diffOffset);
 
