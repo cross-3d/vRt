@@ -41,9 +41,7 @@ void main() {
             const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
 
             // read material accessor
-            uint matID = 0u;
-            readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID);
-            matID += uint(vertexBlock.materialID);
+            uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
 
             // planned to support quad based geometry
             vmaterials[wofft] = int(matID);
@@ -55,15 +53,16 @@ void main() {
             // load attrib data
             [[unroll]]
             for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
+                const int ai = attributes[a].attributeID;
                 [[unroll]]
                 for (int i=0;i<3;i++) {
                     vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
                     readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-                    if (a == NORMAL_TID) { attribValue = mult4(vTransforms[inputID].transformNrm, attribValue); }
-                    storeAttribute(ivec3(wofft, attributes[a].attributeID, i), attribValue);
+                    if (ai == NORMAL_TID || ai == TANGENT_TID || ai == BITANGENT_TID) { attribValue = mult4(vTransforms[inputID].transformNrm, attribValue); }
+                    storeAttribute(ivec3(wofft, ai, i), attribValue);
                 }
-                storeAttribute(ivec3(wofft, attributes[a].attributeID, 3), 0.f.xxxx);
+                storeAttribute(ivec3(wofft, ai, 3), 0.f.xxxx);
             }
 
             // load vertex data

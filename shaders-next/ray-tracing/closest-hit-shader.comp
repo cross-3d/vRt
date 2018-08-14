@@ -120,13 +120,16 @@ void main() {
             // AMD not supported per-lane texture data loading, if texture index is not constant
             vec2 texcoord = imageLoad(attributes, makeAttribID(hit.attribID, TEXCOORD_TID)).xy; //hit.attributes[TEXCOORD_TID].xy; //hit.texcoord.xy;
             vec3 normal = imageLoad(attributes, makeAttribID(hit.attribID, NORMAL_TID)).xyz; //hit.attributes[NORMAL_TID].xyz;
-            vec3 bitang = imageLoad(attributes, makeAttribID(hit.attribID, BITANGENT_TID)).xyz; //hit.attributes[BITANGENT_TID].xyz;
+            //vec3 bitang = imageLoad(attributes, makeAttribID(hit.attribID, BITANGENT_TID)).xyz; //hit.attributes[BITANGENT_TID].xyz;
             vec3 tangent = imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz; //hit.attributes[TANGENT_TID].xyz;
+            vec3 bitang = normalize(cross(tangent, normal));
+
 
             // use HW intersected normal if something wrong
             float nlen = length(normal.xyz);
             normal.xyz = nlen <= 1e-5 ? hit.vdat.xyz : (normal.xyz/nlen);
             normal.xyz = faceforward(normal.xyz, normal.xyz, -hit.vdat.xyz);
+            //normal.xyz = faceforward(normal.xyz, dcts(cray.cdirect.xy), normal.xyz);
 
             mat3 tbn = transpose(mat3(tangent.xyz, bitang.xyz, normal.xyz));
             vec3 pV = normalize(tbn * (-viewVec * hit.uvt.z));
@@ -152,8 +155,20 @@ void main() {
 
             // default normal
             hitp.normalHeight.xyz = normal.xyz;
+/*
+            // block TBN change manually if non valid normal mapped texture
+            if (validateTexture(material.bumpTexture)) {
+                hitp.normalHeight.xyz = textured.bump.xyz * tbn; // apply TBN with normal mapping
+            }
+
+            // if normal goes wrong, restore normal
+            if ((length(hitp.normalHeight.xyz) <= 1e-5) || (length(hitp.normalHeight.xyz) >= INFINITY) || any(isnan(hitp.normalHeight.xyz)) || any(isinf(hitp.normalHeight.xyz))) {
+                hitp.normalHeight.xyz = normal.xyz;
+            }
+*/
 
             // dim by light 
+            hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz);
             diffuse.xyz *= clamp(fma(dot(hitp.normalHeight.xyz, lightVector), 0.5f, 0.5f), 0.f, 1.f);
 
 
@@ -170,7 +185,6 @@ void main() {
             //diffuse.xyz *= (1.f - metallic); // dim diffuse by metallic
 
             // normalize normal again
-            hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz);
             hitp.emission = emission.xyzw;
             hitp.albedo = diffuse.xyzw;
             hitp.specularGlossiness = specularGlossiness;

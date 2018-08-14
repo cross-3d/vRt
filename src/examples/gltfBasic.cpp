@@ -315,23 +315,49 @@ int main() {
 
 
 
+    if (model.samplers.size() > 0) {
+        for (auto& S : model.samplers)
+        {
+            mSamplers.push_back(VkSampler{});
+            auto& sampler = mSamplers[mSamplers.size() - 1];
 
-    for (auto& S : model.samplers)
-    {
+            vk::SamplerCreateInfo samplerInfo = {};
+            samplerInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
+            samplerInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
+            samplerInfo.minFilter = vk::Filter::eLinear;
+            samplerInfo.magFilter = vk::Filter::eLinear;
+            samplerInfo.compareEnable = false;
+
+            // set filter and sampling modes
+            if (S.magFilter == VK_FILTER_NEAREST) samplerInfo.magFilter = vk::Filter::eNearest;
+            if (S.minFilter == VK_FILTER_NEAREST) samplerInfo.minFilter = vk::Filter::eNearest;
+            if (S.wrapS == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE) samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;
+            if (S.wrapT == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE) samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;
+            if (S.wrapS == VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT) samplerInfo.addressModeU = vk::SamplerAddressMode::eMirroredRepeat;
+            if (S.wrapT == VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT) samplerInfo.addressModeV = vk::SamplerAddressMode::eMirroredRepeat;
+            if (S.wrapS == VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE) samplerInfo.addressModeU = vk::SamplerAddressMode::eMirrorClampToEdge;
+            if (S.wrapT == VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE) samplerInfo.addressModeV = vk::SamplerAddressMode::eMirrorClampToEdge;
+            if (S.wrapS == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER) samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToBorder;
+            if (S.wrapT == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER) samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToBorder;
+
+            // create sampler
+            sampler = deviceQueue->device->logical.createSampler(samplerInfo);
+        }
+
+    }
+    else {
         mSamplers.push_back(VkSampler{});
-        auto& sampler = mSamplers[mSamplers.size()-1];
+        auto& sampler = mSamplers[mSamplers.size() - 1];
 
-        // TODO: add full sampler support
         vk::SamplerCreateInfo samplerInfo = {};
         samplerInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
         samplerInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
         samplerInfo.minFilter = vk::Filter::eLinear;
         samplerInfo.magFilter = vk::Filter::eLinear;
         samplerInfo.compareEnable = false;
-
-        // create sampler
         sampler = deviceQueue->device->logical.createSampler(samplerInfo);
     }
+
 
     {
         std::vector<VtAppMaterial> materials;
@@ -343,16 +369,17 @@ int main() {
             material.diffuseTexture = 0;
 
             if (M.values.find("baseColorTexture") != M.values.end()) material.diffuseTexture = M.values.at("baseColorTexture").TextureIndex() + 1;
-            if (M.values.find("emissiveTexture") != M.values.end()) material.emissiveTexture = M.values.at("emissiveTexture").TextureIndex() + 1;
-            if (M.values.find("normalTexture") != M.values.end()) material.roughness = M.values.at("normalTexture").TextureIndex() + 1;
             if (M.values.find("metallicRoughnessTexture") != M.values.end()) material.specularTexture = M.values.at("metallicRoughnessTexture").TextureIndex() + 1;
-            if (M.values.find("baseColorFactor") != M.values.end()) material.diffuse = glm::vec4(glm::make_vec3(&M.values.at("baseColorFactor").number_array[0]), 1.0f);
+            if (M.additionalValues.find("emissiveTexture") != M.additionalValues.end()) material.emissiveTexture = M.additionalValues.at("emissiveTexture").TextureIndex() + 1;
+            if (M.additionalValues.find("normalTexture") != M.additionalValues.end()) material.bumpTexture = M.additionalValues.at("normalTexture").TextureIndex() + 1;
 
-            material.specular.z = M.values.at("metallicFactor").number_value;
-            material.specular.y = M.values.at("roughnessFactor").number_value;
+            if (M.values.find("metallicFactor") != M.values.end()) material.specular.z = M.values.at("metallicFactor").number_value;
+            if (M.values.find("roughnessFactor") != M.values.end()) material.specular.y = M.values.at("roughnessFactor").number_value;
+            if (M.values.find("baseColorFactor") != M.values.end()) material.diffuse = glm::vec4(glm::make_vec3(M.values.at("baseColorFactor").number_array.data()), 1.f);
         }
         writeIntoBuffer<VtAppMaterial>(deviceQueue, materials, materialDescs, 0);
     }
+
 
 
 
@@ -361,7 +388,7 @@ int main() {
         for (auto& T : model.textures)
         {
             textures.push_back(VtVirtualCombinedImage{});
-            textures[textures.size() - 1].setTextureID(T.source).setSamplerID(T.sampler);
+            textures[textures.size() - 1].setTextureID(T.source).setSamplerID(T.sampler != -1 ? T.sampler : 0);
         }
         writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, textures, materialCombImages, 0);
     }
@@ -656,6 +683,10 @@ int main() {
 
                 if (attr.first.compare("TEXCOORD_0") == 0) {
                     attributes.push_back({ TEXCOORD_TID, uint32_t(attr.second) });
+                }
+
+                if (attr.first.compare("TANGENT") == 0) {
+                    attributes.push_back({ TANGENT_TID, uint32_t(attr.second) });
                 }
             }
 
