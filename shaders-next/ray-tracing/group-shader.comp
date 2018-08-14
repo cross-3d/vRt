@@ -66,7 +66,7 @@ void main() {
             [[flatten]]
             if (max3_vec(f16_f32(newray.dcolor)) >= 1e-4f) {
                 vec3 vdir = dcts(newray.cdirect.xy), shift = hit.vdat.xyz;
-                newray.origin.xyz = fma(faceforward(shift, -vdir, hit.vdat.xyz), (hit.uvt.z*1e-4f).xxx, newray.origin.xyz);
+                newray.origin.xyz = fma(faceforward(shift, -vdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz);
                 vtReuseRays(newray, icoord.xy, 0, rayID);
                 //vtEmitRays(newray, icoord.xy, 0);
             }
