@@ -73,5 +73,6 @@ call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%interpolator.comp.spv    -o %HRDDIR%%HLB
 call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%traverse-bvh.comp.spv    -o %HRDDIR%%HLBV%traverse-bvh.comp.spv
 call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%bvh-build.comp.spv       -o %HRDDIR%%HLBV%bvh-build.comp.spv
 call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%bvh-build-first.comp.spv -o %HRDDIR%%HLBV%bvh-build-first.comp.spv
+call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%bvh-fit.comp.spv         -o %HRDDIR%%HLBV%bvh-fit.comp.spv
 call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%\\triangle\\bound-calc.comp.spv      -o %HRDDIR%%HLBV%\\triangle\\bound-calc.comp.spv
 call spirv-opt %OPTFLAGS% %HRDDIR%%HLBV%\\triangle\\leaf-gen.comp.spv        -o %HRDDIR%%HLBV%\\triangle\\leaf-gen.comp.spv
