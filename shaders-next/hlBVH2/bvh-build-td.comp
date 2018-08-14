@@ -76,7 +76,7 @@ void main() {
     // create initial (root) node
     if (threadID == 0) {
 #ifdef FIRST_STEP
-        const int hid = 0; bvhMeta[hid+0] = ivec4(1, bvhBlock.leafCount, 0, 0), bvhMeta[hid+1] = ivec4(0, 0, 0, 0);
+        const int hid = 0; bvhNodes[hid+0].meta = ivec4(1, bvhBlock.leafCount, 0, 0), bvhNodes[hid+1].meta = ivec4(0, 0, 0, 0);
         Actives[aCounterInc()] = hid+1;
 #else
         cBuffer = 1, asize_inv_ = aCounter[  cBuffer], asize_ = aCounter[1-cBuffer];
@@ -94,10 +94,10 @@ void main() {
 
         // swap buffers emulation
         if (threadID == 0) { 
-                cBuffer = 1-cBuffer, asize_inv_ = 0, asize = atomicExchange(asize_, 0), swapIn = int(mrQ(1-cBuffer)), swapOut = int(mrQ(cBuffer));
+            cBuffer = 1-cBuffer, asize_inv_ = 0, asize = atomicExchange(asize_, 0), swapIn = int(mrQ(1-cBuffer)), swapOut = int(mrQ(cBuffer));
 #ifndef FIRST_STEP
-                //wsize = asize * (m == 0 ? 1 : int(gl_NumWorkGroups.x)), osize = tiled(wsize, int(gl_NumWorkGroups.x));
-                wsize = swapIn+int(wID(asize)), osize = m == 0 ? asize : wsize;
+            //wsize = asize * (m == 0 ? 1 : int(gl_NumWorkGroups.x)), osize = tiled(wsize, int(gl_NumWorkGroups.x));
+            wsize = swapIn+int(wID(asize)), osize = m == 0 ? asize : wsize;
 #endif
         }
         

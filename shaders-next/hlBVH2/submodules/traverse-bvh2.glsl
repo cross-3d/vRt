@@ -135,7 +135,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
         if (traverseState.idx >= 0 && traverseState.defTriangleID < 0) 
         { [[dependency_infinite]] for (;hi<max_iteraction;hi++) {
             bool _continue = false;
-            const ivec2 cnode = traverseState.idx >= 0 ? (texelFetch(bvhMeta, traverseState.idx).xy-1) : (-1).xx;
+            const ivec2 cnode = (traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx)-(1).xx;
 
             [[flatten]]
             if (cnode.x == cnode.y) { // if leaf, defer for intersection 
@@ -147,9 +147,8 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                     //continue; 
                 }
             } else { // if not leaf, intersect with nodes
-                //const int _cmp = cnode.x >> 1; // intersect boxes
                 lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, traverseState.boxSide.xyz, 
-                    fmat3x4_(bvhBoxes[traverseState.idx][0], bvhBoxes[traverseState.idx][1], bvhBoxes[traverseState.idx][2])
+                    fmat3x4_(bvhNodes[traverseState.idx].cbox[0], bvhNodes[traverseState.idx].cbox[1], bvhNodes[traverseState.idx].cbox[2])
                 , nears, fars);
 
                 // it increase FPS by filtering nodes by first triangle intersection

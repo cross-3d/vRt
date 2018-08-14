@@ -12,31 +12,23 @@
 #include "./submodules/includes.glsl"
 
 // optimize by shareds
-//shared mat4 _lrbox[WORK_SIZE_BND];
-//#define lrbox _lrbox[Local_Idx]
-//shared ivec4 _comp[WORK_SIZE_BND]; 
-//#define comp _comp[Local_Idx]
-
 void unifyNodeBox(inout int idx) {
     // initial for unify box
-    ivec2 comp = bvhMeta[idx].xy-1;//imageLoad(bvhMeta, idx).xy-1; // meta of contributable
+    ivec2 comp = bvhNodes[idx].meta.xy-1;
     if (comp.x != comp.y && comp.x >= 0) {
 
         // get contributors boxes
-        mat4 lrbox = mat4(bvhBoxesWork[comp.x][0], bvhBoxesWork[comp.y][0], bvhBoxesWork[comp.x][1], bvhBoxesWork[comp.y][1]);
+        mat4 lrbox = mat4(bvhBoxesWork[comp.x][0], bvhBoxesWork[comp.x|1][0], bvhBoxesWork[comp.x][1], bvhBoxesWork[comp.x|1][1]);
 
         // contribute to current node
         bvhBoxesWork[idx] = vec4[2](min(lrbox[0], lrbox[1]), max(lrbox[2], lrbox[3]));
 
-        // transpose and compress boxes of contributors
-        lrbox = transpose(lrbox);
-
         // transposed save
+        lrbox = transpose(lrbox), bvhNodes[idx].cbox = 
 #ifdef USE_F32_BVH
-        bvhBoxesResulting[idx] = fvec4_[4](fvec4_(lrbox[0]), fvec4_(lrbox[1]), fvec4_(lrbox[2]), fvec4_(lrbox[3]));
+            fvec4_[3](fvec4_(lrbox[0]), fvec4_(lrbox[1]), fvec4_(lrbox[2]));
 #else
-        //bvhBoxesResulting[comp.x >> 1] = uvec2[4](packHalf4x16(lrbox[0]), packHalf4x16(lrbox[1]), packHalf4x16(lrbox[2]), packHalf4x16(lrbox[3]));
-        bvhBoxesResulting[idx] = uvec2[4](packHalf4x16(lrbox[0]*N1024), packHalf4x16(lrbox[1]*N1024), packHalf4x16(lrbox[2]*N1024), packHalf4x16(lrbox[3]*N1024));
+            uvec2[3](packHalf4x16(lrbox[0]*N1024), packHalf4x16(lrbox[1]*N1024), packHalf4x16(lrbox[2]*N1024));
 #endif
     }
 }
@@ -59,8 +51,7 @@ void main() {
 
         [[dependency_infinite]]
         for (int l=0;l<65536;l++) {
-            //const int pid = idx >= 0 ? (imageLoad(bvhMeta, idx).z-1) : -1;
-            const int pid = (idx >= 0 ? bvhMeta[idx].z : 0)-1;
+            const int pid = (idx >= 0 ? bvhNodes[idx].meta.z : 0)-1;
             idx = pid >= 0 && atomicCompSwap(Flags[pid], 0, 1) == 1 ? pid : -1;
             if ( idx >= 0 ) { unifyNodeBox(idx); Flags[idx] = 0; } else { break; };
         }

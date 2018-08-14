@@ -76,19 +76,18 @@ layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB {
 
 // BVH Zone in ray tracing system
 #if (defined(ENABLE_VSTORAGE_DATA) && !defined(BVH_CREATION) && !defined(VERTEX_FILLING))
-    layout ( binding = 1, set = 1 ) uniform isamplerBuffer bvhMeta;
-
-    #ifdef USE_F32_BVH
-    layout ( binding = 2, set = 1, std430 ) readonly coherent buffer bvhBoxesB { mediump vec4 bvhBoxes[][4]; };
-    #else
-    layout ( binding = 2, set = 1, std430 ) readonly coherent buffer bvhBoxesB { f16vec4 bvhBoxes[][4]; };
-    //layout ( binding = 2, set = 1, std430 ) readonly buffer bvhBoxesB { uvec2 bvhBoxes[][4]; }; 
-    #endif
+struct NTYPE_ {
+#ifdef USE_F32_BVH
+     vec4 cbox[3];
+    ivec4 meta;
+#else
+    f16vec4 cbox[3];
+      ivec4 meta;
 #endif
+};
 
-
-
-
+layout ( binding = 2, set = 1, std430 ) readonly coherent buffer bvhBoxesB { NTYPE_ bvhNodes[]; };
+#endif
 
 
 

@@ -39,21 +39,21 @@ layout ( binding = 8, set = 0, std430 ) restrict buffer CountersB {
     int vtCounters[6];
 };
 
-
+struct BTYPE_ {
 #ifdef USE_F32_BVH
-#define BTYPE_ vec4
+     vec4 cbox[3];
+    ivec4 meta;
 #else
-#define BTYPE_ uvec2
+    uvec2 cbox[3];
+    ivec4 meta;
 #endif
+};
 
-layout ( binding = 2, set = 1, std430 ) buffer bvhBoxesResultingB { BTYPE_ bvhBoxesResulting[][4]; };
-layout ( binding = 3, set = 1, std430 ) buffer bvhMetaB { ivec4 bvhMeta[]; };
-//layout ( binding = 4, set = 1, std430 ) buffer bvhMetaOrderB { ivec4 bvhMetaReorder[]; };
-//layout ( binding = 3, set = 1, rgba32i ) uniform iimageBuffer bvhMeta;
+layout ( binding = 2, set = 1, std430 ) buffer bvhBoxesResultingB { BTYPE_ bvhNodes[]; };
 
 bbox_t calcTriBox(in mat3x4 triverts) {
     bbox_t result;
     result.mn = min3_wrap(triverts[0], triverts[1], triverts[2]) - 5e-4f;
     result.mx = max3_wrap(triverts[0], triverts[1], triverts[2]) + 5e-4f;
     return result;
-}
+};
