@@ -474,9 +474,9 @@ int main() {
     glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
     glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
 
-    //glm::vec3 eyePos = glm::vec3(1e-4f, 10.5f, -50.6f);
-    //glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, 1.f);
-    //glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, 1.f);
+    //glm::vec3 eyePos = glm::vec3(1e-4f, 2.0f, 50.6f);
+    //glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, -1.f);
+    //glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, -1.f);
 
     // initial matrices
     auto scale = 10.0f * glm::vec3(1.f, 1.f, 1.f);

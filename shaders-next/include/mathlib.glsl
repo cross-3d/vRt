@@ -129,8 +129,8 @@ vec4 fakeGather(in usampler2D smpler, in vec2 texcoord, const int channel) {
 #define min3_wrap(a,b,c) min3(a,b,c)
 #define max3_wrap(a,b,c) max3(a,b,c)
 #else
-#define min3_wrap(a,b,c) min(a,min(b,c))
-#define max3_wrap(a,b,c) max(a,max(b,c))
+#define min3_wrap(a,b,c) min(min(a,b),c)
+#define max3_wrap(a,b,c) max(max(a,b),c)
 #endif
 
 #define max3_vec(a) max3_wrap(a.x,a.y,a.z)
