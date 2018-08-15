@@ -154,10 +154,11 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 // it increase FPS by filtering nodes by first triangle intersection
                 childIntersect &= bvec2_(lessThanEqual(nears, primitiveState.lastIntersection.zz));
                 childIntersect &= bvec2_(greaterThanEqual(fars, traverseState.minDist.xx));
-                const int fmask = int(childIntersect.x + childIntersect.y*2u)-1; // mask of intersection
+                //const int fmask = int(childIntersect.x + childIntersect.y*2u)-1; // mask of intersection
+                const int fmask = int((childIntersect.y<<1u)|childIntersect.x)-1; // mask of intersection
 
                 [[flatten]]
-                if (fmask >= 0) {
+                if (fmask != -1) {
                     ivec2 ordered = cnode.xx;
                     [[flatten]]
                     if (fmask == 2) { // if both has intersection
