@@ -31,7 +31,7 @@ layout ( std430, binding = 5, set = 0 ) coherent buffer VT_RAY_INDICES { int ray
 // system canvas info
 layout ( std430, binding = 6, set = 0 ) readonly restrict buffer VT_CANVAS_INFO {
     int currentGroup, maxRayCount, iteration, closestHitOffset;
-    ivec2 size;
+    ivec2 size; int lastIteration, r0;
 } stageUniform;
 
 #define MAX_HITS stageUniform.maxRayCount

@@ -54,6 +54,7 @@ namespace _vt {
         rtset->_cuniform.closestHitOffset = 0;
         rtset->_cuniform.currentGroup = 0;
         rtset->_cuniform.maxRayCount = rayCount; // try to
+        rtset->_cuniform.lastIteration = B-1;
 
         // form descriptor sets
         std::vector<VkDescriptorSet> _rtSets = { rtset->_descriptorSet };

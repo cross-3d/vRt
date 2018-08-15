@@ -40,7 +40,7 @@ void main() {
 
         // get output image 2D coord
         uvec2 icoord = vtFetchIndex(rayID);
-        float alph = (emisson.a > 0.9f || stageUniform.iteration == 1) ? 1.f : 0.f;
+        float alph = (emisson.a > 0.9f || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
 
         // save result of ray tracing by ray saved indice
         //if (!overflow) { imageStore(ColorOutput, icoord, vec4(f16_f32(ray.dcolor).xyz, 1.f)); }

@@ -533,7 +533,7 @@ int main() {
         vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
         vtCmdBindAccelerator(qRtCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qRtCmdBuf, vertexAssembly);
-        vtCmdDispatchRayTracing(qRtCmdBuf, 1280, 720, 2);
+        vtCmdDispatchRayTracing(qRtCmdBuf, 1280, 720, 1);
         vkEndCommandBuffer(qRtCmdBuf);
     }
 

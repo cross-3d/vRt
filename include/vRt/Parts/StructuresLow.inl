@@ -122,7 +122,7 @@ namespace vrt {
 
     struct VtStageUniform { 
         int currentGroup = 0, maxRayCount = 0, iteration = 0, closestHitOffset = 0;
-        int width = 1, height = 1;//, r0 = 0, r1 = 0;
+        int width = 1, height = 1, lastIteration = 0, r0 = 0;
     };
 
     struct VtBvhBlock {
