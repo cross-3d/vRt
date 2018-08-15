@@ -155,17 +155,17 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 childIntersect &= bvec2_(lessThanEqual(nears, primitiveState.lastIntersection.zz));
                 childIntersect &= bvec2_(greaterThanEqual(fars, traverseState.minDist.xx));
                 //const int fmask = int(childIntersect.x + childIntersect.y*2u)-1; // mask of intersection
-                const int fmask = int((childIntersect.y<<1u)|childIntersect.x)-1; // mask of intersection
+                //const int fmask = int((childIntersect.y<<1u)|childIntersect.x)-1; // mask of intersection
+                int fmask = int((childIntersect.y<<1u)|childIntersect.x);
 
                 [[flatten]]
-                if (fmask != -1) {
-                    ivec2 ordered = cnode.xx;
+                if (fmask > 0) {
                     [[flatten]]
-                    if (fmask == 2) { // if both has intersection
-                        ordered |= nears.x<=nears.y ? ivec2(0,1) : ivec2(1,0);
-                        IF (all(childIntersect) & bool_(!stackIsFull())) storeStack(ordered.y);
+                    if (fmask == 3) { // if both has intersection
+                        fmask &= nears.x<=nears.y ? 1 : 2;
+                        [[flatten]] IF (all(childIntersect) & bool_(!stackIsFull())) storeStack(cnode.x | (fmask&1));
                     }
-                    traverseState.idx = ordered.x | (fmask&1);
+                    traverseState.idx = cnode.x | (fmask>>1);
                     _continue = true; 
                     //continue;
                 }
