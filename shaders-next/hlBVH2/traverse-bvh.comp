@@ -44,32 +44,34 @@ void main() {
         traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
 
         // planned multiple-hits support
-        [[flatten]]
-        if (!overflow) { // verify intersection
+        [[flatten]] if (!overflow) { // verify intersection
             const int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
-            if (hid < 0) hid = it;
+            [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // reserve one hit
 
 #ifdef DMA_HIT
             #define hit hits[hid]
 #else
             VtHitData hit;
 #endif
-            hit.rayID = rayID+1;
-            hit.uvt = primitiveState.lastIntersection;
-            hit.payloadID = 0;
-            hit.attribID = 0;
+            hit.payloadID = 0, hit.rayID = rayID+1;
+
+            // if found as minimum one intersection
+            [[flatten]] IF (triID >= 0) {
+                [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // if required new
+                hit.uvt = primitiveState.lastIntersection;
+                hit.attribID = vtVerifyClosestHit(hid, -1)+1;
+            }
+            
+            // if no found any intersection
+            [[flatten]] IF (triID < 0) {
+                [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // if required new
+                hit.uvt = vec4(0.f.xx, INFINITY, intBitsToFloat(-1));
+                hit.attribID = 0; vtVerifyMissedHit(hid, 0);
+            }
+
 #ifndef DMA_HIT
             hits[hid] = hit;
 #endif
-
-            // identify intersection
-            [[flatten]]
-            IF (triID >= 0) {
-                hits[hid].attribID = vtVerifyClosestHit(hid, -1)+1;
-            } else {
-                const int rID = 0; 
-                vtVerifyMissedHit(hid, rID);
-            }
         }
     }
 
