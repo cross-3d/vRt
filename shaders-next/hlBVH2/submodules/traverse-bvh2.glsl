@@ -10,7 +10,7 @@
 #endif
 
 
-const int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount, max_iteraction = 8192;
+const highp int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount, max_iteraction = 8192;
 layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYSTEM { int pages[][8]; };
 
 
@@ -170,26 +170,13 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 }
             }
 
-            [[flatten]]
-            if (!_continue) {
-                // stacked 
-                if (!stackIsEmpty()) {
-                    traverseState.idx = loadStack();
-                } else {
-                    traverseState.idx = -1;
-                }
-            }
-
             // if all threads had intersection, or does not given any results, break for processing
-            //IFALL
-            IFANY 
-            (traverseState.defTriangleID >= 0 || traverseState.idx < 0) { break; }
+            [[flatten]] if (!_continue) { traverseState.idx = stackIsEmpty() ? -1 : loadStack(); } // load from stack 
+            [[flatten]] IFANY (traverseState.defTriangleID >= 0 || traverseState.idx < 0) { break; }
         }}
         
-        [[flatten]]
-        if (traverseState.defTriangleID >= 0) { doIntersection(); }
-        [[flatten]]
-        if (traverseState.idx < 0) { break; }
+        [[flatten]] if (traverseState.defTriangleID >= 0) { doIntersection(); }
+        [[flatten]] if (traverseState.idx < 0) { break; }
     }
 
     // correction of hit distance
