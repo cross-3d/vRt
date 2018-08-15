@@ -135,7 +135,7 @@ void main() {
 
             // convert metallic roughness to glossiness specular PBR model
             const float fresnel = clamp01(pow(abs(dot(dcts(cray.cdirect.xy), normal.xyz)), IOR - 1.f));
-            const vec3 fresnelColor = toLinear(clamp01(fmix(max_fresnel_color * 0.95f, min_fresnel_color * 0.5f, fresnel.xxx)));
+            const vec3 fresnelColor = toLinear(clamp01(fmix(max_fresnel_color * 0.95f, min_fresnel_color * 0.1f, fresnel.xxx)));
             const vec3 specularColor = clamp01(mix(fresnelColor, textured.diffuse.xyz, textured.specular.zzz)); // use correct specular
             const vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
             
