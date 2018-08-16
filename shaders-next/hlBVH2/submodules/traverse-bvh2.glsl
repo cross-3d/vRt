@@ -50,20 +50,20 @@ void storeStack(in int rsl) {
 bool stackIsFull() { return traverseState.stackPtr >= localStackSize && traverseState.pageID >= pageCount; }
 bool stackIsEmpty() { return traverseState.stackPtr <= 0 && traverseState.pageID <= 0; }
 void doIntersection() {
-    const bool isvalid = true; //traverseState.defTriangleID >= 0;
+    const bool isvalid = true;//traverseState.defTriangleID > 0;
     vec2 uv = vec2(0.f.xx); const float d = 
 #ifdef VRT_USE_FAST_INTERSECTION
-        intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID, uv.xy, isvalid);
+        intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid);
 #else
-        intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID, uv.xy, isvalid);
+        intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID-1, uv.xy, isvalid);
 #endif
 #define nearhit (primitiveState.lastIntersection.z+(1e-4f))
 
     [[flatten]] if (d < INFINITY && d <= nearhit && d >= traverseState.minDist.x) {
-        [[flatten]] if (abs(primitiveState.lastIntersection.z-d) > 1e-4f || (traverseState.defTriangleID+1) > floatBitsToInt(primitiveState.lastIntersection.w)) {
-            primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID+1));
+        [[flatten]] if (abs(primitiveState.lastIntersection.z-d) > 1e-4f || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
+            primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID));
         }
-    } traverseState.defTriangleID=-1;
+    } traverseState.defTriangleID=0;
 }
 
 void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
@@ -83,7 +83,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     const lowp bvec3_ bsgn = (bvec3_(sign(dirproj.xyz)*ftype_(1.0001f))+true_)>>true_;
 
     // initial state
-    traverseState.defTriangleID = -1;
+    traverseState.defTriangleID = 0;
 
 #ifdef VRT_USE_FAST_INTERSECTION
     primitiveState.dir = direct;
@@ -132,15 +132,16 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     [[dependency_infinite]]
     for (int hi=0;hi<max_iteraction;hi++) {
         [[flatten]]
-        if (traverseState.idx >= 0 && traverseState.defTriangleID < 0) 
+        if (traverseState.idx >= 0 && traverseState.defTriangleID <= 0) 
         { [[dependency_infinite]] for (;hi<max_iteraction;hi++) {
             bool _continue = false;
-            const ivec2 cnode = (traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx)-(1).xx;
+            //const ivec2 cnode = (traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx)-(1).xx;
+            const ivec2 cnode = traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx;
 
             [[flatten]]
             if (cnode.x == cnode.y) { // if leaf, defer for intersection 
                 [[flatten]]
-                if (traverseState.defTriangleID < 0) { 
+                if (traverseState.defTriangleID <= 0) { 
                     traverseState.defTriangleID = cnode.x;
                 } else {
                     _continue = true;
@@ -154,8 +155,6 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 // it increase FPS by filtering nodes by first triangle intersection
                 childIntersect &= bvec2_(lessThanEqual(nears, primitiveState.lastIntersection.zz));
                 childIntersect &= bvec2_(greaterThanEqual(fars, traverseState.minDist.xx));
-                //const int fmask = int(childIntersect.x + childIntersect.y*2u)-1; // mask of intersection
-                //const int fmask = int((childIntersect.y<<1u)|childIntersect.x)-1; // mask of intersection
                 int fmask = int((childIntersect.y<<1u)|childIntersect.x);
 
                 [[flatten]]
@@ -163,9 +162,9 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                     [[flatten]]
                     if (fmask == 3) { // if both has intersection
                         fmask &= nears.x<=nears.y ? 1 : 2;
-                        [[flatten]] IF (all(childIntersect) & bool_(!stackIsFull())) storeStack(cnode.x | (fmask&1));
+                        [[flatten]] IF (all(childIntersect) & bool_(!stackIsFull())) storeStack(cnode.x^(fmask>>1));
                     }
-                    traverseState.idx = cnode.x | (fmask>>1);
+                    traverseState.idx = cnode.x^(fmask&1);
                     _continue = true; 
                     //continue;
                 }
@@ -173,10 +172,10 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
             // if all threads had intersection, or does not given any results, break for processing
             [[flatten]] if (!_continue) { traverseState.idx = stackIsEmpty() ? -1 : loadStack(); } // load from stack 
-            [[flatten]] IFANY (traverseState.defTriangleID >= 0 || traverseState.idx < 0) { break; }
+            [[flatten]] IFANY (traverseState.defTriangleID > 0 || traverseState.idx < 0) { break; }
         }}
         
-        [[flatten]] if (traverseState.defTriangleID >= 0) { doIntersection(); }
+        [[flatten]] if (traverseState.defTriangleID > 0) { doIntersection(); }
         [[flatten]] if (traverseState.idx < 0) { break; }
     }
 
