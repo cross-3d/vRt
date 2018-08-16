@@ -221,8 +221,8 @@ int main() {
     tinygltf::TinyGLTF loader = {};
     std::string err, input_filename = 
         //"models/vokselia_spawn.gltf";
-        "models/sponza/sponza.gltf";
-        //"models/BoomBoxWithAxes.gltf";
+        //"models/sponza/sponza.gltf";
+        "models/BoomBoxWithAxes.gltf";
         //"models/Chess_Set.gltf";
         //"models/Cube.gltf";
         //"models/scene.gltf";
@@ -470,13 +470,13 @@ int main() {
 
 
 
-    glm::vec3 eyePos = glm::vec3(-3.5f, 10.5f, -50.6f).zyx();
-    glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
-    glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
+    //glm::vec3 eyePos = glm::vec3(-3.5f, 10.5f, -50.6f).zyx();
+    //glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
+    //glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
 
-    //glm::vec3 eyePos = glm::vec3(1e-4f, 2.0f, 50.6f);
-    //glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, -1.f);
-    //glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, -1.f);
+    glm::vec3 eyePos = glm::vec3(1e-4f, 2.0f, 50.6f);
+    glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, -1.f);
+    glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, -1.f);
 
     // initial matrices
     auto scale = 10.0f * glm::vec3(1.f, 1.f, 1.f);
@@ -751,7 +751,7 @@ int main() {
         });
 
         // matrix with scaling
-        double mscale = 1.0;
+        double mscale = 10000.0;
         glm::dmat4 matrix(1.0);
         matrix *= glm::scale(glm::dvec3(mscale, mscale, mscale));
 
