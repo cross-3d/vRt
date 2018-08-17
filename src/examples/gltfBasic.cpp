@@ -207,12 +207,21 @@ int main() {
     dii.layout = VK_IMAGE_LAYOUT_GENERAL;
     dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     dii.size = { canvasWidth, canvasHeight, 1 };
-    VtDeviceImage outputImage = {};
+    VtDeviceImage outputImage = {}, normalPass = {}, originPass = {}, specularPass = {};
     vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outputImage);
+    vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &specularPass);
+
+    dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &normalPass);
+    vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &originPass);
+    
 
     // dispatch image barrier
     vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
         vtCmdImageBarrier(cmdBuf, outputImage);
+        vtCmdImageBarrier(cmdBuf, normalPass);
+        vtCmdImageBarrier(cmdBuf, originPass);
+        vtCmdImageBarrier(cmdBuf, specularPass);
     });
 
 
@@ -263,7 +272,7 @@ int main() {
     VtMaterialSet materialSet;
     VtRayTracingSet raytracingSet;
     VtPipelineLayout rtPipelineLayout, rtVPipelineLayout;
-    VtPipeline rtPipeline;
+    VtPipeline rtPipeline, rfPipeline;
     VtVertexAssemblyPipeline vtxPipeline;
     VtAcceleratorSet accelerator;
     VtVertexAssemblySet vertexAssembly;
@@ -503,7 +512,8 @@ int main() {
         auto _bindings = std::vector<vk::DescriptorSetLayoutBinding>{
             vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // constants for generation shader
             vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute), // env map for miss shader
-            vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eCompute) // env map for miss shader
+            //vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eCompute) // env map for miss shader
+            vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageImage, 4, vk::ShaderStageFlagBits::eCompute)
         };
         customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
 
@@ -514,13 +524,16 @@ int main() {
     }
 
     {
+        // 
+        std::vector<vk::DescriptorImageInfo> passImages = { outputImage->_descriptorInfo(), normalPass->_descriptorInfo(), originPass->_descriptorInfo(), specularPass->_descriptorInfo() };
+
         // write ray tracing user defined descriptor set
         auto writeTmpl = vk::WriteDescriptorSet(usrDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
         auto imgdi = vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler);
         std::vector<vk::WriteDescriptorSet> writes = {
             vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)(&rtUniformBuffer->_descriptorInfo())),
             vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&imgdi),
-            vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo((vk::DescriptorImageInfo*)&outputImage->_descriptorInfo()),
+            vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo(passImages.data()).setDescriptorCount(passImages.size()),
         };
         vk::Device(deviceQueue->device->rtDev).updateDescriptorSets(writes, {});
     }
@@ -609,24 +622,45 @@ int main() {
     }
 
     {
-        auto genShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/generation-shader.comp.spv"));
         auto closestShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/closest-hit-shader.comp.spv"));
         auto missShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/miss-hit-shader.comp.spv"));
         auto groupShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/group-shader.comp.spv"));
 
-        // create ray tracing pipeline
-        VtRayTracingPipelineCreateInfo rtpi;
-        rtpi.pGenerationModule = &genShader;
-        rtpi.pClosestModules = &closestShader;
-        rtpi.pMissModules = &missShader;
-        rtpi.pGroupModules = &groupShader;
+        {
+            auto genShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/generation-shader.comp.spv"));
 
-        rtpi.closestModuleCount = 1;
-        rtpi.missModuleCount = 1;
-        rtpi.groupModuleCount = 1;
+            // create ray tracing pipeline
+            VtRayTracingPipelineCreateInfo rtpi;
+            rtpi.pGenerationModule = &genShader;
+            rtpi.pClosestModules = &closestShader;
+            rtpi.pMissModules = &missShader;
+            rtpi.pGroupModules = &groupShader;
 
-        rtpi.pipelineLayout = rtPipelineLayout;
-        vtCreateRayTracingPipeline(deviceQueue->device->rtDev, &rtpi, &rtPipeline);
+            rtpi.closestModuleCount = 1;
+            rtpi.missModuleCount = 1;
+            rtpi.groupModuleCount = 1;
+
+            rtpi.pipelineLayout = rtPipelineLayout;
+            vtCreateRayTracingPipeline(deviceQueue->device->rtDev, &rtpi, &rtPipeline);
+        }
+
+        {
+            auto genShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/rfgen-shader.comp.spv"));
+
+            // create ray tracing pipeline
+            VtRayTracingPipelineCreateInfo rtpi;
+            rtpi.pGenerationModule = &genShader;
+            rtpi.pClosestModules = &closestShader;
+            rtpi.pMissModules = &missShader;
+            rtpi.pGroupModules = &groupShader;
+
+            rtpi.closestModuleCount = 1;
+            rtpi.missModuleCount = 1;
+            rtpi.groupModuleCount = 1;
+
+            rtpi.pipelineLayout = rtPipelineLayout;
+            vtCreateRayTracingPipeline(deviceQueue->device->rtDev, &rtpi, &rfPipeline);
+        }
     }
 
 
@@ -810,18 +844,30 @@ int main() {
 
     {
         // use reflectionss for test
-        const uint32_t iterationCount = 2;
+        const uint32_t transparencyOrders = 1; // use single layer only (for experimenting, can changed)
 
         // make ray tracing command buffer
         rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
-        vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipeline);
+        
         vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), materialSet);
         vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
         vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
         vtCmdBindAccelerator(qRtCmdBuf, accelerator);
         vtCmdBindVertexAssembly(qRtCmdBuf, vertexAssembly);
-        vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, iterationCount);
+
+        // primary rays generation
+        vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipeline);
+        vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, transparencyOrders);
+
+        // deferred reflection phase
+        vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);
+        vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, transparencyOrders);
+
+        // (do you want second step of reflections?)
+        //vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);
+        //vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, transparencyOrders);
+
         vkEndCommandBuffer(qRtCmdBuf);
     }
 

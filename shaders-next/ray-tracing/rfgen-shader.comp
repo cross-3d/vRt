@@ -23,37 +23,25 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 #define OriginPass _devImages[2]
 #define SpecularPass _devImages[3]
 
-
 // planned ray generation shader example
 void main() {
     VtRay ray;
+    ivec2 wh = stageUniform.size.xy, xy = ivec2(Global_Idx.xy);
 
-    ivec2 wh = stageUniform.size.xy;
-    ivec2 xy = ivec2(Global_Idx.xy);
-    vec2 sceneResInv = 1.0f / vec2(wh);
-    vec2 rnd = half2Construct(hash(uvec2(p2x_16(Global_Idx.xy), 1u)));//vec2(0.5f);
-    vec2 coord = (floor(vec2(xy)) + clamp(rnd, vec2(0.0001f), vec2(0.9999f))) * sceneResInv;
-
-    vec4 dir = vec4(0.f), orig = mult4(cameraUniform.camInv, vec4(vec3(0.0f), 1.0f)), eye = orig;
-    IFANY (cameraUniform.enable360 == 1) {
-        vec2 pic = (coord * vec2(2.f,1.f) + vec2(0.5f,0.0f)) * PI;
-        dir = mult4(cameraUniform.camInv, vec4(dcts(pic), 0.f));
-    } else {
-        vec4 co = divW(mult4(cameraUniform.camInv, mult4(cameraUniform.projInv, vec4(coord * 2.0f - 1.0f, 0.999f, 1.0f))));
-        orig = divW(mult4(cameraUniform.camInv, mult4(cameraUniform.projInv, vec4(coord * 2.0f - 1.0f, 0.001f, 1.0f))));
-        dir = vec4(normalize(co.xyz - orig.xyz)*vec3(1.f,1.f,1.f), 0.0f);
-    }
+    vec4 orig = imageLoad(OriginPass, ivec2(Global_Idx.xy));
+    vec4 dirn = imageLoad(NormalPass, ivec2(Global_Idx.xy)); // use cheaper method in this example
+    vec4 spcr = imageLoad(SpecularPass, ivec2(Global_Idx.xy));
 
     ray.dcolor = uvec2(0u.xx);
-    writeColor(ray.dcolor, 1.f.xxxx);
+    writeColor(ray.dcolor, imageLoad(SpecularPass, ivec2(Global_Idx.xy)));
     parameterb(RAY_ACTIVED, ray.dcolor.y, true_);
     
     ray.origin.xyz = orig.xyz;
-    ray.cdirect = lcts(dir.xyz);
+    ray.cdirect = lcts(dirn.xyz);
 
     // filtering off rays by resolution
     [[flatten]] if (xy.x < wh.x && xy.y < wh.y && max3_vec(f16_f32(ray.dcolor).xyz) >= 1e-4f) {
-        imageStore(ColorOutput, ivec2(Global_Idx.xy), vec4(0.f.xxx, 1.f));
+        //imageStore(ColorOutput, ivec2(Global_Idx.xy), vec4(0.f.xxx, 1.f));
         imageStore(NormalPass, ivec2(Global_Idx.xy), vec4(0.f.xxx, 0.f));
         imageStore(OriginPass, ivec2(Global_Idx.xy), vec4(0.f.xxx, 1.f));
         imageStore(SpecularPass, ivec2(Global_Idx.xy), vec4(0.f.xxx, 0.f));

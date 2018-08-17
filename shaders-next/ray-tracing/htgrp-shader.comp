@@ -8,11 +8,8 @@
 #include "../include/random.glsl"
 
 // user descriptor set output image
-layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
+layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[1];
 #define ColorOutput _devImages[0]
-#define NormalPass _devImages[1]
-#define OriginPass _devImages[2]
-#define SpecularPass _devImages[3]
 
 // use partition by 8x8
 //layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT);
@@ -45,42 +42,19 @@ void main() {
         // get output image 2D coord
         uvec2 icoord = vtFetchIndex(rayID);
 
-        // add support for multi-passing
+        // 
         [[flatten]] if (!overflow) {
-            // reflection prior (early stage)
             const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, ivec2(icoord));
-            const float alph = (emisson.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(dcolor))) || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
-            //const float alph = stageUniform.iteration == stageUniform.lastIteration ? 1.f : emisson.a; reflc.xyz *= 0.f;
-            imageStore(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz * alph.xxx * (1.f.xxx - reflc.xyz), dcolor.xyz, bcolor.xyz), 1.f));
+            imageStore(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz, dcolor.xyz, bcolor.xyz), 1.f));
 
-            // generate secondary rays (binary transparency)
+            // generate secondary rays (reflections)
             VtRay newray = ray;
             newray.origin.xyz = fma(dcts(newray.cdirect.xy), hit.uvt.zzz, newray.origin.xyz);
             writeColor(newray.dcolor, vec4(0.f.xxx, 1.f));
 
-            // prefer deferred reflection mode
-            // planned blurry reflection support
-            [[flatten]] if (alph > 0.f) {
-                vec3 rdir = reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz), shift = hit.vdat.xyz;
-                imageStore(OriginPass, ivec2(icoord), vec4(fma(faceforward(shift, -rdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz), 1.f));
-                imageStore(NormalPass, ivec2(icoord), vec4(rdir, 0.f));
-                imageStore(SpecularPass, ivec2(icoord), vec4(dcolor.xyz * alph.xxx * reflc.xyz, reflc.w));
-            }
-
-            // use reflection mode
-            //[[flatten]] if (max3_vec(f16_f32(newray.dcolor)) < 1e-4f) {
-            //    newray.cdirect.xy = lcts(reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz));
-            //    writeColor(newray.dcolor, vec4(dcolor.xyz * alph.xxx * reflc.xyz, 1.f));
-            //}
-
-            // use transparency mode
-            [[flatten]] if (max3_vec(f16_f32(newray.dcolor)) < 1e-4f) {
-                newray.cdirect.xy = ray.cdirect.xy;
-                writeColor(newray.dcolor, vec4(dcolor.xyz * (1.f - reflc.xyz) * (1.f - alph).xxx, 1.f));
-            }
-
             // resolve ray emission
-            [[flatten]] if (max3_vec(f16_f32(newray.dcolor).xyz) >= 1e-4f) {
+            [[flatten]]
+            if (max3_vec(f16_f32(newray.dcolor).xyz) >= 1e-4f) {
                 vec3 vdir = dcts(newray.cdirect.xy), shift = hit.vdat.xyz;
                 newray.origin.xyz = fma(faceforward(shift, -vdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz); // add ray error offset
                 vtReuseRays(newray, icoord.xy, 0, rayID);

@@ -17,12 +17,8 @@ layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
     int enable360, variant, r1, r2;
 } cameraUniform;
 
-layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
+layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[1];
 #define ColorOutput _devImages[0]
-#define NormalPass _devImages[1]
-#define OriginPass _devImages[2]
-#define SpecularPass _devImages[3]
-
 
 // planned ray generation shader example
 void main() {
@@ -31,7 +27,7 @@ void main() {
     ivec2 wh = stageUniform.size.xy;
     ivec2 xy = ivec2(Global_Idx.xy);
     vec2 sceneResInv = 1.0f / vec2(wh);
-    vec2 rnd = half2Construct(hash(uvec2(p2x_16(Global_Idx.xy), 1u)));//vec2(0.5f);
+    vec2 rnd = vec2(0.5f);
     vec2 coord = (floor(vec2(xy)) + clamp(rnd, vec2(0.0001f), vec2(0.9999f))) * sceneResInv;
 
     vec4 dir = vec4(0.f), orig = mult4(cameraUniform.camInv, vec4(vec3(0.0f), 1.0f)), eye = orig;
@@ -54,9 +50,6 @@ void main() {
     // filtering off rays by resolution
     [[flatten]] if (xy.x < wh.x && xy.y < wh.y && max3_vec(f16_f32(ray.dcolor).xyz) >= 1e-4f) {
         imageStore(ColorOutput, ivec2(Global_Idx.xy), vec4(0.f.xxx, 1.f));
-        imageStore(NormalPass, ivec2(Global_Idx.xy), vec4(0.f.xxx, 0.f));
-        imageStore(OriginPass, ivec2(Global_Idx.xy), vec4(0.f.xxx, 1.f));
-        imageStore(SpecularPass, ivec2(Global_Idx.xy), vec4(0.f.xxx, 0.f));
         vtReuseRays(ray, Global_Idx.xy, 0, xy.y * wh.x + xy.x); // prefer strict layout
     }
 
