@@ -28,47 +28,56 @@ void main() {
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        //int rayID = rayGroupIndicesRead[globalID*5+(stageUniform.currentGroup+1)]-1;
+        //const int rayID = rayGroupIndicesRead[globalID*5+(stageUniform.currentGroup+1)]-1;
         const int rayID = rayGroupIndicesRead[globalID]-1;
-        bool overflow = globalID >= wsize || globalID < 0 || rayID < 0;
+        const bool overflow = globalID >= wsize || globalID < 0 || rayID < 0;
 
         // get ray by id
-        VtRay ray = rays[rayID];//vtFetchRay(rayID);
+        VtRay ray = rays[rayID];
         const int hitIdc = vtFetchHitIdc(rayID);
         const int hitpId = hits[hitIdc].payloadID-1;
-        vec4 emisson = hitp.emission * vec4(1.f - hitp.specularGlossiness.xyz, 1.f);
+        vec4 emisson = hitp.emission, reflc = hitp.specularGlossiness;
 
         // get output image 2D coord
         uvec2 icoord = vtFetchIndex(rayID);
+
+        // transparency prior (no reflection)
+        //float alph = stageUniform.iteration == stageUniform.lastIteration ? 1.f : emisson.a; reflc.xyz *= 0.f;
+
+        // reflection prior (early stage)
         float alph = (emisson.a > 0.9f || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
 
-        // save result of ray tracing by ray saved indice
-        //if (!overflow) { imageStore(ColorOutput, icoord, vec4(f16_f32(ray.dcolor).xyz, 1.f)); }
-        
+
         // add support for multi-passing
-        [[flatten]]
-        if (!overflow) {
-            const vec4 bcolor = imageLoad(ColorOutput, ivec2(icoord));
-            imageStore(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz * alph, f16_f32(ray.dcolor).xyz, bcolor.xyz), 1.f));
+        [[flatten]] if (!overflow) {
+            const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, ivec2(icoord));
+            imageStore(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz * alph.xxx * (1.f.xxx - reflc.xyz), dcolor.xyz, bcolor.xyz), 1.f));
 
             // generate secondary rays (reflections)
             VtRay newray = ray;
             newray.origin.xyz = fma(dcts(newray.cdirect.xy), hit.uvt.zzz, newray.origin.xyz);
+            writeColor(newray.dcolor, vec4(0.f.xxx, 1.f));
 
-            // support of transparency
-            [[flatten]]
-            if (alph > 0.5f) {
-                newray.cdirect.xy = lcts(reflect(dcts(newray.cdirect.xy), hitp.normalHeight.xyz));
-                writeColor(newray.dcolor, vec4(f16_f32(newray.dcolor).xyz * hitp.specularGlossiness.xyz, 1.f));
+            // use reflection mode
+            [[flatten]] 
+            if (max3_vec(f16_f32(newray.dcolor)) < 1e-4f) {
+                newray.cdirect.xy = lcts(reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz));
+                writeColor(newray.dcolor, vec4(dcolor.xyz * reflc.xyz * alph.xxx, 1.f));
             }
 
-            // add ray error offset
+            // use transparency mode
+            [[flatten]] 
+            if (max3_vec(f16_f32(newray.dcolor)) < 1e-4f) {
+                newray.cdirect.xy = ray.cdirect.xy;
+                writeColor(newray.dcolor, vec4(dcolor.xyz * (1.f - alph).xxx, 1.f));
+            }
+
+            // resolve ray emission
             [[flatten]]
-            if (max3_vec(f16_f32(newray.dcolor)) >= 1e-4f) {
+            if (max3_vec(f16_f32(newray.dcolor).xyz) >= 1e-4f) {
                 vec3 vdir = dcts(newray.cdirect.xy), shift = hit.vdat.xyz;
-                newray.origin.xyz = fma(faceforward(shift, -vdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz);
+                newray.origin.xyz = fma(faceforward(shift, -vdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz); // add ray error offset
                 vtReuseRays(newray, icoord.xy, 0, rayID);
-                //vtEmitRays(newray, icoord.xy, 0);
             }
         }
     }
