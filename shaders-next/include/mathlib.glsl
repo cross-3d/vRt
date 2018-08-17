@@ -64,7 +64,7 @@ const float One1024 = 0.0009765625f;
 
 #ifdef ENABLE_AMD_INSTRUCTION_SET
 uint16_t M16(in f16samplerBuffer m, in uint i) {
-    const int ic = int(i) >> 1; const u16vec2 mpc = float16BitsToUint16(texelFetch(m, ic).xy);
+    const u16vec2 mpc = float16BitsToUint16(texelFetch(m, int(i>>1)).xy);
     return (i&1) == 0 ? mpc.x : mpc.y;
 }
 
@@ -74,7 +74,7 @@ uint M32(in f16samplerBuffer m, in uint i) {
 #endif
 
 highp uint M16(in mediump samplerBuffer m, in uint i) {
-    const int ic = int(i) >> 1; const highp uvec2 mpc = floatBitsToUint(texelFetch(m, ic).xy);
+    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i>>1)).xy);
     return (i&1) == 0 ? mpc.x : mpc.y;
 }
 
