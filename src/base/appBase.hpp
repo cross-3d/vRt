@@ -51,8 +51,11 @@ namespace NSM
 
             "VK_AMD_gpu_shader_int16",
             "VK_AMD_gpu_shader_half_float",
+            "VK_AMD_gpu_shader_half_float_fetch",
             "VK_KHR_16bit_storage",
+            "VK_EXT_16bit_storage",
             "VK_KHR_8bit_storage",
+            "VK_EXT_8bit_storage",
 
             "VK_AMD_gcn_shader",
             "VK_AMD_buffer_marker",

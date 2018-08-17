@@ -23,7 +23,7 @@ void main() {
     // set prefix sum (planned distribute threads) 
     [[unroll]]
     for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-        const uvec_wave radice = uvec_wave(rk + Radice_Idx);
+        const uint radice = uint(rk + Radice_Idx);
         if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
     }
     LGROUP_BARRIER
@@ -35,7 +35,7 @@ void main() {
 
     [[unroll, dependency_length(4)]]
     for ( uint wk = 0; wk < bcount; wk++ ) {
-        bvec2_wave validAddress = lessThan(addr, blocks.limit.xx);
+        bvec2 validAddress = lessThan(addr, blocks.limit.xx);
         IFALL(all(not(validAddress))) break;
 
         if (Wave_Idx == 0) {
@@ -52,7 +52,7 @@ void main() {
         // WARP-optimized histogram calculation
         [[unroll]]
         for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-            const uvec_wave radice = uvec_wave(rk + Radice_Idx);
+            const uint radice = uint(rk + Radice_Idx);
             const bvec2 owned = and(equal(up2x_8(key), radice.xx), validAddress);
             if (any(owned)) {
                 WPTR2 offset = WPTR2(countOffset(uint(radice), owned));

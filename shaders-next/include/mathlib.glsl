@@ -62,25 +62,25 @@ const float One1024 = 0.0009765625f;
 #endif
 */
 
-highp uint M16(in usamplerBuffer m, in uint i) {
-    const int ic = int(i) >> 1;
-    return (i&1) == 0 ? texelFetch(m, ic).x : texelFetch(m, ic).y;
+#ifdef ENABLE_AMD_INSTRUCTION_SET
+uint16_t M16(in f16samplerBuffer m, in uint i) {
+    const int ic = int(i) >> 1; const u16vec2 mpc = float16BitsToUint16(texelFetch(m, ic).xy);
+    return (i&1) == 0 ? mpc.x : mpc.y;
 }
 
-#if defined(ENABLE_AMD_INT16)
-uint M32(in usamplerBuffer m, in uint i) { 
-    //uint _i2 = (i)<<1u; // division of index
-    //return packUint2x16(u16vec2(M16(m,_i2),M16(m,_i2|1))); // use regular uint16_t for packing
-    return packUint2x16(u16vec2(texelFetch(m, int(i)).xy));
-}
-#else
-uint M32(in usamplerBuffer m, in uint i) { 
-    //uint _i2 = (i)<<1u; // division of index
-    //return bitfieldInsert(M16(m,_i2), M16(m,_i2|1), 16, 16); // use bitfield insert hack
-    const highp uvec2 u16 = texelFetch(m, int(i)).xy;
-    return bitfieldInsert(u16.x, u16.y, 16, 16);
+uint M32(in f16samplerBuffer m, in uint i) { 
+    return packFloat2x16(texelFetch(m, int(i)).xy);
 }
 #endif
+
+highp uint M16(in mediump samplerBuffer m, in uint i) {
+    const int ic = int(i) >> 1; const highp uvec2 mpc = floatBitsToUint(texelFetch(m, ic).xy);
+    return (i&1) == 0 ? mpc.x : mpc.y;
+}
+
+uint M32(in mediump samplerBuffer m, in uint i) { 
+    return packHalf2x16(texelFetch(m, int(i)).xy);
+}
 
 
 /*
@@ -162,7 +162,7 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 #define bvec2_ uvec2
 #define bool_ uint
 
-const lowp bool_ true_ = 1u, false_ = 0u; 
+const lowp bool_ true_ = bool_(1u), false_ = bool_(0u); 
 const lowp bvec2_ true2_ = true_.xx, false2_ = false_.xx;
 
 // null of indexing in float representation

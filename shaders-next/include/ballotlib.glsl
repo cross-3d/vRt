@@ -34,7 +34,7 @@
     //#endif
 #endif
 
-#define uvec_wave_ballot uvec4
+#define uint_ballot uvec4
 #define RL_ subgroupBroadcast
 #define RLF_ subgroupBroadcastFirst
 #define electedInvoc subgroupElect
@@ -43,8 +43,8 @@
 #define readFLane RLF_
 #define readLane RL_
 
-//uvec_wave_ballot ballotHW(in bool i) { return subgroupBallot(i); }
-//uvec_wave_ballot ballotHW() { return subgroupBallot(true); }
+//uint_ballot ballotHW(in bool i) { return subgroupBallot(i); }
+//uint_ballot ballotHW() { return subgroupBallot(true); }
 //bool electedInvoc() { return subgroupElect(); }
 mediump uvec2 bPrefixSum(in bool val) { const uvec4 blt = subgroupBallot(val); return uvec2(subgroupBallotBitCount(blt), subgroupBallotExclusiveBitCount(blt)); } 
 mediump uvec2 bPrefixSum() { const uvec4 blt = subgroupBallot(true); return uvec2(subgroupBallotBitCount(blt), subgroupBallotExclusiveBitCount(blt)); } 

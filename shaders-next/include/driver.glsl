@@ -8,6 +8,7 @@
 #extension GL_AMD_shader_image_load_store_lod : enable
 #extension GL_AMD_gcn_shader : enable
 #extension GL_AMD_gpu_shader_half_float : enable
+#extension GL_AMD_gpu_shader_half_float_fetch : enable
 #extension GL_AMD_gpu_shader_int16 : enable
 #endif
 

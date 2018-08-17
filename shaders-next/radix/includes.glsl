@@ -44,10 +44,10 @@
 #define BLOCK_SIZE_RT (gl_WorkGroupSize.x)
 #define WRK_SIZE_RT (gl_NumWorkGroups.y * Wave_Count_RX)
 
-#define uvec_wave uint
-#define bvec_wave bool
-#define uvec64_wave uint64_t
-#define bvec2_wave bvec2
+#define uint uint
+#define bool bool
+#define uint64_t uint64_t
+#define bvec2 bvec2
 
 //#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
 //#define uint_rdc_wave_lcm uint16_t
@@ -79,7 +79,7 @@ struct RadicePropStruct { uint Descending; uint IsSigned; };
 #define OUTDIR 0
 #endif
 
-//#define KEYTYPE uvec_wave
+//#define KEYTYPE uint
 layout (std430, binding = 0, set = INDIR )  readonly coherent buffer KeyInB {KEYTYPE KeyIn[]; };
 layout (std430, binding = 1, set = INDIR )  readonly coherent buffer ValueInB {uint ValueIn[]; };
 

@@ -20,8 +20,7 @@ struct BvhTraverseState {
 } traverseState;
 
 struct PrimitiveState {
-    vec4 lastIntersection;
-    vec4 orig;
+    vec4 lastIntersection, orig;
 #ifdef VRT_USE_FAST_INTERSECTION
     vec4 dir;
 #else
