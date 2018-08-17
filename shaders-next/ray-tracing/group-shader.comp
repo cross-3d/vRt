@@ -45,7 +45,7 @@ void main() {
         //float alph = stageUniform.iteration == stageUniform.lastIteration ? 1.f : emisson.a; reflc.xyz *= 0.f;
 
         // reflection prior (early stage)
-        float alph = (emisson.a > 0.9f || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
+        float alph = (emisson.a >= hrand(imageLoad(rayLink, (rayID<<1)|1).x) || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
 
 
         // add support for multi-passing

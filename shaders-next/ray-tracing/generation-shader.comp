@@ -26,7 +26,7 @@ void main() {
     ivec2 wh = stageUniform.size.xy;
     ivec2 xy = ivec2(Global_Idx.xy);
     vec2 sceneResInv = 1.0f / vec2(wh);
-    vec2 rnd = vec2(0.5f);
+    vec2 rnd = half2Construct(hash(uvec2(p2x_16(Global_Idx.xy), 1u)));//vec2(0.5f);
     vec2 coord = (floor(vec2(xy)) + clamp(rnd, vec2(0.0001f), vec2(0.9999f))) * sceneResInv;
 
     vec4 dir = vec4(0.f), orig = mult4(cameraUniform.camInv, vec4(vec3(0.0f), 1.0f)), eye = orig;
