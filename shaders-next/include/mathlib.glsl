@@ -480,7 +480,7 @@ vec2 fast32swap(in vec2 b64, in lowp bool_ nswp) {
 // single float 32-bit box intersection
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
-bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec3_ sgn, const mat3x2 tMinMaxMem, inout float near, inout float far) {
+bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec3_ sgn, const mat3x2 tMinMaxMem, inout vec4 nfe) {
     mat3x2 tMinMax = mat3x2(
         fma(SSC(sgn.x) ? tMinMaxMem[0].xy : tMinMaxMem[0].yx, dr.xx, origin.xx),
         fma(SSC(sgn.y) ? tMinMaxMem[1].xy : tMinMaxMem[1].yx, dr.yy, origin.yy),
@@ -488,13 +488,12 @@ bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec3_ sgn
     );
 
     float 
-        tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y)*InOne,
-        tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x);
+        tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x), 
+        tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y)*InOne;
 
     // resolve hit
-    const bool isCube = tFar>=tNear && tFar>=0.f && tNear < INFINITY;
-    const float inf = float(INFINITY);
-    near = mix(-inf, tNear, isCube), far = mix(inf, tFar, isCube);
+    const bool isCube = tFar>tNear && tFar>=0.f && tNear < INFINITY;
+    nfe.xz = mix(INFINITY.xx, vec2(tNear, tFar), isCube.xx);
     return isCube;
 }
 
@@ -506,9 +505,9 @@ bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec3_ sgn
 // compatible with NVidia GPU too
 
 #if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
-lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, in lowp bvec3_ sgn, in highp fmat3x4_ tMinMax, inout vec2 near, inout vec2 far)
+lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, in lowp bvec3_ sgn, in highp fmat3x4_ tMinMax, inout vec4 nfe2)
 #else
-lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in lowp bvec3_ sgn, in fmat3x4_ tMinMax, inout vec2 near, inout vec2 far)
+lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in lowp bvec3_ sgn, in fmat3x4_ tMinMax, inout vec4 nfe2)
 #endif
 {
     tMinMax = fmat3x4_(
@@ -521,14 +520,11 @@ lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in lowp bvec3_ 
     mediump
 #endif
     fvec2_
+        tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy),
+        tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw)*InOne.xx;
 
-    tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw)*InOne.xx,
-    tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy);
-
-    const lowp bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(abs(tNear), fvec2_(INFINITY-PRECERR)));
-    const vec2 inf = vec2(INFINITY);
-    near = mix(inf, vec2(tNear), isCube), 
-     far = mix(inf, vec2( tFar), isCube);
+    const bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(abs(tNear), fvec2_(INFINITY-PRECERR)));
+    nfe2 = mix(INFINITY.xxxx, vec4(tNear, tFar), bvec4(isCube, isCube));
     return isCube;
 }
 

@@ -106,13 +106,14 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 #endif
 
     // test intersection with main box
-    vec2 nears = (-INFINITY).xx, fars = INFINITY.xx;
+    //vec2 nears = (-INFINITY).xx, fars = INFINITY.xx;
+    vec4 nfe = vec4(-INFINITY.xx, INFINITY.xx);
     const vec2 bndsf2 = vec2(-1.0005f, 1.0005f);
     const int entry = (valid ? BVH_ENTRY : -1), _cmp = entry >> 1;
-    traverseState.idx = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, mat3x2(bndsf2,bndsf2,bndsf2), nears.x, fars.x) ? entry : -1;
+    traverseState.idx = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, mat3x2(bndsf2,bndsf2,bndsf2), nfe) ? entry : -1;
     traverseState.stackPtr = 0, traverseState.pageID = 0;
     
-    const float diffOffset = min(-nears.x, 0.f);
+    const float diffOffset = min(-nfe.x, 0.f);
     primitiveState.orig = fma(direct, diffOffset.xxxx, torig);
     primitiveState.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO), primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z, dirlen, diffOffset);
 
@@ -148,19 +149,18 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 }
             } else { // if not leaf, intersect with nodes
                 lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, traverseState.boxSide.xyz, 
-                    fmat3x4_(bvhNodes[traverseState.idx].cbox[0], bvhNodes[traverseState.idx].cbox[1], bvhNodes[traverseState.idx].cbox[2])
-                , nears, fars);
+                    fmat3x4_(bvhNodes[traverseState.idx].cbox[0], bvhNodes[traverseState.idx].cbox[1], bvhNodes[traverseState.idx].cbox[2]), nfe);
 
                 // it increase FPS by filtering nodes by first triangle intersection
-                childIntersect &= bvec2_(lessThanEqual(nears, primitiveState.lastIntersection.zz));
-                childIntersect &= bvec2_(greaterThanEqual(fars, traverseState.minDist.xx));
+                childIntersect &= bvec2_(lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz));
+                childIntersect &= bvec2_(greaterThanEqual(nfe.zw, traverseState.minDist.xx));
                 int fmask = int((childIntersect.y<<1u)|childIntersect.x);
 
                 [[flatten]]
                 if (fmask > 0) {
                     [[flatten]]
                     if (fmask == 3) { // if both has intersection
-                        fmask &= nears.x<=nears.y ? 1 : 2;
+                        fmask &= nfe.x<=nfe.y ? 1 : 2;
                         [[flatten]] IF (all(childIntersect) & bool_(!stackIsFull())) storeStack(cnode.x^(fmask>>1));
                     }
                     traverseState.idx = cnode.x^(fmask&1);
