@@ -79,7 +79,9 @@ highp uint M16(in mediump samplerBuffer m, in uint i) {
 }
 
 uint M32(in mediump samplerBuffer m, in uint i) { 
-    return packHalf2x16(texelFetch(m, int(i)).xy);
+    //return packHalf2x16(texelFetch(m, int(i)).xy);
+    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i)).xy);
+    return ((mpc.y<<16u)|mpc.x);
 }
 
 
