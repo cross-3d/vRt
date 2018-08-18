@@ -225,6 +225,15 @@ namespace NSM
                 }
             }
 
+
+            // minimal features
+            VkPhysicalDeviceFeatures2 gFeatures = vk::PhysicalDeviceFeatures2{};
+            gFeatures.features.shaderInt16 = true;
+            gFeatures.features.shaderInt64 = true;
+            gFeatures.features.shaderUniformBufferArrayDynamicIndexing = true;
+            vkGetPhysicalDeviceFeatures2(gpu, &gFeatures);
+            //gpu.getFeatures2(gFeatures);
+
             // get features and queue family properties
             auto gpuFeatures = gpu.getFeatures();
             auto gpuQueueProps = gpu.getQueueFamilyProperties();

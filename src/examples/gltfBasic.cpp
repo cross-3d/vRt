@@ -86,13 +86,12 @@ inline auto readFromBuffer(vte::Queue deviceQueue, const vrt::VtDeviceBuffer& dB
 
 
 
-
 inline auto createBufferFast(vte::Queue deviceQueue, vrt::VtDeviceBuffer& dBuffer, size_t byteSize = 1024 * 16) {
     vrt::VtDeviceBufferCreateInfo dbs;
     dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
     dbs.bufferSize = byteSize;
     dbs.familyIndex = deviceQueue->familyIndex;
-    dbs.format = VK_FORMAT_R16G16_SFLOAT;
+    dbs.format = VK_FORMAT_R16G16_UINT;
     vrt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
 };
 

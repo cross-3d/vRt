@@ -65,7 +65,7 @@ const float One1024 = 0.0009765625f;
 #ifdef ENABLE_AMD_INSTRUCTION_SET
 uint16_t M16(in f16samplerBuffer m, in uint i) {
     const u16vec2 mpc = float16BitsToUint16(texelFetch(m, int(i>>1)).xy);
-    return (i&1) == 0 ? mpc.x : mpc.y;
+    return (i&1)==1?mpc.y:mpc.x;
 }
 
 uint M32(in f16samplerBuffer m, in uint i) { 
@@ -73,13 +73,24 @@ uint M32(in f16samplerBuffer m, in uint i) {
 }
 #endif
 
-highp uint M16(in mediump samplerBuffer m, in uint i) {
-    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i>>1)).xy);
-    return (i&1) == 0 ? mpc.x : mpc.y;
+highp uint M16(in highp usamplerBuffer m, in uint i) {
+    const highp uvec2 mpc = texelFetch(m, int(i>>1)).xy;
+    return (i&1)==1?mpc.y:mpc.x;
 }
 
-uint M32(in mediump samplerBuffer m, in uint i) { 
-    //return packHalf2x16(texelFetch(m, int(i)).xy);
+uint M32(in highp usamplerBuffer m, in uint i) {
+    const highp uvec2 mpc = texelFetch(m, int(i)).xy;
+    return ((mpc.y<<16u)|mpc.x);
+}
+
+
+highp uint M16(in mediump samplerBuffer m, in uint i) {
+    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i>>1)).xy);
+    return (i&1)==1?mpc.y:mpc.x;
+}
+
+uint M32(in mediump samplerBuffer m, in uint i) {
+    //return packHalf2x16(texelFetch(m, int(i)).xy); // inaccurate 
     const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i)).xy);
     return ((mpc.y<<16u)|mpc.x);
 }
@@ -557,7 +568,7 @@ uint p2x_16(in highp uvec2 a) {
 #if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
     return packUint2x16(u16vec2(a));
 #else
-    return bitfieldInsert(a.x & 0xFFFFu, a.y, 16, 16);
+    return (a.x&0xFFFFu)|(a.y<<16u);
 #endif
 };
 
@@ -565,7 +576,7 @@ highp uvec2 up2x_16(in uint a) {
 #if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
     return uvec2(unpackUint2x16(a));
 #else
-    return uvec2(a & 0xFFFFu, bitfieldExtract(a, 16, 16));
+    return uvec2(a&0xFFFFu, a>>16u);
 #endif
 };
 
