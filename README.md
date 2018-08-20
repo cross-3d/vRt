@@ -52,7 +52,7 @@ We still working on forming of ray tracing API.
 
 ### August 2018 ("Helium")
 
-- Make first example renderer, based on hybrid ray tracing, with shadows and reflections
+- Better examples delayed to next months
 - Improve interoperability and portability
 
 ### 2018 Q4 ("Lithium")
