@@ -1,12 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-#ifdef FIRST_STEP
-#define WORK_SIZE_BND 64
-#else 
 #define WORK_SIZE_BND 1024
-#endif
-
 #define BVH_BUILD
 #define BVH_CREATION
 #define USE_ACTIVE
@@ -19,7 +14,6 @@
 #include "./submodules/includes.glsl"
 
 // 0 and 4 reserved counters
-
 // shared memory counters
 shared int _counters[8];
 #define cBuffer _counters[3]
@@ -33,13 +27,16 @@ int lCounterInc() {return vtCountersInc(0)*2;};
 // shared memory counters
 int cCounterInc() {return vtCountersInc(1);};
 int cCounterIncBoth() {return vtCountersIncBoth(1);};
-
 int aCounterInc() {return _aCounterInc(cBuffer*4);}
 
-uint rID(in uint t) {return gl_NumWorkGroups.x * t + gl_WorkGroupID.x;}
-uint wID(in uint t) {return bvhBlock.leafCount * gl_WorkGroupID.x * 2u + t;}
-uint mrQ(in uint t) {return bvhBlock.leafCount * t;}
-//uint mrQ(in uint t) {return bvhBlock.leafCount * 16u * t;}
+
+// use faster version of BVH builder
+#define GSIZE bvhBlock.leafCount
+const uint WGS = 16u;
+uint wID(in uint t) {return GSIZE * gl_WorkGroupID.x + t;}
+uint mrQ(in uint q) {return GSIZE * WGS * q;}
+uint rID(in uint t) {return gl_WorkGroupID.x * 512u + t;} // TODO: runtime work group size support
+
 
 #define asize_ _counters[(1-cBuffer)*4]
 #define asize_inv_ _counters[cBuffer*4]
@@ -53,8 +50,6 @@ uint mrQ(in uint t) {return bvhBlock.leafCount * t;}
 #define wsize _counters[5]
 #endif
 
-#define GSIZE bvhBlock.leafCount
-
 #define swapIn  _counters[1]
 #define swapOut _counters[2]
 
@@ -67,10 +62,10 @@ void main() {
 #define groupSize gl_WorkGroupSize.x
 
     // lane-based
-    const uint gS = groupSize >> 1, iT = threadID >> 1; const int sD = int(threadID & 1);
+    const uint gS = (groupSize >> 1), iT = threadID >> 1; const int sD = int(threadID & 1);
 
     LGROUP_BARRIER
-    if (threadID < 8) { _counters[threadID] = 0; }
+    [[flatten]] if (threadID < 8) { _counters[threadID] = 0; }
     LGROUP_BARRIER
 
     // create initial (root) node
@@ -89,49 +84,30 @@ void main() {
         LGROUP_BARRIER
 
 #ifdef FIRST_STEP // limit by few elements
-        if ( m >= 5 ) { break; }
+        [[flatten]] IFANY ( asize>=(WGS*gS) && cBuffer==1 ) break;
 #endif
 
         // swap buffers emulation
         if (threadID == 0) { 
             cBuffer = 1-cBuffer, asize_inv_ = 0, asize = atomicExchange(asize_, 0), swapIn = int(mrQ(1-cBuffer)), swapOut = int(mrQ(cBuffer));
 #ifndef FIRST_STEP
-            //wsize = asize * (m == 0 ? 1 : int(gl_NumWorkGroups.x)), osize = tiled(wsize, int(gl_NumWorkGroups.x));
-            wsize = swapIn+int(wID(asize)), osize = m == 0 ? asize : wsize;
+            osize = m==0?asize:int(wID(asize));
 #endif
         }
         
         LGROUP_BARRIER
-        IFALL (asize <= 0) { break; } // remove count limiter
-
+        
         // split nodes
+        uint OSi = m==0?(gS*gl_NumWorkGroups.x):gS, fT = m==0?rID(0):wID(0);
+        [[flatten]] IFANY (asize <= 0 || fT>=osize) break; // check-out limits
         [[unroll, dependency_length(4)]]
-        for (uint fT=0;fT<asize;fT+=gS) {
-            // subgroup barrier
-            SB_BARRIER
-
-            // index of node element
-            //const uint uID = fT + iT;
-            const uint uWD = wID(fT + iT);
-
-            [[flatten]]
-            IFALL (uWD >= wsize) break; // split prefixed elements
-
-            // get spared prefix
-#ifndef FIRST_STEP
-            const uint rWD = m == 0 ? rID(fT + iT) : uWD;
-#else
-            #define rWD uWD
-#endif
-            [[flatten]]
-            if (uWD < wsize) {
-                const int fID = rWD < osize ? Actives[swapIn+rWD]-1 : -1;
-                [[flatten]] if (sD == 0 && rWD < osize) Actives[swapIn+rWD] = 0;
-
-                // split sibling nodes
-                [[flatten]]
-                if (fID >= 0) { splitNode(fID|sD); }
-                //if (uWD < wsize && fID >= 0) { splitNode(fID|sD); }
+        for (;fT<osize;fT+=OSi) { SB_BARRIER
+            const uint iWD = fT+iT;
+            [[flatten]] IFALL (iWD >= osize) break;
+            [[flatten]] if (iWD < osize) {
+                const int fID = iWD < osize ? Actives[swapIn+iWD]-1 : -1;
+                [[flatten]] if (sD == 0 && iWD < osize) Actives[swapIn+iWD] = 0;
+                [[flatten]] if (fID >= 0) { splitNode(fID|sD); } // split sibling nodes
             }
         }
     }
