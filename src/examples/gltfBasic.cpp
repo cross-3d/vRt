@@ -860,8 +860,8 @@ int main() {
         vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, transparencyOrders);
 
         // deferred reflection phase
-        vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);
-        vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, transparencyOrders);
+        //vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);
+        //vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, transparencyOrders);
 
         // (do you want second step of reflections?)
         //vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);

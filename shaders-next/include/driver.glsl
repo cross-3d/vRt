@@ -56,7 +56,7 @@
 
 // enable required GAPI extensions
 #ifdef ENABLE_AMD_INSTRUCTION_SET
-    #define ENABLE_AMD_INT16 // RX Vega broken support 16-bit integer buffers in Vulkan API 1.1.70
+    #define ENABLE_AMD_INT16
     #define ENABLE_AMD_INT16_CONDITION
     #define USE_16BIT_ADDRESS_SPACE
 #endif
