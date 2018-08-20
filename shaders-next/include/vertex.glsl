@@ -312,7 +312,7 @@ lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in lowp bvec3_ 
         tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy),
         tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw)*InOne.xx;
 
-    const bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(abs(tNear), fvec2_(INFINITY-PRECERR)));
+    const bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(tNear, fvec2_(INFINITY-PRECERR)));
     nfe2 = mix(INFINITY.xxxx, vec4(tNear, tFar), bvec4(isCube, isCube));
     return isCube;
 }
