@@ -6,10 +6,10 @@
 //#define USE_PUSH_CONSTANT
 
 #include "../include/driver.glsl"
-#include "../include/structs.glsl"
-#include "../include/vertex.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
+#include "../include/structs.glsl"
+#include "../include/vertex.glsl"
 #include "../include/vertex-input.glsl"
 
 LOCAL_SIZE_LAYOUT;
@@ -39,7 +39,7 @@ void calculateTBN(in int trip){
     // calculate geometrical normal
     mat3x3 dlps = mat3x3(vertice[0].xyz, vertice[1].xyz, vertice[2].xyz); dlps[1] -= dlps[0], dlps[2] -= dlps[0];
     const vec4 gnormal = vec4(normalize(cross(dlps[1], dlps[2])), 0.f);
-    imageStore(lnrm, trip, vec4(gnormal.xyz, uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[trip])))));
+    ISTORE(lnrm, trip, vec4(gnormal.xyz, uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[trip])))));
 
     // fix zero normals and get texcoords with vertices
     const ivec2 NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID));

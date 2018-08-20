@@ -2,9 +2,10 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #include "../include/driver.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
 #include "../include/rayslib.glsl"
-#include "../include/mathlib.glsl"
 #include "../include/random.glsl"
 
 // user descriptor set output image
@@ -45,7 +46,7 @@ void main() {
         // 
         [[flatten]] if (!overflow) {
             const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, ivec2(icoord));
-            imageStore(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz, dcolor.xyz, bcolor.xyz), 1.f));
+            ISTORE(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz, dcolor.xyz, bcolor.xyz), 1.f));
 
             // generate secondary rays (reflections)
             VtRay newray = ray;

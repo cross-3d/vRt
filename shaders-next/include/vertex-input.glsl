@@ -2,6 +2,45 @@
 #define _VERTEX_INPUT_H
 
 
+
+
+
+
+
+#ifdef ENABLE_AMD_INSTRUCTION_SET
+uint16_t M16(in f16samplerBuffer m, in uint i) {
+    const u16vec2 mpc = float16BitsToUint16(texelFetch(m, int(i>>1)).xy);
+    return (i&1)==1?mpc.y:mpc.x;
+}
+
+uint M32(in f16samplerBuffer m, in uint i) { 
+    return packFloat2x16(texelFetch(m, int(i)).xy);
+}
+#endif
+
+highp uint M16(in highp usamplerBuffer m, in uint i) {
+    const highp uvec2 mpc = texelFetch(m, int(i>>1)).xy;
+    return (i&1)==1?mpc.y:mpc.x;
+}
+
+uint M32(in highp usamplerBuffer m, in uint i) {
+    const highp uvec2 mpc = texelFetch(m, int(i)).xy;
+    return ((mpc.y<<16u)|mpc.x);
+}
+
+
+highp uint M16(in mediump samplerBuffer m, in uint i) {
+    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i>>1)).xy);
+    return (i&1)==1?mpc.y:mpc.x;
+}
+
+uint M32(in mediump samplerBuffer m, in uint i) {
+    //return packHalf2x16(texelFetch(m, int(i)).xy); // inaccurate 
+    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i)).xy);
+    return ((mpc.y<<16u)|mpc.x);
+}
+
+
 // buffer region
 struct VtBufferRegion {
     uint byteOffset;

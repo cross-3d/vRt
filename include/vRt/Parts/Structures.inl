@@ -195,7 +195,7 @@ namespace vrt { // store in official namespace
         VkImageLayout layout = VkImageLayout::VK_IMAGE_LAYOUT_GENERAL;
         VkExtent3D size = { 1, 1, 1 };
         VkImageUsageFlags usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-        VkFormat format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        VkFormat format = VK_FORMAT_R32G32B32A32_UINT;
         uint32_t mipLevels = 1;
         uint32_t familyIndex = 0;
     };

@@ -11,10 +11,6 @@
 #endif
 
 
-//have very bad quality of native texel interpolation
-//#define VRT_INTERPOLATOR_TEXEL
-
-
 // Geometry Zone
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION) || defined(VERTEX_FILLING))
     #ifdef VERTEX_FILLING
@@ -33,7 +29,6 @@
     layout ( binding = 2, set = VTX_SET, std430   ) readonly buffer bitfieldsB { int vbitfields[]; };
     #endif
 
-
     #ifdef VERTEX_FILLING
     layout ( binding = 3, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtxIn;
     #else
@@ -48,15 +43,9 @@
     layout ( binding = 7, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lnrm;
     #endif
 
-
-    //#define TLOAD_I(img,t) imageLoad(img,t)
     #define TLOAD(img,t) imageLoad(img,t)
-
     layout ( binding = 4, set = VTX_SET, rgba32f ) uniform highp image2D attrib_texture_out;
     layout ( binding = 6, set = VTX_SET          ) uniform highp sampler2D attrib_texture;
-
-//    layout ( binding = 4, set = VTX_SET, rgba32ui ) uniform uimage2D attrib_texture_out;
-//    layout ( binding = 6, set = VTX_SET           ) uniform usampler2D attrib_texture;
 
 #endif
 
@@ -234,10 +223,10 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
         for (int i=0;i<ATTRIB_EXTENT;i++) {
 #ifdef VRT_INTERPOLATOR_TEXEL
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + vs.yz + 0.5f) * sz;
-            imageStore(attributes, makeAttribID(ht.attribID, i), textureLod(attrib_texture, trig, 0));
+            ISTORE(attributes, makeAttribID(ht.attribID, i), textureLod(attrib_texture, trig, 0));
 #else
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
-            imageStore(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(
+            ISTORE(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(
                 SGATHER(attrib_texture, trig, 0)._SWIZV,
                 SGATHER(attrib_texture, trig, 1)._SWIZV,
                 SGATHER(attrib_texture, trig, 2)._SWIZV,
@@ -271,8 +260,61 @@ void storeAttribute(in ivec3 cdata, in vec4 fval) {
 }
 
 void storePosition(in ivec2 cdata, in vec4 fval) {
-    imageStore(lvtxIn, cdata.x*3+cdata.y, fval);
+    ISTORE(lvtxIn, cdata.x*3+cdata.y, fval);
+}
+#endif
+
+
+
+// single float 32-bit box intersection
+// some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
+// compatible with AMD radeon min3 and max3
+bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec3_ sgn, const mat3x2 tMinMaxMem, inout vec4 nfe) {
+    mat3x2 tMinMax = mat3x2(
+        fma(SSC(sgn.x) ? tMinMaxMem[0].xy : tMinMaxMem[0].yx, dr.xx, origin.xx),
+        fma(SSC(sgn.y) ? tMinMaxMem[1].xy : tMinMaxMem[1].yx, dr.yy, origin.yy),
+        fma(SSC(sgn.z) ? tMinMaxMem[2].xy : tMinMaxMem[2].yx, dr.zz, origin.zz)
+    );
+
+    float 
+        tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x), 
+        tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y)*InOne;
+
+    // resolve hit
+    const bool isCube = tFar>tNear && tFar>=0.f && tNear < INFINITY;
+    nfe.xz = mix(INFINITY.xx, vec2(tNear, tFar), isCube.xx);
+    return isCube;
 }
 
+
+// half float 16/32-bit box intersection (claymore dual style)
+// some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
+// made by DevIL research group
+// also, optimized for RPM (Rapid Packed Math) https://radeon.com/_downloads/vega-whitepaper-11.6.17.pdf
+// compatible with NVidia GPU too
+
+#if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
+lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, in lowp bvec3_ sgn, in highp fmat3x4_ tMinMax, inout vec4 nfe2)
+#else
+lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in lowp bvec3_ sgn, in fmat3x4_ tMinMax, inout vec4 nfe2)
 #endif
+{
+    tMinMax = fmat3x4_(
+        fma(SSC(sgn.x) ? tMinMax[0] : tMinMax[0].zwxy, dr.xxxx, origin.xxxx),
+        fma(SSC(sgn.y) ? tMinMax[1] : tMinMax[1].zwxy, dr.yyyy, origin.yyyy),
+        fma(SSC(sgn.z) ? tMinMax[2] : tMinMax[2].zwxy, dr.zzzz, origin.zzzz)
+    );
+
+#if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
+    mediump
+#endif
+    fvec2_
+        tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy),
+        tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw)*InOne.xx;
+
+    const bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(abs(tNear), fvec2_(INFINITY-PRECERR)));
+    nfe2 = mix(INFINITY.xxxx, vec4(tNear, tFar), bvec4(isCube, isCube));
+    return isCube;
+}
+
 #endif

@@ -12,10 +12,10 @@
 #define USE_ACTIVE
 
 #include "../include/driver.glsl"
-#include "../include/structs.glsl"
 #include "../include/mathlib.glsl"
-#include "../include/ballotlib.glsl"
+#include "../include/structs.glsl"
 #include "../include/vertex.glsl"
+#include "../include/ballotlib.glsl"
 #include "./submodules/includes.glsl"
 
 // 0 and 4 reserved counters

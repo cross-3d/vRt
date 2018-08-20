@@ -2,9 +2,10 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #include "../include/driver.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
 #include "../include/rayslib.glsl"
-#include "../include/mathlib.glsl"
 #include "../include/random.glsl"
 
 // use partition by 8x8
@@ -49,7 +50,7 @@ void main() {
 
     // filtering off rays by resolution
     [[flatten]] if (xy.x < wh.x && xy.y < wh.y && max3_vec(f16_f32(ray.dcolor).xyz) >= 1e-4f) {
-        imageStore(ColorOutput, ivec2(Global_Idx.xy), vec4(0.f.xxx, 1.f));
+        ISTORE(ColorOutput, ivec2(Global_Idx.xy), vec4(0.f.xxx, 1.f));
         vtReuseRays(ray, Global_Idx.xy, 0, xy.y * wh.x + xy.x); // prefer strict layout
     }
 

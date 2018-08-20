@@ -2,9 +2,10 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #include "../include/driver.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
 #include "../include/rayslib.glsl"
-#include "../include/mathlib.glsl"
 #include "../include/random.glsl"
 
 // user descriptor set output image
@@ -51,7 +52,7 @@ void main() {
             const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, ivec2(icoord));
             const float alph = (emisson.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(dcolor))) || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
             //const float alph = stageUniform.iteration == stageUniform.lastIteration ? 1.f : emisson.a; reflc.xyz *= 0.f;
-            imageStore(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz * alph.xxx * (1.f.xxx - reflc.xyz), dcolor.xyz, bcolor.xyz), 1.f));
+            ISTORE(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz * alph.xxx * (1.f.xxx - reflc.xyz), dcolor.xyz, bcolor.xyz), 1.f));
 
             // generate secondary rays (binary transparency)
             VtRay newray = ray;
@@ -62,9 +63,9 @@ void main() {
             // planned blurry reflection support
             [[flatten]] if (alph > 0.f) {
                 vec3 rdir = reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz), shift = hit.vdat.xyz;
-                imageStore(OriginPass, ivec2(icoord), vec4(fma(faceforward(shift, -rdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz), 1.f));
-                imageStore(NormalPass, ivec2(icoord), vec4(rdir, 0.f));
-                imageStore(SpecularPass, ivec2(icoord), vec4(dcolor.xyz * alph.xxx * reflc.xyz, reflc.w));
+                ISTORE(OriginPass, ivec2(icoord), vec4(fma(faceforward(shift, -rdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz), 1.f));
+                ISTORE(NormalPass, ivec2(icoord), vec4(rdir, 0.f));
+                ISTORE(SpecularPass, ivec2(icoord), vec4(dcolor.xyz * alph.xxx * reflc.xyz, reflc.w));
             }
 
             // use reflection mode

@@ -6,10 +6,10 @@
 //#define USE_PUSH_CONSTANT
 
 #include "../include/driver.glsl"
-#include "../include/structs.glsl"
-#include "../include/vertex.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
+#include "../include/structs.glsl"
+#include "../include/vertex.glsl"
 #include "../include/vertex-input.glsl"
 
 LOCAL_SIZE_LAYOUT;
@@ -63,7 +63,7 @@ void main() {
 
             { // pre-compute normals
                 const vec3 v0 = TLOAD(lvtxIn, int(wofft)*3+0).xyz;
-                imageStore(lnrm, int(wofft), vec4(normalize(cross(TLOAD(lvtxIn, int(wofft)*3+1).xyz-v0, TLOAD(lvtxIn, int(wofft)*3+2).xyz-v0)), uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[wofft])))));
+                ISTORE(lnrm, int(wofft), vec4(normalize(cross(TLOAD(lvtxIn, int(wofft)*3+1).xyz-v0, TLOAD(lvtxIn, int(wofft)*3+2).xyz-v0)), uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[wofft])))));
             }
         }
     }

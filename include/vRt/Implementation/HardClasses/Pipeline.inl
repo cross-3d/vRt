@@ -124,8 +124,7 @@ namespace _vt {
 
 
                 bfi.bufferSize = 4096ull * 4096ull * sizeof(uint32_t);
-                bfi.format = VK_FORMAT_R32_SINT;
-                //bfi.format = VK_FORMAT_R32G32B32A32_SINT;
+                bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_traverseCache);
 
 
@@ -140,7 +139,7 @@ namespace _vt {
 
 
                 bfi.bufferSize = rayCount * 4ull * ATTRIB_EXTENT * sizeof(uint32_t);
-                bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                bfi.format = VK_FORMAT_R32G32B32A32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtRTSet->_attribBuffer);
             };
 

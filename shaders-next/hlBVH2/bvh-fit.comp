@@ -5,10 +5,10 @@
 #define BVH_CREATION
 
 #include "../include/driver.glsl"
-#include "../include/structs.glsl"
 #include "../include/mathlib.glsl"
-#include "../include/ballotlib.glsl"
+#include "../include/structs.glsl"
 #include "../include/vertex.glsl"
+#include "../include/ballotlib.glsl"
 #include "./submodules/includes.glsl"
 
 // optimize by shareds

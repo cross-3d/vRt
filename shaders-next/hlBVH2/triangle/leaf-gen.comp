@@ -47,10 +47,10 @@ void main() {
         {
 #ifndef VRT_USE_FAST_INTERSECTION
             const mat4x3 triverts = transpose(triverts);
-            imageStore(lvtx, itri+0, vec4(triverts[0].xyz, 1.f)), imageStore(lvtx, itri+1, vec4(triverts[1].xyz, 1.f)), imageStore(lvtx, itri+2, vec4(triverts[2].xyz, 1.f));
+            ISTORE(lvtx, itri+0, vec4(triverts[0].xyz, 1.f)), ISTORE(lvtx, itri+1, vec4(triverts[1].xyz, 1.f)), ISTORE(lvtx, itri+2, vec4(triverts[2].xyz, 1.f));
 #else
 #ifdef VTX_USE_LEGACY_METHOD
-            imageStore(lvtx, itri+0, triverts[0]), imageStore(lvtx, itri+1, triverts[1]), imageStore(lvtx, itri+2, triverts[2]);
+            ISTORE(lvtx, itri+0, triverts[0]), ISTORE(lvtx, itri+1, triverts[1]), ISTORE(lvtx, itri+2, triverts[2]);
 #else
             // experimental coordinate transform of triangle
             // http://jcgt.org/published/0005/03/03/paper.pdf
@@ -88,7 +88,7 @@ void main() {
             
             // get transposed version (for full-filling)
             const mat3x4 TVIt = transpose(TVI);
-            imageStore(lvtx, itri+0, TVIt[0]), imageStore(lvtx, itri+1, TVIt[1]), imageStore(lvtx, itri+2, TVIt[2]);
+            ISTORE(lvtx, itri+0, TVIt[0]), ISTORE(lvtx, itri+1, TVIt[1]), ISTORE(lvtx, itri+2, TVIt[2]);
 #endif
 #endif
         }
@@ -100,11 +100,6 @@ void main() {
 #endif
 
 #define to globalID
-
-        //{ // pre-compute normals
-        //    const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
-        //    imageStore(lnrm, int(tri), vec4(normalize(cross(TLOAD(lvtxIn, itri+1).xyz-v0, TLOAD(lvtxIn, itri+2).xyz-v0)), uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[tri])))));
-        //}
 
         // store leaf data
         [[flatten]]

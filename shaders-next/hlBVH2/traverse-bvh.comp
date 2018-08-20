@@ -10,12 +10,11 @@
 #define DMA_HIT
 
 #include "../include/driver.glsl"
-#include "../include/structs.glsl"
-#include "../include/rayslib.glsl"
-#include "../include/structs.glsl"
-#include "../include/morton.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
+#include "../include/structs.glsl"
+#include "../include/rayslib.glsl"
+#include "../include/morton.glsl"
 #include "../include/vertex.glsl"
 
 #include "./submodules/traverse-bvh2.glsl"

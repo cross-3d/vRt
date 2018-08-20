@@ -274,7 +274,7 @@ namespace _vt { // store in undercover namespace
         VkImageSubresourceRange _subresourceRange = {};
         VkImageSubresourceLayers _subresourceLayers = {};
         VkImageLayout _initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, _layout = VK_IMAGE_LAYOUT_GENERAL;
-        VkFormat _format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        VkFormat _format = VK_FORMAT_R32G32B32A32_UINT;
         VkExtent3D _extent = {1u, 1u, 1u};
         VkDescriptorImageInfo _staticDsci = {};
 

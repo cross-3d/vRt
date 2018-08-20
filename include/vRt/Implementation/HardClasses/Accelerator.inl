@@ -90,11 +90,11 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_mortonCodesBuffer);
 
                 bfi.bufferSize = maxPrimitives * sizeof(uint32_t);
-                bfi.format = VK_FORMAT_R32_SINT;
+                bfi.format = VK_FORMAT_R32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_mortonIndicesBuffer);
 
                 bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull * 2ull;
-                bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                bfi.format = VK_FORMAT_R32G32B32A32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_onWorkBoxes);
 
                 bfi.bufferSize = 2ull * 16ull * maxPrimitives * sizeof(uint32_t);
@@ -114,7 +114,7 @@ namespace _vt {
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_countersBuffer);
 
                 bfi.bufferSize = 2ull * 128ull * 16ull * sizeof(float);
-                bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                bfi.format = VK_FORMAT_R32G32B32A32_UINT;
                 createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_generalBoundaryResultBuffer);
             };
 
@@ -168,13 +168,13 @@ namespace _vt {
                 if (!info.bvhMetaBuffer) {
                     //bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 4ull * 2ull;
                     bfi.bufferSize = sizeof(uint32_t);
-                    bfi.format = VK_FORMAT_R32G32B32A32_SINT;
+                    bfi.format = VK_FORMAT_R32G32B32A32_UINT;
                     createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhMetaBuffer);
                 }
 
                 if (!info.bvhBoxBuffer) {
                     bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull * 2ull;
-                    bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                    bfi.format = VK_FORMAT_R32G32B32A32_UINT;
                     createDeviceBuffer(_vtDevice, bfi, vtAccelerator->_bvhBoxBuffer);
                 }
 
@@ -204,7 +204,7 @@ namespace _vt {
                     bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
                     bvi.flags = {};
                     bvi.buffer = info.bvhMetaBuffer;
-                    bvi.format = VK_FORMAT_R32G32B32A32_SINT;
+                    bvi.format = VK_FORMAT_R32G32B32A32_UINT;
                     bvi.offset = 4ull * sizeof(int32_t) * info.bvhMetaOffset;
                     bvi.range = VK_WHOLE_SIZE;
                     if (vkCreateBufferView(_vtDevice->_device, &bvi, nullptr, &bvhMetaView) == VK_SUCCESS) {
