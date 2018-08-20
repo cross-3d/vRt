@@ -91,8 +91,10 @@ bool anyInvoc(in lowp bool_ bc) { return anyInvoc(SSC(bc)); }
 
 
 // subgroup barriers
-#define SB_BARRIER subgroupMemoryBarrier(),subgroupBarrier();
-#define LGROUP_BARRIER groupMemoryBarrier(),barrier();
+//#define SB_BARRIER subgroupMemoryBarrier(),subgroupBarrier();
+//#define LGROUP_BARRIER groupMemoryBarrier(),barrier();
+#define SB_BARRIER subgroupBarrier();
+#define LGROUP_BARRIER barrier();
 
 #endif
 
