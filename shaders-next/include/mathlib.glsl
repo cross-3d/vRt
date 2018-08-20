@@ -115,7 +115,7 @@ lowp bool_ greaterF     (in float a, in float b) { return bool_(   (a-b) >   PRE
 lowp bool_ equalF       (in float a, in float b) { return bool_(abs(a-b) <=  PRECERR); }
 
 // precision utils
-float precIssue(in float a) { return max(abs(a),1e-4f)*sign(a); }
+float precIssue(in float a) { return sign(a)*max(abs(a),1e-4f); }
 
 // vector math utils
 float sqlen(in vec3 a) { return dot(a, a); }
