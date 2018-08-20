@@ -1,3 +1,0 @@
-BE ACCURATE WHEN REPLACING!
-
-(V|v)t(?=[A-Z^\s])
