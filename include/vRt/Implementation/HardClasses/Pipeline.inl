@@ -61,86 +61,93 @@ namespace _vt {
         { // planned variable size
             const auto rayCount = info.maxRays;
             vtRTSet->_cuniform.maxRayCount = rayCount;
+
+            std::shared_ptr<BufferManager> bManager; createBufferManager(_vtDevice, bManager);
+
+            VtDeviceBufferCreateInfo bfic;
+            bfic.familyIndex = _vtDevice->_mainFamilyIndex;
+            bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
             
-            {
-                VtDeviceBufferCreateInfo bfi;
-                bfi.familyIndex = _vtDevice->_mainFamilyIndex;
-                bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
+            VtBufferRegionCreateInfo bfi;
 
-
+            { // allocate buffer regions
                 bfi.bufferSize = rayCount * 32ull;
                 bfi.format = VK_FORMAT_UNDEFINED;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_rayBuffer);
 
 
                 bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupIndicesBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_groupIndicesBuffer);
 
 
                 bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupIndicesBufferRead);
+                createBufferRegion(bManager, bfi, vtRTSet->_groupIndicesBufferRead);
 
 
                 bfi.bufferSize = rayCount * 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_hitBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_hitBuffer);
 
 
                 bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_closestHitIndiceBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_closestHitIndiceBuffer);
 
 
                 bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_missedHitIndiceBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_missedHitIndiceBuffer);
 
 
                 bfi.bufferSize = 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_countersBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_countersBuffer);
 
 
                 bfi.bufferSize = 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupCountersBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_groupCountersBuffer);
 
 
                 bfi.bufferSize = 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_groupCountersBufferRead);
+                createBufferRegion(bManager, bfi, vtRTSet->_groupCountersBufferRead);
 
 
                 bfi.bufferSize = rayCount * 64ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_hitPayloadBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_hitPayloadBuffer);
 
 
                 bfi.bufferSize = rayCount * 2ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_rayLinkPayload);
+                createBufferRegion(bManager, bfi, vtRTSet->_rayLinkPayload);
 
 
                 bfi.bufferSize = 4096ull * 4096ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_traverseCache);
+                createBufferRegion(bManager, bfi, vtRTSet->_traverseCache);
 
 
                 bfi.bufferSize = sizeof(VtStageUniform);
                 bfi.format = VK_FORMAT_UNDEFINED;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_constBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_constBuffer);
 
                 // at now unused
                 bfi.bufferSize = sizeof(uint32_t);//tiled(rayCount, 4096ull) * 4096ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_blockBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_blockBuffer);
 
 
                 bfi.bufferSize = rayCount * 4ull * ATTRIB_EXTENT * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32G32B32A32_UINT;
-                createDeviceBuffer(_vtDevice, bfi, vtRTSet->_attribBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_attribBuffer);
+
+
+                // build final shared buffer for this class
+                createSharedBuffer(bManager, vtRTSet->_sharedBuffer, bfic);
             };
 
             {

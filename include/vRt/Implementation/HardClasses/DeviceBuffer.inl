@@ -17,11 +17,11 @@ namespace _vt {
     };
 
 
-    VtResult createBufferView(std::shared_ptr<BufferRegion>& bRegion) {
-        auto& device = bRegion->_device;
-        VtResult result = VK_ERROR_INITIALIZATION_FAILED;
+    VtResult createBufferView(std::shared_ptr<BufferRegion> bRegion) {
+        auto device = bRegion->_device;
+        VtResult result = VK_SUCCESS;
         if (result == VK_SUCCESS && bRegion->_format) {
-            bRegion->_bufferView = {};
+            //bRegion->_bufferView = {};
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
             auto bvi = VezBufferViewCreateInfo{};
@@ -32,11 +32,11 @@ namespace _vt {
             bvi.pNext = nullptr;
             bvi.buffer = VkBuffer(*bRegion);
             bvi.format = bRegion->_format;
-            bvi.offset = 0;
-            bvi.range = VK_WHOLE_SIZE;
+            bvi.offset = bRegion->_offset;
+            bvi.range = bRegion->_size;
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
-            if (vezCreateBufferView(device->_device, &bvi, &vtDeviceBuffer->_bufferView) == VK_SUCCESS) {
+            if (vezCreateBufferView(device->_device, &bvi, &bRegion->_bufferView) == VK_SUCCESS) {
 #else
             if (vkCreateBufferView(device->_device, &bvi, nullptr, &bRegion->_bufferView) == VK_SUCCESS) {
 #endif
@@ -71,7 +71,8 @@ namespace _vt {
         };
 
         auto usageFlag = cinfo.usageFlag | usageFlagCstr;
-        if (cinfo.format) { usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT; } // if has format, add texel storage usage
+        //if (cinfo.format) { usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT; } // if has format, add texel storage usage
+        usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
         VezMemoryFlags mem = VEZ_MEMORY_GPU_ONLY;
@@ -134,13 +135,27 @@ namespace _vt {
     };
 
 
+    // create shared buffer, buffer views and resolve descriptor info (with externalization support)
+    inline VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, std::shared_ptr<DeviceBuffer>& gBuffer, VtDeviceBufferCreateInfo cinfo) {
+        cinfo.bufferSize = bManager->_size; createDeviceBuffer(bManager->_device, cinfo, bManager->_bufferStore); gBuffer = bManager->_bufferStore;
+
+        // complete descriptors and buffer-views
+        for (auto&f : bManager->_bufferRegions) {
+            f->_sDescriptorInfo.buffer = *(f->_boundBuffer = bManager->_bufferStore); createBufferView(f);
+        }
+
+        // return result (TODO: handling)
+        return VK_SUCCESS;
+    };
+
+
     // create shared buffer, buffer views and resolve descriptor info
-    VtResult createSharedBuffer(const std::shared_ptr<BufferManager>& bManager, VtDeviceBufferCreateInfo cinfo) {
+    inline VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, VtDeviceBufferCreateInfo cinfo) {
         cinfo.bufferSize = bManager->_size; createDeviceBuffer(bManager->_device, cinfo, bManager->_bufferStore);
 
         // complete descriptors and buffer-views
         for (auto&f : bManager->_bufferRegions) {
-            f->_descriptorInfo.buffer = *(f->_boundBuffer = bManager->_bufferStore); createBufferView(f);
+            f->_sDescriptorInfo.buffer = *(f->_boundBuffer = bManager->_bufferStore); createBufferView(f);
         }
 
         // return result (TODO: handling)
@@ -149,24 +164,39 @@ namespace _vt {
 
 
     // create buffer manager
-    VtResult createBufferManager(const std::shared_ptr<Device>& gDevice, std::shared_ptr<BufferManager>& bManager) {
+    inline VtResult createBufferManager(std::shared_ptr<Device> gDevice, std::shared_ptr<BufferManager>& bManager) {
         bManager = std::make_shared<BufferManager>();
         bManager->_device = gDevice;
         return VK_SUCCESS;
     };
 
-
     // create buffer region by exist buffer
-    VtResult createBufferRegion(const std::shared_ptr<DeviceBuffer>& gBuffer, std::shared_ptr<BufferRegion>& bRegion, const VkDeviceSize& offset = 0, const VkDeviceSize& size = VK_WHOLE_SIZE, const VkFormat& format = VK_FORMAT_UNDEFINED) {
-        auto& gDevice = gBuffer->_device;
+    inline VtResult createBufferRegion(std::shared_ptr<DeviceBuffer> gBuffer, const VtBufferRegionCreateInfo& bri, std::shared_ptr<BufferRegion>& bRegion) {
+        auto gDevice = gBuffer->_device;
         bRegion = std::make_shared<BufferRegion>();
         bRegion->_device = gDevice;
-        bRegion->_format = format;
-        bRegion->_descriptorInfo.range = bRegion->_size = size;
-        bRegion->_descriptorInfo.offset = bRegion->_offset = offset;
-        bRegion->_descriptorInfo.buffer = *(bRegion->_boundBuffer = gBuffer); createBufferView(bRegion);
+        bRegion->_format = bri.format;
+        bRegion->_sDescriptorInfo.range = bRegion->_size = bri.bufferSize;
+        bRegion->_sDescriptorInfo.offset = bRegion->_offset = bri.offset;
+        bRegion->_sDescriptorInfo.buffer = *(bRegion->_boundBuffer = gBuffer); createBufferView(bRegion);
         return VK_SUCCESS;
     };
 
+    // create structuring 
+    inline VtResult BufferManager::_prealloc(const VtBufferRegionCreateInfo& cinfo, std::shared_ptr<BufferRegion>& bRegion) {
+        auto offset = _size; _size += cinfo.bufferSize;
+        _bufferRegions.push_back(std::make_shared<BufferRegion>());
+        bRegion = _bufferRegions[_bufferRegions.size() - 1];
+        bRegion->_device = _device;
+        bRegion->_format = cinfo.format;
+        bRegion->_sDescriptorInfo.range = bRegion->_size = cinfo.bufferSize;
+        bRegion->_sDescriptorInfo.offset = bRegion->_offset = offset;
+        return VK_SUCCESS;
+    };
+
+    // create buffer region by buffer manager
+    inline VtResult createBufferRegion(std::shared_ptr<BufferManager> bManager, const VtBufferRegionCreateInfo& bri, std::shared_ptr<BufferRegion>& bRegion) {
+        return bManager->_prealloc(bri, bRegion);
+    };
 
 };

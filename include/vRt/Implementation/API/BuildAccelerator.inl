@@ -205,9 +205,9 @@ namespace _vt {
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting
         auto bounder = accel;
-        cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, *bounder->_mortonCodesBuffer);
-        cmdFillBuffer<0u>(*cmdBuf, *bounder->_countersBuffer); // reset counters
-        cmdFillBuffer<0u>(*cmdBuf, *bounder->_fitStatusBuffer);
+        cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, bounder->_mortonCodesBuffer);
+        cmdFillBuffer<0u>(*cmdBuf, bounder->_countersBuffer); // reset counters
+        cmdFillBuffer<0u>(*cmdBuf, bounder->_fitStatusBuffer);
         updateCommandBarrier(*cmdBuf);
 
         const auto workGroupSize = 16u;

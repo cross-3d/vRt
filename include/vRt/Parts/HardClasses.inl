@@ -120,7 +120,10 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _device;
 
         // in-set buffers
-        std::shared_ptr<DeviceBuffer> _rayBuffer, _groupIndicesBuffer, _groupIndicesBufferRead, _hitBuffer, _countersBuffer, _groupCountersBuffer, _groupCountersBufferRead, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer, _rayLinkPayload, _attribBuffer;
+        //std::shared_ptr<DeviceBuffer> 
+        std::shared_ptr<DeviceBuffer> _sharedBuffer;
+        std::shared_ptr<BufferRegion> 
+            _rayBuffer, _groupIndicesBuffer, _groupIndicesBufferRead, _hitBuffer, _countersBuffer, _groupCountersBuffer, _groupCountersBufferRead, _closestHitIndiceBuffer, _missedHitIndiceBuffer, _hitPayloadBuffer, _constBuffer, _traverseCache, _blockBuffer, _rayLinkPayload, _attribBuffer;
         VtStageUniform _cuniform = {};
 
         operator VkDescriptorSet() const { return _descriptorSet; };
@@ -305,13 +308,16 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _boundBuffer;
         VkDeviceSize _offset = 0, _size = 0;
         VkBufferView _bufferView = {}; VkFormat _format = VK_FORMAT_UNDEFINED;
-        VkDescriptorBufferInfo _descriptorInfo = {VK_NULL_HANDLE, 0, VK_WHOLE_SIZE};
+        VkDescriptorBufferInfo _sDescriptorInfo = {VK_NULL_HANDLE, 0, VK_WHOLE_SIZE};
 
-        operator VkDescriptorBufferInfo() const { return _descriptorInfo; }; // cast operator
+        auto  _descriptorInfo() const { return _sDescriptorInfo; };
+        auto& _descriptorInfo() { return _sDescriptorInfo; };
+
+        operator VkDescriptorBufferInfo() const { return _descriptorInfo(); }; // cast operator
         operator VkBuffer() const { return _boundBuffer->_buffer; }; // cast operator
         operator VkBufferView() const { return _bufferView; }; // cast operator
 
-        operator VkDescriptorBufferInfo&() { return _descriptorInfo; }; // cast operator
+        operator VkDescriptorBufferInfo&() { return _descriptorInfo(); }; // cast operator
         operator VkBuffer&() { return _boundBuffer->_buffer; }; // cast operator
         operator VkBufferView&() { return _bufferView; }; // cast operator
 
@@ -330,19 +336,7 @@ namespace _vt { // store in undercover namespace
         VkDeviceSize _size = 0; // accumulatable size
 
         // create structuring 
-        std::shared_ptr<BufferRegion> _prealloc(VkDeviceSize size = 1, VkFormat _format = VK_FORMAT_R32G32B32A32_UINT) {
-            auto offset = _size; _size += size;
-            _bufferRegions.push_back(std::make_shared<BufferRegion>());
-            std::shared_ptr<BufferRegion>& bRegion = _bufferRegions[_bufferRegions.size()-1];
-            bRegion->_device = _device;
-            bRegion->_format = VK_FORMAT_R32G32B32A32_UINT;
-            bRegion->_descriptorInfo.range = bRegion->_size = size;
-            bRegion->_descriptorInfo.offset = bRegion->_offset = offset;
-            return bRegion;
-        };
-
-        // TODO: allocating on already created buffer
-
+        VtResult _prealloc(const VtBufferRegionCreateInfo& cinfo, std::shared_ptr<BufferRegion>& bRegion);
     };
 
 

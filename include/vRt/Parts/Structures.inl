@@ -187,6 +187,17 @@ namespace vrt { // store in official namespace
         uint32_t familyIndex = 0;
     };
 
+
+    struct VtBufferRegionCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_BUFFER_REGION_CREATE_INFO;
+        const void* pNext = nullptr;
+
+        VkDeviceSize offset = 0;
+        VkDeviceSize bufferSize = sizeof(uint32_t);
+        VkFormat format = VK_FORMAT_UNDEFINED;
+    };
+
+
     struct VtDeviceImageCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_IMAGE_CREATE_INFO;
         const void* pNext = nullptr;

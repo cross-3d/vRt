@@ -22,4 +22,5 @@ namespace vrt { // store in official namespace
     // bound in device space
     struct VtDeviceBufferCreateInfo;
     struct VtDeviceImageCreateInfo;
+    struct VtBufferRegionCreateInfo;
 };

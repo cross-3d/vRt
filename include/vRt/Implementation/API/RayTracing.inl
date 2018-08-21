@@ -66,9 +66,9 @@ namespace _vt {
 
         // cleaning indices and counters
         auto cmdClean = [&](){
-            cmdFillBuffer<0u>(*cmdBuf, *rtset->_countersBuffer);
-            cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupCountersBuffer);
-            //cmdFillBuffer<0u>(*cmdBuf, *rtset->_groupIndicesBuffer);
+            cmdFillBuffer<0u>(*cmdBuf, rtset->_countersBuffer);
+            cmdFillBuffer<0u>(*cmdBuf, rtset->_groupCountersBuffer);
+            //cmdFillBuffer<0u>(*cmdBuf, rtset->_groupIndicesBuffer);
             updateCommandBarrier(*cmdBuf);
         };
 
