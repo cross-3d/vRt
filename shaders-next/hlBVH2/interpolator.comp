@@ -32,7 +32,7 @@ void main() {
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        bool overflow = globalID >= wsize; IFALL(overflow) break;
+        const bool overflow = globalID >= wsize; IFALL(overflow) break;
         const int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
         
 #ifdef DMA_HIT
@@ -41,9 +41,12 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
-        [[flatten]]
-        if (!overflow) { // verify intersection
-            const int triID = floatBitsToInt(hit.uvt.w)-1;
+        [[flatten]] if (!overflow) { // verify intersection
+            const int rayID = hit.rayID-1, triID = floatBitsToInt(hit.uvt.w)-1;
+
+            // force set zero to hit index, and put minimal possible after (this index can be changed in hit shaders)
+            //imageAtomicCompSwap(rayLink, rayID<<1, 0u, hitID+1), imageAtomicMin(rayLink, rayID<<1, hitID+1);
+            imageAtomicMax(rayLink, rayID<<1, hitID+1); // reversed version
 
             // interpolate hit
             if (triID >= 0) {
