@@ -231,14 +231,14 @@ namespace _vt {
             commandBarrier(cmd); // put shader barrier
         }
         return VK_SUCCESS;
-    }
+    };
 
     // low level copy command between (prefer for host and device)
     static inline VkResult cmdCopyBufferL(VkCommandBuffer cmd, vk::Buffer srcBuffer, vk::Buffer dstBuffer, const std::vector<vk::BufferCopy>& regions, const std::function<void(VkCommandBuffer)>& barrierFn = commandBarrier) {
         vk::CommandBuffer(cmd).copyBuffer(srcBuffer, dstBuffer, regions);
         barrierFn(cmd); // put copy barrier
         return VK_SUCCESS;
-    }
+    };
 
     // short data set with command buffer (alike push constant)
     template<class T>
@@ -246,7 +246,7 @@ namespace _vt {
         vk::CommandBuffer(cmd).updateBuffer(dstBuffer, offset, data);
         //updateCommandBarrier(cmd);
         return VK_SUCCESS;
-    }
+    };
 
     // template function for fill buffer by constant value
     // use for create repeat variant
@@ -255,12 +255,12 @@ namespace _vt {
         vk::CommandBuffer(cmd).fillBuffer(vk::Buffer(dstBuffer), offset, size, Rv);
         //updateCommandBarrier(cmd);
         return VK_SUCCESS;
-    }
+    };
 
     // make whole size buffer descriptor info
     static inline auto bufferDescriptorInfo(vk::Buffer buffer, vk::DeviceSize offset = 0, vk::DeviceSize size = VK_WHOLE_SIZE) {
         return vk::DescriptorBufferInfo(buffer, offset, size);
-    }
+    };
 
     // submit command (with async wait)
     static inline void submitCmd(VkDevice device, VkQueue queue, std::vector<VkCommandBuffer> cmds, vk::SubmitInfo smbi = {}) {

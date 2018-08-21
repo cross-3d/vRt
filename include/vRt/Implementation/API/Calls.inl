@@ -185,21 +185,4 @@ namespace vrt {
     }
 
 
-    /*
-    template <class T>
-    VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset) {
-        setBufferSubData<T, VMA_MEMORY_USAGE_CPU_TO_GPU>(hostdata, buffer, offset); return VK_SUCCESS;
-    };
-
-    template <class T>
-    VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset) {
-        getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, hostdata, offset); return VK_SUCCESS;
-    };
-
-    template <class T>
-    inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, size_t count, intptr_t offset) {
-        return getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, count, offset);
-    };
-    */
-
 };

@@ -74,4 +74,7 @@ namespace vrt { // store in official namespace
         VT_VENDOR_NVIDIA,
         VT_VENDOR_INTEL
     } VtVendor;
+
+
+
 };

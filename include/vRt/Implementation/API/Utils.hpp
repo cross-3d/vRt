@@ -7,7 +7,7 @@ namespace _vt { // store in undercover namespace
     using namespace vrt;
 
 
-    constexpr const static inline uint32_t VtIdentifier = 0x1FFu;
+    constexpr const  uint32_t VtIdentifier = 0x1FFu;
     struct VkShortHead {
         //uint32_t sublevel : 24, identifier : 12;
         uint32_t identifier : 12, sublevel : 24; // I don't know ordering of bits
@@ -21,7 +21,7 @@ namespace _vt { // store in undercover namespace
 
 
     template <class VtS>
-    static inline auto vtSearchStructure(VtS& structure, VtStructureType sType) {
+    inline auto vtSearchStructure(VtS& structure, VtStructureType sType) {
         VkFullHead* head = (VkFullHead*)&structure;
         VkFullHead* found = nullptr;
         for (int i = 0; i < 255; i++) {
@@ -35,7 +35,7 @@ namespace _vt { // store in undercover namespace
     };
 
     template <class VtS>
-    static inline auto vtExplodeArtificals(VtS& structure) {
+    inline auto vtExplodeArtificals(VtS& structure) {
         VkShortHead* head = (VkShortHead*)&structure;
         VkShortHead* lastVkStructure = nullptr;
         VkShortHead* firstVkStructure = nullptr;
@@ -55,7 +55,7 @@ namespace _vt { // store in undercover namespace
     };
 
     // transition texture layout
-    static inline auto imageBarrier(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> image) {
+    inline auto imageBarrier(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> image) {
         VtResult result = VK_SUCCESS; // planned to complete
 
 #ifndef VRT_ENABLE_VEZ_INTEROP
@@ -121,25 +121,49 @@ namespace _vt { // store in undercover namespace
 
 
     // copy buffer command with inner "DeviceBuffer"
-    static inline void cmdCopyBuffer(VkCommandBuffer cmd, std::shared_ptr<DeviceBuffer> srcBuffer, std::shared_ptr<DeviceBuffer> dstBuffer, const std::vector<vk::BufferCopy>& regions) {
+    inline void cmdCopyBuffer(VkCommandBuffer cmd, std::shared_ptr<DeviceBuffer> srcBuffer, std::shared_ptr<DeviceBuffer> dstBuffer, const std::vector<vk::BufferCopy>& regions) {
         cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions);
     };
 
     // copy to host buffer
     // you can't use it for form long command buffer to host
-    static inline void cmdCopyBufferToHost(VkCommandBuffer cmd, std::shared_ptr<DeviceBuffer> srcBuffer, std::shared_ptr<DeviceToHostBuffer> dstBuffer, const std::vector<vk::BufferCopy>& regions) {
+    inline void cmdCopyBufferToHost(VkCommandBuffer cmd, std::shared_ptr<DeviceBuffer> srcBuffer, std::shared_ptr<DeviceToHostBuffer> dstBuffer, const std::vector<vk::BufferCopy>& regions) {
         cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions, toHostCommandBarrier);
     };
 
     // copy from host buffer
     // you can't use it for form long command buffer from host
-    static inline void cmdCopyBufferFromHost(VkCommandBuffer cmd, std::shared_ptr<HostToDeviceBuffer> srcBuffer, std::shared_ptr<DeviceBuffer> dstBuffer, const std::vector<vk::BufferCopy>& regions) {
+    inline void cmdCopyBufferFromHost(VkCommandBuffer cmd, std::shared_ptr<HostToDeviceBuffer> srcBuffer, std::shared_ptr<DeviceBuffer> dstBuffer, const std::vector<vk::BufferCopy>& regions) {
         cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions, fromHostCommandBarrier);
     };
 
 
 
-    static inline void cmdCopyDeviceImage(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> srcImage, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::ImageCopy>& regions) {
+
+    // copy buffer command with inner "DeviceBuffer"
+    inline void cmdCopyBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> srcBuffer, std::shared_ptr<BufferRegion> dstBuffer, std::vector<vk::BufferCopy> regions) {
+        regions[0].srcOffset += srcBuffer->_offset, regions[0].dstOffset += dstBuffer->_offset;
+        cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions);
+    };
+
+    // copy to host buffer
+    // you can't use it for form long command buffer to host
+    inline void cmdCopyBufferToHost(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> srcBuffer, std::shared_ptr<DeviceToHostBuffer> dstBuffer, std::vector<vk::BufferCopy> regions) {
+        regions[0].srcOffset += srcBuffer->_offset;
+        cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions, toHostCommandBarrier);
+    };
+
+    // copy from host buffer
+    // you can't use it for form long command buffer from host
+    inline void cmdCopyBufferFromHost(VkCommandBuffer cmd, std::shared_ptr<HostToDeviceBuffer> srcBuffer, std::shared_ptr<BufferRegion> dstBuffer, std::vector<vk::BufferCopy> regions) {
+        regions[0].dstOffset += dstBuffer->_offset;
+        cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions, fromHostCommandBarrier);
+    };
+
+
+
+
+    inline void cmdCopyDeviceImage(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> srcImage, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::ImageCopy>& regions) {
         //vk::CommandBuffer(cmd).copyBufferToImage((vk::Buffer&)(srcBuffer->_buffer), (vk::Image&)(dstImage->_image), vk::ImageLayout(dstImage->_layout), regions);
         vk::CommandBuffer(cmd).copyImage((vk::Image&)(*srcImage), vk::ImageLayout(srcImage->_layout), (vk::Image&)(*dstImage), vk::ImageLayout(dstImage->_layout), regions);
         commandBarrier(cmd);
@@ -148,7 +172,7 @@ namespace _vt { // store in undercover namespace
     // copy buffer to image (from gpu or host)
     // you can't use it for form long command buffer from host
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_CPU_TO_GPU>
-    static inline void cmdCopyBufferToImage(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> srcBuffer, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::BufferImageCopy>& regions) {
+    inline void cmdCopyBufferToImage(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> srcBuffer, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::BufferImageCopy>& regions) {
         vk::CommandBuffer(cmd).copyBufferToImage(srcBuffer->_buffer, dstImage->_image, vk::ImageLayout(dstImage->_layout), regions);
 
         if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
@@ -159,7 +183,7 @@ namespace _vt { // store in undercover namespace
     // copy image to buffer (to gpu or host)
     // you can't use it for form long command buffer to host
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
-    static inline void cmdCopyImageToBuffer(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> srcImage, std::shared_ptr<RoledBuffer<U>> dstBuffer, const std::vector<vk::BufferImageCopy>& regions) {
+    inline void cmdCopyImageToBuffer(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> srcImage, std::shared_ptr<RoledBuffer<U>> dstBuffer, const std::vector<vk::BufferImageCopy>& regions) {
         vk::CommandBuffer(cmd).copyImageToBuffer((vk::Image&)(*srcImage), vk::ImageLayout(srcImage->_layout), (vk::Buffer&)(*dstBuffer), regions);
 
         if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
@@ -175,10 +199,10 @@ namespace _vt { // store in undercover namespace
     using cmdCopyBufferToImage_T = void(*)(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> srcBuffer, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::BufferImageCopy>& regions);
 
     // aliased low level calls
-    constexpr const static inline cmdCopyBufferToImage_T<VMA_MEMORY_USAGE_GPU_ONLY> copyDeviceBufferToImage = &cmdCopyBufferToImage<VMA_MEMORY_USAGE_GPU_ONLY>;
-    constexpr const static inline cmdCopyImageToBuffer_T<VMA_MEMORY_USAGE_GPU_ONLY> copyImageToDeviceBuffer = &cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
-    constexpr const static inline cmdCopyBufferToImage_T<VMA_MEMORY_USAGE_CPU_TO_GPU> copyHostBufferToImage = &cmdCopyBufferToImage<VMA_MEMORY_USAGE_CPU_TO_GPU>;
-    constexpr const static inline cmdCopyImageToBuffer_T<VMA_MEMORY_USAGE_GPU_TO_CPU> copyImageToHostBuffer = &cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
+    constexpr const  cmdCopyBufferToImage_T<VMA_MEMORY_USAGE_GPU_ONLY> copyDeviceBufferToImage = &cmdCopyBufferToImage<VMA_MEMORY_USAGE_GPU_ONLY>;
+    constexpr const  cmdCopyImageToBuffer_T<VMA_MEMORY_USAGE_GPU_ONLY> copyImageToDeviceBuffer = &cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
+    constexpr const  cmdCopyBufferToImage_T<VMA_MEMORY_USAGE_CPU_TO_GPU> copyHostBufferToImage = &cmdCopyBufferToImage<VMA_MEMORY_USAGE_CPU_TO_GPU>;
+    constexpr const  cmdCopyImageToBuffer_T<VMA_MEMORY_USAGE_GPU_TO_CPU> copyImageToHostBuffer = &cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
 
 
 
@@ -186,7 +210,7 @@ namespace _vt { // store in undercover namespace
 
     // set buffer data function (defaultly from HostToDevice)
     template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_CPU_TO_GPU>
-    static inline void setBufferSubData(const std::vector<T> &hostdata, std::shared_ptr<RoledBuffer<U>> buffer, intptr_t offset = 0) {
+    inline void setBufferSubData(const std::vector<T> &hostdata, std::shared_ptr<RoledBuffer<U>> buffer, intptr_t offset = 0) {
         const size_t bufferSize = hostdata.size() * sizeof(T);
 #ifdef VRT_ENABLE_VEZ_INTEROP
         if (bufferSize > 0) {
@@ -208,7 +232,7 @@ namespace _vt { // store in undercover namespace
 
     // get buffer data function (defaultly from DeviceToHost)
     template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
-    static inline void getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, std::vector<T> &hostdata, intptr_t offset = 0) {
+    inline void getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, std::vector<T> &hostdata, intptr_t offset = 0) {
         const size_t bufferSize = hostdata.size() * sizeof(T);
 #ifdef VRT_ENABLE_VEZ_INTEROP
         if (bufferSize > 0) {
@@ -230,31 +254,26 @@ namespace _vt { // store in undercover namespace
 
     // get buffer data function (defaultly from DeviceToHost)
     template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
-    static inline auto getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, size_t count = 1, intptr_t offset = 0) {
+    inline auto getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, size_t count = 1, intptr_t offset = 0) {
         std::vector<T> hostdata(count);
         getBufferSubData(buffer, hostdata, 0);
         return hostdata; // in return will copying, C++ does not made mechanism for zero-copy of anything
-    }
-};
-
-
-
-// templates is not supported by static libs 
-// all pure C++ stuff will implementing by headers in SDK
-
-namespace vrt {
-    template <class T>
-    static inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset) {
-        _vt::setBufferSubData<T, VMA_MEMORY_USAGE_CPU_TO_GPU>(hostdata, buffer, offset); return VK_SUCCESS;
     };
 
-    template <class T>
-    static inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset) {
-        _vt::getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, hostdata, offset); return VK_SUCCESS;
-    };
-
-    template <class T>
-    static inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, size_t count, intptr_t offset) {
-        return _vt::getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, count, offset);
+    // TODO: merge to internals
+    inline auto getVendorName(const uint32_t& vendorID) {
+        auto shaderDir = VT_VENDOR_UNIVERSAL;
+        switch (vendorID) {
+        case 4318:
+            shaderDir = VT_VENDOR_NVIDIA;
+            break;
+        case 4098:
+            shaderDir = VT_VENDOR_AMD;
+            break;
+        case 32902:
+            shaderDir = VT_VENDOR_INTEL;
+            break;
+        }
+        return shaderDir;
     };
 };

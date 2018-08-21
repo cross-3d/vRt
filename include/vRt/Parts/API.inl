@@ -123,3 +123,22 @@ namespace vrt { // store in official namespace
     template <class T>
     extern inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, size_t count = 1, intptr_t offset = 0);
 };
+
+// templates is not supported by static libs 
+// all pure C++ stuff will implementing by headers in SDK
+namespace vrt {
+    template <class T>
+    inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset) {
+        _vt::setBufferSubData<T, VMA_MEMORY_USAGE_CPU_TO_GPU>(hostdata, buffer, offset); return VK_SUCCESS;
+    };
+
+    template <class T>
+    inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset) {
+        _vt::getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, hostdata, offset); return VK_SUCCESS;
+    };
+
+    template <class T>
+    inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, size_t count, intptr_t offset) {
+        return _vt::getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, count, offset);
+    };
+};

@@ -6,7 +6,7 @@ namespace _vt {
     using namespace vrt;
 
     // ray tracing set of state
-    inline VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice, const VtMaterialSetCreateInfo& info, std::shared_ptr<MaterialSet>& vtMaterialSet) {
+    VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice, const VtMaterialSetCreateInfo& info, std::shared_ptr<MaterialSet>& vtMaterialSet) {
         VtResult result = VK_SUCCESS;
 
         //auto vtMaterialSet = (_vtMaterialSet = std::make_shared<MaterialSet>());

@@ -31,4 +31,7 @@ namespace _vt { // store in undercover namespace
 
     // have no roles at now
     class DeviceImage;
+
+    class BufferManager;
+    class BufferRegion;
 };

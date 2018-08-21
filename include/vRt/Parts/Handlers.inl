@@ -138,8 +138,14 @@ namespace vrt { // store in official namespace
         std::shared_ptr<_vt::RoledBuffer<U>> _vtBuffer;
         operator std::shared_ptr<_vt::RoledBuffer<U>>() const { return _vtBuffer; };
         operator std::shared_ptr<_vt::RoledBuffer<U>>&() { return _vtBuffer; };
+
         operator VkBuffer() const { return *_vtBuffer; };
-        operator VkBufferView() const { return *_vtBuffer; };
+        operator VkBuffer&() { return *_vtBuffer; };
+
+        // deprecated bufferView in buffer
+        [[deprecated("Deprecated since merging to new memory model")]] operator VkBufferView() const { return *_vtBuffer; };
+        [[deprecated("Deprecated since merging to new memory model")]] operator VkBufferView&() { return *_vtBuffer; };
+
         operator bool() const { return !!_vtBuffer; };
         auto* operator->() { return _vtBuffer.get(); };
         auto* operator->() const { return _vtBuffer.get(); };
@@ -150,8 +156,13 @@ namespace vrt { // store in official namespace
         std::shared_ptr<_vt::DeviceImage> _vtDeviceImage;
         operator std::shared_ptr<_vt::DeviceImage>() const { return _vtDeviceImage; };
         operator std::shared_ptr<_vt::DeviceImage>&() { return _vtDeviceImage; };
+
         operator VkImage() const { return *_vtDeviceImage; };
         operator VkImageView() const { return *_vtDeviceImage; };
+
+        operator VkImage&() { return *_vtDeviceImage; };
+        operator VkImageView&() { return *_vtDeviceImage; };
+
         operator bool() const { return !!_vtDeviceImage; };
         auto* operator->() { return _vtDeviceImage.get(); };
         auto* operator->() const { return _vtDeviceImage.get(); };

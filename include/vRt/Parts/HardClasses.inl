@@ -236,6 +236,7 @@ namespace _vt { // store in undercover namespace
         VkBuffer _buffer = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
 
+        // ON DEPRECATION
         VkBufferView _bufferView = VK_NULL_HANDLE;
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
@@ -248,11 +249,14 @@ namespace _vt { // store in undercover namespace
         auto _hostMapped() const { return _allocationInfo.pMappedData; };
 
         auto _parent() const { return _device; };
+        operator VkBuffer&() { return _buffer; }; // cast operator
         operator VkBuffer() const { return _buffer; }; // cast operator
-        operator VkBufferView() const { return _bufferView; }; // cast operator
+        
+        [[deprecated("Deprecated since merging to new memory model")]] operator VkBufferView&() { return _bufferView; }; // cast operator
+        [[deprecated("Deprecated since merging to new memory model")]] operator VkBufferView() const { return _bufferView; }; // cast operator
 
-        auto _genDescriptorInfo() const { return VkDescriptorBufferInfo{ _buffer, 0u, VK_WHOLE_SIZE }; };
-        auto& _descriptorInfo() const { return this->_staticDsci; };
+        auto  _genDescriptorInfo() const { return VkDescriptorBufferInfo{ _buffer, 0u, VK_WHOLE_SIZE }; };
+        auto  _descriptorInfo() const { return this->_staticDsci; };
         auto& _descriptorInfo() { this->_staticDsci = this->_genDescriptorInfo(); return this->_staticDsci; };
     };
 
@@ -278,14 +282,70 @@ namespace _vt { // store in undercover namespace
         VkExtent3D _extent = {1u, 1u, 1u};
         VkDescriptorImageInfo _staticDsci = {};
 
-        auto _parent() const { return _device; };
-        operator VkImage() const { return _image; }; // cast operator
-        operator VkImageView() const { return _imageView; }; // cast operator
+        auto  _parent() const { return _device; };
 
-        auto _genDescriptorInfo() const { return VkDescriptorImageInfo{ {}, _imageView, _layout }; };
-        auto& _descriptorInfo() const { return this->_staticDsci; };
+        operator VkImage() const { return _image; }; // cast operator
+        operator VkImage&() { return _image; }; // cast operator
+
+        operator VkImageView() const { return _imageView; }; // cast operator
+        operator VkImageView&() { return _imageView; }; // cast operator
+
+        auto  _genDescriptorInfo() const { return VkDescriptorImageInfo{ {}, _imageView, _layout }; };
+        auto  _descriptorInfo() const { return this->_staticDsci; };
         auto& _descriptorInfo() { this->_staticDsci = this->_genDescriptorInfo(); return this->_staticDsci; };
     };
+
+
+    // in-bound buffer region
+    class BufferRegion : public std::enable_shared_from_this<BufferRegion> {
+    public:
+        friend Device;
+        std::shared_ptr<Device> _device;
+
+        std::shared_ptr<DeviceBuffer> _boundBuffer;
+        VkDeviceSize _offset = 0, _size = 0;
+        VkBufferView _bufferView = {}; VkFormat _format = VK_FORMAT_R32G32B32A32_UINT;
+        VkDescriptorBufferInfo _descriptorInfo = {VK_NULL_HANDLE, 0, VK_WHOLE_SIZE};
+
+        operator VkDescriptorBufferInfo() const { return _descriptorInfo; }; // cast operator
+        operator VkBuffer() const { return _boundBuffer->_buffer; }; // cast operator
+        operator VkBufferView() const { return _bufferView; }; // cast operator
+
+        operator VkDescriptorBufferInfo&() { return _descriptorInfo; }; // cast operator
+        operator VkBuffer&() { return _boundBuffer->_buffer; }; // cast operator
+        operator VkBufferView&() { return _bufferView; }; // cast operator
+
+        operator std::shared_ptr<DeviceBuffer>() const { return _boundBuffer; };
+        operator std::shared_ptr<DeviceBuffer>&() { return _boundBuffer; };
+    };
+
+
+
+    class BufferManager : public std::enable_shared_from_this<BufferManager> {
+    public:
+        friend Device;
+        std::shared_ptr<Device> _device = {};
+        std::shared_ptr<DeviceBuffer> _bufferStore = {};
+        std::vector<std::shared_ptr<BufferRegion>> _bufferRegions;
+        VkDeviceSize _size = 0; // accumulatable size
+
+        // create structuring 
+        std::shared_ptr<BufferRegion> _prealloc(VkDeviceSize size = 1, VkFormat _format = VK_FORMAT_R32G32B32A32_UINT) {
+            auto offset = _size; _size += size;
+            _bufferRegions.push_back(std::make_shared<BufferRegion>());
+            std::shared_ptr<BufferRegion>& sharedBuffer = _bufferRegions[_bufferRegions.size()-1];
+            sharedBuffer->_format = VK_FORMAT_R32G32B32A32_UINT;
+            sharedBuffer->_descriptorInfo.range = sharedBuffer->_size = size;
+            sharedBuffer->_descriptorInfo.offset = sharedBuffer->_offset = offset;
+            return sharedBuffer;
+        };
+
+        // TODO: allocating on already created buffer
+
+    };
+
+
+
 
     // this class does not using in ray tracing API
     // can be pinned with device

@@ -6,7 +6,7 @@ namespace _vt {
     using namespace vrt;
 
     // no such roles at now
-    inline VtResult convertInstance(VkInstance vkInstance, const VtInstanceConversionInfo& vtInstanceCreateInfo, std::shared_ptr<Instance>& vtInstance) {
+    VtResult convertInstance(VkInstance vkInstance, const VtInstanceConversionInfo& vtInstanceCreateInfo, std::shared_ptr<Instance>& vtInstance) {
         vtInstance = std::make_shared<Instance>();
         vtInstance->_instance = vkInstance; // assign a Vulkan physical device
         return VK_SUCCESS;
