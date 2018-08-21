@@ -69,7 +69,7 @@ namespace _vt {
             //iV->_uniformBlock.updateOnly = false;
             iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount;
             if (cb) cb(*cmdBuf, int(_bnd), iV->_uniformBlock);
-            vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
         updateCommandBarrier(*cmdBuf);
@@ -132,7 +132,7 @@ namespace _vt {
             //iV->_uniformBlock.updateOnly = true;
             iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount;
             if (cb) cb(*cmdBuf, int(_bnd), iV->_uniformBlock);
-            vkCmdUpdateBuffer(*cmdBuf, *iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
         updateCommandBarrier(*cmdBuf);
@@ -200,7 +200,7 @@ namespace _vt {
         accel->_bvhBlockData.projectionInv = initialMat;
         accel->_bvhBlockData.transform = initialMat;
         accel->_bvhBlockData.transformInv = initialMat;
-        vkCmdUpdateBuffer(*cmdBuf, *accel->_bvhBlockUniform, 0, sizeof(accel->_bvhBlockData), &accel->_bvhBlockData);
+        cmdUpdateBuffer(*cmdBuf, accel->_bvhBlockUniform, 0, sizeof(accel->_bvhBlockData), &accel->_bvhBlockData);
 
         // building hlBVH2 process
         // planned to use secondary buffer for radix sorting

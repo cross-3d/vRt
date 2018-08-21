@@ -60,7 +60,7 @@ namespace _vt {
         std::vector<VkDescriptorSet> _rtSets = { rtset->_descriptorSet };
         if (matrl) {
             _rtSets.push_back(matrl->_descriptorSet); // make material set not necesssary
-            vkCmdUpdateBuffer(*cmdBuf, *matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
+            cmdUpdateBuffer(*cmdBuf, matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
         }
         for (auto &s : cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
 
@@ -75,7 +75,7 @@ namespace _vt {
         // run rays generation (if have)
         if (rtppl->_generationPipeline.size() > 0 && rtppl->_generationPipeline[0]) {
             cmdClean();
-            vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+            cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, 8u), tiled(y, 8u));
         };
@@ -84,7 +84,7 @@ namespace _vt {
         for (uint32_t it = 0; it < B; it++) {
             // update uniform buffer of ray tracing steps
             rtset->_cuniform.iteration = it;
-            vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+            cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
 
             // run traverse processing (single accelerator supported at now)
             if (vertx && vertx->_calculatedPrimitiveCount > 0) {
@@ -92,7 +92,7 @@ namespace _vt {
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
 
                 // reset hit counter before new intersections
-                auto zero = 0u; vkCmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer->_buffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
+                auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
                 cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, INTENSIVITY); // traverse BVH
                 cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, INTENSIVITY); // interpolate intersections
                 cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), strided<uint32_t>(1)) });
@@ -112,7 +112,7 @@ namespace _vt {
             {
                 // handling misses in groups
                 if (rtppl->_missHitPipeline[0]) {
-                    vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                    cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                     cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY);
                 }
 
@@ -120,7 +120,7 @@ namespace _vt {
                 for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
                     if (rtppl->_closestHitPipeline[i]) {
                         rtset->_cuniform.currentGroup = i;
-                        vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                        cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                         cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY);
                     }
                 }
@@ -130,7 +130,7 @@ namespace _vt {
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_groupPipelines.size()); i++) {
                 if (rtppl->_groupPipelines[i]) {
                     rtset->_cuniform.currentGroup = i;
-                    vkCmdUpdateBuffer(*cmdBuf, *rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                    cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                     cmdDispatch(*cmdBuf, rtppl->_groupPipelines[i], INTENSIVITY);
                 }
             }

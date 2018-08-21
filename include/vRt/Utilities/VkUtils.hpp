@@ -234,19 +234,29 @@ namespace _vt {
     };
 
     // low level copy command between (prefer for host and device)
-    static inline VkResult cmdCopyBufferL(VkCommandBuffer cmd, vk::Buffer srcBuffer, vk::Buffer dstBuffer, const std::vector<vk::BufferCopy>& regions, const std::function<void(VkCommandBuffer)>& barrierFn = commandBarrier) {
+    static inline VkResult cmdCopyBufferL(VkCommandBuffer cmd, VkBuffer srcBuffer, VkBuffer dstBuffer, const std::vector<vk::BufferCopy>& regions, const std::function<void(VkCommandBuffer)>& barrierFn = commandBarrier) {
         vk::CommandBuffer(cmd).copyBuffer(srcBuffer, dstBuffer, regions);
         barrierFn(cmd); // put copy barrier
         return VK_SUCCESS;
     };
 
+
     // short data set with command buffer (alike push constant)
     template<class T>
-    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, const std::vector<T>& data, vk::Buffer dstBuffer, VkDeviceSize offset = 0) {
+    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, VkBuffer dstBuffer, VkDeviceSize offset, const std::vector<T>& data) {
         vk::CommandBuffer(cmd).updateBuffer(dstBuffer, offset, data);
         //updateCommandBarrier(cmd);
         return VK_SUCCESS;
     };
+
+    // short data set with command buffer (alike push constant)
+    template<class T>
+    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, VkBuffer dstBuffer, VkDeviceSize offset, const VkDeviceSize& size, const T*data) {
+        vk::CommandBuffer(cmd).updateBuffer(dstBuffer, offset, size, data);
+        //updateCommandBarrier(cmd);
+        return VK_SUCCESS;
+    };
+
 
     // template function for fill buffer by constant value
     // use for create repeat variant
@@ -258,7 +268,7 @@ namespace _vt {
     };
 
     // make whole size buffer descriptor info
-    static inline auto bufferDescriptorInfo(vk::Buffer buffer, vk::DeviceSize offset = 0, vk::DeviceSize size = VK_WHOLE_SIZE) {
+    static inline auto bufferDescriptorInfo(VkBuffer buffer, vk::DeviceSize offset = 0, vk::DeviceSize size = VK_WHOLE_SIZE) {
         return vk::DescriptorBufferInfo(buffer, offset, size);
     };
 

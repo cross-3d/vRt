@@ -260,7 +260,6 @@ namespace _vt { // store in undercover namespace
         return hostdata; // in return will copying, C++ does not made mechanism for zero-copy of anything
     };
 
-    // TODO: merge to internals
     inline auto getVendorName(const uint32_t& vendorID) {
         auto shaderDir = VT_VENDOR_UNIVERSAL;
         switch (vendorID) {
@@ -276,4 +275,29 @@ namespace _vt { // store in undercover namespace
         }
         return shaderDir;
     };
+
+    // short data set with command buffer (alike push constant)
+    template<class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU>
+    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> dstBuffer, VkDeviceSize offset, const std::vector<T>& data) {
+        return cmdUpdateBuffer(cmd, *dstBuffer, offset, data);
+    };
+
+    // short data set with command buffer (alike push constant)
+    template<class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU>
+    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> dstBuffer, VkDeviceSize offset, const VkDeviceSize& size, const T*data) {
+        return cmdUpdateBuffer(cmd, *dstBuffer, offset, size, data);
+    };
+
+    // short data set with command buffer (alike push constant)
+    template<class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU>
+    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> dstBuffer, VkDeviceSize offset, const std::vector<T>& data) {
+        return cmdUpdateBuffer(cmd, *dstBuffer, offset + dstBuffer->_offset, data);
+    };
+
+    // short data set with command buffer (alike push constant)
+    template<class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU>
+    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> dstBuffer, VkDeviceSize offset, const VkDeviceSize& size, const T*data) {
+        return cmdUpdateBuffer(cmd, *dstBuffer, offset + dstBuffer->_offset, size, data);
+    };
+
 };
