@@ -182,7 +182,7 @@ namespace vrt { // store in official namespace
         const void* pNext = nullptr;
 
         VkBufferUsageFlags usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        VkDeviceSize bufferSize = sizeof(uint32_t);
+        VkDeviceSize bufferSize = 0;
         VkFormat format = VK_FORMAT_UNDEFINED;
         uint32_t familyIndex = 0;
     };

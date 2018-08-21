@@ -189,11 +189,12 @@ namespace _vt { // store in undercover namespace
     class AcceleratorSet : public std::enable_shared_from_this<AcceleratorSet> {
     public:
         friend Device;
-        VkDescriptorSet _descriptorSet = VK_NULL_HANDLE; // protect from stupid casting
+        VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
 
         // vertex and bvh export 
-        std::shared_ptr<DeviceBuffer> _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
+        std::shared_ptr<DeviceBuffer> _sharedBuffer;
+        std::shared_ptr<BufferRegion> _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
         uint32_t _entryID = 0, _primitiveCount = -1, _primitiveOffset = 0;
         VtBvhBlock _bvhBlockData;
 
@@ -202,7 +203,7 @@ namespace _vt { // store in undercover namespace
         VkDescriptorSet _sortDescriptorSet = VK_NULL_HANDLE;
 
         // internal buffers
-        std::shared_ptr<DeviceBuffer> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
+        std::shared_ptr<BufferRegion> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
         auto _parent() const { return _device; };
@@ -247,7 +248,7 @@ namespace _vt { // store in undercover namespace
         VmaAllocationInfo _allocationInfo = {};
 #endif
 
-        VkDeviceSize _size = 0;
+        VkDeviceSize _size = VK_WHOLE_SIZE;
         VkDescriptorBufferInfo _staticDsci = {};
         auto _hostMapped() const { return _allocationInfo.pMappedData; };
 
@@ -306,7 +307,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _device;
 
         std::shared_ptr<DeviceBuffer> _boundBuffer;
-        VkDeviceSize _offset = 0, _size = 0;
+        VkDeviceSize _offset = 0, _size = VK_WHOLE_SIZE;
         VkBufferView _bufferView = {}; VkFormat _format = VK_FORMAT_UNDEFINED;
         VkDescriptorBufferInfo _sDescriptorInfo = {VK_NULL_HANDLE, 0, VK_WHOLE_SIZE};
 
@@ -326,7 +327,6 @@ namespace _vt { // store in undercover namespace
     };
 
 
-
     class BufferManager : public std::enable_shared_from_this<BufferManager> {
     public:
         friend Device;
@@ -339,9 +339,6 @@ namespace _vt { // store in undercover namespace
         VtResult _prealloc(const VtBufferRegionCreateInfo& cinfo, std::shared_ptr<BufferRegion>& bRegion);
     };
 
-
-
-
     // this class does not using in ray tracing API
     // can be pinned with device
     class RadixSort : public std::enable_shared_from_this<RadixSort> {
@@ -350,11 +347,13 @@ namespace _vt { // store in undercover namespace
         const VkPipeline _dullPipeline = VK_NULL_HANDLE; // protect from stupid casting
         std::shared_ptr<Device> _device;
 
-        std::shared_ptr<DeviceBuffer> _histogramBuffer;
-        std::shared_ptr<DeviceBuffer> _prefixSumBuffer;
-        std::shared_ptr<DeviceBuffer> _stepsBuffer; // constant buffer
-        std::shared_ptr<DeviceBuffer> _tmpKeysBuffer; // cache keys between stages (avoid write conflict)
-        std::shared_ptr<DeviceBuffer> _tmpValuesBuffer; // cache values between stages (avoid write conflict)
+        std::shared_ptr<DeviceBuffer> _sharedBuffer;
+        std::shared_ptr<BufferRegion> _histogramBuffer;
+        std::shared_ptr<BufferRegion> _prefixSumBuffer;
+        std::shared_ptr<BufferRegion> _stepsBuffer; // constant buffer
+        std::shared_ptr<BufferRegion> _tmpKeysBuffer; // cache keys between stages (avoid write conflict)
+        std::shared_ptr<BufferRegion> _tmpValuesBuffer; // cache values between stages (avoid write conflict)
+
         VkPipeline _histogramPipeline = VK_NULL_HANDLE, _workPrefixPipeline = VK_NULL_HANDLE, _permutePipeline = VK_NULL_HANDLE, _copyhackPipeline = VK_NULL_HANDLE; // radix sort pipelines
         VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE; // use unified pipeline layout 
         VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;

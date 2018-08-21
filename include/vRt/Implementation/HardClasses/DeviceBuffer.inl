@@ -20,6 +20,8 @@ namespace _vt {
     VtResult createBufferView(std::shared_ptr<BufferRegion> bRegion) {
         auto device = bRegion->_device;
         VtResult result = VK_SUCCESS;
+
+        if (bRegion->_size < sizeof(uint32_t)) return VK_ERROR_INITIALIZATION_FAILED;
         if (result == VK_SUCCESS && bRegion->_format) {
             //bRegion->_bufferView = {};
 
@@ -33,7 +35,7 @@ namespace _vt {
             bvi.buffer = VkBuffer(*bRegion);
             bvi.format = bRegion->_format;
             bvi.offset = bRegion->_offset;
-            bvi.range = bRegion->_size;
+            bvi.range = (bRegion->_size>>2)<<2;
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
             if (vezCreateBufferView(device->_device, &bvi, &bRegion->_bufferView) == VK_SUCCESS) {
@@ -114,7 +116,7 @@ namespace _vt {
                 bvi.buffer = vtDeviceBuffer->_buffer;
                 bvi.format = cinfo.format;
                 bvi.offset = 0;
-                bvi.range = VK_WHOLE_SIZE;
+                bvi.range = (std::min(vtDeviceBuffer->_size, binfo.size) >> 2) << 2;
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
                 if (vezCreateBufferView(device->_device, &bvi, &vtDeviceBuffer->_bufferView) == VK_SUCCESS) {

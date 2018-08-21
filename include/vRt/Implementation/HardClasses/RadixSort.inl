@@ -22,26 +22,38 @@ namespace _vt {
 
         const auto vendorName = _vtDevice->_vendorName;
 
-        VtDeviceBufferCreateInfo bfi;
-        bfi.familyIndex = _vtDevice->_mainFamilyIndex;
-        bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
-        bfi.format = VK_FORMAT_R32_UINT;
-        bfi.bufferSize = vtExtension.maxPrimitives * sizeof(uint32_t);
-        createDeviceBuffer(_vtDevice, bfi, vtRadix->_tmpValuesBuffer);
 
-        bfi.format = VK_FORMAT_R32G32_UINT;
-        bfi.bufferSize = vtExtension.maxPrimitives * sizeof(uint64_t);
-        createDeviceBuffer(_vtDevice, bfi, vtRadix->_tmpKeysBuffer);
+        std::shared_ptr<BufferManager> bManager; createBufferManager(_vtDevice, bManager);
 
-        bfi.format = VK_FORMAT_UNDEFINED;
-        bfi.bufferSize = 16ull * STEPS;
-        createDeviceBuffer(_vtDevice, bfi, vtRadix->_stepsBuffer); // unused
+        VtDeviceBufferCreateInfo bfic;
+        bfic.familyIndex = _vtDevice->_mainFamilyIndex;
+        bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
-        bfi.format = VK_FORMAT_R32_UINT;
-        bfi.bufferSize = RADICE_AFFINE * WG_COUNT * sizeof(uint32_t);
-        createDeviceBuffer(_vtDevice, bfi, vtRadix->_histogramBuffer);
-        createDeviceBuffer(_vtDevice, bfi, vtRadix->_prefixSumBuffer);
+        VtBufferRegionCreateInfo bfi;
+        {
+            bfi.format = VK_FORMAT_R32_UINT;
+            bfi.bufferSize = vtExtension.maxPrimitives * sizeof(uint32_t);
+            createBufferRegion(bManager, bfi, vtRadix->_tmpValuesBuffer);
+
+            bfi.format = VK_FORMAT_R32G32_UINT;
+            bfi.bufferSize = vtExtension.maxPrimitives * sizeof(uint64_t);
+            createBufferRegion(bManager, bfi, vtRadix->_tmpKeysBuffer);
+
+            bfi.format = VK_FORMAT_UNDEFINED;
+            bfi.bufferSize = 16ull * STEPS;
+            createBufferRegion(bManager, bfi, vtRadix->_stepsBuffer); // unused
+
+            bfi.format = VK_FORMAT_R32_UINT;
+            bfi.bufferSize = RADICE_AFFINE * WG_COUNT * sizeof(uint32_t);
+            createBufferRegion(bManager, bfi, vtRadix->_histogramBuffer);
+            createBufferRegion(bManager, bfi, vtRadix->_prefixSumBuffer);
+        }
+
+        { // build final shared buffer for this class
+            createSharedBuffer(bManager, vtRadix->_sharedBuffer, bfic);
+        }
+
 
         std::vector<vk::PushConstantRange> constRanges = {
             vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2))
