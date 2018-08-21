@@ -304,7 +304,7 @@ namespace _vt { // store in undercover namespace
 
         std::shared_ptr<DeviceBuffer> _boundBuffer;
         VkDeviceSize _offset = 0, _size = 0;
-        VkBufferView _bufferView = {}; VkFormat _format = VK_FORMAT_R32G32B32A32_UINT;
+        VkBufferView _bufferView = {}; VkFormat _format = VK_FORMAT_UNDEFINED;
         VkDescriptorBufferInfo _descriptorInfo = {VK_NULL_HANDLE, 0, VK_WHOLE_SIZE};
 
         operator VkDescriptorBufferInfo() const { return _descriptorInfo; }; // cast operator
@@ -333,11 +333,12 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<BufferRegion> _prealloc(VkDeviceSize size = 1, VkFormat _format = VK_FORMAT_R32G32B32A32_UINT) {
             auto offset = _size; _size += size;
             _bufferRegions.push_back(std::make_shared<BufferRegion>());
-            std::shared_ptr<BufferRegion>& sharedBuffer = _bufferRegions[_bufferRegions.size()-1];
-            sharedBuffer->_format = VK_FORMAT_R32G32B32A32_UINT;
-            sharedBuffer->_descriptorInfo.range = sharedBuffer->_size = size;
-            sharedBuffer->_descriptorInfo.offset = sharedBuffer->_offset = offset;
-            return sharedBuffer;
+            std::shared_ptr<BufferRegion>& bRegion = _bufferRegions[_bufferRegions.size()-1];
+            bRegion->_device = _device;
+            bRegion->_format = VK_FORMAT_R32G32B32A32_UINT;
+            bRegion->_descriptorInfo.range = bRegion->_size = size;
+            bRegion->_descriptorInfo.offset = bRegion->_offset = offset;
+            return bRegion;
         };
 
         // TODO: allocating on already created buffer

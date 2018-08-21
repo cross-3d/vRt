@@ -17,7 +17,8 @@ namespace _vt {
     };
 
 
-    VtResult createBufferView(std::shared_ptr<Device> device, std::shared_ptr<BufferRegion>& bRegion) {
+    VtResult createBufferView(std::shared_ptr<BufferRegion>& bRegion) {
+        auto& device = bRegion->_device;
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
         if (result == VK_SUCCESS && bRegion->_format) {
             bRegion->_bufferView = {};
@@ -139,11 +140,31 @@ namespace _vt {
 
         // complete descriptors and buffer-views
         for (auto&f : bManager->_bufferRegions) {
-            f->_descriptorInfo.buffer = *(f->_boundBuffer = bManager->_bufferStore);
-            createBufferView(bManager->_device, f);
+            f->_descriptorInfo.buffer = *(f->_boundBuffer = bManager->_bufferStore); createBufferView(f);
         }
 
         // return result (TODO: handling)
+        return VK_SUCCESS;
+    };
+
+
+    // create buffer manager
+    VtResult createBufferManager(const std::shared_ptr<Device>& gDevice, std::shared_ptr<BufferManager>& bManager) {
+        bManager = std::make_shared<BufferManager>();
+        bManager->_device = gDevice;
+        return VK_SUCCESS;
+    };
+
+
+    // create buffer region by exist buffer
+    VtResult createBufferRegion(const std::shared_ptr<DeviceBuffer>& gBuffer, std::shared_ptr<BufferRegion>& bRegion, const VkDeviceSize& offset = 0, const VkDeviceSize& size = VK_WHOLE_SIZE, const VkFormat& format = VK_FORMAT_UNDEFINED) {
+        auto& gDevice = gBuffer->_device;
+        bRegion = std::make_shared<BufferRegion>();
+        bRegion->_device = gDevice;
+        bRegion->_format = format;
+        bRegion->_descriptorInfo.range = bRegion->_size = size;
+        bRegion->_descriptorInfo.offset = bRegion->_offset = offset;
+        bRegion->_descriptorInfo.buffer = *(bRegion->_boundBuffer = gBuffer); createBufferView(bRegion);
         return VK_SUCCESS;
     };
 

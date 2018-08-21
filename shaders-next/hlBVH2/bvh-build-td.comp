@@ -82,7 +82,7 @@ void main() {
     [[dependency_infinite]]
     for (int m=0;m<65536;m++) {
         LGROUP_BARRIER
- 
+
 #ifdef FIRST_STEP // limit by few elements
         [[flatten]] IFANY ( asize>=(WGS*gS) && cBuffer==1 ) break;
 #endif
