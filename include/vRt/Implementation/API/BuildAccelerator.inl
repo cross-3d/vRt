@@ -210,7 +210,7 @@ namespace _vt {
         cmdFillBuffer<0u>(*cmdBuf, bounder->_fitStatusBuffer);
         updateCommandBarrier(*cmdBuf);
 
-        const auto workGroupSize = 16u;
+        const auto workGroupSize = 32u;
         std::vector<VkDescriptorSet> _sets = { bounder->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH

@@ -1,7 +1,12 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+#ifdef FIRST_STEP
+#define WORK_SIZE_BND 64
+#else
 #define WORK_SIZE_BND 1024
+#endif
+
 #define BVH_BUILD
 #define BVH_CREATION
 #define USE_ACTIVE
@@ -32,15 +37,16 @@ int aCounterInc() {return _aCounterInc(cBuffer*4);}
 
 // use faster version of BVH builder
 #define GSIZE bvhBlock.leafCount
-const uint WGS = 16u;
-uint wID(in uint t) {return GSIZE * gl_WorkGroupID.x + t;}
-uint mrQ(in uint q) {return GSIZE * WGS * q;}
-uint rID(in uint t) {return gl_WorkGroupID.x * 512u + t;} // TODO: runtime work group size support
+const uint WGS = 32u;
+uint wID(in uint t) {return GSIZE * gl_WorkGroupID.x + t;};
+uint mrQ(in uint q) {return GSIZE * WGS * q;};
+uint rID(in uint t) {return gl_NumWorkGroups.x * t + gl_WorkGroupID.x;};
 
 
 #define asize_ _counters[(1-cBuffer)*4]
 #define asize_inv_ _counters[cBuffer*4]
 #define asize _counters[7]
+//#define OSi _counters[8]
 
 #ifdef FIRST_STEP
 #define osize asize
@@ -71,8 +77,8 @@ void main() {
     // create initial (root) node
     if (threadID == 0) {
 #ifdef FIRST_STEP
-        const int hid = 0; bvhNodes[hid+0].meta = ivec4(1, bvhBlock.leafCount, 0, 0), bvhNodes[hid+1].meta = ivec4(0, 0, 0, 0);
-        Actives[aCounterInc()] = hid+1;
+        bvhNodes[0].meta = ivec4(1, bvhBlock.leafCount, 0, 0), bvhNodes[1].meta = ivec4(0, 0, 0, 0);
+        Actives[aCounterInc()] = 1;
 #else
         cBuffer = 1, asize_inv_ = aCounter[  cBuffer], asize_ = aCounter[1-cBuffer];
 #endif
@@ -83,13 +89,13 @@ void main() {
     for (int m=0;m<65536;m++) {
         LGROUP_BARRIER
 
-#ifdef FIRST_STEP // limit by few elements
-        [[flatten]] IFANY ( asize>=(WGS*gS) && cBuffer==1 ) break;
+#ifdef FIRST_STEP
+        [[flatten]] IFANY ( asize>=16 && (m&1)==1 ) break; // limit by few elements
 #endif
 
         // swap buffers emulation
         if (threadID == 0) { 
-            cBuffer = 1-cBuffer, asize_inv_ = 0, asize = atomicExchange(asize_, 0), swapIn = int(mrQ(1-cBuffer)), swapOut = int(mrQ(cBuffer));
+            cBuffer = 1-cBuffer, asize_inv_ = 0, asize = atomicExchange(asize_, 0), swapIn = int(mrQ(1-cBuffer)), swapOut = int(mrQ(cBuffer));//, OSi = int(gS*(m==0?gl_NumWorkGroups.x:1));
 #ifndef FIRST_STEP
             osize = m==0?asize:int(wID(asize));
 #endif
@@ -98,11 +104,11 @@ void main() {
         LGROUP_BARRIER
         
         // split nodes
-        uint OSi = m==0?(gS*gl_NumWorkGroups.x):gS, fT = m==0?rID(0):wID(0);
-        [[flatten]] IFANY (asize <= 0 || fT>=osize) break; // check-out limits
+        const int dT = int(m==0?rID(iT):wID(iT)), OSi = int(gS*(m==0?gl_NumWorkGroups.x:1));
+        [[flatten]] IFANY (asize <= 0) break; // check-out limits
         [[unroll, dependency_length(4)]]
-        for (;fT<osize;fT+=OSi) { SB_BARRIER
-            const uint iWD = fT+iT;
+        for (int fT=0;fT<asize;fT+=OSi) { SB_BARRIER
+            const int iWD = fT+dT;
             [[flatten]] IFALL (iWD >= osize) break;
             [[flatten]] if (iWD < osize) {
                 const int fID = iWD < osize ? Actives[swapIn+iWD]-1 : -1;
