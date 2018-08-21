@@ -137,80 +137,65 @@ uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) 
     uint stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1) << bytecorrect); // get true stride 
     offseT += index * stride; // calculate structure indexed offset
     return offseT >> bytecorrect;
-}
+};
+
+void readByAccessorLL(in int accessor, in uint index, inout uvec4 outpx) {
+    uint attribution[4] = {outpx.x, outpx.y, outpx.z, outpx.w};
+    [[flatten]] if (accessor >= 0) {
+        const int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
+        const uint T = calculateByteOffset(accessor, index, 2);
+        const uint C = aComponents(accessors[accessor].bitfield)+1;
+        const uint D = 0u; // component decoration
+        [[flatten]] if (C >= 1) attribution[D+0] = M32(BFS,T+0);
+        [[flatten]] if (C >= 2) attribution[D+1] = M32(BFS,T+1);
+        [[flatten]] if (C >= 3) attribution[D+2] = M32(BFS,T+2);
+        [[flatten]] if (C >= 4) attribution[D+3] = M32(BFS,T+3);
+    }
+    outpx = uvec4(attribution[0], attribution[1], attribution[2], attribution[3]);
+};
+
+uvec4 readByAccessorLLW(in int accessor, in uint index, in uvec4 outpx) { readByAccessorLL(accessor, index, outpx); return outpx; };
 
 
 // vec4 getter
 void readByAccessor(in int accessor, in uint index, inout vec4 outp) {
-    if (accessor >= 0) {
-        int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-        uint T = calculateByteOffset(accessor, index, 2);
-        uint C = aComponents(accessors[accessor].bitfield)+1;
-        [[flatten]]
-        if (C >= 1) outp.x = uintBitsToFloat(M32(BFS,T+0));
-        [[flatten]]
-        if (C >= 2) outp.y = uintBitsToFloat(M32(BFS,T+1));
-        [[flatten]]
-        if (C >= 3) outp.z = uintBitsToFloat(M32(BFS,T+2));
-        [[flatten]]
-        if (C >= 4) outp.w = uintBitsToFloat(M32(BFS,T+3));
-    }
+    outp.xyzw = uintBitsToFloat(readByAccessorLLW(accessor, index, floatBitsToUint(outp)).xyzw);
 }
 
 // vec3 getter
 void readByAccessor(in int accessor, in uint index, inout vec3 outp) {
-    if (accessor >= 0) {
-        int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-        uint T = calculateByteOffset(accessor, index, 2);
-        uint C = aComponents(accessors[accessor].bitfield)+1;
-        [[flatten]]
-        if (C >= 1) outp.x = uintBitsToFloat(M32(BFS,T+0));
-        [[flatten]]
-        if (C >= 2) outp.y = uintBitsToFloat(M32(BFS,T+1));
-        [[flatten]]
-        if (C >= 3) outp.z = uintBitsToFloat(M32(BFS,T+2));
-    }
+    outp.xyz = uintBitsToFloat(readByAccessorLLW(accessor, index, floatBitsToUint(vec4(outp, 0.f.x))).xyz);
 }
 
 // vec2 getter
 void readByAccessor(in int accessor, in uint index, inout vec2 outp) {
-    if (accessor >= 0) {
-        int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-        uint T = calculateByteOffset(accessor, index, 2);
-        uint C = aComponents(accessors[accessor].bitfield)+1;
-        [[flatten]]
-        if (C >= 1) outp.x = uintBitsToFloat(M32(BFS,T+0));
-        [[flatten]]
-        if (C >= 2) outp.y = uintBitsToFloat(M32(BFS,T+1));
-    }
+    outp.xy = uintBitsToFloat(readByAccessorLLW(accessor, index, floatBitsToUint(vec4(outp, 0.f.xx))).xy);
 }
 
-// float getter
+// vec1 getter
 void readByAccessor(in int accessor, in uint index, inout float outp) {
-    if (accessor >= 0) {
-        int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-        uint T = calculateByteOffset(accessor, index, 2);
-        outp = uintBitsToFloat(M32(BFS,T+0));
-    }
+    outp.x = uintBitsToFloat(readByAccessorLLW(accessor, index, floatBitsToUint(vec4(outp, 0.f.xxx))).x);
 }
 
-// int getter
+// ivec1 getter
 void readByAccessor(in int accessor, in uint index, inout int outp) {
-    if (accessor >= 0) {
-        int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-        uint T = calculateByteOffset(accessor, index, 2);
-        outp = int(M32(BFS,T+0));
-    }
+    outp.x = int(readByAccessorLLW(accessor, index, uvec4(outp, 0u.xxx)).x);
 }
+
+// uvec1 getter
+void readByAccessor(in int accessor, in uint index, inout uint outp) {
+    outp.x = readByAccessorLLW(accessor, index, uvec4(outp, 0u.xxx)).x;
+}
+
+
 
 // planned read type directly from accessor
 void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
-    if (accessor >= 0) {
+    [[flatten]] if (accessor >= 0) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         const bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
         uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
-        [[flatten]]
-        if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
+        [[flatten]] if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
     }
 }
 
