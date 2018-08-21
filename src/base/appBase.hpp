@@ -168,7 +168,7 @@ namespace NSM
             appinfo.pNext = nullptr;
             appinfo.pApplicationName = "VKTest";
 #ifndef VRT_ENABLE_VEZ_INTEROP
-            appinfo.apiVersion = VK_MAKE_VERSION(1, 1, 0);
+            appinfo.apiVersion = VK_MAKE_VERSION(1, 1, 77);
 #endif
 
             // create instance info
@@ -227,7 +227,12 @@ namespace NSM
 
 
             // minimal features
+            VkPhysicalDevice16BitStorageFeatures gStorage16 = vk::PhysicalDevice16BitStorageFeatures{};
+            VkPhysicalDevice8BitStorageFeaturesKHR gStorage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
+            gStorage16.pNext = &gStorage8;
+
             VkPhysicalDeviceFeatures2 gFeatures = vk::PhysicalDeviceFeatures2{};
+            gFeatures.pNext = &gStorage16;
             gFeatures.features.shaderInt16 = true;
             gFeatures.features.shaderInt64 = true;
             gFeatures.features.shaderUniformBufferArrayDynamicIndexing = true;
@@ -235,7 +240,7 @@ namespace NSM
             //gpu.getFeatures2(gFeatures);
 
             // get features and queue family properties
-            auto gpuFeatures = gpu.getFeatures();
+            //auto gpuFeatures = gpu.getFeatures();
             auto gpuQueueProps = gpu.getQueueFamilyProperties();
 
             // queue family initial
@@ -299,7 +304,7 @@ namespace NSM
                 vezCreateDevice(gpu, &dvz, (VkDevice*)&devicePtr->logical);
 #else
                 devicePtr->logical = gpu.createDevice(vk::DeviceCreateInfo().setFlags(vk::DeviceCreateFlags())
-                    .setPEnabledFeatures(&gpuFeatures)
+                    .setPNext(&gFeatures) //.setPEnabledFeatures(&gpuFeatures)
                     .setPQueueCreateInfos(queueCreateInfos.data()).setQueueCreateInfoCount(queueCreateInfos.size())
                     .setPpEnabledExtensionNames(deviceExtensions.data()).setEnabledExtensionCount(deviceExtensions.size())
                     .setPpEnabledLayerNames(deviceValidationLayers.data()).setEnabledLayerCount(deviceValidationLayers.size()));
