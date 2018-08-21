@@ -90,7 +90,7 @@ void main() {
         LGROUP_BARRIER
 
 #ifdef FIRST_STEP
-        [[flatten]] IFANY ( asize>=16 && (m&1)==1 ) break; // limit by few elements
+        [[flatten]] IFANY ( asize>=WGS && (m&1)==1 ) break; // limit by few elements
 #endif
 
         // swap buffers emulation
