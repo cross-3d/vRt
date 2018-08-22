@@ -56,5 +56,5 @@ void main() {
             if ( idx >= 0 ) { unifyNodeBox(idx); Flags[idx] = 0; } else { break; };
         }
     }
-    LGROUP_BARRIER
+    //LGROUP_BARRIER
 }

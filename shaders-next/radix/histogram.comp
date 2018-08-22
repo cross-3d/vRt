@@ -74,5 +74,5 @@ void main() {
         }
     }
 
-    LGROUP_BARRIER
+    //LGROUP_BARRIER
 }

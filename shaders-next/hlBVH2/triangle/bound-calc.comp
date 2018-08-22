@@ -1,12 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-#ifdef NVIDIA_PLATFORM
 #define WORK_SIZE_BND 1024
-#else 
-#define WORK_SIZE_BND 1024
-#endif
-
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 
@@ -106,5 +101,5 @@ void main() {
         minmax[gl_WorkGroupID.x*2 + 1] = sdata[tid].mx;
     }
 
-    LGROUP_BARRIER
+    //LGROUP_BARRIER
 }

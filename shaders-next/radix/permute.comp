@@ -66,5 +66,5 @@ void main() {
         addr += Wave_Size_RT<<1;
     }
 
-    LGROUP_BARRIER
+    //LGROUP_BARRIER
 }

@@ -17,5 +17,5 @@ void main() {
         [[flatten]] if (globalID < wsize) { KeyTmp[globalID] = KeyIn[globalID], ValueTmp[globalID] = ValueIn[globalID]; }
     }
 
-    LGROUP_BARRIER
+    //LGROUP_BARRIER
 }

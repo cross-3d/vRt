@@ -70,11 +70,15 @@
 #endif
 
 // Platform-oriented compute
+#ifdef EXTEND_LOCAL_GROUPS
+    #define WORK_SIZE 1024
+#endif
+
 #ifndef WORK_SIZE
-    #ifdef NVIDIA_PLATFORM
-        #define WORK_SIZE 32
-    #else
+    #ifdef AMD_PLATFORM
         #define WORK_SIZE 64
+    #else
+        #define WORK_SIZE 32
     #endif
 #endif
 

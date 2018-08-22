@@ -1,12 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-#ifdef NVIDIA_PLATFORM
 #define WORK_SIZE_BND 1024
-#else 
-#define WORK_SIZE_BND 1024
-#endif
-
 #define BVH_CREATION
 
 #include "../include/driver.glsl"

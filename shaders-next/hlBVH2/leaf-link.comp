@@ -43,5 +43,5 @@ void main() {
             bvhBoxesWork[lidx][1] = rbox.mx;
         }
     }
-    LGROUP_BARRIER
+    //LGROUP_BARRIER
 }

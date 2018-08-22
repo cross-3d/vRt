@@ -2,9 +2,9 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #ifdef FIRST_STEP
-#define WORK_SIZE_BND 64
+    #define WORK_SIZE_BND 64
 #else
-#define WORK_SIZE_BND 1024
+    #define WORK_SIZE_BND 1024
 #endif
 
 #define BVH_BUILD

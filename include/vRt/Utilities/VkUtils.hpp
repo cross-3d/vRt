@@ -27,7 +27,7 @@
 
 namespace _vt {
     constexpr const static inline auto DEFAULT_FENCE_TIMEOUT = 100000000000ll;
-    constexpr const static inline auto INTENSIVITY = 4096ull;
+    constexpr const static inline auto INTENSIVITY = 1024ull;//4096ull;
     constexpr const static inline auto ATTRIB_EXTENT = 8ull; // no way to set more than it now
     constexpr const static inline auto VRT_USE_MORTON_32 = true;
 

@@ -125,8 +125,8 @@ namespace _vt {
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_rayLinkPayload);
 
-
-                bfi.bufferSize = 4096ull * 4096ull * sizeof(uint32_t);
+                constexpr uint64_t LOCAL_SIZE = 1024ull, STACK_SIZE = 8ull, PAGE_COUNT = 4ull;
+                bfi.bufferSize = INTENSIVITY * STACK_SIZE * LOCAL_SIZE * PAGE_COUNT * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_traverseCache);
 
@@ -136,7 +136,7 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_constBuffer);
 
                 // at now unused
-                bfi.bufferSize = sizeof(uint32_t);//tiled(rayCount, 4096ull) * 4096ull * sizeof(uint32_t);
+                bfi.bufferSize = sizeof(uint32_t);//tiled(rayCount, 4096ull) * 64ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_blockBuffer);
 
