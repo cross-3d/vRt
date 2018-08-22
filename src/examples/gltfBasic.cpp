@@ -83,6 +83,18 @@ inline auto readFromBuffer(vte::Queue deviceQueue, const vrt::VtDeviceBuffer& dB
     return result;
 };
 
+template<class T>
+inline auto readFromBuffer(vte::Queue deviceQueue, const std::shared_ptr<_vt::BufferRegion>& dBuffer, std::vector<T>& vctr, size_t byteOffset = 0) {
+    VkResult result = VK_SUCCESS;
+    vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
+        VkBufferCopy bfc = { dBuffer->_offset + byteOffset, 0, vte::strided<T>(vctr.size()) };
+        vrt::vtCmdCopyDeviceBufferToHost(cmdBuf, vrt::VtDeviceBuffer{ dBuffer->_boundBuffer }, deviceQueue->device->rtDev, 1, &bfc);
+    });
+    vrt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
+    return result;
+};
+
+
 
 
 
@@ -1035,7 +1047,7 @@ int main() {
 
 
         //std::vector<uint32_t> debugMortons(vertexAssembly->_calculatedPrimitiveCount);
-        //readFromBuffer(deviceQueue, { accelerator->_mortonCodesBuffer }, debugMortons);
+        //readFromBuffer<uint32_t>(deviceQueue, accelerator->_mortonCodesBuffer, debugMortons);
 
 
         /*{ // reserved field for computing code
