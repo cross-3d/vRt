@@ -357,6 +357,7 @@ namespace _vt {
         "VK_KHR_bind_memory2",
         "VK_KHR_maintenance1",
         "VK_KHR_maintenance2",
-        "VK_KHR_maintenance3"
+        "VK_KHR_maintenance3",
+        "VK_EXT_descriptor_indexing"
     };
 };

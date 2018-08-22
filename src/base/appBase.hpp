@@ -48,6 +48,7 @@ namespace NSM
             "VK_EXT_hdr_metadata",
             "VK_EXT_queue_family_foreign",
             "VK_EXT_sampler_filter_minmax",
+            "VK_EXT_descriptor_indexing",
 
             "VK_AMD_gpu_shader_int16",
             "VK_AMD_gpu_shader_half_float",
@@ -229,13 +230,16 @@ namespace NSM
             // minimal features
             VkPhysicalDevice16BitStorageFeatures gStorage16 = vk::PhysicalDevice16BitStorageFeatures{};
             VkPhysicalDevice8BitStorageFeaturesKHR gStorage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
+            VkPhysicalDeviceDescriptorIndexingFeaturesEXT gDescIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
             gStorage16.pNext = &gStorage8;
+            gStorage8.pNext = &gDescIndexing;
 
             VkPhysicalDeviceFeatures2 gFeatures = vk::PhysicalDeviceFeatures2{};
             gFeatures.pNext = &gStorage16;
             gFeatures.features.shaderInt16 = true;
             gFeatures.features.shaderInt64 = true;
             gFeatures.features.shaderUniformBufferArrayDynamicIndexing = true;
+            //gFeatures.features.shaderNon
             vkGetPhysicalDeviceFeatures2(gpu, &gFeatures);
             //gpu.getFeatures2(gFeatures);
 
