@@ -354,7 +354,7 @@ namespace NSM
 #endif
                 allocatorInfo.physicalDevice = devicePtr->physical;
                 allocatorInfo.device = devicePtr->logical;
-                allocatorInfo.preferredLargeHeapBlockSize = 16384; // 16kb
+                allocatorInfo.preferredLargeHeapBlockSize = 32 * sizeof(uint32_t);
                 allocatorInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT || VMA_ALLOCATION_CREATE_MAPPED_BIT;
                 allocatorInfo.pAllocationCallbacks = nullptr;
                 allocatorInfo.pHeapSizeLimit = nullptr;
