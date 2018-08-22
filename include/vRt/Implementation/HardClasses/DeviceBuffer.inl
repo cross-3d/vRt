@@ -35,7 +35,7 @@ namespace _vt {
             bvi.buffer = VkBuffer(*bRegion);
             bvi.format = bRegion->_format;
             bvi.offset = bRegion->_offset;
-            bvi.range = (bRegion->_size>>2)<<2;
+            bvi.range = bRegion->_size;//(bRegion->_size>>2)<<2;
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
             if (vezCreateBufferView(device->_device, &bvi, &bRegion->_bufferView) == VK_SUCCESS) {
@@ -175,10 +175,11 @@ namespace _vt {
     // create buffer region by exist buffer
     inline VtResult createBufferRegion(std::shared_ptr<DeviceBuffer> gBuffer, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion) {
         auto gDevice = gBuffer->_device;
+        auto correctedSize = ((bri.bufferSize >> 5ull) << 5ull) + 32ull;
         bRegion = std::make_shared<BufferRegion>();
         bRegion->_device = gDevice;
         bRegion->_format = bri.format;
-        bRegion->_sDescriptorInfo.range = bRegion->_size = bri.bufferSize;
+        bRegion->_sDescriptorInfo.range = bRegion->_size = correctedSize;
         bRegion->_sDescriptorInfo.offset = bRegion->_offset = bri.offset;
         bRegion->_sDescriptorInfo.buffer = *(bRegion->_boundBuffer = gBuffer); createBufferView(bRegion);
         return VK_SUCCESS;
@@ -186,12 +187,12 @@ namespace _vt {
 
     // create structuring 
     inline VtResult BufferManager::_prealloc(VtBufferRegionCreateInfo cinfo, std::shared_ptr<BufferRegion>& bRegion) {
-        auto offset = _size; _size += cinfo.bufferSize;
+        auto correctedSize = ((cinfo.bufferSize >> 5ull) << 5ull) + 32ull, offset = _size; _size += correctedSize;
         _bufferRegions.push_back(std::make_shared<BufferRegion>());
         bRegion = _bufferRegions[_bufferRegions.size() - 1];
         bRegion->_device = _device;
         bRegion->_format = cinfo.format;
-        bRegion->_sDescriptorInfo.range = bRegion->_size = cinfo.bufferSize;
+        bRegion->_sDescriptorInfo.range = bRegion->_size = correctedSize;
         bRegion->_sDescriptorInfo.offset = bRegion->_offset = offset;
         return VK_SUCCESS;
     };
