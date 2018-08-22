@@ -441,55 +441,6 @@ int main() {
         });
     }
 
-
-
-    /*
-    {
-        // create dull image
-        VtDeviceImageCreateInfo dii;
-        dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-        dii.familyIndex = deviceQueue->familyIndex;
-        dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
-        dii.layout = VK_IMAGE_LAYOUT_GENERAL;
-        dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-        dii.size = { 2, 2, 1 };
-        vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &dullImage);
-
-        // dispatch image barrier
-        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
-            vtCmdImageBarrier(cmdBuf, dullImage);
-        });
-    }
-
-    {
-        // create dull sampler
-        vk::SamplerCreateInfo samplerInfo;
-        samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;
-        samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;
-        samplerInfo.minFilter = vk::Filter::eLinear;
-        samplerInfo.magFilter = vk::Filter::eLinear;
-        samplerInfo.compareEnable = false;
-        dullSampler = deviceQueue->device->logical.createSampler(samplerInfo); // create sampler
-    }
-
-    {
-        // set first buffer data
-        VtAppMaterial redEmission, greenEmission;
-        greenEmission.emissive = glm::vec4(0.1f, 0.5f, 0.1f, 1.f);
-        redEmission.emissive = glm::vec4(0.5f, 0.1f, 0.1f, 1.f);
-        writeIntoBuffer<VtAppMaterial>(deviceQueue, { greenEmission, redEmission }, materialDescs, 0);
-    }
-
-    {
-
-        // set first buffer data
-        VtVirtualCombinedImage initialMaterialDesc;
-        writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, { initialMaterialDesc }, materialCombImages,  0);
-    }
-    */
-
-
-
     glm::vec3 eyePos = glm::vec3(-3.5f, 10.5f, -50.6f).zyx();
     glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
     glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
@@ -1048,51 +999,6 @@ int main() {
 
         //std::vector<uint32_t> debugMortons(vertexAssembly->_calculatedPrimitiveCount);
         //readFromBuffer<uint32_t>(deviceQueue, accelerator->_mortonCodesBuffer, debugMortons);
-
-
-        /*{ // reserved field for computing code
-            std::vector<uint32_t> debugCounters(2);
-            readFromBuffer(deviceQueue, { vertexAssembly->_countersBuffer }, debugCounters);
-
-            std::vector<VtBvhUniformDebug> debugUniform(1);
-            readFromBuffer(deviceQueue, { accelerator->_bvhBlockUniform }, debugUniform);
-
-            std::vector<uint64_t> debugMortons(vertexAssembly->_calculatedPrimitiveCount);
-            readFromBuffer(deviceQueue, { accelerator->_mortonCodesBuffer }, debugMortons);
-
-            std::vector<uint32_t> debugMortonIdc(vertexAssembly->_calculatedPrimitiveCount);
-            readFromBuffer(deviceQueue, { accelerator->_mortonIndicesBuffer }, debugMortonIdc);
-
-            std::vector<VtLeafDebug> debugLeafs(vertexAssembly->_calculatedPrimitiveCount);
-            readFromBuffer(deviceQueue, { accelerator->_leafBuffer }, debugLeafs);
-
-            std::vector<uint32_t> debugBvhCounters(8);
-            readFromBuffer(deviceQueue, { accelerator->_countersBuffer }, debugBvhCounters);
-
-            std::vector<glm::vec4> debugBvhGenBoxes(256);
-            readFromBuffer(deviceQueue, { accelerator->_generalBoundaryResultBuffer }, debugBvhGenBoxes);
-
-            std::vector<glm::vec4> debugBvhBoxes(vertexAssembly->_calculatedPrimitiveCount * 4);
-            readFromBuffer(deviceQueue, { accelerator->_bvhBoxBuffer }, debugBvhBoxes);
-
-            std::vector<glm::ivec4> debugBvhMeta(vertexAssembly->_calculatedPrimitiveCount * 2);
-            readFromBuffer(deviceQueue, { accelerator->_bvhMetaBuffer }, debugBvhMeta);
-
-            std::vector<uint32_t> debugLeafIdx(vertexAssembly->_calculatedPrimitiveCount);
-            readFromBuffer(deviceQueue, { accelerator->_leafNodeIndices }, debugLeafIdx);
-
-            std::vector<glm::vec4> debugBvhWorkBoxes(vertexAssembly->_calculatedPrimitiveCount * 4);
-            readFromBuffer(deviceQueue, { accelerator->_onWorkBoxes }, debugBvhWorkBoxes);
-
-            std::vector<uint32_t> debugFitFlags (vertexAssembly->_calculatedPrimitiveCount*2);
-            readFromBuffer(deviceQueue, { accelerator->_fitStatusBuffer }, debugFitFlags);
-
-
-            //std::vector<uint32_t> lhistogram(16 * 64);
-            //std::vector<uint32_t> lprefixsum(16 * 64);
-            //readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_radixSort->_histogramBuffer }, lhistogram);
-            //readFromBuffer(deviceQueue, { deviceQueue->device->rtDev->_radixSort->_prefixSumBuffer }, lprefixsum);
-        }*/
         
 
         auto n_semaphore = currSemaphore;

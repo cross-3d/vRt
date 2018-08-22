@@ -53,7 +53,7 @@ namespace _vt {
 
 
     template<VmaMemoryUsage U>
-    VtResult createBuffer(std::shared_ptr<Device> device, const VtDeviceBufferCreateInfo& cinfo, std::shared_ptr<RoledBuffer<U>>& vtDeviceBuffer) {
+    VtResult createBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<RoledBuffer<U>>& vtDeviceBuffer) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
         //auto vtDeviceBuffer = (_vtBuffer = std::make_shared<RoledBuffer<U>>());
@@ -173,7 +173,7 @@ namespace _vt {
     };
 
     // create buffer region by exist buffer
-    inline VtResult createBufferRegion(std::shared_ptr<DeviceBuffer> gBuffer, const VtBufferRegionCreateInfo& bri, std::shared_ptr<BufferRegion>& bRegion) {
+    inline VtResult createBufferRegion(std::shared_ptr<DeviceBuffer> gBuffer, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion) {
         auto gDevice = gBuffer->_device;
         bRegion = std::make_shared<BufferRegion>();
         bRegion->_device = gDevice;
@@ -185,7 +185,7 @@ namespace _vt {
     };
 
     // create structuring 
-    inline VtResult BufferManager::_prealloc(const VtBufferRegionCreateInfo& cinfo, std::shared_ptr<BufferRegion>& bRegion) {
+    inline VtResult BufferManager::_prealloc(VtBufferRegionCreateInfo cinfo, std::shared_ptr<BufferRegion>& bRegion) {
         auto offset = _size; _size += cinfo.bufferSize;
         _bufferRegions.push_back(std::make_shared<BufferRegion>());
         bRegion = _bufferRegions[_bufferRegions.size() - 1];
@@ -197,7 +197,7 @@ namespace _vt {
     };
 
     // create buffer region by buffer manager
-    inline VtResult createBufferRegion(std::shared_ptr<BufferManager> bManager, const VtBufferRegionCreateInfo& bri, std::shared_ptr<BufferRegion>& bRegion) {
+    inline VtResult createBufferRegion(std::shared_ptr<BufferManager> bManager, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion) {
         return bManager->_prealloc(bri, bRegion);
     };
 

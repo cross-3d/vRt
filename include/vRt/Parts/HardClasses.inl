@@ -336,7 +336,7 @@ namespace _vt { // store in undercover namespace
         VkDeviceSize _size = 0; // accumulatable size
 
         // create structuring 
-        VtResult _prealloc(const VtBufferRegionCreateInfo& cinfo, std::shared_ptr<BufferRegion>& bRegion);
+        VtResult _prealloc(VtBufferRegionCreateInfo cinfo, std::shared_ptr<BufferRegion>& bRegion);
     };
 
     // this class does not using in ray tracing API

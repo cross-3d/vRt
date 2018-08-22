@@ -16,7 +16,7 @@ namespace _vt {
         });
     };
 
-    VtResult createDeviceImage(std::shared_ptr<Device> device, const VtDeviceImageCreateInfo& cinfo, std::shared_ptr<DeviceImage>& vtDeviceImage) {
+    VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, std::shared_ptr<DeviceImage>& vtDeviceImage) {
         // result will no fully handled
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 

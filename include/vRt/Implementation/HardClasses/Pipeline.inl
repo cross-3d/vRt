@@ -151,23 +151,13 @@ namespace _vt {
             };
 
             {
-                std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]),
-                };
+                std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]), };
                 auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtRTSet->_descriptorSet = dsc[0];
 
-                vk::Sampler attributeSampler = vk::Device(vkDevice).createSampler(vk::SamplerCreateInfo()
-                    .setAddressModeU(vk::SamplerAddressMode::eRepeat)
-                    .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
-                    .setMagFilter(vk::Filter::eNearest)
-                    .setMinFilter(vk::Filter::eNearest)
-                );
-
+                // write descriptors
                 auto writeTmpl = vk::WriteDescriptorSet(vtRTSet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
-
                 std::vector<vk::WriteDescriptorSet> writes = {
-                    //vk::WriteDescriptorSet(writeTmpl).setDstBinding(9).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&vk::BufferView(vtRTSet->_traverseCache->_bufferView)),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(10).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&vtRTSet->_rayLinkPayload->_bufferView),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(11).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&vtRTSet->_attribBuffer->_bufferView),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(9).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_traverseCache->_descriptorInfo()),
