@@ -83,7 +83,9 @@ namespace NSM
             "VK_KHR_bind_memory2",
             "VK_KHR_maintenance1",
             "VK_KHR_maintenance2",
-            "VK_KHR_maintenance3"
+            "VK_KHR_maintenance3",
+
+            "VK_KHX_shader_explicit_arithmetic_types"
         };
 
         // instance layers

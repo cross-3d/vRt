@@ -1,6 +1,11 @@
 #ifndef _DRIVER_H
 #define _DRIVER_H
 
+// disable AMD functions in other platforms
+#ifndef AMD_PLATFORM
+#undef ENABLE_AMD_INSTRUCTION_SET
+#endif
+
 // AMuDe extensions
 #ifdef ENABLE_AMD_INSTRUCTION_SET
 #extension GL_AMD_shader_trinary_minmax : enable
@@ -13,7 +18,12 @@
 #endif
 
 // ARB and ext
+#ifdef AMD_PLATFORM
+#extension GL_KHX_shader_explicit_arithmetic_types : require
+#else
 #extension GL_KHX_shader_explicit_arithmetic_types : enable
+#endif
+
 #extension GL_EXT_shader_16bit_storage : require
 #extension GL_EXT_shader_8bit_storage : enable
 #extension GL_ARB_gpu_shader_int64 : enable
@@ -47,11 +57,6 @@
 //#define MOTION_BLUR
 #ifndef SAMPLES_LOCK
 #define SAMPLES_LOCK 1
-#endif
-
-// disable AMD functions in other platforms
-#ifndef AMD_PLATFORM
-#undef ENABLE_AMD_INSTRUCTION_SET
 #endif
 
 // enable required GAPI extensions
