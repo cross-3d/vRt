@@ -4,9 +4,40 @@
 namespace _vt {
     using namespace vrt;
 
+
     // destructor of advanced buffer
     template<VmaMemoryUsage U>
-    RoledBuffer<U>::~RoledBuffer() {
+    inline RoledBuffer<U>::~RoledBuffer() {
+        std::async([=]() {
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            vezDestroyBuffer(_device->_device, _buffer);
+#else
+            vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
+#endif
+        });
+    };
+
+    DeviceBuffer::~RoledBuffer() {
+        std::async([=]() {
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            vezDestroyBuffer(_device->_device, _buffer);
+#else
+            vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
+#endif
+        });
+    };
+
+    HostToDeviceBuffer::~RoledBuffer() {
+        std::async([=]() {
+#ifdef VRT_ENABLE_VEZ_INTEROP
+            vezDestroyBuffer(_device->_device, _buffer);
+#else
+            vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
+#endif
+        });
+    };
+
+    DeviceToHostBuffer::~RoledBuffer() {
         std::async([=]() {
 #ifdef VRT_ENABLE_VEZ_INTEROP
             vezDestroyBuffer(_device->_device, _buffer);
