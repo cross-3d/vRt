@@ -306,7 +306,8 @@ namespace _vt { // store in undercover namespace
         friend Device;
         std::shared_ptr<Device> _device;
 
-        std::shared_ptr<DeviceBuffer> _boundBuffer;
+        //std::shared_ptr<DeviceBuffer> _boundBuffer;
+        std::weak_ptr<DeviceBuffer> _boundBuffer;
         VkDeviceSize _offset = 0, _size = VK_WHOLE_SIZE;
         VkBufferView _bufferView = {}; VkFormat _format = VK_FORMAT_UNDEFINED;
         VkDescriptorBufferInfo _sDescriptorInfo = {VK_NULL_HANDLE, 0, VK_WHOLE_SIZE};
@@ -315,15 +316,18 @@ namespace _vt { // store in undercover namespace
         auto& _descriptorInfo() { return _sDescriptorInfo; };
 
         operator VkDescriptorBufferInfo() const { return _descriptorInfo(); }; // cast operator
-        operator VkBuffer() const { return _boundBuffer->_buffer; }; // cast operator
+        operator VkBuffer() const { return _boundBuffer.lock()->_buffer; }; // cast operator
         operator VkBufferView() const { return _bufferView; }; // cast operator
 
         operator VkDescriptorBufferInfo&() { return _descriptorInfo(); }; // cast operator
-        operator VkBuffer&() { return _boundBuffer->_buffer; }; // cast operator
+        operator VkBuffer&() { return _boundBuffer.lock()->_buffer; }; // cast operator
         operator VkBufferView&() { return _bufferView; }; // cast operator
 
-        operator std::shared_ptr<DeviceBuffer>() const { return _boundBuffer; };
-        operator std::shared_ptr<DeviceBuffer>&() { return _boundBuffer; };
+        operator std::shared_ptr<DeviceBuffer>() const { return _boundBuffer.lock(); };
+        //operator std::shared_ptr<DeviceBuffer>&() { return _boundBuffer.lock(); };
+
+        operator std::weak_ptr<DeviceBuffer>() const { return _boundBuffer; };
+        operator std::weak_ptr<DeviceBuffer>&() { return _boundBuffer; };
     };
 
 

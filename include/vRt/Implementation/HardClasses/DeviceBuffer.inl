@@ -143,7 +143,7 @@ namespace _vt {
 
         // complete descriptors and buffer-views
         for (auto&f : bManager->_bufferRegions) {
-            f->_sDescriptorInfo.buffer = *(f->_boundBuffer = bManager->_bufferStore); createBufferView(f);
+            f->_sDescriptorInfo.buffer = *(f->_boundBuffer = std::weak_ptr(bManager->_bufferStore)).lock(); createBufferView(f);
         }
 
         // return result (TODO: handling)
@@ -157,7 +157,7 @@ namespace _vt {
 
         // complete descriptors and buffer-views
         for (auto&f : bManager->_bufferRegions) {
-            f->_sDescriptorInfo.buffer = *(f->_boundBuffer = bManager->_bufferStore); createBufferView(f);
+            f->_sDescriptorInfo.buffer = *(f->_boundBuffer = std::weak_ptr(bManager->_bufferStore)).lock(); createBufferView(f);
         }
 
         // return result (TODO: handling)
@@ -181,7 +181,7 @@ namespace _vt {
         bRegion->_format = bri.format;
         bRegion->_sDescriptorInfo.range = bRegion->_size = correctedSize;
         bRegion->_sDescriptorInfo.offset = bRegion->_offset = bri.offset;
-        bRegion->_sDescriptorInfo.buffer = *(bRegion->_boundBuffer = gBuffer); createBufferView(bRegion);
+        bRegion->_sDescriptorInfo.buffer = *(bRegion->_boundBuffer = std::weak_ptr(gBuffer)).lock(); createBufferView(bRegion);
         return VK_SUCCESS;
     };
 

@@ -103,8 +103,7 @@ set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/src/lib")
 set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/base/" "${DEP_DIR}/src/base/imgui" "${PROJECT_SOURCE_DIR}")
 
 # set required libs
-set (LIBS glfw3 VEZ)
-#set (LIBS glfw3 VEZ vulkan-1)
+set (LIBS glfw3)
 
 # set GCC8 (Linux) libs
 # MingW-W64 TODO
@@ -130,6 +129,7 @@ if (MSVC)
     #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -Wa,-mbig-obj -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx") # Clang in Visual Studio 2017
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest /arch:AVX2 /fp:strict /permissive- /Ot /W3 /NODEFAULTLIB:library") # Native compiler of Visual Studio 2017
     #set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}"")
+    set (CMAKE_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")
 else()
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
     set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=c1x   -march=skylake -fpermissive -lpthread -w -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
