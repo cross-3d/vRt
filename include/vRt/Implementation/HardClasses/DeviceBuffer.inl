@@ -91,7 +91,7 @@ namespace _vt {
 
         //binfo.queueFamilyIndexCount = 1;
         //binfo.pQueueFamilyIndices = &cinfo.familyIndex;
-        binfo.size = ((cinfo.bufferSize >> 5ull) << 5ull) + 32ull;
+        binfo.size = cinfo.bufferSize;//((cinfo.bufferSize >> 5ull) << 5ull) + 32ull;
         binfo.usage = usageFlag;
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
@@ -149,7 +149,7 @@ namespace _vt {
     // create buffer region by exist buffer
     inline VtResult createBufferRegion(std::shared_ptr<DeviceBuffer> gBuffer, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion) {
         auto gDevice = gBuffer->_device;
-        auto correctedSize = ((bri.bufferSize >> 5ull) << 5ull) + 32ull;
+        auto correctedSize = bri.bufferSize;//((bri.bufferSize >> 5ull) << 5ull) + 32ull;
         bRegion = std::make_shared<BufferRegion>();
         bRegion->_device = gDevice;
         bRegion->_format = bri.format;
