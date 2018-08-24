@@ -219,7 +219,7 @@ namespace _vt {
                 };
             };
 
-            auto metaView = bvhMetaView ? vk::BufferView(bvhMetaView) : vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView);
+            auto metaView = bvhMetaView ? vk::BufferView(bvhMetaView) : vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView());
             auto metaBufferDesc = info.bvhMetaBuffer ? vk::DescriptorBufferInfo(info.bvhMetaBuffer, 0, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhMetaBuffer->_descriptorInfo());
             metaBufferDesc.offset += 4ull * sizeof(int32_t) * info.bvhMetaOffset;
 

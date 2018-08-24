@@ -142,21 +142,21 @@ namespace _vt { // store in undercover namespace
 
     // copy buffer command with inner "DeviceBuffer"
     inline void cmdCopyBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> srcBuffer, std::shared_ptr<BufferRegion> dstBuffer, std::vector<vk::BufferCopy> regions) {
-        regions[0].srcOffset += srcBuffer->_offset, regions[0].dstOffset += dstBuffer->_offset;
+        regions[0].srcOffset += srcBuffer->_offset(), regions[0].dstOffset += dstBuffer->_offset();
         cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions);
     };
 
     // copy to host buffer
     // you can't use it for form long command buffer to host
     inline void cmdCopyBufferToHost(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> srcBuffer, std::shared_ptr<DeviceToHostBuffer> dstBuffer, std::vector<vk::BufferCopy> regions) {
-        regions[0].srcOffset += srcBuffer->_offset;
+        regions[0].srcOffset += srcBuffer->_offset();
         cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions, toHostCommandBarrier);
     };
 
     // copy from host buffer
     // you can't use it for form long command buffer from host
     inline void cmdCopyBufferFromHost(VkCommandBuffer cmd, std::shared_ptr<HostToDeviceBuffer> srcBuffer, std::shared_ptr<BufferRegion> dstBuffer, std::vector<vk::BufferCopy> regions) {
-        regions[0].dstOffset += dstBuffer->_offset;
+        regions[0].dstOffset += dstBuffer->_offset();
         cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions, fromHostCommandBarrier);
     };
 
@@ -291,25 +291,25 @@ namespace _vt { // store in undercover namespace
     // short data set with command buffer (alike push constant)
     template<class T>
     static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> dstBuffer, VkDeviceSize offset, const std::vector<T>& data) {
-        return cmdUpdateBuffer<T>(cmd, *dstBuffer, offset + dstBuffer->_offset, data);
+        return cmdUpdateBuffer<T>(cmd, *dstBuffer, offset + dstBuffer->_offset(), data);
     };
 
     // short data set with command buffer (alike push constant)
     template<class T>
     static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> dstBuffer, VkDeviceSize offset, const VkDeviceSize& size, const T*data) {
-        return cmdUpdateBuffer<T>(cmd, *dstBuffer, offset + dstBuffer->_offset, size, data);
+        return cmdUpdateBuffer<T>(cmd, *dstBuffer, offset + dstBuffer->_offset(), size, data);
     };
 
 
 
     template<uint32_t Rv, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
     static inline VkResult cmdFillBuffer(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
-        return cmdFillBuffer<Rv>(cmd, *dstBuffer, std::min(dstBuffer->_size, size), offset);
+        return cmdFillBuffer<Rv>(cmd, *dstBuffer, std::min(dstBuffer->_size(), size), offset);
     };
 
     template<uint32_t Rv>
     static inline VkResult cmdFillBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
-        return cmdFillBuffer<Rv>(cmd, *dstBuffer, std::min(dstBuffer->_size, size), offset + dstBuffer->_offset);
+        return cmdFillBuffer<Rv>(cmd, *dstBuffer, std::min(dstBuffer->_size(), size), offset + dstBuffer->_offset());
     };
 
 };

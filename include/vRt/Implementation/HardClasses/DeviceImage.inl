@@ -115,7 +115,7 @@ namespace _vt {
 #endif
 
         // anyways create static descriptor
-        vtDeviceImage->_staticDsci = VkDescriptorImageInfo{ {}, vtDeviceImage->_imageView, vtDeviceImage->_layout };
+        vtDeviceImage->_sDescriptorInfo = VkDescriptorImageInfo{ {}, vtDeviceImage->_imageView, vtDeviceImage->_layout };
         return result;
     };
 
