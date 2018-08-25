@@ -210,4 +210,5 @@ namespace vrt { // store in official namespace
         uint32_t mipLevels = 1;
         uint32_t familyIndex = 0;
     };
+
 };

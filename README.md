@@ -1,6 +1,7 @@
-# vRt
+# vRt (Vulkan API real-time ray tracing library)
 
-[![Join the chat at https://gitter.im/world8th/vRt](https://badges.gitter.im/world8th/vRt.svg)](https://gitter.im/world8th/vRt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+<a href="https://gitter.im/world8th/vRt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank" title="Gitter"><img src="https://badges.gitter.im/world8th/vRt.svg" alt="Donate ETH" height="20px"/></a>
+<a href="https://etherdonation.com/d?to=0x06d105B9508c359e5dD56631ea572e5fEF5F41ae" target="_blank" title="Donate ETH"><img src="https://etherdonation.com/i/btn/donate-btn.png" alt="Donate ETH" height="20px"/></a>
 
 > Vulkan API ray-tracing cross-platform layer (like DXR fallback layer). It will supported by common top GPU's (in far future and something else).
 
@@ -16,56 +17,58 @@
 - Support by modern graphics/compute accelerators (NVidia Pascal, AMD Radeon Vega, next-gens...)
 - Roundly 100Mrays/s in top GPU's (tested RX Vega 64, in Sponza scene, fully dynamic mode)
 
-## Repositories
+## Repository mirrors
 
-- https://github.com/world8th/vRt (GitHub, owned by Microsoft)
-- https://gitlab.com/world8th/vRt (GitLab, merging)
+- https://github.com/world8th/vRt
+- https://gitlab.com/world8th/vRt
 
 ## Requirements
 
-- Vulkan API 1.1 headers and libraries
-- Vulkan Memory Allocator, VMA (https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+- Vulkan API 1.1 Support
+- [Vulkan Memory Allocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
 - C++17 capable compiler
 - GLSL to SPIR-V 1.3 compiler
 - GLM for test application run
 
-## Compatibility confirmed
+## Compatibility Confirmed
 
-- RX Vega 64 
-- GTX 1070 
+- RX Vega 64
+- GTX 1070
+
+## Uncomfirmed
+
+- RTX 2080, 2080 Ti (non-RTX mode only)
+- GTX 1070 Ti, 1080 Ti (Pascal), 980, 980 Ti (Maxwell)
+- RX Vega 56 and Raven Ridge
+- RX 580, 480 (optimizations ready only for RX Vega 64 and that series)
 
 ## Current API
 
-You can see here current API:
+You can see here current API of library:
 
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/API.inl
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/Structures.inl
+- https://github.com/world8th/vRt/blob/master/include/vRt/Parts/StructuresDef.inl
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/Enums.inl
 
-We still working on forming of ray tracing API.
-
 ## Roadmaps
-
-### About old project... 
-
-- [Satellite README](https://github.com/archive-w8th/satellite-deprecated/blob/99c8a86085b45e0a3a6b37e4afdc841510a142d6/README.md) (7 Jun 2018)
-
-### August 2018 ("Helium")
-
-- Better examples delayed to next months
-- Improve interoperability and portability
 
 ### 2018 Q4 ("Lithium")
 
 - Coming to alpha stage
-- Finish to fix (un)common bugs and issues
-- Write bigger real-time application with ray tracing
+- Better ray-tracing examples
+- Advanced ray-tracing API
 
 ### Beyond
 
-- First implementations in bigger framework and engines (The Forge, Unreal Engine 5, Blender 2.90)
-- Make custom GLSL/HLSL compiler for unified compatibility 
-- Coming to beta stage
-- Compatibility with Nvidia RTX (Volta/Turing), PowerVR Wizard Ray Tracing (GR6500), AMD Radeon RXL (Navi, next-gen), Intel Larrabee 2019
-- Compatibility with mobile platform
-- Compatibility with Apple OS
+- First implementations in bigger framework and engines
+- Make custom GLSL/HLSL compiler for unified compatibility
+- Support of Nvidia RTX, PowerVR Wizard Ray Tracing, Intel Larrabee 2019
+
+## Donation
+
+For development of RTX back-end, need around 700$ for purchase NVidia RTX 2080 series card... You can donate for us.
+
+In order to avoid charges of fraud, I will say directly ... Yes, I can not guarantee you a refund, I do not guarantee that this product will be useful for you, I do not guarantee any benefits to you, I can not guarantee that I will meet your expectations. By sending us a donation, you take your risk and say goodbye to the amount of money listed for good. Yes, we can still behave a bit boorish. Yes, we can still be very similar to scammers.
+
+( Direct Ethereum Address: [0x06d105B9508c359e5dD56631ea572e5fEF5F41ae](https://etherdonation.com/d?to=0x06d105B9508c359e5dD56631ea572e5fEF5F41ae) )
