@@ -15,7 +15,7 @@ layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYS
 
 
 struct BvhTraverseState {
-    int idx, defTriangleID, stackPtr, cacheID, pageID; lowp bvec4_ boxSide; float minDist;
+    int idx, defTriangleID, stackPtr, cacheID, pageID; bvec3 boxSide; float minDist;
     fvec4_ minusOrig, directInv;
 } traverseState;
 
@@ -79,7 +79,9 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     const vec4 dirproj = 1.f / (max(abs(direct), 1e-4f)*sign(direct));
 
     // limitation of distance
-    const lowp bvec3_ bsgn = (bvec3_(sign(dirproj.xyz)*ftype_(1.0001f))+true_)>>true_;
+    //const bvec3 bsgn = bvec3((ivec3(sign(dirproj.xyz))+1)>>1);
+    #define bsgn traverseState.boxSide
+    bsgn = bvec3((ivec3(sign(dirproj.xyz))+1)>>1);
 
     // initial state
     traverseState.defTriangleID = 0;
@@ -125,7 +127,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     traverseState.directInv = fvec4_(dirproj)*One1024.xxxx;
 #endif
     traverseState.minusOrig = fma(fvec4_(torig), fvec4_(dirproj), fvec4_(diffOffset.xxxx));
-    traverseState.boxSide.xyz = bsgn;
+    //traverseState.boxSide = bsgn;
 
 
     [[dependency_infinite]]

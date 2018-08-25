@@ -269,12 +269,15 @@ void storePosition(in ivec2 cdata, in vec4 fval) {
 // single float 32-bit box intersection
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
-bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec3_ sgn, const mat3x2 tMinMaxMem, inout vec4 nfe) {
-    mat3x2 tMinMax = mat3x2(
-        fma(SSC(sgn.x) ? tMinMaxMem[0].xy : tMinMaxMem[0].yx, dr.xx, origin.xx),
-        fma(SSC(sgn.y) ? tMinMaxMem[1].xy : tMinMaxMem[1].yx, dr.yy, origin.yy),
-        fma(SSC(sgn.z) ? tMinMaxMem[2].xy : tMinMaxMem[2].yx, dr.zz, origin.zz)
-    );
+bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in bvec3 sgn, in mat3x2 tMinMax, inout vec4 nfe) {
+    tMinMax = mat3x2(
+        fma(tMinMax[0], dr.xx, origin.xx),
+        fma(tMinMax[1], dr.yy, origin.yy),
+        fma(tMinMax[2], dr.zz, origin.zz)
+    ),
+    tMinMax[0] = sgn.x ? tMinMax[0] : tMinMax[0].yx,
+    tMinMax[1] = sgn.y ? tMinMax[1] : tMinMax[1].yx,
+    tMinMax[2] = sgn.z ? tMinMax[2] : tMinMax[2].yx;
 
     float 
         tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x), 
@@ -294,16 +297,19 @@ bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in lowp bvec3_ sgn
 // compatible with NVidia GPU too
 
 #if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
-lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, in lowp bvec3_ sgn, in highp fmat3x4_ tMinMax, inout vec4 nfe2)
+lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr, in bvec3 sgn, in highp fmat3x4_ tMinMax, inout vec4 nfe2)
 #else
-lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in lowp bvec3_ sgn, in fmat3x4_ tMinMax, inout vec4 nfe2)
+lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in bvec3 sgn, in fmat3x4_ tMinMax, inout vec4 nfe2)
 #endif
 {
     tMinMax = fmat3x4_(
-        fma(SSC(sgn.x) ? tMinMax[0] : tMinMax[0].zwxy, dr.xxxx, origin.xxxx),
-        fma(SSC(sgn.y) ? tMinMax[1] : tMinMax[1].zwxy, dr.yyyy, origin.yyyy),
-        fma(SSC(sgn.z) ? tMinMax[2] : tMinMax[2].zwxy, dr.zzzz, origin.zzzz)
-    );
+        fma(tMinMax[0], dr.xxxx, origin.xxxx),
+        fma(tMinMax[1], dr.yyyy, origin.yyyy),
+        fma(tMinMax[2], dr.zzzz, origin.zzzz)
+    ),
+    tMinMax[0] = sgn.x ? tMinMax[0] : tMinMax[0].zwxy,
+    tMinMax[1] = sgn.y ? tMinMax[1] : tMinMax[1].zwxy,
+    tMinMax[2] = sgn.z ? tMinMax[2] : tMinMax[2].zwxy;
 
 #if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
     mediump
