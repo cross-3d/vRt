@@ -1,9 +1,9 @@
-# vRt (Vulkan API real-time ray tracing library)
+# vRt (WIP)
 
 <a href="https://gitter.im/world8th/vRt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank" title="Gitter"><img src="https://badges.gitter.im/world8th/vRt.svg" alt="Donate ETH" height="20px"/></a>
 <a href="https://etherdonation.com/d?to=0x06d105B9508c359e5dD56631ea572e5fEF5F41ae" target="_blank" title="Donate ETH"><img src="https://etherdonation.com/i/btn/donate-btn.png" alt="Donate ETH" height="20px"/></a>
 
-> Vulkan API ray-tracing cross-platform layer (like DXR fallback layer). It will supported by common top GPU's (in far future and something else).
+> Unified Vulkan API ray tracing cross-platform library.
 
 ## Features and advantages
 
@@ -51,6 +51,10 @@ You can see here current API of library:
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/StructuresDef.inl
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/Enums.inl
 
+## Videos
+
+Coming soon...
+
 ## Roadmaps
 
 ### 2018 Q4 ("Lithium")
@@ -65,7 +69,11 @@ You can see here current API of library:
 - Make custom GLSL/HLSL compiler for unified compatibility
 - Support of Nvidia RTX, PowerVR Wizard Ray Tracing, Intel Larrabee 2019
 
-## Donation
+## Kraudfanding
+
+Coming soon...
+
+## Direct Donation (ETH)
 
 For development of RTX back-end, need around 700$ for purchase NVidia RTX 2080 series card... You can donate for us.
 
