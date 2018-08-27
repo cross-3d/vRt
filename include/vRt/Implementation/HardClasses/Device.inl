@@ -6,9 +6,6 @@ namespace _vt {
     using namespace vrt;
 
 
-
-
-
     VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& vtDevice) {
         //auto vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice = std::make_shared<Device>();
@@ -16,21 +13,13 @@ namespace _vt {
         auto gpu = vk::PhysicalDevice(physicalDevice->_physicalDevice);
 
         // minimal features
-        VkPhysicalDevice16BitStorageFeatures gStorage16 = vk::PhysicalDevice16BitStorageFeatures{};
-        VkPhysicalDevice8BitStorageFeaturesKHR gStorage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
-        VkPhysicalDeviceDescriptorIndexingFeaturesEXT gDescIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
-        gStorage16.pNext = &gStorage8, gStorage8.pNext = &gDescIndexing;
-
-        // link with descriptor by pointer
-        auto gFeatures = (vk::PhysicalDeviceFeatures2*)&vtDevice->_supportedFeatures;
-        
-        // get features support by physical devices
-        *gFeatures = vk::PhysicalDeviceFeatures2{}; // initial structure
-         gFeatures->pNext = &gStorage16;
-         gFeatures->features.shaderInt16 = true;
-         gFeatures->features.shaderInt64 = true;
-         gFeatures->features.shaderUniformBufferArrayDynamicIndexing = true;
-        gpu.getFeatures2(gFeatures);
+        auto features = (vtDevice->_features = std::make_shared<DeviceFeatures>());
+        features->_features = vk::PhysicalDeviceFeatures2{};
+        features->_storage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
+        features->_storage16 = vk::PhysicalDevice16BitStorageFeatures{};
+        features->_descriptorIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
+        features->_features.pNext = &features->_storage16, features->_storage16.pNext = &features->_storage8, features->_storage8.pNext = &features->_descriptorIndexing;
+        gpu.getFeatures2((vk::PhysicalDeviceFeatures2*)&features->_features); // get features support by physical devices
 
         // device vendoring
         vtDevice->_device = device;

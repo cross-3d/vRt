@@ -34,4 +34,5 @@ namespace _vt { // store in undercover namespace
 
     class BufferManager;
     class BufferRegion;
+    class DeviceFeatures;
 };

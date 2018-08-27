@@ -38,13 +38,40 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _uniformVIBuffer;
     };
 
+
+    // advanced device features
+    class DeviceFeatures : public std::enable_shared_from_this<DeviceFeatures> {
+        public:
+        friend Device;
+
+        // mainline features
+        VkPhysicalDeviceFeatures2 _features = {};
+        
+        // device linking
+        std::shared_ptr<PhysicalDevice> _physicalDevice = {};
+        std::weak_ptr<Device> _device = {};
+
+        // extensions
+        VkPhysicalDevice16BitStorageFeatures _storage16 = {};
+        VkPhysicalDevice8BitStorageFeaturesKHR _storage8 = {};
+        VkPhysicalDeviceDescriptorIndexingFeaturesEXT _descriptorIndexing = {};
+
+        // features linking
+        operator VkPhysicalDeviceFeatures2&() { return _features; };
+        operator VkPhysicalDeviceFeatures2() const { return _features; };
+
+        auto _parent() const { return _physicalDevice; };
+        auto& _parent() { return _physicalDevice; };
+    };
+
+
     // ray tracing device with aggregation
     class Device : public std::enable_shared_from_this<Device> {
     public:
         friend PhysicalDevice;
         VkDevice _device = VK_NULL_HANDLE;
-        VkPhysicalDeviceFeatures2 _supportedFeatures = {};
-        std::shared_ptr<PhysicalDevice> _physicalDevice;
+        std::shared_ptr<DeviceFeatures> _features = {};
+        std::shared_ptr<PhysicalDevice> _physicalDevice = {};
 
         uint32_t _mainFamilyIndex = 0;
         std::string _shadersPath = "./";
