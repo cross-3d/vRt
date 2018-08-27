@@ -17,6 +17,7 @@ namespace _vt {
         });
     };
 
+    /*
     DeviceBuffer::~RoledBuffer() {
         std::async([=]() {
 #ifdef VRT_ENABLE_VEZ_INTEROP
@@ -46,7 +47,7 @@ namespace _vt {
 #endif
         });
     };
-
+    */
 
     VtResult createBufferView(std::shared_ptr<BufferRegion> bRegion) {
         auto device = bRegion->_device;

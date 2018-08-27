@@ -143,8 +143,8 @@ namespace vrt { // store in official namespace
         operator VkBuffer&() { return *_vtBuffer; };
 
         // deprecated bufferView in buffer
-        [[deprecated("Deprecated since merging to new memory model")]] operator VkBufferView() const { return *_vtBuffer; };
-        [[deprecated("Deprecated since merging to new memory model")]] operator VkBufferView&() { return *_vtBuffer; };
+        operator VkBufferView() const { return *_vtBuffer; };
+        operator VkBufferView&() { return *_vtBuffer; };
 
         operator bool() const { return !!_vtBuffer; };
         auto* operator->() { return _vtBuffer.get(); };

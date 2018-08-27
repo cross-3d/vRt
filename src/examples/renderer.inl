@@ -54,7 +54,7 @@ namespace rnd {
 
 
     template<class T>
-    inline auto writeIntoBuffer(vte::Queue deviceQueue, const std::vector<T>& vctr, const vrt::VtDeviceBuffer& dBuffer, size_t byteOffset = 0) {
+    inline auto writeIntoBuffer(vte::Queue deviceQueue, const std::vector<T>& vctr, const vrt::VtDeviceBuffer& dBuffer, VkDeviceSize byteOffset = 0) {
         VkResult result = VK_SUCCESS;
         vrt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
@@ -65,7 +65,7 @@ namespace rnd {
     };
 
     template<class T>
-    inline auto writeIntoImage(vte::Queue deviceQueue, const std::vector<T>& vctr, const vrt::VtDeviceImage& dImage, size_t byteOffset = 0) {
+    inline auto writeIntoImage(vte::Queue deviceQueue, const std::vector<T>& vctr, const vrt::VtDeviceImage& dImage, VkDeviceSize byteOffset = 0) {
         VkResult result = VK_SUCCESS;
         vrt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
@@ -76,7 +76,7 @@ namespace rnd {
     };
 
     template<class T>
-    inline auto readFromBuffer(vte::Queue deviceQueue, const vrt::VtDeviceBuffer& dBuffer, std::vector<T>& vctr, size_t byteOffset = 0) {
+    inline auto readFromBuffer(vte::Queue deviceQueue, const vrt::VtDeviceBuffer& dBuffer, std::vector<T>& vctr, VkDeviceSize byteOffset = 0) {
         VkResult result = VK_SUCCESS;
         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
             VkBufferCopy bfc = { byteOffset, 0, vte::strided<T>(vctr.size()) };
@@ -86,18 +86,21 @@ namespace rnd {
         return result;
     };
 
+
+/*  // no support by GCC compilers
     template<class T>
-    inline auto readFromBuffer(vte::Queue deviceQueue, const std::shared_ptr<_vt::BufferRegion>& dBuffer, std::vector<T>& vctr, size_t byteOffset = 0) {
+    inline auto readFromBuffer(vte::Queue deviceQueue, const std::shared_ptr<_vt::BufferRegion>& dBuffer, std::vector<T>& vctr, VkDeviceSize byteOffset = 0) {
         VkResult result = VK_SUCCESS;
         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
-            VkBufferCopy bfc = { dBuffer->_offset + byteOffset, 0, vte::strided<T>(vctr.size()) };
+            VkBufferCopy bfc = { dBuffer->_offset + byteOffset, 0ull, vte::strided<T>(vctr.size()) };
             vrt::vtCmdCopyDeviceBufferToHost(cmdBuf, vrt::VtDeviceBuffer{ dBuffer->_boundBuffer }, deviceQueue->device->rtDev, 1, &bfc);
         });
         vrt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
         return result;
     };
+    */
 
-    inline auto createBufferFast(vte::Queue deviceQueue, vrt::VtDeviceBuffer& dBuffer, size_t byteSize = 1024 * 16) {
+    inline auto createBufferFast(vte::Queue deviceQueue, vrt::VtDeviceBuffer& dBuffer, VkDeviceSize byteSize = 1024 * 16) {
         vrt::VtDeviceBufferCreateInfo dbs;
         dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
         dbs.bufferSize = byteSize;

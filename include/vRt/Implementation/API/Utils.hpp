@@ -211,7 +211,7 @@ namespace _vt { // store in undercover namespace
     // set buffer data function (defaultly from HostToDevice)
     template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_CPU_TO_GPU>
     inline void setBufferSubData(const std::vector<T> &hostdata, std::shared_ptr<RoledBuffer<U>> buffer, intptr_t offset = 0) {
-        const size_t bufferSize = hostdata.size() * sizeof(T);
+        const VkDeviceSize bufferSize = hostdata.size() * sizeof(T);
 #ifdef VRT_ENABLE_VEZ_INTEROP
         if (bufferSize > 0) {
             uint8_t * uPtr = nullptr;
@@ -233,7 +233,7 @@ namespace _vt { // store in undercover namespace
     // get buffer data function (defaultly from DeviceToHost)
     template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
     inline void getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, std::vector<T> &hostdata, intptr_t offset = 0) {
-        const size_t bufferSize = hostdata.size() * sizeof(T);
+        const VkDeviceSize bufferSize = hostdata.size() * sizeof(T);
 #ifdef VRT_ENABLE_VEZ_INTEROP
         if (bufferSize > 0) {
             uint8_t * uPtr = nullptr;
@@ -254,7 +254,7 @@ namespace _vt { // store in undercover namespace
 
     // get buffer data function (defaultly from DeviceToHost)
     template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
-    inline auto getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, size_t count = 1, intptr_t offset = 0) {
+    inline auto getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, VkDeviceSize count = 1, intptr_t offset = 0) {
         std::vector<T> hostdata(count);
         getBufferSubData(buffer, hostdata, 0);
         return hostdata; // in return will copying, C++ does not made mechanism for zero-copy of anything
@@ -312,4 +312,23 @@ namespace _vt { // store in undercover namespace
         return cmdFillBuffer<Rv>(cmd, *dstBuffer, std::min(dstBuffer->_size(), size), offset + dstBuffer->_offset());
     };
 
+};
+
+// templates is not supported by static libs
+// all pure C++ stuff will implementing by headers in SDK
+namespace vrt {
+    template <class T>
+    inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset) {
+        _vt::setBufferSubData<T, VMA_MEMORY_USAGE_CPU_TO_GPU>(hostdata, buffer, offset); return VK_SUCCESS;
+    };
+
+    template <class T>
+    inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset) {
+        _vt::getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, hostdata, offset); return VK_SUCCESS;
+    };
+
+    template <class T>
+    inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, VkDeviceSize count, intptr_t offset) {
+        return _vt::getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, count, offset);
+    };
 };

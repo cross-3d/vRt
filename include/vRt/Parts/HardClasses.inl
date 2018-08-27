@@ -313,7 +313,6 @@ namespace _vt { // store in undercover namespace
         auto& _descriptorInfo() { return (this->_sDescriptorInfo = this->_genDescriptorInfo()); };
     };
 
-
     // in-bound buffer region
     class BufferRegion : public std::enable_shared_from_this<BufferRegion> {
     public:
