@@ -25,12 +25,20 @@ set(SOURCES_LIST
     "./src/imgui/*.h"
     "./src/imgui/imgui_draw.cpp"
     "./src/imgui/imgui.cpp"
+    
     "./src/examples/*.hpp"
+    "./src/examples/*.hxx"
+    "./src/examples/*.inl"
     
     "./src/base/*.hpp"
     "./src/base/*.cpp"
     "./src/base/*.c"
     "./src/base/*.h"
+    
+    "./src/*.h"
+    "./src/*.hpp"
+    "./src/*.hxx"
+    "./src/*.inl"
     
     "./src/*/*/*.hpp"
     "./src/*/*/*.cpp"
@@ -155,27 +163,27 @@ file (GLOB RSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCES_LIST})
 
 
 # make helloTriangle
-set (APPLICATION_NAME helloTriangle)
-add_executable(${APPLICATION_NAME} src/examples/helloTriangle.cpp ${RSOURCES})
-target_link_libraries(${APPLICATION_NAME} ${LIBS})
+#set (APPLICATION_NAME helloTriangle)
+#add_executable(${APPLICATION_NAME} src/examples/helloTriangle.cpp ${RSOURCES})
+#target_link_libraries(${APPLICATION_NAME} ${LIBS})
 
 
 # make gltfBasic
-set (APPLICATION_NAME gltfBasic)
-add_executable(${APPLICATION_NAME} src/examples/gltfBasic.cpp ${RSOURCES})
-target_link_libraries(${APPLICATION_NAME} ${LIBS} vRt)
+#set (APPLICATION_NAME gltfBasic)
+#add_executable(${APPLICATION_NAME} src/examples/gltfBasic.cpp ${RSOURCES})
+#target_link_libraries(${APPLICATION_NAME} ${LIBS})
 
 
 # make gltfPBR
 set (APPLICATION_NAME gltfPBR)
 add_executable(${APPLICATION_NAME} src/examples/gltfPBR.cpp ${RSOURCES})
-target_link_libraries(${APPLICATION_NAME} ${LIBS} vRt)
+target_link_libraries(${APPLICATION_NAME} ${LIBS})
 
 
 # make static library
-set (LIBRARY_NAME vRt)
-add_library(${LIBRARY_NAME} include/vRt/vRt_lib.cpp ${RSOURCES})
-target_link_libraries(${LIBRARY_NAME} ${LIBS})
+#set (LIBRARY_NAME vRt)
+#add_library(${LIBRARY_NAME} include/vRt/vRt_lib.cpp ${RSOURCES})
+#target_link_libraries(${LIBRARY_NAME} ${LIBS})
 foreach(source IN LISTS RSOURCES)
     get_filename_component(source_path "${source}" PATH)
     string(REPLACE "/" "\\" source_path_msvc "${source_path}")

@@ -230,20 +230,18 @@ namespace NSM
 
 
             // minimal features
-            VkPhysicalDevice16BitStorageFeatures gStorage16 = vk::PhysicalDevice16BitStorageFeatures{};
-            VkPhysicalDevice8BitStorageFeaturesKHR gStorage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
-            VkPhysicalDeviceDescriptorIndexingFeaturesEXT gDescIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
+            auto gStorage16 = vk::PhysicalDevice16BitStorageFeatures{};
+            auto gStorage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
+            auto gDescIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
             gStorage16.pNext = &gStorage8;
             gStorage8.pNext = &gDescIndexing;
 
-            VkPhysicalDeviceFeatures2 gFeatures = vk::PhysicalDeviceFeatures2{};
+            auto gFeatures = vk::PhysicalDeviceFeatures2{};
             gFeatures.pNext = &gStorage16;
             gFeatures.features.shaderInt16 = true;
             gFeatures.features.shaderInt64 = true;
             gFeatures.features.shaderUniformBufferArrayDynamicIndexing = true;
-            //gFeatures.features.shaderNon
-            vkGetPhysicalDeviceFeatures2(gpu, &gFeatures);
-            //gpu.getFeatures2(gFeatures);
+            gpu.getFeatures2(&gFeatures);
 
             // get features and queue family properties
             //auto gpuFeatures = gpu.getFeatures();

@@ -7,6 +7,7 @@
 //#include <dos.h>
 //#include <windows.h>
 
+#include <misc/args.hxx>
 #include <misc/half.hpp>
 #include <misc/pcg_random.hpp>
 #include <glm/glm.hpp>

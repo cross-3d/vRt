@@ -1,6 +1,4 @@
-
-#include "../base/appBase.hpp"
-
+#include "renderer.inl"
 
 struct VtAppMaterial {
     glm::vec4 diffuse = glm::vec4(0.f);

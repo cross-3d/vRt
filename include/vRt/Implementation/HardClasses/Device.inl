@@ -13,9 +13,27 @@ namespace _vt {
         //auto vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice = std::make_shared<Device>();
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
-        vtDevice->_device = device;
+        auto gpu = vk::PhysicalDevice(physicalDevice->_physicalDevice);
 
-        auto gpu = vk::PhysicalDevice(*physicalDevice);
+        // minimal features
+        VkPhysicalDevice16BitStorageFeatures gStorage16 = vk::PhysicalDevice16BitStorageFeatures{};
+        VkPhysicalDevice8BitStorageFeaturesKHR gStorage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
+        VkPhysicalDeviceDescriptorIndexingFeaturesEXT gDescIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
+        gStorage16.pNext = &gStorage8, gStorage8.pNext = &gDescIndexing;
+
+        // link with descriptor by pointer
+        auto gFeatures = (vk::PhysicalDeviceFeatures2*)&vtDevice->_supportedFeatures;
+        
+        // get features support by physical devices
+        *gFeatures = vk::PhysicalDeviceFeatures2{}; // initial structure
+         gFeatures->pNext = &gStorage16;
+         gFeatures->features.shaderInt16 = true;
+         gFeatures->features.shaderInt64 = true;
+         gFeatures->features.shaderUniformBufferArrayDynamicIndexing = true;
+        gpu.getFeatures2(gFeatures);
+
+        // device vendoring
+        vtDevice->_device = device;
         vtDevice->_vendorName = getVendorName(gpu.getProperties().vendorID);
 
         VtResult result = VK_SUCCESS;

@@ -43,6 +43,7 @@ namespace _vt { // store in undercover namespace
     public:
         friend PhysicalDevice;
         VkDevice _device = VK_NULL_HANDLE;
+        VkPhysicalDeviceFeatures2 _supportedFeatures = {};
         std::shared_ptr<PhysicalDevice> _physicalDevice;
 
         uint32_t _mainFamilyIndex = 0;

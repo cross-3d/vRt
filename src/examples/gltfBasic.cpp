@@ -1,9 +1,4 @@
-#include "../base/appBase.hpp"
-#define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <tinygltf/tiny_gltf.h>
-
+#include "renderer.inl"
 
 struct VtAppMaterial {
     glm::vec4 diffuse = glm::vec4(0.f);

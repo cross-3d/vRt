@@ -19,8 +19,10 @@ namespace vrt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION;
         const void* pNext = nullptr;
         uint32_t mainQueueFamily = 0;
+
         VkDeviceSize sharedCacheSize = 1024u * 1024u;
         VkDeviceSize maxPrimitives = 1024u * 256u;
+        
 #ifdef VRT_ENABLE_STRING_VIEW
         std::string_view shaderPath = "./";
 #else
