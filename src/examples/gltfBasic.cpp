@@ -121,8 +121,7 @@ inline auto getShaderDir(const uint32_t& vendorID) {
             break;
     }
     return shaderDir;
-}
-
+};
 
 inline auto _getFormat(const tinygltf::Accessor& accs) {
     vrt::VtFormatDecomp format = {};
@@ -150,7 +149,7 @@ inline auto _getFormat(const tinygltf::Accessor& accs) {
     format.setNormalized(accs.normalized);
 
     return format;
-}
+};
 
 
 // planned add window sizes
@@ -167,7 +166,7 @@ int main() {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     // choiced physical device
-    uint32_t gpuID = 0; // at now "0" by default
+    uint32_t gpuID = 1; // at now "0" by default
 
     // create GLFW window
     std::string title = "vRt early test";
