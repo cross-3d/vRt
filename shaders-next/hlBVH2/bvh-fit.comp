@@ -39,6 +39,9 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 #define gS gl_WorkGroupSize.x
 #define wsize bvhBlock.leafCount
 
+// referable value
+const int _NULL = -1;
+
 void main() {
     // move to work list
     const uint rng = gS*gl_NumWorkGroups.x;
@@ -51,9 +54,12 @@ void main() {
 
         [[dependency_infinite]]
         for (int l=0;l<65536;l++) {
-            const int pid = (idx >= 0 ? bvhNodes[idx].meta.z : 0)-1;
-            idx = pid >= 0 && atomicCompSwap(Flags[pid], 0, 1) == 1 ? pid : -1;
-            if ( idx >= 0 ) { unifyNodeBox(idx); Flags[idx] = 0; } else { break; };
+            SB_BARRIER
+            [[flatten]] if ( idx < 0 || idx == _NULL ) { break; };
+            SB_BARRIER
+            const int pid = (idx >= 0 ? bvhNodes[idx].meta.z : 0)-1; idx = _NULL;
+            [[flatten]] if ( pid >= 0 ) { idx = atomicCompSwap(Flags[pid], 0, 1) != 0 ? pid : _NULL; } else { idx = _NULL; };
+            [[flatten]] if ( idx >= 0 ) { unifyNodeBox(idx); Flags[idx] = 0; };// else { break; };
         }
     }
     //LGROUP_BARRIER

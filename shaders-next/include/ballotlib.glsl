@@ -97,4 +97,3 @@ bool anyInvoc(in lowp bool_ bc) { return anyInvoc(SSC(bc)); }
 #define LGROUP_BARRIER barrier();
 
 #endif
-

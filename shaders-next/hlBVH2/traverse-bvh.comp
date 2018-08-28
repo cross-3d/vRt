@@ -43,6 +43,7 @@ void main() {
         // do BVH traversing 
         const int rayID = vtRayIdx(it); int hid = vtFetchHitIdc(rayID);
         traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
+        SB_BARRIER
 
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection
