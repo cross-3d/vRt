@@ -15,20 +15,6 @@ $CMPPROF="-S comp"
 $FRGPROF="-S frag"
 $VRTPROF="-S vert"
 
-
-new-item -Name $OUTDIR -itemtype directory       -Force | Out-Null
-new-item -Name $OUTDIR$VRTX -itemtype directory  -Force | Out-Null
-new-item -Name $OUTDIR$RNDR -itemtype directory  -Force | Out-Null
-new-item -Name $OUTDIR$OUTP -itemtype directory  -Force | Out-Null
-
-new-item -Name $HRDDIR$HLBV\\AABB\\ -itemtype directory      -Force | Out-Null
-new-item -Name $HRDDIR$HLBV\\triangle\\ -itemtype directory  -Force | Out-Null
-new-item -Name $HRDDIR$HLBV -itemtype directory              -Force | Out-Null
-new-item -Name $HRDDIR$RDXI -itemtype directory              -Force | Out-Null
-new-item -Name $HRDDIR$NTVE -itemtype directory              -Force | Out-Null
-
-
-
 function Pause ($Message = "Press any key to continue . . . ") {
     if ((Test-Path variable:psISE) -and $psISE) {
         $Shell = New-Object -ComObject "WScript.Shell"
@@ -62,6 +48,17 @@ function BuildVertex($Name, $InDir, $OutDir, $AddArg = "") {
 }
 
 function BuildAllShaders($Pfx = "") {
+    new-item -Name $OUTDIR -itemtype directory       -Force | Out-Null
+    new-item -Name $OUTDIR$VRTX -itemtype directory  -Force | Out-Null
+    new-item -Name $OUTDIR$RNDR -itemtype directory  -Force | Out-Null
+    new-item -Name $OUTDIR$OUTP -itemtype directory  -Force | Out-Null
+    
+    new-item -Name $HRDDIR$HLBV\\AABB\\ -itemtype directory      -Force | Out-Null
+    new-item -Name $HRDDIR$HLBV\\triangle\\ -itemtype directory  -Force | Out-Null
+    new-item -Name $HRDDIR$HLBV -itemtype directory              -Force | Out-Null
+    new-item -Name $HRDDIR$RDXI -itemtype directory              -Force | Out-Null
+    new-item -Name $HRDDIR$NTVE -itemtype directory              -Force | Out-Null
+
     BuildFragment "render.frag" "$INDIR$OUTP" "$OUTDIR$OUTP"
     BuildVertex   "render.vert" "$INDIR$OUTP" "$OUTDIR$OUTP"
 
