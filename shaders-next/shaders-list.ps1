@@ -26,6 +26,7 @@ function Pause ($Message = "Press any key to continue . . . ") {
         Write-Host
     }
 }
+
 function BuildCompute($Name, $InDir, $OutDir, $AddArg = "", $AltName = $Name) {
     $ARGS = "$CFLAGSV $CMPPROF $InDir$Name -o $OutDir$AltName.spv $AddArg"
     $process = start-process -NoNewWindow -Filepath "glslangValidator" -ArgumentList "$ARGS" -PassThru
