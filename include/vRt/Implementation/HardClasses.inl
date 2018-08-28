@@ -1,4 +1,5 @@
 #pragma once
+
 #include "API/Initializers.inl"
 #include "HardClasses/DeviceBuffer.inl"
 #include "HardClasses/DeviceImage.inl"

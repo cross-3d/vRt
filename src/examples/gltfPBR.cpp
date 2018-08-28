@@ -1,4 +1,5 @@
-#include "renderer.inl"
+#pragma once
+#include "gltfPBR.inl"
 
 // initial renderer
 const uint32_t canvasWidth = 640, canvasHeight = 360; // without accounting super-sampling
