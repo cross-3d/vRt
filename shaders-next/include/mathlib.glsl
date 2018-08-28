@@ -386,14 +386,31 @@ lowp uvec2 up2x_8(in highp uint a) {
 
 
 vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
-    //const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz;
     //const vec2 sz = 1.f.xx, si = 1.f.xx/sz;
-    //const vec4 ft = vec4(0.5f.xx, -0.5f.xx)*si.xyxy;
-    //const vec2 tx = sz * TXL - 0.5f, lp = fract(tx), tl = (ceil(tx))*si.xy;
-    //return mix(mix(textureLod(SMP, tl + ft.zw, LOD), textureLod(SMP, tl + ft.xw, LOD), lp.x), mix(textureLod(SMP, tl + ft.zy, LOD), textureLod(SMP, tl + ft.xy, LOD), lp.x), lp.y);
-    TXL *= textureSize(SMP, LOD); // real size
-    const ivec4 ft = ivec4((1).xx, (0).xx); const ivec2 tl = ivec2(round(TXL-1.f)); const vec2 lp = fract(TXL-0.5f.xx);
-    return mix(mix(texelFetch(SMP, tl + ft.zw, LOD), texelFetch(SMP, tl + ft.xw, LOD), lp.x), mix(texelFetch(SMP, tl + ft.zy, LOD), texelFetch(SMP, tl + ft.xy, LOD), lp.x), lp.y);
+
+    //TXL *= textureSize(SMP, LOD); // real size
+    //const ivec4 ft = ivec4((1).xx, (0).xx); const ivec2 tl = ivec2(round(TXL-1.f)); const vec2 lp = fract(TXL-0.5f.xx);
+
+    //const mat4 mtr = mat4(
+    //    texelFetch(SMP, tl + ft.zw, LOD), texelFetch(SMP, tl + ft.xw, LOD),
+    //    texelFetch(SMP, tl + ft.zy, LOD), texelFetch(SMP, tl + ft.xy, LOD)
+    //);
+
+    const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, -0.5f.xx), lp = fract(tx), tl = (ceil(tx))*si.xy;
+    const vec4 ft = vec4(0.5f.xx, -0.5f.xx)*si.xyxy;
+    const mat4 mtr = mat4(
+        textureLod(SMP, tl + ft.zw, LOD), textureLod(SMP, tl + ft.xw, LOD),
+        textureLod(SMP, tl + ft.zy, LOD), textureLod(SMP, tl + ft.xy, LOD)
+    );
+    
+    const vec4 coef = vec4(
+        lp.x*lp.y,                         //      lp.x  *      lp.y
+        fma(-lp.x, lp.y, lp.y),            // (1.f-lp.x) *      lp.y
+        fma( lp.x,-lp.y, lp.x),            //      lp.x  * (1.f-lp.y)
+        fma( lp.x, lp.y, (1.f-lp.y-lp.x))  // (1.f-lp.x) * (1.f-lp.y)
+    );
+
+    return mtr*coef;
 }
 
 #endif
