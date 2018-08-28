@@ -143,7 +143,7 @@ void main() {
             
             // TODO: dynamic light
             const vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f));
-            hitp.albedo = (textured.diffuse * vec4(clamp(fma(dot(hitp.normalHeight.xyz, lightVector), 0.5f, 0.5f), 0.f, 1.f).xxx, 1.f));
+            hitp.albedo = (textured.diffuse * vec4(  mix(vec3(0.1f, 0.09f, 0.075f), vec3(1.0f, 0.9f, 0.75f), clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx)  , 1.f));
             hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
             
             // triangle intersection test
