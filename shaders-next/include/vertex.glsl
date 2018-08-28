@@ -3,12 +3,14 @@
 
 #include "../include/mathlib.glsl"
 
+//#define VRT_INTERPOLATOR_TEXEL
 
 #ifdef ENABLE_VERTEX_INTERPOLATOR
 #ifndef ENABLE_VSTORAGE_DATA
 #define ENABLE_VSTORAGE_DATA
 #endif
 #endif
+
 
 
 // Geometry Zone
@@ -201,20 +203,15 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 #define _SWIZV xyz
 // barycentric map (for corrections tangents in POM)
 void interpolateMeshData(inout VtHitData ht, in int tri) {
-    //const int tri = floatBitsToInt(ht.uvt.w)-1;
     const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
-#ifdef VRT_INTERPOLATOR_TEXEL
-    const vec2 sz = 1.f.xx;
-#else
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
-#endif
     [[flatten]]
     if (ht.attribID > 0) {
         [[unroll]]
         for (int i=0;i<ATTRIB_EXTENT;i++) {
 #ifdef VRT_INTERPOLATOR_TEXEL
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + vs.yz + 0.5f) * sz;
-            ISTORE(attributes, makeAttribID(ht.attribID, i), textureLod(attrib_texture, trig, 0));
+            ISTORE(attributes, makeAttribID(ht.attribID, i), textureHQ(attrib_texture, trig, 0));
 #else
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
             ISTORE(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(
