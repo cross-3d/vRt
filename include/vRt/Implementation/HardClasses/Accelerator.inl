@@ -97,7 +97,7 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_mortonIndicesBuffer);
 
-            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull * 2ull;
+            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_onWorkBoxes);
 
@@ -131,7 +131,7 @@ namespace _vt {
         }
 
         if (!info.bvhBoxBuffer) {
-            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull * 2ull;
+            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer);
         }
