@@ -118,6 +118,9 @@ void main() {
             vec3 tangent = imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz;
             mat3 tbn = transpose(mat3(tangent.xyz, bitang.xyz, normal.xyz));
 
+            const vec3 rdirect = dcts(cray.cdirect.xy);
+            normal = faceforward(normal, rdirect, normal);
+
             // get textured data
             textured.bump.xyz = getNormalMapping(texcoord);
             textured.diffuse = toLinear(fetchDiffuse(texcoord));
@@ -126,6 +129,7 @@ void main() {
 
             // block TBN change manually if non valid normal mapped texture
             hitp.normalHeight.xyz = validateTexture(material.bumpTexture) ? (textured.bump.xyz * tbn) : normal.xyz; // apply TBN with normal mapping
+            hitp.normalHeight.xyz = faceforward(hitp.normalHeight.xyz, rdirect, hitp.normalHeight.xyz);
 
             // if normal goes wrong, restore normal
             if (dot(hitp.normalHeight.xyz,hitp.normalHeight.xyz) < 1e-4 || any(isnan(hitp.normalHeight.xyz)) || any(isinf(hitp.normalHeight.xyz))) {
@@ -133,10 +137,11 @@ void main() {
             }
 
             // facing of normal
-            hitp.normalHeight.xyz = faceforward(normalize(hitp.normalHeight.xyz), dcts(cray.cdirect.xy), normal.xyz);
+            hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz);
+            hitp.normalHeight.xyz = faceforward(hitp.normalHeight.xyz, rdirect, hitp.normalHeight.xyz);
 
             // convert metallic roughness to glossiness specular PBR model
-            const float fresnel = clamp01(pow(abs(dot(dcts(cray.cdirect.xy), normal.xyz)), sIOR - 1.f));
+            const float fresnel = clamp01(pow(abs(dot(rdirect, normal.xyz)), sIOR - 1.f));
             const vec3 fresnelColor = toLinear(clamp01(fmix(max_fresnel_color * 0.9f, min_fresnel_color * 0.1f, fresnel.xxx)));
             const vec3 specularColor = clamp01(mix(fresnelColor, textured.diffuse.xyz, textured.specular.zzz)); // use correct specular
             const vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
