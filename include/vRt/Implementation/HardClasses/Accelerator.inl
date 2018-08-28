@@ -97,15 +97,15 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_mortonIndicesBuffer);
 
-            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull * 4ull;
+            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 64ull;
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_onWorkBoxes);
 
-            bfi.bufferSize = maxPrimitives * 32ull * 2ull * sizeof(uint32_t);
+            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 64ull;
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_currentNodeIndices);
 
-            bfi.bufferSize = maxPrimitives * 2ull * sizeof(uint32_t);
+            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 2ull;
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_fitStatusBuffer);
 
@@ -113,31 +113,30 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_leafNodeIndices);
 
-            bfi.bufferSize = 64ull * sizeof(uint32_t);
+            bfi.bufferSize = sizeof(uint32_t) * 64ull;
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_countersBuffer);
 
-            bfi.bufferSize = 4ull * 128ull * 16ull * sizeof(float);
+            bfi.bufferSize = sizeof(float) * 65536ull;
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_generalBoundaryResultBuffer);
         };
 
         // UNUSED
         if (!info.bvhMetaBuffer) {
-            //bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 4ull * 2ull;
-            bfi.bufferSize = sizeof(uint32_t);
+            bfi.bufferSize = sizeof(uint32_t) * 32ull;
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhMetaBuffer);
         }
 
         if (!info.bvhBoxBuffer) {
-            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull * 4ull;
+            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 128ull;
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer);
         }
 
         {
-            bfi.bufferSize = sizeof(uint32_t) * 8ull * 128ull;
+            bfi.bufferSize = sizeof(uint32_t) * 2048ull;
             bfi.format = VK_FORMAT_UNDEFINED;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhBlockUniform);
         }
