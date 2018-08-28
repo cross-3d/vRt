@@ -58,7 +58,7 @@ void main() {
             [[flatten]] if ( idx < 0 || idx == _NULL ) { break; };
             SB_BARRIER
             const int pid = (idx >= 0 ? bvhNodes[idx].meta.z : 0)-1; idx = _NULL;
-            [[flatten]] if ( pid >= 0 ) { idx = atomicCompSwap(Flags[pid], 0, 1) != 0 ? pid : _NULL; } else { idx = _NULL; };
+            [[flatten]] if ( pid >= 0 ) { idx = atomicCompSwap(Flags[pid], 0, 1) == 1 ? pid : _NULL; } else { idx = _NULL; };
             [[flatten]] if ( idx >= 0 ) { unifyNodeBox(idx); Flags[idx] = 0; };// else { break; };
         }
     }
