@@ -101,7 +101,7 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_onWorkBoxes);
 
-            bfi.bufferSize = 2ull * 16ull * maxPrimitives * sizeof(uint32_t);
+            bfi.bufferSize = maxPrimitives * 32ull * 2ull * sizeof(uint32_t);
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_currentNodeIndices);
 
@@ -113,11 +113,11 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_leafNodeIndices);
 
-            bfi.bufferSize = 16ull * sizeof(uint32_t);
+            bfi.bufferSize = 64ull * sizeof(uint32_t);
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_countersBuffer);
 
-            bfi.bufferSize = 2ull * 128ull * 16ull * sizeof(float);
+            bfi.bufferSize = 4ull * 128ull * 16ull * sizeof(float);
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_generalBoundaryResultBuffer);
         };
