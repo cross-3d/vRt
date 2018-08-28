@@ -32,8 +32,6 @@ bool validateTexture(const uint tbinding) {
 
 #define vSampler2D(m) sampler2D(images[vtexures[m].x-1], samplers[vtexures[m].y-1])
 #define fetchTexture(tbinding, tcoord) textureLod(vSampler2D(nonuniformEXT(tbinding-1)), tcoord, 0)
-#define fetchTextureOffset(tbinding, tcoord, toffset) textureLodOffset(vSampler2D(nonuniformEXT(tbinding-1)), tcoord, 0, toffset)
-
 
 vec4 fetchDiffuse(in vec2 texcoord) {
     const uint tbinding = material.diffuseTexture;
