@@ -116,7 +116,7 @@ vec3 getNormalMapping(in vec2 texcoordi) {
         vec4 tx4 = vec4(-txs.xy, txs.xy)*0.5f;
         vec4 txu = vec4(-1.f,-1.f,1.f,1.f)*0.5f;
 
-        const float hsize = 4.f;
+        const float hsize = 2.f;
         vec3 t00 = vec3(txu.xy, getUVH(texcoordi + tx4.xy).z) * vec3(1.f, 1.f, hsize);
         vec3 t01 = vec3(txu.xw, getUVH(texcoordi + tx4.xw).z) * vec3(1.f, 1.f, hsize);
         vec3 t10 = vec3(txu.zy, getUVH(texcoordi + tx4.zy).z) * vec3(1.f, 1.f, hsize);
