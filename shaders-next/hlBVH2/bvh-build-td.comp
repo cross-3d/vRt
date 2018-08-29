@@ -18,6 +18,10 @@
 #include "../include/ballotlib.glsl"
 #include "./submodules/includes.glsl"
 
+// used sort of https://research.nvidia.com/sites/default/files/pubs/2011-08_Simpler-and-Faster/main.pdf
+// also, using better BVH2 layout
+
+
 // 0 and 4 reserved counters
 // shared memory counters
 shared int _counters[8];
