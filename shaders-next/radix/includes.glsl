@@ -47,6 +47,13 @@
 #define Wave_Count_RX Wave_Count_RT //(gl_WorkGroupSize.x / Wave_Size_RT.x)
 //#define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)
 
+#ifdef ENABLE_AMD_INT16
+    #define U8s uint16_t
+    #define U8v4 u16vec4
+#else
+    #define U8s uint
+    #define U8v4 uvec4
+#endif
 
 #define BLOCK_SIZE 1024u
 #define BLOCK_SIZE_RT (gl_WorkGroupSize.x)

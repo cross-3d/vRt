@@ -399,10 +399,14 @@ lowp uvec2 up2x_8(in highp uint a) {
 #endif
 */
 
-
+#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+// it should be 8-bit, but there is no native support
 uint p4x_8(in lowp uvec4 a) {return (a.x<<0)|(a.y<<8)|(a.z<<16)|(a.w<<24);};
-lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFF;};
-
+u16vec4 up4x_8(in uint a) {return u16vec4(a>>0,a>>8,a>>16,a>>24)&0xFFus;};
+#else
+uint p4x_8(in lowp uvec4 a) {return (a.x<<0)|(a.y<<8)|(a.z<<16)|(a.w<<24);};
+lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFFu;};
+#endif
 
 
 #define f32_f16 packHalf4x16
