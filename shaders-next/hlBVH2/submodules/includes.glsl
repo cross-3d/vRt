@@ -1,7 +1,7 @@
 
 // Morton codes and geometry counters
 
-layout ( binding = 0, set = 0, std430 ) coherent buffer MortoncodesB {
+layout ( binding = 0, set = 0, std430 ) restrict buffer MortoncodesB {
 #ifdef USE_MORTON_32
     uint Mortoncodes[];
 #else
@@ -9,11 +9,11 @@ layout ( binding = 0, set = 0, std430 ) coherent buffer MortoncodesB {
 #endif
 };
 
-layout ( binding = 1, set = 0, std430 ) coherent buffer MortoncodesIndicesB {
+layout ( binding = 1, set = 0, std430 ) restrict buffer MortoncodesIndicesB {
     int MortoncodesIndices[];
 };
 
-layout ( binding = 3, set = 0, std430 ) coherent buffer LeafsB {
+layout ( binding = 3, set = 0, std430 ) restrict buffer LeafsB {
     leaf_t Leafs[];
 };
 
@@ -25,12 +25,12 @@ layout ( binding = 5, set = 0, std430 ) restrict buffer FlagsB {
     int Flags[];
 };
 
-layout ( binding = 6, set = 0, std430 ) coherent buffer ActivesB {
+layout ( binding = 6, set = 0, std430 ) restrict buffer ActivesB {
     //int Actives[][2];
     int Actives[];
 };
 
-layout ( binding = 7, set = 0, std430 ) coherent buffer LeafIndicesB {
+layout ( binding = 7, set = 0, std430 ) restrict buffer LeafIndicesB {
     int LeafIndices[];
 };
 
@@ -49,7 +49,7 @@ struct BTYPE_ {
 #endif
 };
 
-layout ( binding = 2, set = 1, std430 ) buffer bvhBoxesResultingB { BTYPE_ bvhNodes[]; };
+layout ( binding = 2, set = 1, std430 ) restrict buffer bvhBoxesResultingB { BTYPE_ bvhNodes[]; };
 
 bbox_t calcTriBox(in mat3x4 triverts) {
     bbox_t result;
