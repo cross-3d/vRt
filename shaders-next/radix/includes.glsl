@@ -17,7 +17,7 @@
 // NO direct paper ???.pdf
 // roundly like http://www.heterogeneouscompute.org/wordpress/wp-content/uploads/2011/06/RadixSort.pdf
 // partially of https://vgc.poly.edu/~csilva/papers/cgf.pdf + and wide subgroup adaptation
-
+// practice maximal throughput: 256x16 (of Nx256)
 
 
 // MLC optimized
@@ -52,20 +52,12 @@
 #define BLOCK_SIZE_RT (gl_WorkGroupSize.x)
 #define WRK_SIZE_RT (gl_NumWorkGroups.y * Wave_Count_RX)
 
-#define uint uint
-#define bool bool
-#define uint64_t uint64_t
-#define bvec2 bvec2
-
-//#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
-//#define uint_rdc_wave_lcm uint16_t
-//#else
 #define uint_rdc_wave_lcm uint
-//#endif
 
 // pointer of...
 #define WPTR uint
-#define WPTR2 uvec2
+//#define WPTR2 uvec2
+#define WPTR4 uvec4
 
 #define READ_LANE(V, I) (uint(I >= 0 && I < Wave_Size_RT) * readLane(V, I))
 
@@ -86,6 +78,8 @@ struct RadicePropStruct { uint Descending; uint IsSigned; };
 #define INDIR 1
 #define OUTDIR 0
 #endif
+
+const KEYTYPE OutOfRange = KEYTYPE(0xFFFFFFFFu);
 
 //#define KEYTYPE uint
 layout (std430, binding = 0, set = INDIR )  readonly coherent buffer KeyInB {KEYTYPE KeyIn[]; };

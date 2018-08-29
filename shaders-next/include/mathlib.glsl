@@ -379,6 +379,7 @@ highp uvec2 up2x_16(in uint a) {
 };
 
 
+/*
 highp uint p2x_8(in lowp uvec2 a) {
     return bitfieldInsert(a.x&0xFFu, a.y, 8, 8);
 };
@@ -396,6 +397,12 @@ lowp uvec2 up2x_8(in highp uint a) {
         return uvec2(a&0xFFu, bitfieldExtract(a, 8, 8));
     };
 #endif
+*/
+
+
+uint p4x_8(in lowp uvec4 a) {return (a.x<<0)|(a.y<<8)|(a.z<<16)|(a.w<<24);};
+lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFF;};
+
 
 
 #define f32_f16 packHalf4x16

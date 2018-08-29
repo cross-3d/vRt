@@ -8,11 +8,13 @@ layout (local_size_x = BLOCK_SIZE) in;
 shared uint localHistogram[RADICES];
 
 // wide of 128 elements, each element should be in uint16_t, but for compatibility used uint32_t
-shared highp uint_rdc_wave_lcm _data[Wave_Size];
+shared uint_rdc_wave_lcm _data[Wave_Size];
+shared blocks_info blocks;
 #define key _data[Lane_Idx]
 
-initSubgroupIncFunctionTargetDual(localHistogram[WHERE], countOffset, 1, uint, uvec2)
+initSubgroupIncFunctionTargetQuad(localHistogram[WHERE], countOffset, 1, uint, uvec4)
 
+#define bcount blocks.count
 
 void main() {
     const uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
@@ -22,46 +24,47 @@ void main() {
     [[unroll]]
     for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
         const uint radice = uint(rk + Radice_Idx);
-        if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
+        [[flatten]] if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
     }
+    if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(tiled(blocks.count, 4u), 524288u);
     LGROUP_BARRIER
 
     // calculate blocks
-    const blocks_info blocks = get_blocks_info(push_block.NumKeys);
-    const uint bcount = min(tiled(blocks.count, 2u), 524288u);
-    WPTR2 addr = WPTR(blocks.offset).xx + WPTR2(Lane_Idx, Wave_Size_RT + Lane_Idx);
+    WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
 
     [[unroll, dependency_length(4)]]
     for ( uint wk = 0; wk < bcount; wk++ ) {
-        bvec2 validAddress = lessThan(addr, blocks.limit.xx);
-        IFALL(all(not(validAddress))) break;
+        bvec4 validAddress = lessThan(addr, blocks.limit.xxxx);
+        [[flatten]] IFALL(all(not(validAddress))) break;
 
-        if (Wave_Idx == 0) {
-            key = uint_rdc_wave_lcm(p2x_8(uvec2(
-            //key = (p2x_8(uvec2(
-                BFE(validAddress.x ? KeyIn[addr.x] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
-                BFE(validAddress.y ? KeyIn[addr.y] : KEYTYPE(0xFFFFFFFFu.xx), (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
-                //validAddress.x ? BFE(KeyIn[addr.x], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK,
-                //validAddress.y ? BFE(KeyIn[addr.y], (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS) : RADICES_MASK
+        [[flatten]] if (Wave_Idx == 0) {
+            key = uint_rdc_wave_lcm(p4x_8(uvec4(
+                BFE(validAddress.x ? KeyIn[addr.x] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
+                BFE(validAddress.y ? KeyIn[addr.y] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
+                BFE(validAddress.z ? KeyIn[addr.z] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
+                BFE(validAddress.w ? KeyIn[addr.w] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
             )));
         }
         LGROUP_BARRIER
 
         // WARP-optimized histogram calculation
         [[unroll]]
-        for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-            const uint radice = uint(rk + Radice_Idx);
-            const bvec2 owned = and(equal(up2x_8(key), radice.xx), validAddress);
-            if (any(owned)) {
-                WPTR2 offset = WPTR2(countOffset(uint(radice), owned));
-                if (owned.x) { ValueTmp[offset.x] = ValueIn[addr.x], KeyTmp[offset.x] = KeyIn[addr.x]; }
-                if (owned.y) { ValueTmp[offset.y] = ValueIn[addr.y], KeyTmp[offset.y] = KeyIn[addr.y]; }
+        for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+            const lowp uint radice = uint(rk + Radice_Idx);
+            const bvec4 owned = and(equal(up4x_8(key), radice.xxxx), validAddress);
+            [[flatten]] if (any(owned)) {
+                WPTR4 offset = WPTR4(countOffset(uint(radice), owned));
+                [[flatten]] if (owned.x) { ValueTmp[offset.x] = ValueIn[addr.x], KeyTmp[offset.x] = KeyIn[addr.x]; }
+                [[flatten]] if (owned.y) { ValueTmp[offset.y] = ValueIn[addr.y], KeyTmp[offset.y] = KeyIn[addr.y]; }
+                [[flatten]] if (owned.z) { ValueTmp[offset.z] = ValueIn[addr.z], KeyTmp[offset.z] = KeyIn[addr.z]; }
+                [[flatten]] if (owned.w) { ValueTmp[offset.w] = ValueIn[addr.w], KeyTmp[offset.w] = KeyIn[addr.w]; }
             }
-            IFALL (all(or((radice >= RADICES).xx, or(owned, not(validAddress))))) break;
+            [[flatten]] IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
         }
 
         LGROUP_BARRIER
-        addr += Wave_Size_RT<<1;
+        //addr += Wave_Size_RT<<1;
+        addr += Wave_Size_RT<<2;
     }
 
     //LGROUP_BARRIER
