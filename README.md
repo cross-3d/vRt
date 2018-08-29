@@ -16,7 +16,7 @@
 - Support by common modern compilers (Visual Studio 2017, GCC 8.1)
 - Support by modern graphics/compute accelerators (NVidia Pascal, AMD Radeon Vega, next-gens...)
 - Roundly 100Mrays/s in top GPU's (tested RX Vega 64, in Sponza scene, fully dynamic mode)
-- Used most features of API extensions and modern papers (but most techniques we come earlier than...)
+- Used most features of API extensions and modern techniques (sort of described in papers, but most techniques we come earlier than...)
 
 ## Repository mirrors
 
