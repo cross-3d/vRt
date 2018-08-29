@@ -31,6 +31,8 @@ bool validateTexture(const uint tbinding) {
 }
 
 
+// also fixes AMD Vega texturing issues with nonuniformEXT
+
 //#define sampler2Dv(m) sampler2D(images[vtexures[m].x-1], samplers[vtexures[m].y-1])
 //#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(nonuniformEXT(tbinding-1)), tcoord, 0)
 
