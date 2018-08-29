@@ -101,11 +101,11 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_onWorkBoxes);
 
-            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 64ull;
+            bfi.bufferSize = (maxPrimitives+1ull) * sizeof(uint32_t) * 64ull;
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_currentNodeIndices);
 
-            bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 2ull;
+            bfi.bufferSize = (maxPrimitives+1ull) * sizeof(uint32_t) * 2ull;
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_fitStatusBuffer);
 
