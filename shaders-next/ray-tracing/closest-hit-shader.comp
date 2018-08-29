@@ -15,6 +15,12 @@
 #include "../include/morton.glsl"
 #include "../include/random.glsl"
 
+
+// sort alike "surface shaders" in Unity engines 
+// getting only intersection material properties
+// sending to next stage...
+
+
 // attribute formating
 const int NORMAL_TID = 0;
 const int TEXCOORD_TID = 1;

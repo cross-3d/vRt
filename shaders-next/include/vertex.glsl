@@ -172,6 +172,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 }
 #else
 // intersect triangle by transform
+// alternate of http://jcgt.org/published/0005/03/03/paper.pdf
 float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid) {
     const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
 
@@ -257,6 +258,7 @@ void storePosition(in ivec2 cdata, in vec4 fval) {
 // single float 32-bit box intersection
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
+
 bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in bvec3 sgn, in mat3x2 tMinMax, inout vec4 nfe) {
     tMinMax = mat3x2(
         fma(tMinMax[0], dr.xx, origin.xx),

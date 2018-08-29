@@ -7,10 +7,8 @@ layout (local_size_x = BLOCK_SIZE) in;
 
 shared uint localHistogram[RADICES];
 
-// wide of 128 elements
+// wide of 128 elements, each element should be in uint16_t, but for compatibility used uint32_t
 shared highp uint_rdc_wave_lcm _data[Wave_Size];
-//uint_rdc_wave_lcm _data[Wave_Size];
-
 #define key _data[Lane_Idx]
 
 initSubgroupIncFunctionTargetDual(localHistogram[WHERE], countHistogram, 1, uint, uvec2)

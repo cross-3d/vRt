@@ -3,6 +3,9 @@
 
 #include "../include/mathlib.glsl"
 
+// alternate of https://devblogs.nvidia.com/cuda-pro-tip-optimized-filtering-warp-aggregated-atomics/
+
+
 // for constant maners
 #ifndef Wave_Size
     #ifdef AMD_PLATFORM

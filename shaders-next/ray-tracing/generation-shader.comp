@@ -25,6 +25,10 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 #define SpecularPass _devImages[3]
 
 
+// UNUSED: https://developer.oculus.com/blog/tech-note-mask-based-foveated-rendering-with-unreal-engine-4-/ (sort of... been in past)
+//   USED: sorts of VK_EXT_sample_locations or GL_NV_sample_locations
+
+
 // planned ray generation shader example
 void main() {
     VtRay ray;

@@ -25,6 +25,12 @@ LOCAL_SIZE_LAYOUT;
 #define hitp hitPayload[hitpId]
 #define hit hits[hitIdc]
 
+
+// UNUSED: adaptive sample accumulation and super-sampling (i.e. High DPI production support by reducing samples per pixels, using generated resampling)
+// Can seen in outdated "satellite" ray-tracer
+// Also, we have another vision of "DPI-pixel-sampling" problem, so we can use sample locations for generation bigger images by progressing smaller count of samples
+// papers: ???.pdf ( no direct equivalent )
+
 // 
 void main() {
     const int wsize = min(rayTypedCounterRead[stageUniform.currentGroup], MAX_RAYS);
@@ -50,7 +56,10 @@ void main() {
         [[flatten]] if (!overflow) {
             // reflection prior (early stage)
             const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, ivec2(icoord));
+
+            // alternate of http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
             const float alph = (emisson.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(dcolor))) || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
+
             //const float alph = stageUniform.iteration == stageUniform.lastIteration ? 1.f : emisson.a; reflc.xyz *= 0.f;
             ISTORE(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz * alph.xxx * (1.f.xxx - reflc.xyz), dcolor.xyz, bcolor.xyz), 1.f));
 

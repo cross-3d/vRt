@@ -1,6 +1,10 @@
 #ifndef _MATHLIB_H
 #define _MATHLIB_H
 
+// here also support of true half float and int16...
+
+
+
 // NEXT standard consts in current
 // Ray tracing NEXT capable shader standard development planned begin in 2019 year
 const float PZERO = 0.0001f;
@@ -63,6 +67,7 @@ const int _IZERO = 0;
 //#endif
 
 
+// AMD min3/max3 ...
 #ifdef ENABLE_AMD_INSTRUCTION_SET
 #define min3_wrap(a,b,c) min3(a,b,c)
 #define max3_wrap(a,b,c) max3(a,b,c)
@@ -341,6 +346,8 @@ int nlz(in uvec2 x) { return 63 - msb(x); }
 int nlz(in uint x) { return 31 - msb(x); }
 int nlz(in int x) { return nlz(uint(x)); }
 
+
+
 // polar/cartesian coordinates
 vec2 lcts(in vec3 direct) {
     direct.xyz = direct.xzy * vec3(1.f,1.f,-1.f);
@@ -371,6 +378,7 @@ highp uvec2 up2x_16(in uint a) {
 #endif
 };
 
+
 highp uint p2x_8(in lowp uvec2 a) {
     return bitfieldInsert(a.x&0xFFu, a.y, 8, 8);
 };
@@ -379,11 +387,21 @@ lowp uvec2 up2x_8(in highp uint a) {
     return uvec2(a&0xFFu, bitfieldExtract(a, 8, 8));
 };
 
+#ifdef ENABLE_AMD_INT16
+    uint16_t p2x_8x(in lowp uvec2 a) {
+        return uint16_t(bitfieldInsert(a.x&0xFFu, a.y, 8, 8));
+    };
+
+    lowp uvec2 up2x_8x(in uint16_t a) {
+        return uvec2(a&0xFFu, bitfieldExtract(a, 8, 8));
+    };
+#endif
+
 
 #define f32_f16 packHalf4x16
 #define f16_f32 unpackHalf4x16
 
-
+// improved generic bilinear interpolation
 vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, -0.5f.xx), lp = fract(tx), tl = si*(ceil(tx)-0.5f.xx);
     const mat4 mtr = mat4(

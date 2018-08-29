@@ -14,6 +14,12 @@
 #include "../include/ballotlib.glsl"
 
 
+// NO direct paper ???.pdf
+// roundly like http://www.heterogeneouscompute.org/wordpress/wp-content/uploads/2011/06/RadixSort.pdf
+// partially of https://vgc.poly.edu/~csilva/papers/cgf.pdf + and wide subgroup adaptation
+
+
+
 // MLC optimized
 //#define BITS_PER_PASS 2
 //#define RADICES 4
