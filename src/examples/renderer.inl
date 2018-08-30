@@ -382,7 +382,7 @@ namespace rnd {
         void InitRayTracing();
         void InitPipeline();
         void InitCommands();
-        void Preload(const std::string& modelName = "models/sponza/sponza.gltf");
+        void Preload(const std::string& modelName = "");
         void Precompute();
         void ComputeRayTracing();
         void Draw();

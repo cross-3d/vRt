@@ -21,7 +21,7 @@ namespace rnd {
         }
         catch (args::Help)
         {
-            std::cout << parser; glfwTerminate();
+            std::cout << parser; glfwTerminate(); exit(1);
         }
 
         // read arguments
@@ -32,7 +32,7 @@ namespace rnd {
         if (scaleflag) modelScale = args::get(scaleflag);
         if (directoryflag) directory = args::get(directoryflag);
         if (help) { std::cout << parser; glfwTerminate(); } // required help or no arguments
-        if (modelInput == "") std::cerr << "No model found :(" << std::endl;
+        if (modelInput == "") { std::cerr << "No model found :(" << std::endl; glfwTerminate(); exit(1); };
     };
 
     inline void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight) {
@@ -499,7 +499,7 @@ namespace rnd {
     inline void Renderer::Preload(const std::string& modelInput){
         tinygltf::Model model = {};
         tinygltf::TinyGLTF loader = {};
-        std::string err, input_filename = modelInput;
+        std::string err, input_filename = modelInput!="" ? modelInput : this->modelInput;
         bool ret = loader.LoadASCIIFromFile(&model, &err, input_filename);
         
 

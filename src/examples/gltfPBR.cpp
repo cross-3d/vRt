@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     renderer->InitPipeline();
     renderer->InitRayTracing();
     renderer->InitRayTracingPipeline();
-    renderer->Preload("models/sponza/sponza.gltf");
+    renderer->Preload();
     renderer->InitCommands();
     
     // looping rendering
