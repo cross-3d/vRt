@@ -58,14 +58,10 @@ Coming soon...
 
 ## Roadmaps
 
-### 2018 Q4 ("Lithium")
+### Indefinite Term
 
 - Coming to alpha stage
-- Better ray-tracing examples
 - Advanced ray-tracing API
-
-### Beyond
-
 - First implementations in bigger framework and engines
 - Make custom GLSL/HLSL compiler for unified compatibility
 - Support of Nvidia RTX, PowerVR Wizard Ray Tracing, Intel Larrabee 2019
