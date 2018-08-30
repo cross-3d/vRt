@@ -7,16 +7,13 @@
 
 ## Features and advantages
 
-- Low-level library for ray tracing (compute workflow)
-- Much more Vulkan API 1.1 capable (at 2018 year)
-- Higher extensibility than original project
-- Fixed issues of previous projects
-- Reduced overheads, include dispatch calls
-- No depends by first GPU (but indev apps may have)
+- Low-level library for ray tracing, based on Vulkan API (compute workflow)
+- Fixed issues of previous projects, added sort of new features
+- Reduced overheads, single command buffer support, highly optimized
 - Support by common modern compilers (Visual Studio 2017, GCC 8.1)
 - Support by modern graphics/compute accelerators (NVidia Pascal, AMD Radeon Vega, next-gens...)
-- Roundly 100Mrays/s in top GPU's (tested RX Vega 64, in Sponza scene, fully dynamic mode)
-- Used most features of API extensions and modern techniques (sort of described in papers, but most techniques we come earlier than...)
+- Can reach 100Mrays/s in top GPU's (tested RX Vega 64, in sponza scene, fully dynamic mode)
+- RDK (Ray-Tracing Devil Kit, 666 Commits Reached)
 
 ## Repository mirrors
 
@@ -29,7 +26,6 @@
 - [Vulkan Memory Allocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
 - C++17 capable compiler
 - GLSL to SPIR-V 1.3 compiler
-- GLM for test application run
 
 ## Compatibility Confirmed
 
@@ -52,23 +48,16 @@ You can see here current API of library:
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/StructuresDef.inl
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/Enums.inl
 
-## Videos
-
-Coming soon...
-
 ## Roadmaps
 
 ### Indefinite Term
 
+- Unit tests
 - Coming to alpha stage
 - Advanced ray-tracing API
 - First implementations in bigger framework and engines
 - Make custom GLSL/HLSL compiler for unified compatibility
 - Support of Nvidia RTX, PowerVR Wizard Ray Tracing, Intel Larrabee 2019
-
-## Kraudfanding
-
-Coming soon...
 
 ## Direct Donation (ETH)
 
