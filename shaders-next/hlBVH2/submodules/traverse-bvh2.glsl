@@ -33,17 +33,19 @@ shared int localStack[WORK_SIZE][localStackSize];
 #define lstack localStack[Local_Idx]
 
 int loadStack() {
-    if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
+    [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
         lstack = pages[traverseState.cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize; 
     };
     int idx = --traverseState.stackPtr, rsl = idx >= 0 ? lstack[idx] : -1; traverseState.stackPtr = max(traverseState.stackPtr, 0); return rsl;
 };
 
 void storeStack(in int rsl) {
-    if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
-        pages[traverseState.cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
+    [[flatten]] if (rsl >= 0) {
+        if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
+            pages[traverseState.cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
+        }
+        int idx = traverseState.stackPtr++; [[flatten]] if (idx < localStackSize) lstack[idx] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
     }
-    int idx = traverseState.stackPtr++; if (idx < localStackSize) lstack[idx] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
 };
 
 void doIntersection() {
@@ -63,6 +65,8 @@ void doIntersection() {
     } traverseState.defTriangleID=0;
 }
 
+
+bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.y >= 1; };
 void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // test constants
@@ -138,7 +142,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
             const ivec2 cnode = traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx;
 
             [[flatten]]
-            if (cnode.x == cnode.y) { // if leaf, defer for intersection 
+            if (isLeaf(cnode)) { // if leaf, defer for intersection 
                 [[flatten]]
                 if (traverseState.defTriangleID <= 0) { 
                     traverseState.defTriangleID = cnode.x;
@@ -153,18 +157,21 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 // it increase FPS by filtering nodes by first triangle intersection
                 childIntersect &= bvec2_(lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz));
                 childIntersect &= bvec2_(greaterThanEqual(nfe.zw, traverseState.minDist.xx));
+                
                 int fmask = int((childIntersect.y<<1u)|childIntersect.x);
+                [[flatten]] if (fmask > 0) {
+                    int primary = -1, secondary = -1;
+                    [[flatten]] if (fmask == 3) { // if both has intersection
+                        fmask &= nfe.x<=nfe.y ? 1 : 2, secondary = cnode.x^(fmask>>1);
+                    }; primary = cnode.x^(fmask&1);
+                    
+                    // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
+                    // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
+                    ivec2 snode = secondary >= 0 ? bvhNodes[secondary].meta.xy : (0).xx;
+                    [[flatten]] if (isLeaf(snode)) { traverseState.defTriangleID = snode.x, secondary = -1; };
 
-                [[flatten]]
-                if (fmask > 0) {
-                    [[flatten]]
-                    if (fmask == 3) { // if both has intersection
-                        fmask &= nfe.x<=nfe.y ? 1 : 2;
-                        storeStack(cnode.x^(fmask>>1));
-                    }
-                    traverseState.idx = cnode.x^(fmask&1);
-                    _continue = true; 
-                    //continue;
+                    traverseState.idx = primary; storeStack(secondary);
+                    _continue = true;
                 }
             }
 
