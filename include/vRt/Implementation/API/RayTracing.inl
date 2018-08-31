@@ -34,6 +34,7 @@ namespace _vt {
     };
 
 
+
     VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer> cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
         constexpr const auto WG_COUNT = 64u, RADICE_AFFINE = 16u;
 
@@ -93,8 +94,8 @@ namespace _vt {
 
                 // reset hit counter before new intersections
                 auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
-                cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, INTENSIVITY); // traverse BVH
-                cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, INTENSIVITY); // interpolate intersections
+                cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, RV_INTENSIVITY); // traverse BVH
+                cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, RV_INTENSIVITY); // interpolate intersections
                 cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), strided<uint32_t>(1)) });
             }
 

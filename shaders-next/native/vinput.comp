@@ -1,7 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-
+//#define EXTEND_LOCAL_GROUPS
 #define VERTEX_FILLING
 //#define USE_PUSH_CONSTANT
 

@@ -49,6 +49,8 @@ namespace _vt {
         return VK_SUCCESS;
     }
 
+
+
     VtResult buildVertexSet(std::shared_ptr<CommandBuffer> cmdBuf, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
         VtResult result = VK_SUCCESS;
 
@@ -89,7 +91,7 @@ namespace _vt {
 
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
             vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
-            cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY, _szi, 1);
+            cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, VX_INTENSIVITY, _szi, 1);
         } else {
             for (auto iV_ : cmdBuf->_vertexInputs) {
                 uint32_t _bnd = _bndc++;
@@ -105,10 +107,11 @@ namespace _vt {
 
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
                 vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
-                cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY, 1, 1, false);
+                cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, VX_INTENSIVITY, 1, 1, false);
             }
             commandBarrier(*cmdBuf);
         }
+
         return result;
     }
 
@@ -152,7 +155,7 @@ namespace _vt {
 
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
             vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
-            cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY, multiple ? _szi : 1, 1);
+            cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, VX_INTENSIVITY, multiple ? _szi : 1, 1);
         } else {
             for (auto iV_ : cmdBuf->_vertexInputs) {
                 uint32_t _bnd = _bndc++;
@@ -169,12 +172,11 @@ namespace _vt {
 
                     vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
                     vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
-                    cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, INTENSIVITY, 1, 1, false);
+                    cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, VX_INTENSIVITY, 1, 1, false);
                 }
             }
             commandBarrier(*cmdBuf);
         }
-
         
         return result;
     }

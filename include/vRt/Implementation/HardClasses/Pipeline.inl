@@ -126,7 +126,7 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_rayLinkPayload);
 
                 constexpr uint64_t LOCAL_SIZE = 1024ull, STACK_SIZE = 8ull, PAGE_COUNT = 4ull;
-                bfi.bufferSize = INTENSIVITY * STACK_SIZE * LOCAL_SIZE * PAGE_COUNT * sizeof(uint32_t);
+                bfi.bufferSize = RV_INTENSIVITY * STACK_SIZE * LOCAL_SIZE * PAGE_COUNT * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_traverseCache);
 
