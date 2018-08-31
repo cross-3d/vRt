@@ -66,7 +66,7 @@ void doIntersection() {
 }
 
 
-bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.y >= 1; };
+bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
 void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // test constants
