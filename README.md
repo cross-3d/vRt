@@ -13,7 +13,6 @@
 - Support by common modern compilers (Visual Studio 2017, GCC 8.1)
 - Support by modern graphics/compute accelerators (NVidia Pascal, AMD Radeon Vega, next-gens...)
 - Can reach 100Mrays/s in top GPU's (tested RX Vega 64, in sponza scene, fully dynamic mode)
-- RDK (Ray-Tracing Devil Kit, 666 Commits Reached)
 
 ## Repository mirrors
 
