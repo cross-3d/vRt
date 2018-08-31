@@ -56,6 +56,8 @@ uint wID(in uint t) {return t*gl_NumWorkGroups.x+gl_WorkGroupID.x;}
 #define rng gS
 
 void main() {
+    IFALL (wsize <= 0) return;
+
     // initial counters
     if (lID < 8) { _counters[lID] = 0; }
     LGROUP_BARRIER

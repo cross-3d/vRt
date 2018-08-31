@@ -19,6 +19,7 @@ const int VCOUNT = 3;
 #define wsize vertexBlock.primitiveCount
 
 void main() {
+    IFALL (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     [[unroll, dependency_length(4)]]
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {

@@ -43,6 +43,7 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 const int _NULL = -1;
 
 void main() {
+    IFALL (wsize <= 0) return;
     // move to work list
     const uint rng = gS*gl_NumWorkGroups.x;
     [[unroll, dependency_length(4)]]

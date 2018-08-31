@@ -88,6 +88,8 @@ void main() {
 #endif
     }
     
+    IFALL (bvhBlock.leafCount <= 0) return;
+
     // building BVH
     [[dependency_infinite]]
     for (int m=0;m<65536;m++) {

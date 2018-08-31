@@ -31,6 +31,7 @@ function Pause ($Message = "Press any key to continue . . . ") {
 function Optimize($Name, $Dir = "", $AddArg = "") {
     $ARGS = "$OPTFLAGS $Dir$Name.spv -o $Dir$Name.spv $AddArg"
     $process = start-process -NoNewWindow -Filepath "spirv-opt" -ArgumentList "$ARGS" -PassThru
+    $process.PriorityClass = 'BelowNormal'
     $process.WaitForExit()
     $process.Close()
 }
@@ -38,6 +39,7 @@ function Optimize($Name, $Dir = "", $AddArg = "") {
 function BuildCompute($Name, $InDir = "", $OutDir = "", $AddArg = "", $AltName = $Name) {
     $ARGS = "$CFLAGSV $CMPPROF $InDir$Name -o $OutDir$AltName.spv $AddArg"
     $process = start-process -NoNewWindow -Filepath "glslangValidator" -ArgumentList "$ARGS" -PassThru
+    $process.PriorityClass = 'BelowNormal'
     $process.WaitForExit()
     $process.Close()
 }
@@ -45,6 +47,7 @@ function BuildCompute($Name, $InDir = "", $OutDir = "", $AddArg = "", $AltName =
 function BuildFragment($Name, $InDir = "", $OutDir = "", $AddArg = "") {
     $ARGS = "$CFLAGSV $FRGPROF $InDir$Name -o $OutDir$Name.spv $AddArg"
     $process = start-process -NoNewWindow -Filepath "glslangValidator" -ArgumentList "$ARGS" -PassThru
+    $process.PriorityClass = 'BelowNormal'
     $process.WaitForExit()
     $process.Close()
 }
@@ -52,6 +55,7 @@ function BuildFragment($Name, $InDir = "", $OutDir = "", $AddArg = "") {
 function BuildVertex($Name, $InDir = "", $OutDir = "", $AddArg = "") {
     $ARGS = "$CFLAGSV $VRTPROF $InDir$Name -o $OutDir$Name.spv $AddArg"
     $process = start-process -NoNewWindow -Filepath "glslangValidator" -ArgumentList "$ARGS" -PassThru
+    $process.PriorityClass = 'BelowNormal'
     $process.WaitForExit()
     $process.Close()
 }
@@ -80,6 +84,8 @@ function OptimizeMainline($Pfx = "") {
 }
 
 function BuildAllShaders($Pfx = "") {
+    [System.Threading.Thread]::CurrentThread.Priority = 'BelowNormal'
+
     new-item -Name $OUTDIR -itemtype directory       -Force | Out-Null
     new-item -Name $OUTDIR$VRTX -itemtype directory  -Force | Out-Null
     new-item -Name $OUTDIR$RNDR -itemtype directory  -Force | Out-Null
@@ -134,6 +140,8 @@ function BuildAllShaders($Pfx = "") {
     # optimize built shaders
     OptimizeMainline
 
+    [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
+    
     #pause for check compile errors
     Pause 
 }

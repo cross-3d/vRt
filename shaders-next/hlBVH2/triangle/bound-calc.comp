@@ -55,6 +55,7 @@ void main() {
     const uint tid = gl_LocalInvocationID.x;
     const uint gridSize = (gl_WorkGroupSize.x*2) * gl_NumWorkGroups.x;
     const uint tcount = max( bvhBlock.primitiveCount, 2 );
+    IFALL (bvhBlock.primitiveCount <= 0) return;
 
     // 
     sdata[tid] = bbox_t(vec4( 100000.f), vec4(-100000.f));

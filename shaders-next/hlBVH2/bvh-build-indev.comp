@@ -43,6 +43,8 @@ void main() {
         workSize = groupSize * gl_NumWorkGroups.x,
         threadID = Local_Idx,
         wsize = GSIZE-1;
+
+    IFALL (wsize <= 0) return;
     for (uint fT=groupOffset;fT<wsize;fT+=workSize) {
         const int uID = int(fT + threadID); IFALL (uID >= (wsize-1)) break;
 
