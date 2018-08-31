@@ -7,7 +7,6 @@
 
 const uint MAX_IMAGES = 256, MAX_SAMPLERS = 16;
 
-
 // textrue/sampler set
 // alternate of https://mynameismjp.wordpress.com/2016/03/25/bindless-texturing-for-deferred-rendering-and-decals/
 layout ( binding = 0, set = SETS_DESC_SET_ID ) uniform texture2D images[MAX_IMAGES];
@@ -16,11 +15,7 @@ layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[MAX_SAMP
 // material set (in main descriptor set)
 layout ( std430, binding = 2, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
 layout ( std430, binding = 3, set = SETS_DESC_SET_ID ) readonly buffer VT_COMBINED { uvec2 vtexures[]; };
-
-layout ( std430, binding = 4, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_INFO {
-    uint materialCount;
-    uint materialOffset;
-};
+layout ( std430, binding = 4, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_INFO { uint materialCount, materialOffset; };
 
 
 int matID = -1;
