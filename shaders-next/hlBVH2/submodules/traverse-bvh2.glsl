@@ -168,9 +168,9 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                     // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
                     // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
                     ivec2 snode = secondary >= 0 ? bvhNodes[secondary].meta.xy : (0).xx;
-                    [[flatten]] if (isLeaf(snode)) { traverseState.defTriangleID = snode.x, secondary = -1; };
+                    [[flatten]] if (isLeaf(snode)) { traverseState.defTriangleID = snode.x, secondary = -1; }; storeStack(secondary);
 
-                    traverseState.idx = primary; storeStack(secondary);
+                    traverseState.idx = primary;
                     _continue = true;
                 }
             }
