@@ -82,7 +82,7 @@ namespace _vt {
         vtDeviceImage->_subresourceRange.layerCount = 1;
         vtDeviceImage->_subresourceRange.baseMipLevel = 0;
         vtDeviceImage->_subresourceRange.baseArrayLayer = 0;
-        vtDeviceImage->_subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        vtDeviceImage->_subresourceRange.aspectMask = cinfo.aspect; //VK_IMAGE_ASPECT_COLOR_BIT;
 
         // subresource layers
         vtDeviceImage->_subresourceLayers.layerCount = vtDeviceImage->_subresourceRange.layerCount;

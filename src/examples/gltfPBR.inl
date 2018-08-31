@@ -95,7 +95,7 @@ namespace rnd {
         dii.familyIndex = deviceQueue->familyIndex;
         dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
         dii.layout = VK_IMAGE_LAYOUT_GENERAL;
-        dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         dii.size = { this->canvasWidth, this->canvasHeight, 1 };
         
         // 
@@ -835,5 +835,167 @@ namespace rnd {
         auto wTitle = "vRt : " + tDiffStream.str() + "ms / " + tFramerateStream.str() + "Hz";
         glfwSetWindowTitle(window, wTitle.c_str());
     };
+
+
+
+
+
+
+
+    inline void Renderer::CreateFbo() {
+        // descriptor set bindings
+        std::vector<vk::DescriptorSetLayoutBinding> descriptorSetLayoutBindings = { vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, nullptr) };
+        std::vector<vk::DescriptorSetLayout> descriptorSetLayouts = { deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(descriptorSetLayoutBindings.data()).setBindingCount(1)) };
+
+        // pipeline layout and cache
+        auto pipelineLayout = deviceQueue->device->logical.createPipelineLayout(vk::PipelineLayoutCreateInfo().setPSetLayouts(descriptorSetLayouts.data()).setSetLayoutCount(descriptorSetLayouts.size()));
+        auto descriptorSets = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setDescriptorSetCount(descriptorSetLayouts.size()).setPSetLayouts(descriptorSetLayouts.data()));
+
+        // create pipeline
+        {
+            // pipeline stages
+            // TODO: create descriptor sets and first gen shaders
+            std::vector<vk::PipelineShaderStageCreateInfo> pipelineShaderStages = {
+                vk::PipelineShaderStageCreateInfo().setModule(vte::createShaderModule(deviceQueue->device->logical, vte::readBinary(shaderPack + "/output/render.vert.spv"))).setPName("main").setStage(vk::ShaderStageFlagBits::eVertex),
+                vk::PipelineShaderStageCreateInfo().setModule(vte::createShaderModule(deviceQueue->device->logical, vte::readBinary(shaderPack + "/output/render.frag.spv"))).setPName("main").setStage(vk::ShaderStageFlagBits::eFragment)
+            };
+
+            // blend modes per framebuffer targets
+            std::vector<vk::PipelineColorBlendAttachmentState> colorBlendAttachments = {
+                vk::PipelineColorBlendAttachmentState()
+                .setBlendEnable(true)
+                .setSrcColorBlendFactor(vk::BlendFactor::eOne).setDstColorBlendFactor(vk::BlendFactor::eZero).setColorBlendOp(vk::BlendOp::eAdd)
+                .setSrcAlphaBlendFactor(vk::BlendFactor::eOne).setDstAlphaBlendFactor(vk::BlendFactor::eZero).setAlphaBlendOp(vk::BlendOp::eAdd)
+                .setColorWriteMask(vk::ColorComponentFlags(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA))
+            };
+
+            // dynamic states
+            std::vector<vk::DynamicState> dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+
+            // create graphics pipeline
+            auto tesselationState = vk::PipelineTessellationStateCreateInfo();
+            auto vertexInputState = vk::PipelineVertexInputStateCreateInfo();
+            auto rasterizartionState = vk::PipelineRasterizationStateCreateInfo();
+
+            firstGenPipeline = deviceQueue->device->logical.createGraphicsPipeline(deviceQueue->device->pipelineCache, vk::GraphicsPipelineCreateInfo()
+                .setPStages(pipelineShaderStages.data()).setStageCount(pipelineShaderStages.size())
+                .setFlags(vk::PipelineCreateFlagBits::eAllowDerivatives)
+                .setPVertexInputState(&vertexInputState)
+                .setPInputAssemblyState(&vk::PipelineInputAssemblyStateCreateInfo().setTopology(vk::PrimitiveTopology::eTriangleStrip))
+                .setPViewportState(&vk::PipelineViewportStateCreateInfo().setViewportCount(1).setScissorCount(1))
+                .setPRasterizationState(&vk::PipelineRasterizationStateCreateInfo()
+                    .setDepthClampEnable(false)
+                    .setRasterizerDiscardEnable(false)
+                    .setPolygonMode(vk::PolygonMode::eFill)
+                    .setCullMode(vk::CullModeFlagBits::eNone)
+                    .setFrontFace(vk::FrontFace::eCounterClockwise)
+                    .setDepthBiasEnable(false)
+                    .setDepthBiasConstantFactor(0)
+                    .setDepthBiasClamp(0)
+                    .setDepthBiasSlopeFactor(0)
+                    .setLineWidth(1.f))
+                .setPDepthStencilState(&vk::PipelineDepthStencilStateCreateInfo()
+                    .setDepthTestEnable(true)
+                    .setDepthWriteEnable(true)
+                    .setDepthCompareOp(vk::CompareOp::eLessOrEqual)
+                    .setDepthBoundsTestEnable(false)
+                    .setStencilTestEnable(false))
+                .setPColorBlendState(&vk::PipelineColorBlendStateCreateInfo()
+                    .setLogicOpEnable(false)
+                    .setLogicOp(vk::LogicOp::eClear)
+                    .setPAttachments(colorBlendAttachments.data())
+                    .setAttachmentCount(colorBlendAttachments.size()))
+                .setLayout(pipelineLayout)
+                .setRenderPass(renderpass)
+                .setBasePipelineIndex(0)
+                .setPMultisampleState(&vk::PipelineMultisampleStateCreateInfo().setRasterizationSamples(vk::SampleCountFlagBits::e1))
+                .setPDynamicState(&vk::PipelineDynamicStateCreateInfo().setPDynamicStates(dynamicStates.data()).setDynamicStateCount(dynamicStates.size()))
+                .setPTessellationState(&tesselationState));
+        };
+
+
+        // attachments
+        std::vector<vk::AttachmentDescription> attachmentDescriptions = {
+
+            vk::AttachmentDescription()
+                .setFormat(vk::Format::eR16G16B16A16Sfloat).setSamples(vk::SampleCountFlagBits::e1)
+                .setLoadOp(vk::AttachmentLoadOp::eLoad).setStoreOp(vk::AttachmentStoreOp::eStore)
+                .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare).setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+                .setInitialLayout(vk::ImageLayout::eUndefined).setFinalLayout(vk::ImageLayout::eGeneral),
+
+            vk::AttachmentDescription()
+                .setFormat(vk::Format::eR32G32B32A32Sfloat).setSamples(vk::SampleCountFlagBits::e1)
+                .setLoadOp(vk::AttachmentLoadOp::eLoad).setStoreOp(vk::AttachmentStoreOp::eStore)
+                .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare).setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+                .setInitialLayout(vk::ImageLayout::eUndefined).setFinalLayout(vk::ImageLayout::eGeneral),
+
+            vk::AttachmentDescription()
+                .setFormat(vk::Format::eR32G32B32A32Sfloat).setSamples(vk::SampleCountFlagBits::e1)
+                .setLoadOp(vk::AttachmentLoadOp::eLoad).setStoreOp(vk::AttachmentStoreOp::eStore)
+                .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare).setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+                .setInitialLayout(vk::ImageLayout::eUndefined).setFinalLayout(vk::ImageLayout::eGeneral),
+
+            vk::AttachmentDescription()
+                .setFormat(vk::Format::eR16G16B16A16Sfloat).setSamples(vk::SampleCountFlagBits::e1)
+                .setLoadOp(vk::AttachmentLoadOp::eLoad).setStoreOp(vk::AttachmentStoreOp::eStore)
+                .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare).setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+                .setInitialLayout(vk::ImageLayout::eUndefined).setFinalLayout(vk::ImageLayout::eGeneral),
+
+            vk::AttachmentDescription()
+                .setFormat(vk::Format::eD32SfloatS8Uint).setSamples(vk::SampleCountFlagBits::e1)
+                .setLoadOp(vk::AttachmentLoadOp::eClear).setStoreOp(vk::AttachmentStoreOp::eDontCare)
+                .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare).setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+                .setInitialLayout(vk::ImageLayout::eUndefined).setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+
+        };
+
+        // attachments references
+        std::vector<vk::AttachmentReference> colorReferences = {
+            vk::AttachmentReference(0, vk::ImageLayout::eGeneral),
+            vk::AttachmentReference(1, vk::ImageLayout::eGeneral),
+            vk::AttachmentReference(2, vk::ImageLayout::eGeneral),
+            vk::AttachmentReference(3, vk::ImageLayout::eGeneral)
+        };
+
+        std::vector<vk::AttachmentReference> depthReferences = {
+            vk::AttachmentReference(4, vk::ImageLayout::eDepthStencilAttachmentOptimal),
+        };
+
+        // subpasses desc
+        std::vector<vk::SubpassDescription> subpasses = {
+            vk::SubpassDescription()
+                .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+                .setPColorAttachments(colorReferences.data())
+                .setColorAttachmentCount(colorReferences.size())
+                .setPDepthStencilAttachment(depthReferences.data()) };
+
+        // dependency
+        std::vector<vk::SubpassDependency> dependencies = {
+            vk::SubpassDependency()
+                .setDependencyFlags(vk::DependencyFlagBits::eByRegion)
+                .setSrcSubpass(VK_SUBPASS_EXTERNAL).setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eBottomOfPipe | vk::PipelineStageFlagBits::eTransfer).setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)
+                .setDstSubpass(0).setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput).setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite),
+
+            vk::SubpassDependency()
+                .setDependencyFlags(vk::DependencyFlagBits::eByRegion)
+                .setSrcSubpass(0).setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput).setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite)
+                .setDstSubpass(VK_SUBPASS_EXTERNAL).setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTopOfPipe | vk::PipelineStageFlagBits::eTransfer).setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite)
+        };
+
+        // create device image
+        auto dvi = VtDeviceImageCreateInfo{};
+        dvi.imageViewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
+        dvi.format = VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
+        dvi.size = { canvasWidth, canvasHeight, 1 };
+        dvi.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        dvi.aspect = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        vtCreateDeviceImage(deviceQueue->device->rtDev, &dvi, &depthImage);
+
+        // create renderpass
+        firstGenRenderpass = deviceQueue->device->logical.createRenderPass(vk::RenderPassCreateInfo(vk::RenderPassCreateFlags(), attachmentDescriptions.size(), attachmentDescriptions.data(), subpasses.size(), subpasses.data(), dependencies.size(), dependencies.data()));
+        std::array<vk::ImageView, 5> views = { outputImage->_imageView, normalPass->_imageView, originPass->_imageView, specularPass->_imageView, depthImage->_imageView }; // predeclare views
+        firstGenFramebuffer = deviceQueue->device->logical.createFramebuffer(vk::FramebufferCreateInfo{ {}, firstGenRenderpass, uint32_t(views.size()), views.data(), canvasWidth, canvasHeight, 1 });
+    };
+
 
 };

@@ -334,7 +334,11 @@ namespace rnd {
 
 
         // output objects
-        VtDeviceImage outputImage = {}, normalPass = {}, originPass = {}, specularPass = {};
+        VtDeviceImage outputImage = {}, normalPass = {}, originPass = {}, specularPass = {}, depthImage = {};
+        vk::Framebuffer firstGenFramebuffer = {};
+        vk::RenderPass firstGenRenderpass = {};
+        vk::Pipeline firstGenPipeline = {};
+
 
         // ray tracing objects
         std::vector<VtDeviceBuffer> VDataSpace;
@@ -388,6 +392,8 @@ namespace rnd {
         void Draw();
         void InitRayTracingPipeline();
         void HandleData();
+        void CreateFbo();
+
     };
 
 };

@@ -553,11 +553,8 @@ namespace NSM
             };
 
             // attachments references
-            std::vector<vk::AttachmentReference> colorReferences = {
-                vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal) };
-            std::vector<vk::AttachmentReference> depthReferences = {
-                vk::AttachmentReference(
-                    1, vk::ImageLayout::eDepthStencilAttachmentOptimal) };
+            std::vector<vk::AttachmentReference> colorReferences = { vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal) };
+            std::vector<vk::AttachmentReference> depthReferences = { vk::AttachmentReference(1, vk::ImageLayout::eDepthStencilAttachmentOptimal) };
 
             // subpasses desc
             std::vector<vk::SubpassDescription> subpasses = {
