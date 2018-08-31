@@ -32,17 +32,14 @@ namespace rnd {
     };
 
     struct VtCameraUniform {
-        glm::mat4x4 camInv = glm::mat4x4(1.f);
-        glm::mat4x4 projInv = glm::mat4x4(1.f);
+        glm::mat4x4 camInv = glm::mat4x4(1.f), projInv = glm::mat4x4(1.f);
         glm::vec4 sceneRes = glm::vec4(1.f);
         int enable360 = 0, variant = 0, r1 = 0, r2 = 0;
     };
 
     struct VtBvhUniformDebug {
-        glm::mat4x4 transform = glm::mat4x4(1.f);
-        glm::mat4x4 transformInv = glm::mat4x4(1.f);
-        glm::mat4x4 projection = glm::mat4x4(1.f);
-        glm::mat4x4 projectionInv = glm::mat4x4(1.f);
+        glm::mat4x4 transform = glm::mat4x4(1.f), transformInv = glm::mat4x4(1.f);
+        glm::mat4x4 projection = glm::mat4x4(1.f), projectionInv = glm::mat4x4(1.f);
         int leafCount = 0, primitiveCount = 0, r1 = 0, r2 = 0;
     };
 

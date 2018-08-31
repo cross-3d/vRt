@@ -1,7 +1,10 @@
 #ifndef _HITLIB_H
 #define _HITLIB_H
 
+#ifndef SETS_DESC_SET_ID
 #define SETS_DESC_SET_ID 1
+#endif
+
 const uint MAX_IMAGES = 256, MAX_SAMPLERS = 16;
 
 

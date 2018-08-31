@@ -23,8 +23,7 @@ struct VtAppMaterial {
 };
 
 struct VtCameraUniform {
-    glm::mat4x4 camInv = glm::mat4x4(1.f);
-    glm::mat4x4 projInv = glm::mat4x4(1.f);
+    glm::mat4x4 camInv = glm::mat4x4(1.f), projInv = glm::mat4x4(1.f);
     glm::vec4 sceneRes = glm::vec4(1.f);
     int enable360 = 0, r0 = 0, r1 = 0, r2 = 0;
 };
@@ -300,7 +299,7 @@ int main() {
         createBufferFast(deviceQueue, rtUniformBuffer, vte::strided<VtCameraUniform>(1));
 
         // set first uniform buffer data
-        VtCameraUniform cameraUniformData;
+        VtCameraUniform cameraUniformData = {};
         cameraUniformData.projInv = glm::transpose(glm::inverse(pjMatrix));
         cameraUniformData.camInv = glm::transpose(glm::inverse(atMatrix));
         cameraUniformData.sceneRes = glm::vec4(1280.f, 720.f, 1.f, 1.f);

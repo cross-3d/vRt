@@ -50,7 +50,7 @@ struct VtAppMaterial {
      int bitfield;
 };
 
-#include "../include/hit-lib.glsl"
+#include "../include/hitlib.glsl"
 
 // texturing cache 
 struct Textured {
