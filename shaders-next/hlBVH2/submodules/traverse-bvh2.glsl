@@ -36,18 +36,16 @@ int loadStack() {
     if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
         lstack = pages[traverseState.cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize; 
     };
-    int idx = --traverseState.stackPtr, rsl = lstack[idx]; return rsl;
-}
+    int idx = --traverseState.stackPtr, rsl = idx >= 0 ? lstack[idx] : -1; traverseState.stackPtr = max(traverseState.stackPtr, 0); return rsl;
+};
 
 void storeStack(in int rsl) {
     if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
         pages[traverseState.cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
     }
-    int idx = traverseState.stackPtr++; lstack[idx] = rsl;
-}
+    int idx = traverseState.stackPtr++; if (idx < localStackSize) lstack[idx] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
+};
 
-bool stackIsFull() { return traverseState.stackPtr >= localStackSize && traverseState.pageID >= pageCount; }
-bool stackIsEmpty() { return traverseState.stackPtr <= 0 && traverseState.pageID <= 0; }
 void doIntersection() {
     const bool isvalid = true;//traverseState.defTriangleID > 0;
     vec2 uv = vec2(0.f.xx); const float d = 
@@ -162,7 +160,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                     [[flatten]]
                     if (fmask == 3) { // if both has intersection
                         fmask &= nfe.x<=nfe.y ? 1 : 2;
-                        [[flatten]] IF (all(childIntersect) & bool_(!stackIsFull())) storeStack(cnode.x^(fmask>>1));
+                        storeStack(cnode.x^(fmask>>1));
                     }
                     traverseState.idx = cnode.x^(fmask&1);
                     _continue = true; 
@@ -171,7 +169,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
             }
 
             // if all threads had intersection, or does not given any results, break for processing
-            [[flatten]] if (!_continue) { traverseState.idx = stackIsEmpty() ? -1 : loadStack(); } // load from stack 
+            [[flatten]] if (!_continue) { traverseState.idx = loadStack(); } // load from stack 
             [[flatten]] IFANY (traverseState.defTriangleID > 0 || traverseState.idx < 0) { break; }
         }}
         
