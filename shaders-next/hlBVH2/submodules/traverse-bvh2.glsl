@@ -143,13 +143,14 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
             [[flatten]]
             if (isLeaf(cnode)) { // if leaf, defer for intersection 
-                [[flatten]]
-                if (traverseState.defTriangleID <= 0) { 
-                    traverseState.defTriangleID = cnode.x;
-                } else {
-                    _continue = true;
+                //[[flatten]]
+                //if (traverseState.defTriangleID <= 0) { 
+                //    traverseState.defTriangleID = cnode.x;
+                //} else {
+                //    _continue = true;
                     //continue; 
-                }
+                //}
+                traverseState.defTriangleID = cnode.x; // faster traversing mode 
             } else { // if not leaf, intersect with nodes
                 lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, traverseState.boxSide.xyz, 
                     fmat3x4_(bvhNodes[traverseState.idx].cbox[0], bvhNodes[traverseState.idx].cbox[1], bvhNodes[traverseState.idx].cbox[2]), nfe);
