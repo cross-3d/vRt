@@ -111,10 +111,10 @@ endif()
 # set libs and include dirs of projects
 set (DEP_DIR "${PROJECT_SOURCE_DIR}")
 set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/src/lib")
-set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/base/" "${DEP_DIR}/src/base/imgui" "${PROJECT_SOURCE_DIR}" Vulkan::Vulkan)
+set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/base/" "${DEP_DIR}/src/base/imgui" "${PROJECT_SOURCE_DIR}" Vulkan_INCLUDE_DIR)
 
 # set required libs
-set (LIBS glfw3 Vulkan::Vulkan)
+set (LIBS glfw3 Vulkan_LIBRARY)
 
 # set GCC8 (Linux) libs
 # MingW-W64 TODO
