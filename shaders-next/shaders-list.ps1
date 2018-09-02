@@ -1,3 +1,5 @@
+#!/usr/bin/pwsh -Command
+
 # It is helper for compilation shaders to SPIR-V
 
 $INDIR=".\"
