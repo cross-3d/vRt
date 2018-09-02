@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required (VERSION 3.12)
 set (PROJECT_NAME vRt)
 project (${PROJECT_NAME})
 
@@ -7,6 +7,9 @@ project (${PROJECT_NAME})
 if (COMPILER_ID MATCHES "MSVC")
   set(MSVC_${lang}_ARCHITECTURE_ID "${ARCHITECTURE_ID}")
 endif()
+
+
+find_package(Vulkan REQUIRED)
 
 
 # Set source directories
@@ -108,10 +111,10 @@ endif()
 # set libs and include dirs of projects
 set (DEP_DIR "${PROJECT_SOURCE_DIR}")
 set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/src/lib")
-set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/base/" "${DEP_DIR}/src/base/imgui" "${PROJECT_SOURCE_DIR}")
+set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/base/" "${DEP_DIR}/src/base/imgui" "${PROJECT_SOURCE_DIR}" Vulkan::Vulkan)
 
 # set required libs
-set (LIBS glfw3)
+set (LIBS glfw3 Vulkan::Vulkan)
 
 # set GCC8 (Linux) libs
 # MingW-W64 TODO
