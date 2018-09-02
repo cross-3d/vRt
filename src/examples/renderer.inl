@@ -369,6 +369,7 @@ namespace rnd {
 
         // vertex input buffer objects
         VtDeviceBuffer VBufferRegions, VBufferView, VAccessorSet, VAttributes, VTransforms;
+        tinygltf::Model model = {}; tinygltf::TinyGLTF loader = {};
 
         // attribute bindings
         const uint32_t NORMAL_TID = 0;

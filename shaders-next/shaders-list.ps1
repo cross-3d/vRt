@@ -1,17 +1,17 @@
-#!/usr/bin/pwsh -Command
+#!/usr/bin/pwsh-preview
 
 # It is helper for compilation shaders to SPIR-V
 
-$INDIR=".\"
-$OUTDIR="..\build\shaders\$VNDR\"
-$HRDDIR="..\build\intrusive\$VNDR\"
+$INDIR="./"
+$OUTDIR="../build/shaders/$VNDR/"
+$HRDDIR="../build/intrusive/$VNDR/"
 
-$NTVE="native\"
-$VRTX="vertex\"
-$RNDR="ray-tracing\"
-$HLBV="hlBVH2\"
-$RDXI="radix\"
-$OUTP="output\"
+$NTVE="native/"
+$VRTX="vertex/"
+$RNDR="ray-tracing/"
+$HLBV="hlBVH2/"
+$RDXI="radix/"
+$OUTP="output/"
 
 $CMPPROF="-S comp"
 $FRGPROF="-S frag"
@@ -71,8 +71,8 @@ function OptimizeMainline($Pfx = "") {
     Optimize "bvh-fit.comp" "$HRDDIR$HLBV" 
     Optimize "shorthand.comp" "$HRDDIR$HLBV" 
     Optimize "leaf-link.comp" "$HRDDIR$HLBV" 
-    Optimize "\\triangle\\bound-calc.comp" "$HRDDIR$HLBV" 
-    Optimize "\\triangle\\leaf-gen.comp" "$HRDDIR$HLBV" 
+    Optimize "/triangle/bound-calc.comp" "$HRDDIR$HLBV" 
+    Optimize "/triangle/leaf-gen.comp" "$HRDDIR$HLBV" 
 
     # optimize vertex assemblers
     Optimize "vinput.comp"       "$HRDDIR$NTVE" # native
@@ -93,8 +93,8 @@ function BuildAllShaders($Pfx = "") {
     new-item -Name $OUTDIR$RNDR -itemtype directory  -Force | Out-Null
     new-item -Name $OUTDIR$OUTP -itemtype directory  -Force | Out-Null
     
-    new-item -Name $HRDDIR$HLBV\\AABB\\ -itemtype directory      -Force | Out-Null
-    new-item -Name $HRDDIR$HLBV\\triangle\\ -itemtype directory  -Force | Out-Null
+    new-item -Name $HRDDIR$HLBV//AABB// -itemtype directory      -Force | Out-Null
+    new-item -Name $HRDDIR$HLBV//triangle// -itemtype directory  -Force | Out-Null
     new-item -Name $HRDDIR$HLBV -itemtype directory              -Force | Out-Null
     new-item -Name $HRDDIR$RDXI -itemtype directory              -Force | Out-Null
     new-item -Name $HRDDIR$NTVE -itemtype directory              -Force | Out-Null
@@ -123,8 +123,8 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "triplet.comp"             "$INDIR$NTVE" "$HRDDIR$NTVE"
 
     # accelerator structure (hlBVH2)
-    BuildCompute "\\triangle\\bound-calc.comp"  "$INDIR$HLBV" "$HRDDIR$HLBV"
-    BuildCompute "\\triangle\\leaf-gen.comp"    "$INDIR$HLBV" "$HRDDIR$HLBV"
+    BuildCompute "/triangle/bound-calc.comp"  "$INDIR$HLBV" "$HRDDIR$HLBV"
+    BuildCompute "/triangle/leaf-gen.comp"    "$INDIR$HLBV" "$HRDDIR$HLBV"
     BuildCompute "bvh-build-td.comp"            "$INDIR$HLBV" "$HRDDIR$HLBV" "-DFIRST_STEP" "bvh-build-first.comp"
     BuildCompute "bvh-build-td.comp"            "$INDIR$HLBV" "$HRDDIR$HLBV" "" "bvh-build.comp"
     BuildCompute "bvh-fit.comp"                 "$INDIR$HLBV" "$HRDDIR$HLBV"

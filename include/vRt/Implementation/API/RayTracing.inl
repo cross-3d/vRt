@@ -95,7 +95,11 @@ namespace _vt {
                 // reset hit counter before new intersections
                 auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
                 cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, RV_INTENSIVITY); // traverse BVH
-                cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, RV_INTENSIVITY); // interpolate intersections
+                if (acclb->_interpolatorPipeline) {
+                    cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, RV_INTENSIVITY); // interpolate intersections
+                } else {
+                    std::cerr << "HARDWARE ISSUE DETECTED, HALTING!" << std::endl; assert(0);
+                }
                 cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), strided<uint32_t>(1)) });
             }
 

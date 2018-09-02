@@ -34,9 +34,9 @@ namespace NSM
         std::vector<const char *> wantedExtensions = {
             "VK_KHR_get_physical_device_properties2",
             "VK_KHR_get_surface_capabilities2",
+            "VK_KHR_display", "VK_KHR_surface", 
             "VK_EXT_direct_mode_display",
-            "VK_EXT_swapchain_colorspace",
-            "VK_KHR_surface"
+            "VK_EXT_swapchain_colorspace"
         };
 
         // default device extensions
