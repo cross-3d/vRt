@@ -8,7 +8,12 @@ layout (local_size_x = BLOCK_SIZE) in;
 shared uint localHistogram[RADICES];
 
 // wide of 128 elements, each element should be in uint16_t, but for compatibility used uint32_t
+#ifdef PREFER_UNPACKED 
+shared lowp uvec4 _data[Wave_Size];
+#else
 shared uint_rdc_wave_lcm _data[Wave_Size];
+#endif
+
 shared blocks_info blocks;
 #define key _data[Lane_Idx]
 
@@ -39,7 +44,11 @@ void main() {
         [[flatten]] IFALL(all(not(validAddress))) break;
 
         [[flatten]] if (Wave_Idx == 0) {
+#ifdef PREFER_UNPACKED 
+            key = ((uvec4(
+#else
             key = uint_rdc_wave_lcm(p4x_8(uvec4(
+#endif
                 BFE(validAddress.x ? KeyIn[addr.x] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
                 BFE(validAddress.y ? KeyIn[addr.y] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
                 BFE(validAddress.z ? KeyIn[addr.z] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
@@ -52,7 +61,11 @@ void main() {
         [[unroll]]
         for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
             const lowp uint radice = uint(rk + Radice_Idx);
+#ifdef PREFER_UNPACKED
+            const bvec4 owned = and(equal(key, radice.xxxx), validAddress);
+#else
             const bvec4 owned = and(equal(up4x_8(key), radice.xxxx), validAddress);
+#endif
             [[flatten]] if (any(owned)) countHistogram(uint(radice), owned);
             [[flatten]] IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
         }

@@ -4,7 +4,6 @@
 #define DISCARD_SHARED_CACHING
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
-//#define CACHE_HIT_PAYLOAD  // unpreferred
 #define DMA_HIT
 
 #include "../include/driver.glsl"
@@ -63,13 +62,7 @@ struct Textured {
 #define cray rays[rayID]
 
 LOCAL_SIZE_LAYOUT;
-
-#ifdef CACHE_HIT_PAYLOAD
-shared VtHitPayload hitPayloadCache[WORK_SIZE];
-#define hitp hitPayloadCache[Local_Idx]
-#else
 VtHitPayload hitp;
-#endif
 
 
 

@@ -65,6 +65,7 @@
 #define WPTR uint
 //#define WPTR2 uvec2
 #define WPTR4 uvec4
+#define PREFER_UNPACKED
 
 #define READ_LANE(V, I) (uint(I >= 0 && I < Wave_Size_RT) * readLane(V, I))
 

@@ -19,8 +19,10 @@ LOCAL_SIZE_LAYOUT;
 #define wgs gl_NumWorkGroups.x
 //#define wsize rayTypedCounterRead[stageUniform.currentGroup]
 
-#define hitp hitPayload[hitpId]
+shared VtRay lrays[WORK_SIZE];
+#define ray lrays[Local_Idx]
 #define hit hits[hitIdc]
+#define hitp hitPayload[hitpId]
 
 // 
 void main() {
@@ -37,7 +39,7 @@ void main() {
         const bool overflow = globalID >= wsize || globalID < 0 || rayID < 0;
 
         // get ray by id
-        VtRay ray = rays[rayID];
+        ray = rays[rayID];
         const int hitIdc = vtFetchHitIdc(rayID);
         const int hitpId = hits[hitIdc].payloadID-1;
         vec4 emisson = hitp.emission, reflc = hitp.specularGlossiness;

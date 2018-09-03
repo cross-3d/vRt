@@ -31,6 +31,10 @@ LOCAL_SIZE_LAYOUT;
 // Also, we have another vision of "DPI-pixel-sampling" problem, so we can use sample locations for generation bigger images by progressing smaller count of samples
 // papers: ???.pdf ( no direct equivalent )
 
+
+shared VtRay lrays[WORK_SIZE];
+#define ray lrays[Local_Idx]
+
 // 
 void main() {
     const int wsize = min(rayTypedCounterRead[stageUniform.currentGroup], MAX_RAYS);
@@ -46,7 +50,7 @@ void main() {
         const bool overflow = globalID >= wsize || globalID < 0 || rayID < 0;
 
         // get ray by id
-        VtRay ray = rays[rayID];
+        ray = rays[rayID];
         const int hitIdc = vtFetchHitIdc(rayID);
         const int hitpId = hits[hitIdc].payloadID-1;
         vec4 emisson = hitp.emission, reflc = hitp.specularGlossiness;

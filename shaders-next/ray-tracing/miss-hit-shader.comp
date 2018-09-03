@@ -17,13 +17,7 @@
 
 #define cray rays[rayID]
 
-#ifdef CACHE_HIT_PAYLOAD
-shared VtHitPayload hitPayloadCache[WORK_SIZE];
-#define hitp hitPayloadCache[Local_Idx]
-#else
 VtHitPayload hitp;
-#endif
-
 LOCAL_SIZE_LAYOUT;
 
 #define wgs gl_NumWorkGroups.x
