@@ -64,7 +64,7 @@ function BuildVertex($Name, $InDir = "", $OutDir = "", $AddArg = "") {
 
 function OptimizeMainline($Pfx = "") {
     # optimize accelerator structure (hlBVH2)
-    Optimize "interpolator.comp" "$HRDDIR$HLBV"
+    #Optimize "interpolator.comp" "$HRDDIR$HLBV"
     #Optimize "traverse-bvh.comp" "$HRDDIR$HLBV" 
     Optimize "bvh-build-first.comp" "$HRDDIR$HLBV" 
     Optimize "bvh-build.comp" "$HRDDIR$HLBV" 

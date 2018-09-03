@@ -56,12 +56,6 @@ namespace _vt {
                 vtAccelerator->_leafLinkPipeline = createComputeHC(vkDevice, hlbvh2::linkLeafs.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
                 vtAccelerator->_intersectionPipeline = createComputeHC(vkDevice, hlbvh2::traverse.at(vendorName), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
                 vtAccelerator->_interpolatorPipeline = createComputeHC(vkDevice, hlbvh2::interpolator.at(vendorName), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
-                
-                if (vtAccelerator->_interpolatorPipeline == VK_NULL_HANDLE) {
-                    std::cerr << "HARDWARE ISSUE DETECTED - HALTING!" << std::endl;
-                    std::cerr << "TRY TO PURCHASE A NEW VIDEO CARD BEFORE!" << std::endl;
-                };
-                assert(vtAccelerator->_interpolatorPipeline != VK_NULL_HANDLE);
             };
         };
 
