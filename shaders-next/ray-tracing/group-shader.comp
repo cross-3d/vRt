@@ -97,7 +97,7 @@ void main() {
 
             // resolve ray emission
             [[flatten]] if (max3_vec(f16_f32(newray.dcolor).xyz) >= 1e-4f) {
-                vec3 vdir = dcts(newray.cdirect.xy), shift = hit.vdat.xyz;
+                vec3 vdir = dcts(newray.cdirect.xy), shift = vdir;//hit.vdat.xyz;
                 newray.origin.xyz = fma(faceforward(shift, -vdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz); // add ray error offset
                 vtReuseRays(newray, icoord.xy, 0, rayID);
             }
