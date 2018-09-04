@@ -8,6 +8,8 @@
 namespace _vt { // store in undercover namespace
     using namespace vrt;
 
+    template<class T> class VtHandle;
+
     class Instance;
     class PhysicalDevice;
     class Device;
@@ -26,6 +28,7 @@ namespace _vt { // store in undercover namespace
 
     // use roled buffers
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY> class RoledBuffer;
+
     using DeviceBuffer = RoledBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
     using DeviceToHostBuffer = RoledBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
     using HostToDeviceBuffer = RoledBuffer<VMA_MEMORY_USAGE_CPU_TO_GPU>;

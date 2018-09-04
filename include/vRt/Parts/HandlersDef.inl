@@ -5,23 +5,23 @@
 
 // store in official namespace
 namespace vrt {
-    struct VtInstance;
-    struct VtPhysicalDevice;
-    struct VtDevice;
-    struct VtCommandBuffer;
-    struct VtPipelineLayout;
-    struct VtPipeline;
-    struct VtAccelerator;
-    struct VtMaterialSet;
-    struct VtVertexInputSet;
-    struct VtVertexAssemblyPipeline;
+    class VtInstance;
+    class VtPhysicalDevice;
+    class VtDevice;
+    class VtCommandBuffer;
+    class VtPipelineLayout;
+    class VtPipeline;
+    class VtAccelerator;
+    class VtMaterialSet;
+    class VtVertexInputSet;
+    class VtVertexAssemblyPipeline;
 
     // advanced class (buffer)
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
-    struct VtRoledBuffer;
+    class VtRoledBuffer;
 
     // advanced class (image)
-    struct VtDeviceImage;
+    class VtDeviceImage;
 
     // aliases
     using VtDeviceBuffer = VtRoledBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;

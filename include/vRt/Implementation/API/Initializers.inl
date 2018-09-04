@@ -36,7 +36,7 @@ namespace _vt { // store in undercover namespace
     extern VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<RadixSort>& _vtRadix);
     extern VtResult createVertexAssemblyPipeline(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblyPipelineCreateInfo& info, std::shared_ptr<VertexAssemblyPipeline>& _vtVertexAssembly);
     extern VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblySetCreateInfo &info, std::shared_ptr<VertexAssemblySet>& _vtVertexAssembly);
-    extern VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& _vtVertexInput);
+    extern VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, const VtVertexInputCreateInfo& info, std::shared_ptr<VertexInputSet>& _vtVertexInput);
     extern VtResult createPipelineLayout(std::shared_ptr<Device> _vtDevice, VtPipelineLayoutCreateInfo vtPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& _vtPipelineLayout, VtPipelineLayoutType type = VT_PIPELINE_LAYOUT_TYPE_RAYTRACING);
     extern VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice, const VtMaterialSetCreateInfo& info, std::shared_ptr<MaterialSet>& _vtMaterialSet);
     extern VtResult createRayTracingPipeline(std::shared_ptr<Device> _vtDevice, const VtRayTracingPipelineCreateInfo& info, std::shared_ptr<Pipeline>& _vtPipeline);

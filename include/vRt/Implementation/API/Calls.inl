@@ -9,7 +9,7 @@ namespace vrt {
     //using namespace _vt;
 
     VtResult vtCreateDevice(VtPhysicalDevice vtPhysicalDevice, const VkDeviceCreateInfo * deviceCreateInfo, VtDevice * vtDevice) {
-        return _vt::createDevice(vtPhysicalDevice, *deviceCreateInfo, vtDevice->_vtDevice);
+        return _vt::createDevice(vtPhysicalDevice, *deviceCreateInfo, *vtDevice);
     };
 
     VtResult vtConvertDevice(VtPhysicalDevice vtPhysicalDevice, VkDevice vkDevice, const VtArtificalDeviceExtension * vtDeviceExtension, VtDevice * vtDevice) {
@@ -95,7 +95,7 @@ namespace vrt {
     VtResult vtCmdBindVertexInputSets(VtCommandBuffer commandBuffer, uint32_t setCount, const VtVertexInputSet * sets) {
         std::vector<std::shared_ptr<_vt::VertexInputSet>> inputSets;
         for (uint32_t i = 0; i < setCount;i++) {
-            inputSets.push_back(sets[i]._vtVertexInputSet);
+            inputSets.push_back(sets[i]);
         }
         return _vt::bindVertexInputs(commandBuffer, inputSets);
     };
@@ -115,8 +115,7 @@ namespace vrt {
 
     // planned to merge into dedicated implementation
     VtResult vtCmdBindRayTracingSet(VtCommandBuffer commandBuffer, VtRayTracingSet rtset) {
-        commandBuffer->_rayTracingSet = rtset._vtRTSet;
-        return VK_SUCCESS;
+        commandBuffer->_rayTracingSet = rtset; return VK_SUCCESS;
     };
 
     VtResult vtConvertPhysicalDevice(VtInstance vtInstance, VkPhysicalDevice vkPhysicalDevice, VtPhysicalDevice * vtPhysicalDevice) {

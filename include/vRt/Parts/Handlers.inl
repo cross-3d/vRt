@@ -10,184 +10,105 @@
 // (planned use plain pointers in C)
 namespace vrt { // store in official namespace
 
-    struct VtInstance {
-        std::shared_ptr<_vt::Instance> _vtInstance;
-        operator std::shared_ptr<_vt::Instance>() const { return _vtInstance; };
-        operator std::shared_ptr<_vt::Instance>&() { return _vtInstance; };
-        operator VkInstance() const { return *_vtInstance; };
-        operator bool() const { return !!_vtInstance; };
-        auto* operator->() { return _vtInstance.get(); };
-        auto* operator->() const { return _vtInstance.get(); };
+    // unified template for making regular classes
+    template<class T>
+    class VtHandle {
+    public:
+        std::shared_ptr<T> _vtHandle = nullptr;
+        auto* operator->() { return _vtHandle.get(); };
+        auto* operator->() const { return _vtHandle.get(); };
+        operator T() const { return *_vtHandle; };
+        operator bool() const { return !!_vtHandle; };
+        operator std::shared_ptr<T>() const { return _vtHandle; };
+        operator std::shared_ptr<T>&() { return _vtHandle; };
+        operator std::weak_ptr<T>&&() const { return _vtHandle; };
+        //operator T&() { return *_vtHandle; };
     };
 
-    struct VtPhysicalDevice {
-        std::shared_ptr<_vt::PhysicalDevice> _vtPhysicalDevice;
-        operator std::shared_ptr<_vt::PhysicalDevice>() const { return _vtPhysicalDevice; };
-        operator std::shared_ptr<_vt::PhysicalDevice>&() { return _vtPhysicalDevice; };
-        operator VkPhysicalDevice() const { return *_vtPhysicalDevice; };
-        operator bool() const { return !!_vtPhysicalDevice; };
-        auto* operator->() { return _vtPhysicalDevice.get(); };
-        auto* operator->() const { return _vtPhysicalDevice.get(); };
+
+
+    class VtPipeline : public VtHandle<_vt::Pipeline> {};
+    class VtAcceleratorHLBVH2 : public VtHandle<_vt::AcceleratorHLBVH2> {};
+    class VtVertexAssemblyPipeline : public VtHandle<_vt::VertexAssemblyPipeline> {};
+
+    class VtInstance : public VtHandle<_vt::Instance> {
+    public:
+        operator VkInstance() const { return *_vtHandle; };
     };
 
-    struct VtCommandBuffer {
-        std::shared_ptr<_vt::CommandBuffer> _vtCommandBuffer;
-        operator std::shared_ptr<_vt::CommandBuffer>() const { return _vtCommandBuffer; };
-        operator std::shared_ptr<_vt::CommandBuffer>&() { return _vtCommandBuffer; };
-        operator VkCommandBuffer() const { return *_vtCommandBuffer; };
-        operator bool() const { return !!_vtCommandBuffer; };
-        auto* operator->() { return _vtCommandBuffer.get(); };
-        auto* operator->() const { return _vtCommandBuffer.get(); };
+    class VtPhysicalDevice : public VtHandle<_vt::PhysicalDevice> {
+    public:
+        operator VkPhysicalDevice() const { return *_vtHandle; };
     };
 
-    struct VtPipelineLayout {
-        std::shared_ptr<_vt::PipelineLayout> _vtPipelineLayout;
-        operator std::shared_ptr<_vt::PipelineLayout>() const { return _vtPipelineLayout; };
-        operator std::shared_ptr<_vt::PipelineLayout>&() { return _vtPipelineLayout; };
-        operator VkPipelineLayout() const { return *_vtPipelineLayout; };
-        operator bool() const { return !!_vtPipelineLayout; };
-        auto* operator->() { return _vtPipelineLayout.get(); };
-        auto* operator->() const { return _vtPipelineLayout.get(); };
+    class VtCommandBuffer : public VtHandle<_vt::CommandBuffer> {
+    public:
+        operator VkCommandBuffer() const { return *_vtHandle; };
     };
 
-    struct VtVertexInputSet {
-        std::shared_ptr<_vt::VertexInputSet> _vtVertexInputSet;
-        operator std::shared_ptr<_vt::VertexInputSet>() const { return _vtVertexInputSet; };
-        operator std::shared_ptr<_vt::VertexInputSet>&() { return _vtVertexInputSet; };
-        operator VkDescriptorSet() const { return *_vtVertexInputSet; };
-        operator bool() const { return !!_vtVertexInputSet; };
-        auto* operator->() { return _vtVertexInputSet.get(); };
-        auto* operator->() const { return _vtVertexInputSet.get(); };
-
-        //VtUniformBlock& uniform() { return _vtVertexInputSet->uniform(); };
-        //VtUniformBlock uniform() const { return _vtVertexInputSet->uniform(); };
+    class VtPipelineLayout : public VtHandle<_vt::PipelineLayout> {
+    public:
+        operator VkPipelineLayout() const { return *_vtHandle; };
     };
 
-    // ray tracing state set 
-    struct VtRayTracingSet {
-        std::shared_ptr<_vt::RayTracingSet> _vtRTSet;
-        operator std::shared_ptr<_vt::RayTracingSet>() const { return _vtRTSet; };
-        operator std::shared_ptr<_vt::RayTracingSet>&() { return _vtRTSet; };
-        operator VkDescriptorSet() const { return *_vtRTSet; };
-        operator bool() const { return !!_vtRTSet; };
-        auto* operator->() { return _vtRTSet.get(); };
-        auto* operator->() const { return _vtRTSet.get(); };
+    class VtVertexInputSet : public VtHandle<_vt::VertexInputSet> {
+    public:
+        operator VkDescriptorSet() const { return *_vtHandle; };
     };
 
-    struct VtPipeline {
-        std::shared_ptr<_vt::Pipeline> _vtPipeline;
-        operator std::shared_ptr<_vt::Pipeline>() const { return _vtPipeline; };
-        operator std::shared_ptr<_vt::Pipeline>&() { return _vtPipeline; };
-        operator bool() const { return !!_vtPipeline; };
-        auto* operator->() { return _vtPipeline.get(); };
-        auto* operator->() const { return _vtPipeline.get(); };
+    class VtRayTracingSet : public VtHandle<_vt::RayTracingSet> {
+    public:
+        operator VkDescriptorSet() const { return *_vtHandle; };
     };
 
-    // accelerator structure state set
-    struct VtAcceleratorSet {
-        std::shared_ptr<_vt::AcceleratorSet> _vtAcceleratorSet;
-        operator std::shared_ptr<_vt::AcceleratorSet>() const { return _vtAcceleratorSet; };
-        operator std::shared_ptr<_vt::AcceleratorSet>&() { return _vtAcceleratorSet; };
-        operator VkDescriptorSet() const { return *_vtAcceleratorSet; };
-        operator bool() const { return !!_vtAcceleratorSet; };
-        auto* operator->() { return _vtAcceleratorSet.get(); };
-        auto* operator->() const { return _vtAcceleratorSet.get(); };
+    class VtAcceleratorSet : public VtHandle<_vt::AcceleratorSet> {
+    public:
+        operator VkDescriptorSet() const { return *_vtHandle; };
     };
 
-    struct VtAcceleratorHLBVH2 {
-        std::shared_ptr<_vt::AcceleratorHLBVH2> _vtAccelerator;
-        operator std::shared_ptr<_vt::AcceleratorHLBVH2>() const { return _vtAccelerator; };
-        operator std::shared_ptr<_vt::AcceleratorHLBVH2>&() { return _vtAccelerator; };
-        operator bool() const { return !!_vtAccelerator; };
-        auto* operator->() { return _vtAccelerator.get(); };
-        auto* operator->() const { return _vtAccelerator.get(); };
+    class VtVertexAssemblySet : public VtHandle<_vt::VertexAssemblySet> {
+    public:
+        operator VkDescriptorSet() const { return *_vtHandle; };
     };
 
-    // vertex input state set
-    struct VtVertexAssemblySet {
-        std::shared_ptr<_vt::VertexAssemblySet> _vtVertexAssemblySet;
-        operator std::shared_ptr<_vt::VertexAssemblySet>() const { return _vtVertexAssemblySet; };
-        operator std::shared_ptr<_vt::VertexAssemblySet>&() { return _vtVertexAssemblySet; };
-        operator VkDescriptorSet() const { return *_vtVertexAssemblySet; };
-        operator bool() const { return !!_vtVertexAssemblySet; };
-        auto* operator->() { return _vtVertexAssemblySet.get(); };
-        auto* operator->() const { return _vtVertexAssemblySet.get(); };
+    class VtMaterialSet : public VtHandle<_vt::MaterialSet> {
+    public:
+        operator VkDescriptorSet() const { return *_vtHandle; };
     };
 
-    struct VtVertexAssemblyPipeline {
-        std::shared_ptr<_vt::VertexAssemblyPipeline> _vtVertexAssembly;
-        operator std::shared_ptr<_vt::VertexAssemblyPipeline>() const { return _vtVertexAssembly; };
-        operator std::shared_ptr<_vt::VertexAssemblyPipeline>&() { return _vtVertexAssembly; };
-        operator bool() const { return !!_vtVertexAssembly; };
-        auto* operator->() { return _vtVertexAssembly.get(); };
-        auto* operator->() const { return _vtVertexAssembly.get(); };
-    };
-
-    struct VtMaterialSet {
-        std::shared_ptr<_vt::MaterialSet> _vtMaterialSet;
-        operator std::shared_ptr<_vt::MaterialSet>() const { return _vtMaterialSet; };
-        operator std::shared_ptr<_vt::MaterialSet>&() { return _vtMaterialSet; };
-        operator VkDescriptorSet() const { return *_vtMaterialSet; };
-        operator bool() const { return !!_vtMaterialSet; };
-        auto* operator->() { return _vtMaterialSet.get(); };
-        auto* operator->() const { return _vtMaterialSet.get(); };
-    };
-
-    // advanced class (buffer)
     template<VmaMemoryUsage U>
-    struct VtRoledBuffer {
-        std::shared_ptr<_vt::RoledBuffer<U>> _vtBuffer;
-        operator std::shared_ptr<_vt::RoledBuffer<U>>() const { return _vtBuffer; };
-        operator std::shared_ptr<_vt::RoledBuffer<U>>&() { return _vtBuffer; };
-
-        operator VkBuffer() const { return *_vtBuffer; };
-        operator VkBuffer&() { return *_vtBuffer; };
+    class VtRoledBuffer : public VtHandle<_vt::RoledBuffer<U>> {
+    private:
+        using P = VtHandle<_vt::RoledBuffer<U>>;
+    public:
+        operator VkBuffer() const { return *P::_vtHandle; };
+        operator VkBuffer&() { return *P::_vtHandle; };
 
         // deprecated bufferView in buffer
-        operator VkBufferView() const { return *_vtBuffer; };
-        operator VkBufferView&() { return *_vtBuffer; };
-
-        operator bool() const { return !!_vtBuffer; };
-        auto* operator->() { return _vtBuffer.get(); };
-        auto* operator->() const { return _vtBuffer.get(); };
+        operator VkBufferView() const { return *P::_vtHandle; };
+        operator VkBufferView&() { return *P::_vtHandle; };
     };
 
-    // advanced class (image)
-    struct VtDeviceImage {
-        std::shared_ptr<_vt::DeviceImage> _vtDeviceImage;
-        operator std::shared_ptr<_vt::DeviceImage>() const { return _vtDeviceImage; };
-        operator std::shared_ptr<_vt::DeviceImage>&() { return _vtDeviceImage; };
-
-        operator VkImage() const { return *_vtDeviceImage; };
-        operator VkImageView() const { return *_vtDeviceImage; };
-
-        operator VkImage&() { return *_vtDeviceImage; };
-        operator VkImageView&() { return *_vtDeviceImage; };
-
-        operator bool() const { return !!_vtDeviceImage; };
-        auto* operator->() { return _vtDeviceImage.get(); };
-        auto* operator->() const { return _vtDeviceImage.get(); };
+    class VtDeviceImage : public VtHandle<_vt::DeviceImage> {
+    public:
+        operator VkImage() const { return *_vtHandle; };
+        operator VkImageView() const { return *_vtHandle; };
+        operator VkImage&() { return *_vtHandle; };
+        operator VkImageView&() { return *_vtHandle; };
     };
 
-    struct VtDevice {
-        std::shared_ptr<_vt::Device> _vtDevice;
-        operator std::shared_ptr<_vt::Device>() const { return _vtDevice; };
-        operator std::shared_ptr<_vt::Device>&() { return _vtDevice; };
-        operator VkDevice() const { return *_vtDevice; }
-        operator VkPipelineCache() const { return *_vtDevice; };
-        operator VkDescriptorPool() const { return *_vtDevice; };
+    class VtDevice : public VtHandle<_vt::Device> {
+    public:
+        operator VkDevice() const { return *_vtHandle; }
+        operator VkPipelineCache() const { return *_vtHandle; };
+        operator VkDescriptorPool() const { return *_vtHandle; };
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-        operator VmaAllocator() const { return *_vtDevice; }
+        operator VmaAllocator() const { return *_vtHandle; }
 #endif
-
         // casting operators with traffic buffers
-        operator VtHostToDeviceBuffer() const { return VtHostToDeviceBuffer{ _vtDevice->_bufferTraffic->_uploadBuffer }; };
-        operator VtDeviceToHostBuffer() const { return VtDeviceToHostBuffer{ _vtDevice->_bufferTraffic->_downloadBuffer }; };
-
-        operator bool() const { return !!_vtDevice; };
-        auto* operator->() { return _vtDevice.get(); };
-        auto* operator->() const { return _vtDevice.get(); };
+        operator VtHostToDeviceBuffer() const { return VtHostToDeviceBuffer{ _vtHandle->_bufferTraffic->_uploadBuffer }; };
+        operator VtDeviceToHostBuffer() const { return VtDeviceToHostBuffer{ _vtHandle->_bufferTraffic->_downloadBuffer }; };
 
         // getter of descriptor layout from device VtDevice
 #ifdef VRT_ENABLE_STRING_VIEW
@@ -195,7 +116,8 @@ namespace vrt { // store in official namespace
 #else
         auto getDescriptorLayout(const std::string& name) const {
 #endif
-            return _vtDevice->_descriptorLayoutMap[std::string(name)];
+            return _vtHandle->_descriptorLayoutMap[std::string(name)];
         };
     };
+
 };

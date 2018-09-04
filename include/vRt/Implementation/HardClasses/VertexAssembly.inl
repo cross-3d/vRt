@@ -12,7 +12,7 @@ namespace _vt {
         //auto vtVertexAssembly = (_vtVertexAssembly = std::make_shared<VertexAssemblyPipeline>());
         vtVertexAssembly = std::make_shared<VertexAssemblyPipeline>();
         vtVertexAssembly->_device = _vtDevice;
-        vtVertexAssembly->_pipelineLayout = info.pipelineLayout._vtPipelineLayout;
+        vtVertexAssembly->_pipelineLayout = info.pipelineLayout;
         vtVertexAssembly->_vertexAssemblyPipeline = createCompute(vkDevice, info.vertexAssemblyModule, *vtVertexAssembly->_pipelineLayout, vkPipelineCache);
         return result;
     };

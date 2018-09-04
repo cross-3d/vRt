@@ -6,14 +6,14 @@ namespace _vt {
     using namespace vrt;
 
     // also, planned to add support of offsets in buffers 
-    VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& vtVertexInput) {
+    VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, const VtVertexInputCreateInfo& info, std::shared_ptr<VertexInputSet>& vtVertexInput) {
         VtResult result = VK_SUCCESS;
         //auto vtVertexInput = (_vtVertexInput = std::make_shared<VertexInputSet>());
 
         auto vkDevice = _vtDevice->_device;
         vtVertexInput = std::make_shared<VertexInputSet>();
         vtVertexInput->_device = _vtDevice;
-        vtVertexInput->_vertexAssembly = info.vertexAssemblyPipeline._vtVertexAssembly;
+        vtVertexInput->_vertexAssembly = info.vertexAssemblyPipeline;
 
         // create descriptor sets
         std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
