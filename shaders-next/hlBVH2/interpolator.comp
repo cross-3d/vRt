@@ -45,11 +45,12 @@ void main() {
 #endif
 
         [[flatten]] if (!overflow) { // verify intersection
-            const int rayID = hit.rayID-1, triID = floatBitsToInt(hit.uvt.w)-1;
+            //const int rayID = hit.rayID-1, triID = floatBitsToInt(hit.uvt.w)-1;
+            const int triID = floatBitsToInt(hit.uvt.w)-1;
 
             // force set zero to hit index, and put minimal possible after (this index can be changed in hit shaders)
             //imageAtomicCompSwap(rayLink, rayID<<1, 0u, hitID+1), imageAtomicMin(rayLink, rayID<<1, hitID+1);
-            imageAtomicMax(rayLink, rayID<<1, hitID+1); // reversed version
+            //imageAtomicMax(rayLink, rayID<<1, hitID+1); // reversed version
 
             // interpolate hit
             if (triID >= 0) {

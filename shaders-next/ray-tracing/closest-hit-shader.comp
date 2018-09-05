@@ -154,7 +154,7 @@ void main() {
             hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
             
             // triangle intersection test
-            IFANY (cameraUniform.variant == 1) {
+            [[flatten]] IFANY (cameraUniform.variant == 1) {
                 hitp.emission = vec4(hitp.albedo) + vec4(hitp.emission.xyz, 0.f);
                 //hitp.emission = vec4(fma(hitp.normalHeight.xyz,0.5f.xxx,0.5f.xxx),1.f);
                 //hitp.specularGlossiness = vec4(0.f);
