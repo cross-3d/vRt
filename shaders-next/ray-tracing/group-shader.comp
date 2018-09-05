@@ -56,51 +56,46 @@ void main() {
         vec4 emisson = hitp.emission, reflc = hitp.specularGlossiness;
 
         // get output image 2D coord
-        uvec2 icoord = vtFetchIndex(rayID);
+        const uvec2 ucoord = vtFetchIndex(rayID);
+        const ivec2 icoord = ivec2(ucoord);
 
         // add support for multi-passing
         [[flatten]] if (!overflow) {
             // reflection prior (early stage)
-            const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, ivec2(icoord));
+            const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, icoord);
+            const vec3 colf = dcolor.xyz;
+
+            // get real origin of ray
+            ray.origin.xyz = fma(dcts(ray.cdirect.xy), hit.uvt.zzz, ray.origin.xyz); const float shiftLenght = hit.uvt.z*1e-3f;
+            writeColor(ray.dcolor, vec4(0.f.xxx, 1.f));
 
             // alternate of http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
             const float alph = (emisson.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(dcolor))) || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
-            imageStore(rayLink, (rayID<<1)|1, (0).xxxx);
+            //const float alph = (emisson.a >= 0.5f || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
 
-            //const float alph = stageUniform.iteration == stageUniform.lastIteration ? 1.f : emisson.a; reflc.xyz *= 0.f;
-            ISTORE(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz * alph.xxx * (1.f.xxx - reflc.xyz), dcolor.xyz, bcolor.xyz), 1.f));
-
-            // generate secondary rays (binary transparency)
-            VtRay newray = ray;
-            newray.origin.xyz = fma(dcts(newray.cdirect.xy), hit.uvt.zzz, newray.origin.xyz);
-            writeColor(newray.dcolor, vec4(0.f.xxx, 1.f));
-
-            // prefer deferred reflection mode
-            // planned blurry reflection support
+            // transparency ray
+            VtRay newray = ray; {
+                const vec3 vdir = dcts(ray.cdirect.xy), shift = vdir;
+                newray.origin.xyz = fma(shift, shiftLenght.xxx, ray.origin.xyz);
+                writeColor(newray.dcolor, vec4(colf * (1.f - alph).xxx, 1.f));
+                vtReuseRays(newray, ucoord.xy, 0, rayID);
+            }
+            
+            // create data for reflection rays
+            const vec3 vcolor = dcolor.xyz * alph.xxx; // visible ray color energy
             [[flatten]] if (alph > 0.f) {
-                vec3 rdir = reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz), shift = hit.vdat.xyz;
-                ISTORE(OriginPass, ivec2(icoord), vec4(fma(faceforward(shift, -rdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz), 1.f));
-                ISTORE(NormalPass, ivec2(icoord), vec4(rdir, 0.f));
-                ISTORE(SpecularPass, ivec2(icoord), vec4(dcolor.xyz * alph.xxx * reflc.xyz, reflc.w));
+                const vec3 vdir = reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz), shift = vdir;
+                const vec3 orig = fma(shift, shiftLenght.xxx, ray.origin.xyz);
+                const vec3 rcol = vcolor * reflc.xyz;
+
+                ISTORE(OriginPass, icoord, vec4(orig, 1.f));
+                ISTORE(NormalPass, icoord, vec4(vdir, 0.f));
+                ISTORE(SpecularPass, icoord, vec4(rcol, reflc.w));
             }
 
-            // use reflection mode
-            //[[flatten]] if (max3_vec(f16_f32(newray.dcolor)) < 1e-4f) {
-            //    newray.cdirect.xy = lcts(reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz));
-            //    writeColor(newray.dcolor, vec4(dcolor.xyz * alph.xxx * reflc.xyz, 1.f));
-            //}
-
-            // use transparency mode
-            [[flatten]] if (max3_vec(f16_f32(newray.dcolor)) < 1e-4f) {
-                newray.cdirect.xy = ray.cdirect.xy;
-                writeColor(newray.dcolor, vec4(dcolor.xyz * (1.f - reflc.xyz) * (1.f - alph).xxx, 1.f));
-            }
-
-            // resolve ray emission
-            [[flatten]] if (max3_vec(f16_f32(newray.dcolor).xyz) >= 1e-4f) {
-                vec3 vdir = dcts(newray.cdirect.xy), shift = vdir;//hit.vdat.xyz;
-                newray.origin.xyz = fma(faceforward(shift, -vdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz); // add ray error offset
-                vtReuseRays(newray, icoord.xy, 0, rayID);
+            { // output color
+                const vec3 outcolor = vcolor * (1.f.xxx - reflc.xyz);
+                ISTORE(ColorOutput, icoord, vec4(fma(emisson.xyz, outcolor.xyz, bcolor.xyz), 1.f));
             }
         }
     }

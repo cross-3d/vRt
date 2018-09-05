@@ -71,7 +71,7 @@ namespace _vt {
         auto cmdClean = [&](){
             cmdFillBuffer<0u>(*cmdBuf, rtset->_countersBuffer);
             cmdFillBuffer<0u>(*cmdBuf, rtset->_groupCountersBuffer);
-            //cmdFillBuffer<0u>(*cmdBuf, rtset->_groupIndicesBuffer);
+            cmdFillBuffer<0u>(*cmdBuf, rtset->_groupIndicesBuffer);
             updateCommandBarrier(*cmdBuf);
         };
 
@@ -106,32 +106,34 @@ namespace _vt {
             }
 
             // reload to caches and reset counters (if has group shaders)
+            bool hasGroupShaders = false;
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_groupPipelines.size()); i++) {
                 if (rtppl->_groupPipelines[i]) {
                     cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 16 * sizeof(uint32_t)) });
                     cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, rayCount * sizeof(uint32_t) * 5) });
                     cmdClean();
-                    break;
+                    hasGroupShaders = true; break;
                 }
             }
+            
+            // handling misses in groups
+            if (rtppl->_missHitPipeline[0]) {
+                cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY);
+            }
 
-            {
-                // handling misses in groups
-                if (rtppl->_missHitPipeline[0]) {
+            // handling hits in groups
+            for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
+                if (rtppl->_closestHitPipeline[i]) {
+                    rtset->_cuniform.currentGroup = i;
                     cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                    cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY);
-                }
-
-                // handling hits in groups
-                for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
-                    if (rtppl->_closestHitPipeline[i]) {
-                        rtset->_cuniform.currentGroup = i;
-                        cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                        cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY);
-                    }
+                    cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY);
                 }
             }
+
+            // clear counters for pushing newer data
+            if (hasGroupShaders) cmdFillBuffer<0u>(*cmdBuf, rtset->_countersBuffer);
 
             // use resolve shader for resolve ray output or pushing secondaries
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_groupPipelines.size()); i++) {
