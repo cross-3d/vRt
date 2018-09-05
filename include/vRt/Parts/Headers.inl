@@ -1,6 +1,5 @@
 #pragma once
 
-
 //#ifdef OS_WIN
 #if (defined(_WIN32) || defined(__MINGW32__) || defined(_MSC_VER_) || defined(__MINGW64__)) 
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -14,8 +13,6 @@
 #define GLFW_EXPOSE_NATIVE_GLX
 #define VK_USE_PLATFORM_XLIB_KHR
 #endif
-
-
 
 // if vulkan header included, make compatible with volk.h
 #ifdef VULKAN_H_
@@ -56,3 +53,6 @@
 #ifdef VRT_ENABLE_STRING_VIEW
 #include <string_view>
 #endif
+
+// define namespace for some cases
+namespace vrt {};
