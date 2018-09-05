@@ -65,6 +65,7 @@ void main() {
 
             // alternate of http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
             const float alph = (emisson.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(dcolor))) || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
+            imageStore(rayLink, (rayID<<1)|1, (0).xxxx);
 
             //const float alph = stageUniform.iteration == stageUniform.lastIteration ? 1.f : emisson.a; reflc.xyz *= 0.f;
             ISTORE(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz * alph.xxx * (1.f.xxx - reflc.xyz), dcolor.xyz, bcolor.xyz), 1.f));

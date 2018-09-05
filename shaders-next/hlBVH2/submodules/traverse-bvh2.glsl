@@ -52,7 +52,7 @@ void doIntersection() {
     const bool isvalid = true;//traverseState.defTriangleID > 0;
     vec2 uv = vec2(0.f.xx); const float d = 
 #ifdef VRT_USE_FAST_INTERSECTION
-        intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid);
+        intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid, primitiveState.lastIntersection.z);
 #else
         intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID-1, uv.xy, isvalid);
 #endif

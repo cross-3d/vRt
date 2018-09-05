@@ -157,10 +157,10 @@ void mixed(inout float src, inout float dst, in float coef) { dst *= coef; src *
 void mixed(inout vec3 src, inout vec3 dst, in float coef) { dst *= coef; src *= 1.0f - coef; }
 void mixed(inout vec3 src, inout vec3 dst, in vec3 coef) { dst *= coef; src *= 1.0f - coef; }
 
-float clamp01(in float c) {return clamp(c, 0.000001f.x,    0.999999f.x);    };
-vec2  clamp01(in vec2 c)  {return clamp(c, 0.000001f.xx,   0.999999f.xx);   };
-vec3  clamp01(in vec3 c)  {return clamp(c, 0.000001f.xxx,  0.999999f.xxx);  };
-vec4  clamp01(in vec4 c)  {return clamp(c, 0.000001f.xxxx, 0.999999f.xxxx); };
+float clamp01(in float c) {return clamp(c, 0.0f.x,    0.99999f.x);    };
+vec2  clamp01(in vec2 c)  {return clamp(c, 0.0f.xx,   0.99999f.xx);   };
+vec3  clamp01(in vec3 c)  {return clamp(c, 0.0f.xxx,  0.99999f.xxx);  };
+vec4  clamp01(in vec4 c)  {return clamp(c, 0.0f.xxxx, 0.99999f.xxxx); };
 
 // matrix math (simular DX12)
 vec4 mult4(in vec4 vec, in mat4 tmat) { return tmat * vec; }

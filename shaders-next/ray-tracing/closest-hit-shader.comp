@@ -169,13 +169,12 @@ void main() {
                 const int pid = atomicIncPayloadHitCount();
 
                 // if opaque, set near to top
-                [[flatten]] if (hrand(uvec2(imageLoad(rayLink, (rayID<<1)|1).x, hitID+1)) >= (1.f-hitp.albedo.w)) {
+                //[[flatten]] if (hrand(uvec2(imageLoad(rayLink, (rayID<<1)|1).x, hitID+1)) >= (1.f-hitp.albedo.w)) {
                     //comparable = imageAtomicMax(rayLink, rayID<<1, hitID+1);
-                    comparable = imageAtomicMin(rayLink, rayID<<1, hitID+1); // reversed version
-                }
+                    //comparable = imageAtomicMin(rayLink, rayID<<1, hitID+1); // reversed version
+                //}
 
-                //[[flatten]] if (comparable <= (hitID+1)) 
-                [[flatten]] if (comparable >= (hitID+1)) // reversed version
+                //imageStore(rayLink, rayID<<1, (hitID+1).xxxx);
                 {
                     hit.payloadID = pid+1;
 #ifndef DMA_HIT

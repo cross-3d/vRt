@@ -126,14 +126,14 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 #ifndef VRT_USE_FAST_INTERSECTION
 float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, in bool valid) {
     float T = INFINITY;
-    IFANY (valid) {
+    [[flatten]] IFANY (valid) {
         // gather patterns
         const mat3 ABC = mat3(TLOAD(lvtx, tri*3+0).xyz+orig.xxx, TLOAD(lvtx, tri*3+1).xyz+orig.yyy, TLOAD(lvtx, tri*3+2).xyz+orig.zzz)*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf
         vec3 UVW_ = uvwMap[axis] * inverse(ABC);
-        IFANY (valid = valid && (all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx)))) {
+        [[flatten]] IFANY (valid = valid && (all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx)))) {
             UVW_ /= precIssue(dot(UVW_, vec3(1)));
             UV = vec2(UVW_.yz), UVW_ *= ABC; // calculate axis distances
             T = mix(mix(UVW_.z, UVW_.y, axis == 1), UVW_.x, axis == 0);
@@ -147,42 +147,41 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
 
 #ifdef VRT_USE_FAST_INTERSECTION
 #ifdef VTX_USE_LEGACY_METHOD
-float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid) {
+float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid, inout float cdist) {
     const mat3 vT = mat3(TLOAD(lvtx, tri*3+0).xyz, TLOAD(lvtx, tri*3+1).xyz, TLOAD(lvtx, tri*3+2).xyz);
     const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
     const vec3 h = cross(dir.xyz, e2);
     const float a = dot(e1,h);
 
 #ifdef BACKFACE_CULLING
-    if (a <= 0.f) { _valid = false; }
+    [[flatten]] if (a <= 0.f) { _valid = false; }
 #else
-    if (abs(a) <= 0.f) { _valid = false; }
+    [[flatten]] if (abs(a) <= 0.f) { _valid = false; }
 #endif
 
     const float f = 1.f/a;
     const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1);
     uv = f * vec2(dot(s,h),dot(dir.xyz,q));
 
-    if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
+    [[flatten]] if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
 
     float T = f * dot(e2,q);
-    if (T >= INFINITY || T < 0.f) { _valid = false; } 
-    if (!_valid) T = INFINITY;
+    [[flatten]] if (T >= INFINITY || T < 0.f) { _valid = false; } 
+    [[flatten]] if (!_valid) T = INFINITY;
     return T;
 }
 #else
 // intersect triangle by transform
 // alternate of http://jcgt.org/published/0005/03/03/paper.pdf
-float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid) {
+float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid, inout float cdist) {
     const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
-
     const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]), T = oz/dz;
-    if (T >= INFINITY || T < 0.f) { _valid = false; }
-
-    const vec4 hit = fma(dir,T.xxxx,-orig);
-    uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
-    if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
-
+    [[flatten]] if (T >= INFINITY || T > cdist || T < 0.f) { _valid = false; }
+    [[flatten]] if (_valid) {
+        const vec4 hit = fma(dir,T.xxxx,-orig);
+        uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
+        [[flatten]] if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
+    }
     return (_valid ? T : INFINITY);
 }
 #endif

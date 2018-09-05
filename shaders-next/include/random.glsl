@@ -1,7 +1,7 @@
 #ifndef _RANDOM_H
 #define _RANDOM_H
 
-uint randomClocks = 0, globalInvocationSMP = 0, subHash = 0;
+uint randomClocks = 1, globalInvocationSMP = 1, subHash = 1;
 
 
 float floatConstruct( in uint m ) {
