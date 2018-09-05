@@ -1,9 +1,13 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
-#include "./BuildAccelerator.inl"
-#include "./RayTracing.inl"
-#include "./RadixSort.inl"
+// implementables
+#include "../vRt_subimpl.inl"
+
+// modules
+#include "API/BuildAccelerator.inl"
+#include "API/RayTracing.inl"
+#include "API/RadixSort.inl"
+
 
 namespace vrt {
     //using namespace _vt;
@@ -182,6 +186,5 @@ namespace vrt {
         }
         return VK_SUCCESS;
     }
-
 
 };

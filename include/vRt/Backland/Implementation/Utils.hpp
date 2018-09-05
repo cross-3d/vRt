@@ -1,6 +1,12 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+// implementables
+#include "../vRt_subimpl.inl"
+
+// requirements
+#include "../Definitions/Initializers.inl"
+#include "../Definitions/HardClasses.inl"
+//#include "../../Definitions/Structures.inl"
 
 // C++ internal initializers for hard classes
 namespace _vt { // store in undercover namespace
@@ -314,21 +320,22 @@ namespace _vt { // store in undercover namespace
 
 };
 
+
 // templates is not supported by static libs
 // all pure C++ stuff will implementing by headers in SDK
 namespace vrt {
     template <class T>
-    inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, intptr_t offset) {
+    inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, VkDeviceSize offset) {
         _vt::setBufferSubData<T, VMA_MEMORY_USAGE_CPU_TO_GPU>(hostdata, buffer, offset); return VK_SUCCESS;
     };
 
     template <class T>
-    inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, intptr_t offset) {
+    inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, VkDeviceSize offset) {
         _vt::getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, hostdata, offset); return VK_SUCCESS;
     };
 
     template <class T>
-    inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, VkDeviceSize count, intptr_t offset) {
+    inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, VkDeviceSize count, VkDeviceSize offset) {
         return _vt::getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, count, offset);
     };
 };

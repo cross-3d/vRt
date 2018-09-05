@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Headers.inl"
-#include "HardClassesDef.inl"
+#include "StructuresDef.inl"
+
 
 // store in official namespace
 namespace vrt {
@@ -15,6 +15,10 @@ namespace vrt {
     class VtMaterialSet;
     class VtVertexInputSet;
     class VtVertexAssemblyPipeline;
+    class VtRayTracingSet;
+    class VtVertexAssemblySet;
+    class VtAcceleratorSet;
+
 
     // advanced class (buffer)
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>

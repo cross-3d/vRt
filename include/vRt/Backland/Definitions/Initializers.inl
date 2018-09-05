@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+// implementable, used for describe types
+#include "HardClassesDef.inl"
 
 // C++ internal initializers for hard classes
 namespace _vt { // store in undercover namespace

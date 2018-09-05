@@ -43,9 +43,9 @@
 You can see here current API of library:
 
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/API.inl
-- https://github.com/world8th/vRt/blob/master/include/vRt/Parts/Structures.inl
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/StructuresDef.inl
 - https://github.com/world8th/vRt/blob/master/include/vRt/Parts/Enums.inl
+- https://github.com/world8th/vRt/blob/master/include/vRt/Backland/Definitions/Structures.inl
 
 ## Roadmaps
 

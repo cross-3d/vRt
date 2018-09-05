@@ -9,5 +9,6 @@
 #include "Utilities/SpvPaths.hpp"
 #endif
 
-#include "Implementation/HardClasses.inl"
-#include "Implementation/API/Calls.inl"
+// implementations 
+#include "Implementation/HardClassesImpl.inl" // import internal classes
+#include "Implementation/APIImpl.inl" // import API implementation

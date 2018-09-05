@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../vRt_subimpl.inl"
+#include "../Utils.hpp"
 #include "RadixSort.inl"
 
 namespace _vt {

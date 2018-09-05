@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Headers.inl"
 #include "StructuresLow.inl"
+
 
 namespace vrt { // store in official namespace
 
@@ -24,9 +24,30 @@ namespace vrt { // store in official namespace
     struct VtDeviceBufferCreateInfo;
     struct VtDeviceImageCreateInfo;
     struct VtBufferRegionCreateInfo;
+    struct VtPipelineLayoutCreateInfo;
+    struct VtVertexAssemblyPipelineCreateInfo;
+    struct VtRayTracingSetCreateInfo;
+    struct VtVertexAssemblySetCreateInfo;
 
 
+    // constexpr format compositor
+    struct VtFormatDecomp {
+        union { uint32_t _format = 0; struct { uint32_t _components : 2, _type : 4, _normalized : 1; } _formatDecomp; };
 
+        constexpr VtFormatDecomp() {};
+        constexpr VtFormatDecomp(uint8_t components, uint8_t type, uint8_t normalized = 0) : _formatDecomp({ components - 1u , type, normalized }) {};
+        constexpr VtFormatDecomp(uint32_t format) : _format(format) {};
+        constexpr operator uint32_t() const { return _format; };
+        //operator uint32_t() const { return _format; };
+
+        constexpr VtFormatDecomp& setComponents(uint8_t components) { _formatDecomp._components = components - 1u; return *this; };
+        constexpr VtFormatDecomp& setType(uint8_t type) { _formatDecomp._type = type; return *this; };
+        constexpr VtFormatDecomp& setNormalized(bool normalized) { _formatDecomp._normalized = normalized; return *this; };
+
+        constexpr uint8_t getComponents() const { return _formatDecomp._components + 1u; };
+        constexpr uint8_t getType() const { return _formatDecomp._type; };
+        constexpr bool getNormalized() const { return _formatDecomp._normalized; };
+    };
 
     struct VtVirtualCombinedImage {
         union {
@@ -59,27 +80,6 @@ namespace vrt { // store in official namespace
         VT_TYPE_HALF = 3
     } VtType;
 
-
-
-    // constexpr format compositor
-    struct VtFormatDecomp {
-        union { uint32_t _format = 0; struct { uint32_t _components : 2, _type : 4, _normalized : 1; } _formatDecomp; };
-
-        constexpr VtFormatDecomp() {};
-        constexpr VtFormatDecomp(uint8_t components, uint8_t type, uint8_t normalized = 0) : _formatDecomp({ components - 1u , type, normalized }) {};
-        constexpr VtFormatDecomp(uint32_t format) : _format(format) {};
-        constexpr operator uint32_t() const { return _format; };
-        //operator uint32_t() const { return _format; };
-
-        constexpr VtFormatDecomp& setComponents(uint8_t components) { _formatDecomp._components = components - 1u; return *this; };
-        constexpr VtFormatDecomp& setType(uint8_t type) { _formatDecomp._type = type; return *this; };
-        constexpr VtFormatDecomp& setNormalized(bool normalized) { _formatDecomp._normalized = normalized; return *this; };
-
-        constexpr uint8_t getComponents() const { return _formatDecomp._components + 1u; };
-        constexpr uint8_t getType() const { return _formatDecomp._type; };
-        constexpr bool getNormalized() const { return _formatDecomp._normalized; };
-    };
-
     // any other vertex accessors can be used by attributes
     struct VtVertexAccessor {
         uint32_t bufferViewID = 0;
@@ -107,5 +107,8 @@ namespace vrt { // store in official namespace
         uint32_t attributeBinding = 0;
         uint32_t accessorID = 0;
     };
+
+    // retype VtFormatDecomp
+    using VtFormat = VtFormatDecomp;
 
 };

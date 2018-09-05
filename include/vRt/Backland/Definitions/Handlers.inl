@@ -1,13 +1,9 @@
 #pragma once
 
-#include "Headers.inl"
-#include "HandlersDef.inl"
-#include "HardClassesDef.inl"
+// implementable
 #include "HardClasses.inl"
 
-// class aliases for vRt from C++ hard implementators (incomplete)
-// use shared pointers for C++
-// (planned use plain pointers in C)
+// implement of handlers
 namespace vrt { // store in official namespace
 
     // unified template for making regular classes

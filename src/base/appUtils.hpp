@@ -44,10 +44,10 @@
 #include <vulkan/vk_mem_alloc.h>
 
 // include inner utils from library (for development purpose)
-#include "vRt/Utilities/VkUtils.hpp"
+#include "vRt/Backland/Utilities/VkUtils.hpp"
 
 // also need include these headers
-#include "vRt/Implementation/API/Utils.hpp"
+#include "vRt/Backland/Implementation/Utils.hpp"
 
 // inner utils of application
 namespace NSM {

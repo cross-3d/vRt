@@ -1,8 +1,10 @@
 #pragma once
 
-#include "API/Initializers.inl"
-#include "HardClasses/DeviceBuffer.inl"
-#include "HardClasses/DeviceImage.inl"
+// implementables
+#include "../vRt_subimpl.inl"
+
+// implementation of initializers
+#include "HardClasses/MemoryManager.inl"
 #include "HardClasses/PipelineLayout.inl"
 #include "HardClasses/Pipeline.inl"
 #include "HardClasses/MaterialSet.inl"

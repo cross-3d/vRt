@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Headers.inl"
-#include "StructuresLow.inl"
+#include "StructuresDef.inl"
+
 
 namespace vrt { // store in official namespace
     // for not confusing with Vulkan API enums
@@ -39,9 +39,6 @@ namespace vrt { // store in official namespace
         VT_STRUCTURE_TYPE_BUFFER_REGION_CREATE_INFO = 0x11F00013,
     } VtStructureType;
 
-    // retype VtFormatDecomp
-    using VtFormat = VtFormatDecomp;
-
     // use constexpr VtFormat constants
     constexpr const static inline auto
         VT_FORMAT_R32G32B32A32_SFLOAT = VtFormatDecomp(4u, VT_TYPE_FLOAT),
@@ -76,7 +73,4 @@ namespace vrt { // store in official namespace
         VT_VENDOR_NVIDIA,
         VT_VENDOR_INTEL
     } VtVendor;
-
-
-
 };
