@@ -239,7 +239,7 @@ namespace rnd {
 
         {
             // use single layer only (for experimenting, can changed)
-            const uint32_t transparencyOrders = 2;
+            const uint32_t transparencyOrders = 3;
 
             // make ray tracing command buffer
             rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
