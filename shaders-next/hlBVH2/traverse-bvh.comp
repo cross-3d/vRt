@@ -63,8 +63,8 @@ void main() {
             [[flatten]] IF (triID >= 0) {
                 [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // if required new
                 hit.uvt = primitiveState.lastIntersection;
-                hit.attribID = vtVerifyClosestHit(hid, -1)+1;
-                imageAtomicMax(rayLink, rayID<<1, hid+1);
+                hit.attribID = vtVerifyClosestHit(hid,-1)+1;
+                //imageAtomicMax(rayLink,rayID<<1, (hid+1).x);
             }
             
             // if no found any intersection
@@ -73,7 +73,7 @@ void main() {
                 [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // if required new
                 hit.uvt = vec4(0.f.xx, INFINITY, intBitsToFloat(-1));
                 hit.attribID = 0; vtVerifyMissedHit(hid, 0);
-                imageAtomicMax(rayLink, rayID<<1, hid+1);
+                //imageAtomicMax(rayLink,rayID<<1, (hid+1).x);
             }
 
 #ifndef DMA_HIT

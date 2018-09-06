@@ -16,6 +16,7 @@
 #include "./submodules/environment.glsl"
 
 #define cray rays[rayID]
+#define hid hitID // alias of
 
 VtHitPayload hitp;
 LOCAL_SIZE_LAYOUT;
@@ -57,13 +58,14 @@ void main() {
             // ray direction debug emission
             //hitp.emission = vec4(viewVec*0.5f+0.5f, 1.f);
             //hitp.emission = vec4(toLinear(vec3(0.05f, 0.05f, 0.2f)), 1.f);
-            //hitp.emission = vec4(toLinear(vec3(135, 206, 235)/255.f.xxx), 1.f);
-            hitp.emission = vec4(toLinear(vec3(0.1f, 0.105f, 0.12f)), 1.f);
+            hitp.emission = vec4(toLinear(vec3(135, 206, 235)/255.f.xxx), 1.f);
+            //hitp.emission = vec4(toLinear(vec3(0.1f, 0.105f, 0.12f)), 1.f);
 
             // additional validation of hit (hit point interpolated offset test)
-            [[flatten]]
-            if (!overflow && hit.rayID > 0) {
+            [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0) {
+                imageAtomicMax(rayLink,rayID<<1,(hid+1).x);
                 const int pid = atomicIncPayloadHitCount();
+                
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT
                 hits[hitID] = hit;

@@ -45,8 +45,7 @@ void main() {
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        //const int rayID = rayGroupIndicesRead[globalID*5+(stageUniform.currentGroup+1)]-1;
-        const int rayID = rayGroupIndicesRead[globalID]-1;
+        const int rayID = (globalID < MAX_RAYS ? rayGroupIndicesRead[globalID] : 0)-1;
         const bool overflow = globalID >= wsize || globalID < 0 || rayID < 0;
 
         // get ray by id
@@ -60,13 +59,13 @@ void main() {
         const ivec2 icoord = ivec2(ucoord);
 
         // add support for multi-passing
-        [[flatten]] if (!overflow) {
+        [[flatten]] if (!overflow && rayID >= 0) {
             // reflection prior (early stage)
             const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, icoord);
-            const vec3 colf = dcolor.xyz;
+            const float shiftLenght = hit.uvt.z*1e-3f;
 
             // get real origin of ray
-            ray.origin.xyz = fma(dcts(ray.cdirect.xy), hit.uvt.zzz, ray.origin.xyz); const float shiftLenght = hit.uvt.z*1e-3f;
+            ray.origin.xyz = fma(dcts(ray.cdirect.xy), hit.uvt.zzz, ray.origin.xyz); 
             writeColor(ray.dcolor, vec4(0.f.xxx, 1.f));
 
             // alternate of http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
@@ -77,7 +76,7 @@ void main() {
             VtRay newray = ray; {
                 const vec3 vdir = dcts(ray.cdirect.xy), shift = vdir;
                 newray.origin.xyz = fma(shift, shiftLenght.xxx, ray.origin.xyz);
-                writeColor(newray.dcolor, vec4(colf * (1.f - alph).xxx, 1.f));
+                writeColor(newray.dcolor, vec4(dcolor.xyz * (1.f - alph).xxx, 1.f));
                 vtReuseRays(newray, ucoord.xy, 0, rayID);
             }
             

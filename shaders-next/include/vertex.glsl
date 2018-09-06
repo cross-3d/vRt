@@ -59,6 +59,7 @@ layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB {
     mat4x4 projection;
     mat4x4 projectionInv;
     int leafCount, primitiveCount, entryID, primitiveOffset;
+    vec4 sceneMin, sceneMax;
 } bvhBlock;
 
 #define BVH_ENTRY bvhBlock.entryID
@@ -137,7 +138,7 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
             UVW_ /= precIssue(dot(UVW_, vec3(1)));
             UV = vec2(UVW_.yz), UVW_ *= ABC; // calculate axis distances
             T = mix(mix(UVW_.z, UVW_.y, axis == 1), UVW_.x, axis == 0);
-            T = mix(INFINITY, T, (T >= -(1e-5f)) && valid);
+            T = mix(INFINITY, T, (T >= 0.f) && valid);
         }
     }
     return T;
@@ -166,7 +167,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
     [[flatten]] if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
 
     float T = f * dot(e2,q);
-    [[flatten]] if (T >= INFINITY || T < 0.f) { _valid = false; } 
+    [[flatten]] if (T >= (INFINITY-IOFF) || T < 0.f) { _valid = false; } 
     [[flatten]] if (!_valid) T = INFINITY;
     return T;
 }
@@ -176,11 +177,10 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid, inout float cdist) {
     const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
     const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]), T = oz/dz;
-    [[flatten]] if (T >= INFINITY || T > cdist || T < 0.f) { _valid = false; }
+    [[flatten]] if (T >= (INFINITY-IOFF) || T > cdist || T < 0.f) { _valid = false; };
     [[flatten]] if (_valid) {
-        const vec4 hit = fma(dir,T.xxxx,-orig);
-        uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
-        [[flatten]] if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
+        const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
+        [[flatten]] if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; };
     }
     return (_valid ? T : INFINITY);
 }
@@ -269,11 +269,12 @@ bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in bvec3 sgn, in m
     tMinMax[2] = sgn.z ? tMinMax[2] : tMinMax[2].yx;
 
     float 
-        tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x), 
-        tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y)*InOne;
+        tNear = (max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x)-InZero), 
+        tFar  = (min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y)+InZero)*InOne;
+        //tFar  = (min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y))*InOne;
 
     // resolve hit
-    const bool isCube = tFar>tNear && tFar>=0.f && tNear < INFINITY;
+    const bool isCube = tFar>tNear && tFar>=0.f && tNear < (INFINITY-IOFF);
     nfe.xz = mix(INFINITY.xx, vec2(tNear, tFar), isCube.xx);
     return isCube;
 }
@@ -304,10 +305,11 @@ lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in bvec3 sgn, i
     mediump
 #endif
     fvec2_
-        tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy),
-        tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw)*InOne.xx;
+        tNear = (max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy)-InZero),
+        tFar  = (min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw)+InZero)*InOne;
+        //tFar  = (min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw))*InOne;
 
-    const bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(tNear, fvec2_(INFINITY-PRECERR)));
+    const bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(tNear, fvec2_(INFINITY-IOFF)));
     nfe2 = mix(INFINITY.xxxx, vec4(tNear, tFar), bvec4(isCube, isCube));
     return isCube;
 }

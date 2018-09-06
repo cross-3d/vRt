@@ -5,6 +5,16 @@
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 
+// force undef fp16
+//#ifdef AMD_F16_BVH
+//#undef AMD_F16_BVH
+//#endif
+
+// force define fp32
+//#ifndef USE_F32_BVH
+//#define USE_F32_BVH
+//#endif
+
 #include "../../include/driver.glsl"
 #include "../../include/mathlib.glsl"
 #include "../../include/ballotlib.glsl"
@@ -58,7 +68,7 @@ void main() {
     IFALL (bvhBlock.primitiveCount <= 0) return;
 
     // 
-    sdata[tid] = bbox_t(vec4( 100000.f), vec4(-100000.f));
+    sdata[tid] = bbox_t(INFINITY.xxxx, -INFINITY.xxxx);
     LGROUP_BARRIER
 
     // calculate boxes for per work

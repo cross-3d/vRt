@@ -298,7 +298,7 @@ namespace rnd {
         vk::RenderPass renderpass = {};
         vte::Queue deviceQueue = {};
         
-        float guiScale = 1.0;
+        float guiScale = 1.0f;
         uint32_t canvasWidth = 1, canvasHeight = 1; // canvas size with SSAA accounting
         uint32_t windowWidth = 1, windowHeight = 1; // virtual window size (without DPI recalculation)
         uint32_t realWidth = 1, realHeight = 1; // real window size (with DPI accounting)
@@ -318,16 +318,12 @@ namespace rnd {
         double modelScale = 1.0, tPastFramerateStreamF = 60.0, tPast = 1e-5;
         std::chrono::high_resolution_clock::time_point tStart; // starting time
 
-        // camera position
-        glm::vec3 scale = glm::vec3(1.f);
+        // camera position 
+        glm::vec3 scale = glm::vec3(0.015625f); // correction for precisions
         glm::vec3 eyePos = glm::vec3(-3.5f, 10.5f, -50.6f).zyx();
         glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
         glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
         glm::vec3 upVector = glm::vec3(1e-5f, 1.f, 1e-5f);
-
-        //glm::vec3 eyePos = glm::vec3(1e-4f, 2.0f, 50.6f);
-        //glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, -1.f);
-        //glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, -1.f);
 
 
         // output objects

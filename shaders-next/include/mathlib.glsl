@@ -7,9 +7,9 @@
 
 // NEXT standard consts in current
 // Ray tracing NEXT capable shader standard development planned begin in 2019 year
-const float PZERO = 0.0001f;
+//const float PZERO = 0.0001f;
 const float PHI = 1.6180339887498948482f;
-const float INFINITY = 9999.9999f;
+const float INFINITY = 1e+4f, IOFF = 1e-4f;
 const float PI = 3.1415926535897932384626422832795028841971f;
 const float TWO_PI = 6.2831853071795864769252867665590057683943f;
 const float SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
@@ -111,6 +111,7 @@ const uint UINT_ZERO = 0x0u, UINT_NULL = 0xFFFFFFFFu;
 #define FINT_NULL uintBitsToFloat(UINT_NULL)
 #define FINT_ZERO uintBitsToFloat(UINT_ZERO)
 
+/*
 // inprecise comparsion functions
 const float PRECERR = PZERO;
 lowp bool_ lessEqualF   (in float a, in float b) { return bool_(   (a-b) <=  PRECERR); }
@@ -118,16 +119,18 @@ lowp bool_ lessF        (in float a, in float b) { return bool_(   (a-b) <  -PRE
 lowp bool_ greaterEqualF(in float a, in float b) { return bool_(   (a-b) >= -PRECERR); }
 lowp bool_ greaterF     (in float a, in float b) { return bool_(   (a-b) >   PRECERR); }
 lowp bool_ equalF       (in float a, in float b) { return bool_(abs(a-b) <=  PRECERR); }
+*/
 
 // precision utils
-float precIssue(in float a) { return sign(a)*max(abs(a),1e-4f); }
+#define precIssue(a) (sign(a)*max(abs(a),1e-5f))
+//#define precIssue(a) (a)
 
 // vector math utils
 float sqlen(in vec3 a) { return dot(a, a); }
 float sqlen(in vec2 a) { return dot(a, a); }
 float sqlen(in float v) { return v * v; }
 int modi(in int a, in int b) { return (a % b + b) % b; }
-vec4 divW(in vec4 aw) { return aw / precIssue(aw.w); }
+vec4 divW(in vec4 aw) { return aw / abs(precIssue(aw.w)); }
 vec3 rotate_vector( in vec4 quat, in vec3 vec ) { return vec + 2.0 * cross( cross( vec, quat.xyz ) + quat.w * vec, quat.xyz ); }
 vec4 rotation_quat( in vec3 axis, in float half_angle ) { return vec4(axis * sin(half_angle), cos(half_angle)); }
 
@@ -378,26 +381,6 @@ highp uvec2 up2x_16(in uint a) {
 #endif
 };
 
-
-/*
-highp uint p2x_8(in lowp uvec2 a) {
-    return bitfieldInsert(a.x&0xFFu, a.y, 8, 8);
-};
-
-lowp uvec2 up2x_8(in highp uint a) {
-    return uvec2(a&0xFFu, bitfieldExtract(a, 8, 8));
-};
-
-#ifdef ENABLE_AMD_INT16
-    uint16_t p2x_8x(in lowp uvec2 a) {
-        return uint16_t(bitfieldInsert(a.x&0xFFu, a.y, 8, 8));
-    };
-
-    lowp uvec2 up2x_8x(in uint16_t a) {
-        return uvec2(a&0xFFu, bitfieldExtract(a, 8, 8));
-    };
-#endif
-*/
 
 #if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
 // it should be 8-bit, but there is no native support

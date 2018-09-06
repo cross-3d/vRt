@@ -44,13 +44,8 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
-        [[flatten]] if (!overflow) { // verify intersection
-            //const int rayID = hit.rayID-1, triID = floatBitsToInt(hit.uvt.w)-1;
-            const int triID = floatBitsToInt(hit.uvt.w)-1;
-
-            // force set zero to hit index, and put minimal possible after (this index can be changed in hit shaders)
-            //imageAtomicCompSwap(rayLink, rayID<<1, 0u, hitID+1), imageAtomicMin(rayLink, rayID<<1, hitID+1);
-            //imageAtomicMax(rayLink, rayID<<1, hitID+1); // reversed version
+        [[flatten]] if (!overflow && hitID >= 0) { // verify intersection
+            const int triID = floatBitsToInt(hit.uvt.w)-1; imageAtomicMax(rayLink, (hit.rayID-1)<<1, (hitID+1).x);
 
             // interpolate hit
             if (triID >= 0) {

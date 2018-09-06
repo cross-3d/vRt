@@ -42,8 +42,9 @@ void main() {
         //bcenter.w = length(cross((trivertsUnit[1]-trivertsUnit[0]).xyz, (trivertsUnit[2]-trivertsUnit[0]).xyz))-1.f;
         
         #define triverts trivertsUnit
-        const bbox_t lbox = calcTriBox(triverts);
+        const bbox_t lbox = calcTriBox(triverts, (bvhBlock.sceneMax-bvhBlock.sceneMin));
         bcenter.w = fma(sqrt(dot(lbox.mx-lbox.mn,lbox.mx-lbox.mn) * 0.08333333333333333f), 2.0f, -1.f);
+        //bcenter = fma(bcenter, 0.5f.xxxx, 0.5f.xxxx);
 
         {
 #ifndef VRT_USE_FAST_INTERSECTION

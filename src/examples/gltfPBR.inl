@@ -144,9 +144,8 @@ namespace rnd {
         }
 
         {
-            scale = 10.0f * glm::vec3(1.f, 1.f, 1.f);
-            auto atMatrix = glm::lookAt(eyePos*scale, (eyePos+viewVector)*scale, upVector);
-            auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 0.0001f, 1000.f);
+            auto atMatrix = glm::lookAt(eyePos*glm::vec3(scale), (eyePos+viewVector)*glm::vec3(scale), upVector);
+            auto pjMatrix = glm::infinitePerspective(float(M_PI) / 3.f, 16.f / 9.f, 1e-5f);
 
             // set first uniform buffer data
             cameraUniformData.projInv = glm::transpose(glm::inverse(pjMatrix));
@@ -265,6 +264,9 @@ namespace rnd {
 
             vkEndCommandBuffer(qRtCmdBuf);
         }
+
+        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { vxuCmdBuf });
+        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
     };
 
 
@@ -721,7 +723,7 @@ namespace rnd {
             });
 
             // matrix with scaling
-            auto matrix = glm::dmat4(1.0) * glm::scale(glm::dvec3(modelScale, modelScale, modelScale));
+            auto matrix = glm::dmat4(1.0) * glm::scale(glm::dvec3(scale) * glm::dvec3(modelScale) * 0.1);
 
             // load scene
             uint32_t sceneID = 0;
@@ -751,7 +753,7 @@ namespace rnd {
         Shared::active.dX = 0.0, Shared::active.dY = 0.0;
 
         // update camera position
-        auto atMatrix = glm::lookAt(eyePos*scale, (eyePos + viewVector)*scale, upVector);
+        auto atMatrix = glm::lookAt(eyePos*glm::vec3(scale), (eyePos + viewVector)*glm::vec3(scale), upVector);
         cameraUniformData.camInv = glm::transpose(glm::inverse(atMatrix));
 
         // update start position
