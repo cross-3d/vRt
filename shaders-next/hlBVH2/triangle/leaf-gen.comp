@@ -37,14 +37,16 @@ void main() {
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, itri+1).xyzw)),
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, itri+2).xyzw))
         );
-        vec4 bcenter = vec4((trivertsUnit[0] + trivertsUnit[1] + trivertsUnit[2]).xyz * 0.33333333333333f, -1.f);
-        //const mat3x4 triverts = mat3x4(TLOAD(lvtxIn, itri+0).xyzw,TLOAD(lvtxIn, itri+1).xyzw,TLOAD(lvtxIn, itri+2).xyzw);
-        //bcenter.w = length(cross((trivertsUnit[1]-trivertsUnit[0]).xyz, (trivertsUnit[2]-trivertsUnit[0]).xyz))-1.f;
+        vec4 bcenter = vec4((trivertsUnit[0] + trivertsUnit[1] + trivertsUnit[2]).xyz * 0.33333333333333f, 0.f);
+        
+        vec4 boxrang = bvhBlock.sceneMax - bvhBlock.sceneMin;
+        bcenter.xyz = (bcenter.xyz - bvhBlock.sceneMin.xyz) / boxrang.xyz, bcenter.w = length(boxrang);
+        
         
         #define triverts trivertsUnit
-        const bbox_t lbox = calcTriBox(triverts, (bvhBlock.sceneMax-bvhBlock.sceneMin));
-        bcenter.w = fma(sqrt(dot(lbox.mx-lbox.mn,lbox.mx-lbox.mn) * 0.08333333333333333f), 2.0f, -1.f);
-        //bcenter = fma(bcenter, 0.5f.xxxx, 0.5f.xxxx);
+        const bbox_t lbox = calcTriBox(triverts);
+        bcenter.w = length(lbox.mx-lbox.mn)/bcenter.w;
+        
 
         {
 #ifndef VRT_USE_FAST_INTERSECTION
@@ -96,9 +98,9 @@ void main() {
         }
 
 #ifdef USE_MORTON_32
-        const uint mortonCode = encodeMorton(packSnorm4x8(bcenter));
+        const uint mortonCode = encodeMorton(packUnorm4x8(bcenter));
 #else
-        const uvec2 mortonCode = encodeMorton(uvec2(packSnorm2x16(bcenter.xy), packSnorm2x16(bcenter.zw)));
+        const uvec2 mortonCode = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
 #endif
 
 #define to globalID

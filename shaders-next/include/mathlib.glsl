@@ -122,15 +122,16 @@ lowp bool_ equalF       (in float a, in float b) { return bool_(abs(a-b) <=  PRE
 */
 
 // precision utils
-#define precIssue(a) (sign(a)*max(abs(a),1e-5f))
+#define precIssue(a) (sign(a)*max(abs(a),0.00000011920928955078125f))
 //#define precIssue(a) (a)
+
 
 // vector math utils
 float sqlen(in vec3 a) { return dot(a, a); }
 float sqlen(in vec2 a) { return dot(a, a); }
 float sqlen(in float v) { return v * v; }
 int modi(in int a, in int b) { return (a % b + b) % b; }
-vec4 divW(in vec4 aw) { return aw / abs(precIssue(aw.w)); }
+vec4 divW(in vec4 aw) { return aw / max(abs(aw.w),0.00000011920928955078125f); }
 vec3 rotate_vector( in vec4 quat, in vec3 vec ) { return vec + 2.0 * cross( cross( vec, quat.xyz ) + quat.w * vec, quat.xyz ); }
 vec4 rotation_quat( in vec3 axis, in float half_angle ) { return vec4(axis * sin(half_angle), cos(half_angle)); }
 

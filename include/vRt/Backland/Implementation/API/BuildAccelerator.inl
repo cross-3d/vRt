@@ -188,21 +188,15 @@ namespace _vt {
         auto acclb = device->_acceleratorBuilder;
         auto accel = cmdBuf->_acceleratorSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
-        const VtMat4 initialMat = {
-            { 1.f, 0.f, 0.f, 0.f },
-            { 0.f, 1.f, 0.f, 0.f },
-            { 0.f, 0.f, 1.f, 0.f },
-            { 0.f, 0.f, 0.f, 1.f },
-        };
 
         accel->_bvhBlockData.primitiveOffset = accel->_primitiveOffset;
         accel->_bvhBlockData.primitiveCount = (accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount;
         accel->_bvhBlockData.leafCount = accel->_bvhBlockData.primitiveCount;
         accel->_bvhBlockData.entryID = accel->_entryID;
-        accel->_bvhBlockData.projection = initialMat;
-        accel->_bvhBlockData.projectionInv = initialMat;
-        accel->_bvhBlockData.transform = initialMat;
-        accel->_bvhBlockData.transformInv = initialMat;
+        accel->_bvhBlockData.projection = accel->_bvhBlockData.projection;
+        accel->_bvhBlockData.projectionInv = IdentifyMat4;
+        accel->_bvhBlockData.transform = IdentifyMat4;
+        accel->_bvhBlockData.transformInv = IdentifyMat4;
         cmdUpdateBuffer(*cmdBuf, accel->_bvhBlockUniform, 0, sizeof(accel->_bvhBlockData), &accel->_bvhBlockData);
 
         // building hlBVH2 process

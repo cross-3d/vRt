@@ -7,11 +7,20 @@
 namespace vrt {
 
     // system vectors of ray tracers
-    struct VtVec4 { float x, y, z, w; };
-    struct VtVec3 { float x, y, z; };
-    struct VtVec2 { float x, y; };
-    struct VtUVec2 { uint32_t x, y; };
+    struct VtVec4 { float x = 0.f, y = 0.f, z = 0.f, w = 0.f; };
+    struct VtVec3 { float x = 0.f, y = 0.f, z = 0.f; };
+    struct VtVec2 { float x = 0.f, y = 0.f; };
+    struct VtUVec2 { uint32_t x = 0u, y = 0u; };
     struct VtMat4 { VtVec4 m0, m1, m2, m3; };
+
+    // identified matrix 
+    constexpr inline static const VtMat4 IdentifyMat4 = {
+        {1.f,0.f,0.f,0.f},
+        {0.f,1.f,0.f,0.f},
+        {0.f,0.f,1.f,0.f},
+        {0.f,0.f,0.f,1.f},
+    };
+
 
     // in future planned custom ray structures support
     // in current moment we will using 32-byte standard structuring
@@ -50,11 +59,12 @@ namespace vrt {
     };
 
     struct VtBvhBlock {
-        VtMat4 transform;
-        VtMat4 transformInv;
-        VtMat4 projection;
-        VtMat4 projectionInv;
+        VtMat4 transform = IdentifyMat4;
+        VtMat4 transformInv = IdentifyMat4;
+        VtMat4 projection = IdentifyMat4;
+        VtMat4 projectionInv = IdentifyMat4;
         int leafCount = 0, primitiveCount = 0, entryID = 0, primitiveOffset = 0;
+        VtVec4 sceneMin, sceneMax;
     };
 
 };

@@ -28,8 +28,9 @@ LOCAL_SIZE_LAYOUT;
 void main() {
     vec4 gmn = INFINITY.xxxx, gmx = -INFINITY.xxxx;
 
+    // calculate box boundary of scene 
     [[unroll, dependency_length(4)]]
-    for (uint I=0u;I<256u;I+=Wave_Size_RT) {
+    for (uint I=0u;I<256u;I+=Wave_Size_RT) { SB_BARRIER
         const uint it = I + Lane_Idx;
         gmn = min(gmn, subgroupMin(minmax[it*2+0]));
         gmx = max(gmx, subgroupMax(minmax[it*2+1]));
@@ -39,42 +40,27 @@ void main() {
     // these operations calculating only on one ALU, so can be used more precised point
     // also, it no require so much free registers
     [[flatten]] if (electedInvoc()) {
-        // save scene min and max
-        bvhBlock.sceneMin = gmn, bvhBlock.sceneMax = gmx;
+        const dmat4 inversedpj = inverse(dmat4(transpose(bvhBlock.projection))); // set inversed version of projection
+        bvhBlock.projectionInv = transpose(mat4(inversedpj)), bvhBlock.sceneMin = gmn, bvhBlock.sceneMax = gmx;
 
+        // transform to unit-box space coordinates ( may to be deprecated )
         const dvec4 scale = 1.0/max(dvec4(gmx)-dvec4(gmn), 1e-5.xxxx), offset = -dvec4(gmn)*scale;
-        //const mat4 transform = transpose(bvhBlock.transform);
-        //const mat4 transform = mat4(1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f);
+        const dmat4 inbox = dmat4( 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, offset.x, offset.y, offset.z, 1.f) * 
+                            dmat4( scale.x, 0.f, 0.f, 0.f, 0.f, scale.y, 0.f, 0.f, 0.f, 0.f, scale.z, 0.f, 0.f, 0.f, 0.f, 1.f);
 
-        const dmat4 inbox = dmat4(
-            1.f, 0.f, 0.f, 0.f,
-            0.f, 1.f, 0.f, 0.f,
-            0.f, 0.f, 1.f, 0.f,
-            offset.x, offset.y, offset.z, 1.f
-        ) * dmat4(
-            scale.x, 0.f, 0.f, 0.f,
-            0.f, scale.y, 0.f, 0.f,
-            0.f, 0.f, scale.z, 0.f,
-            0.f, 0.f, 0.f, 1.f
-        );
+        // transform from [0..1] to [-1..+1]
+        const dmat4 centric = dmat4( 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, -1.f, -1.f, -1.f, 1.f) * 
+                              dmat4( 2.f, 0.f, 0.f, 0.f, 0.f, 2.f, 0.f, 0.f, 0.f, 0.f, 2.f, 0.f,  0.f,  0.f,  0.f, 1.f);
 
-        const dmat4 centric = dmat4(
-             1.f,  0.f,  0.f, 0.f,
-             0.f,  1.f,  0.f, 0.f,
-             0.f,  0.f,  1.f, 0.f,
-            -1.f, -1.f, -1.f, 1.f
-        ) * dmat4(
-            2.f, 0.f, 0.f, 0.f,
-            0.f, 2.f, 0.f, 0.f,
-            0.f, 0.f, 2.f, 0.f,
-            0.f, 0.f, 0.f, 1.f
-        );
+        { // unit-box of scene bound projection ( may to be deprecated )
+            //const dmat4 rtransform = bvhBlock.projection * centric * inbox;
+            //const dmat4 rtransform = transpose(bvhBlock.projection) * centric * inbox;
+            //bvhBlock.transform = transpose(mat4(rtransform));
+            //bvhBlock.transformInv = transpose(mat4(inverse(rtransform)));
 
-        const dmat4 rtransform = centric * inbox;
-
-        //bvhBlock.transform = rtransform;
-        //bvhBlock.transformInv = inverse(rtransform);
-        bvhBlock.transform = transpose(mat4(rtransform));
-        bvhBlock.transformInv = transpose(mat4(inverse(rtransform)));
+            // experimental copy to transform matrix
+            bvhBlock.transform = bvhBlock.projection;
+            bvhBlock.transformInv = bvhBlock.projectionInv;
+        }
     }
 }

@@ -319,12 +319,15 @@ namespace rnd {
         std::chrono::high_resolution_clock::time_point tStart; // starting time
 
         // camera position 
-        glm::vec3 scale = glm::vec3(0.015625f); // correction for precisions
+        const glm::vec3 scale = glm::vec3(1.f); // correction for precisions
         glm::vec3 eyePos = glm::vec3(-3.5f, 10.5f, -50.6f).zyx();
         glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
         glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
         glm::vec3 upVector = glm::vec3(1e-5f, 1.f, 1e-5f);
 
+        // geometry grid density ( default ), used for precision correction, and better coverage
+        glm::vec4 optCoverage = glm::vec4(glm::vec3(2.f), 1.f); // due scene can does not have unit box bound, you can manually set coverage
+        glm::vec4 optDensity = glm::vec4(glm::vec3(32.f), 1.f);
 
         // output objects
         VtDeviceImage outputImage = {}, normalPass = {}, originPass = {}, specularPass = {}, depthImage = {};

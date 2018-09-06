@@ -272,8 +272,12 @@ namespace rnd {
 
     inline void Renderer::InitRayTracing() {
         {
+            // box matrix optimizer ( by default 16.f geometry density per 1.f unit, not bound by global box ) 
+            const auto optMat = glm::transpose( glm::inverse(glm::scale(glm::vec3(modelScale) * glm::vec3(optDensity.xyz) / glm::vec3(optCoverage.xyz))) );
+
             // create accelerator set
             VtAcceleratorSetCreateInfo acci;
+            acci.coverMat = *((VtMat4*)&optMat);
             acci.maxPrimitives = 1024 * 2048;
             acci.entryID = 0;
             vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);

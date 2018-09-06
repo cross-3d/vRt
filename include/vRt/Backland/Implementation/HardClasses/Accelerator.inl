@@ -75,7 +75,7 @@ namespace _vt {
         const auto maxPrimitives = info.maxPrimitives;
         vtAccelerator->_primitiveCount = info.primitiveCount;
         vtAccelerator->_primitiveOffset = info.primitiveOffset;
-
+        vtAccelerator->_bvhBlockData.projection = info.coverMat;
 
         std::shared_ptr<BufferManager> bManager; createBufferManager(_vtDevice, bManager);
 

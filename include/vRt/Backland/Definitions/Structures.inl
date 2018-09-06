@@ -174,6 +174,9 @@ namespace vrt { // store in official namespace
         uint32_t entryID = 0, primitiveCount = -1, primitiveOffset = 0;
         uint32_t bvhMetaOffset = 0, bvhBoxOffset = 0;
         VkBool32 secondary = false; // used for copying and storing only?
+
+        // mat4 of optimization
+        VtMat4 coverMat = vrt::IdentifyMat4;
     };
 
     // custom (unified) object create info, exclusive for vRt ray tracing system, and based on classic Satellite objects
