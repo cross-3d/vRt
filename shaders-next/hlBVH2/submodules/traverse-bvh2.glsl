@@ -91,8 +91,9 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     const vec4 torig = -divW(mult4( bvhBlock.transform, vec4(orig, 1.0f))), torigTo = divW(mult4( bvhBlock.transform, vec4(orig, 1.0f) + vec4(dcts(pdir.xy), 0.f))), tdir = torigTo+torig;
     
     // different length of box space and global space
-    //const float dirlen = length(tdir), invlen = precIssue(dirlen);
-    const float dirlen = 1.f, invlen = precIssue(dirlen);
+    const float phslen = length(tdir);
+    //const float dirlen = phslen, invlen = 1.f/precIssue(dirlen);
+    const float dirlen = 1.f, invlen = 1.f/precIssue(dirlen);
     const vec4 direct = tdir * invlen, dirproj = 1.f / precIssue(direct);
 
     // limitation of distance
@@ -122,7 +123,9 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const mat3x2 bndsf2 = transpose(mat2x3(bvhBlock.sceneMin.xyz, bvhBlock.sceneMax.xyz));
+    const   vec2 bside2 = vec2(-1.0001, 1.0001f);
+    //const mat3x2 bndsf2 = transpose(mat2x3(bvhBlock.sceneMin.xyz, bvhBlock.sceneMax.xyz));
+    const mat3x2 bndsf2 = mat3x2(bside2, bside2, bside2);
     const int entry = (valid ? BVH_ENTRY : -1);
 
     // initial traversing state

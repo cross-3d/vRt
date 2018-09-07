@@ -259,7 +259,7 @@ namespace _vt { // store in undercover namespace
         VkPipeline _intersectionPipeline = VK_NULL_HANDLE, _interpolatorPipeline = VK_NULL_HANDLE;
 
         // build BVH stages (few stages, in sequences)
-        VkPipeline _boundingPipeline = VK_NULL_HANDLE, _shorthandPipeline = VK_NULL_HANDLE, _leafPipeline = VK_NULL_HANDLE, /*...radix sort between*/ _buildPipeline = VK_NULL_HANDLE, _buildPipelineFirst = VK_NULL_HANDLE, _fitPipeline = VK_NULL_HANDLE, _leafLinkPipeline = VK_NULL_HANDLE;
+        VkPipeline _boxCalcPipeline = VK_NULL_HANDLE, _boundingPipeline = VK_NULL_HANDLE, _shorthandPipeline = VK_NULL_HANDLE, _leafPipeline = VK_NULL_HANDLE, /*...radix sort between*/ _buildPipeline = VK_NULL_HANDLE, _buildPipelineFirst = VK_NULL_HANDLE, _fitPipeline = VK_NULL_HANDLE, _leafLinkPipeline = VK_NULL_HANDLE;
 
         // static pipeline layout for stages 
         VkPipelineLayout _buildPipelineLayout = VK_NULL_HANDLE, _traversePipelineLayout = VK_NULL_HANDLE;

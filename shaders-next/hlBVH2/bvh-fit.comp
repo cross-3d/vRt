@@ -24,7 +24,7 @@ void unifyNodeBox(inout int idx) {
         bvhBoxesWork[idx] = vec4[2](min(lrbox[0], lrbox[1]), max(lrbox[2], lrbox[3]));
 
         // transposed save
-        fvec4_ f4Correct = fvec4_(-fpCorrect.xx, fpCorrect.xx);
+        fvec4_ f4Correct = fvec4_(-(fpCorrect).xx, (fpCorrect).xx);
         lrbox = transpose(lrbox), bvhNodes[idx].cbox = 
 #if (defined(USE_F32_BVH)||defined(AMD_F16_BVH))
             fvec4_[3](fvec4_(lrbox[0])+f4Correct, fvec4_(lrbox[1])+f4Correct, fvec4_(lrbox[2])+f4Correct);

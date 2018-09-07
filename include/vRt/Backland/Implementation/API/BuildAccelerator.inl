@@ -210,6 +210,7 @@ namespace _vt {
         const auto workGroupSize = 16u;
         std::vector<VkDescriptorSet> _sets = { bounder->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+        cmdDispatch(*cmdBuf, acclb->_boxCalcPipeline, INTENSIVITY); // calculate general box of BVH
         cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH
         cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
         cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes

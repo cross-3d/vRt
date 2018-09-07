@@ -103,14 +103,14 @@ vec3 randomCosineNormalOriented(in uvec2 superseed, in vec3 normal) {
 #endif
     float up = sqrt(1.f-hmsm.x), over = sqrt(1.f - up * up), around = hmsm.y * TWO_PI;
 
-	vec3 directionNotNormal = vec3(0, 0, 1);
-	if (abs(normal.x) < SQRT_OF_ONE_THIRD) { 
-		directionNotNormal = vec3(1, 0, 0);
-	} else if (abs(normal.y) < SQRT_OF_ONE_THIRD) { 
-		directionNotNormal = vec3(0, 1, 0);
-	}
-	vec3 perpendicular1 = normalize( cross(normal, directionNotNormal) );
-	vec3 perpendicular2 =            cross(normal, perpendicular1);
+    vec3 directionNotNormal = vec3(0, 0, 1);
+    if (abs(normal.x) < SQRT_OF_ONE_THIRD) { 
+        directionNotNormal = vec3(1, 0, 0);
+    } else if (abs(normal.y) < SQRT_OF_ONE_THIRD) { 
+        directionNotNormal = vec3(0, 1, 0);
+    }
+    vec3 perpendicular1 = normalize( cross(normal, directionNotNormal) );
+    vec3 perpendicular2 =            cross(normal, perpendicular1);
     return ( up * normal ) + ( cos(around) * over * perpendicular1 ) + ( sin(around) * over * perpendicular2 );
 }
 

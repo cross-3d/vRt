@@ -6,4 +6,3 @@ $VNDR="intel"
 . "./shaders-list.ps1"
 
 BuildAllShaders ""
-

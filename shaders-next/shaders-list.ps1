@@ -64,7 +64,7 @@ function BuildVertex($Name, $InDir = "", $OutDir = "", $AddArg = "") {
 
 function OptimizeMainline($Pfx = "") {
     # optimize accelerator structure (hlBVH2)
-    Optimize "interpolator.comp" "$HRDDIR$HLBV"
+    #Optimize "interpolator.comp" "$HRDDIR$HLBV"
     #Optimize "traverse-bvh.comp" "$HRDDIR$HLBV" 
     Optimize "bvh-build-first.comp" "$HRDDIR$HLBV" 
     Optimize "bvh-build.comp" "$HRDDIR$HLBV" 
@@ -118,13 +118,14 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "vtransformed.comp"        "$INDIR$VRTX" "$OUTDIR$VRTX"
     BuildCompute "vinput.comp"              "$INDIR$NTVE" "$HRDDIR$NTVE"
 
-    
+
     BuildCompute "dull.comp"                "$INDIR$NTVE" "$HRDDIR$NTVE"
     BuildCompute "triplet.comp"             "$INDIR$NTVE" "$HRDDIR$NTVE"
 
     # accelerator structure (hlBVH2)
-    BuildCompute "/triangle/bound-calc.comp"  "$INDIR$HLBV" "$HRDDIR$HLBV"
-    BuildCompute "/triangle/leaf-gen.comp"    "$INDIR$HLBV" "$HRDDIR$HLBV"
+    BuildCompute "/triangle/bound-calc.comp"    "$INDIR$HLBV" "$HRDDIR$HLBV"
+    BuildCompute "/triangle/leaf-gen.comp"      "$INDIR$HLBV" "$HRDDIR$HLBV"
+    BuildCompute "/triangle/box-calc.comp"      "$INDIR$HLBV" "$HRDDIR$HLBV"
     BuildCompute "bvh-build-td.comp"            "$INDIR$HLBV" "$HRDDIR$HLBV" "-DFIRST_STEP" "bvh-build-first.comp"
     BuildCompute "bvh-build-td.comp"            "$INDIR$HLBV" "$HRDDIR$HLBV" "" "bvh-build.comp"
     BuildCompute "bvh-fit.comp"                 "$INDIR$HLBV" "$HRDDIR$HLBV"

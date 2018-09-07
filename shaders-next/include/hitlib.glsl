@@ -96,7 +96,7 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
     }
 
     // do occlusion
-    float nextH	= (1.f-fetchTexture(tbinding, chd_b.xy).z) - chd_b.z;
+    float nextH = (1.f-fetchTexture(tbinding, chd_b.xy).z) - chd_b.z;
     float prevH = (1.f-fetchTexture(tbinding, chd_a.xy).z) - chd_a.z;
 
     float dvh = (nextH - prevH);

@@ -269,8 +269,8 @@ bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in bvec3 sgn, in m
     tMinMax[2] = sgn.z ? tMinMax[2] : tMinMax[2].yx;
 
     float 
-        tNear = (max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x) - InZero), 
-        tFar  = (min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y) + InZero)*InOne;
+        tNear = (max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x) ), 
+        tFar  = (min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y) )*InOne;
 
     // resolve hit
     const bool isCube = tFar>tNear && tFar>=0.f && tNear < (INFINITY-IOFF);
@@ -304,8 +304,8 @@ lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in bvec3 sgn, i
     mediump
 #endif
     fvec2_
-        tNear = (max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy) - InZero), 
-        tFar  = (min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw) + InZero)*InOne;
+        tNear = (max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy) ), 
+        tFar  = (min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw) )*InOne;
         
     const bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(tNear, fvec2_(INFINITY-IOFF)));
     nfe2 = mix(INFINITY.xxxx, vec4(tNear, tFar), bvec4(isCube, isCube));
