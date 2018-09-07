@@ -57,7 +57,7 @@ namespace _vt {
         namespace triangle {
             static inline const std::map<VtVendor, std::string> boxCalc = {
                 { VT_VENDOR_AMD, "./intrusive/amd/hlBVH2/triangle/box-calc.comp.spv" },
-                { VT_VENDOR_NVIDIA, "./intrusive/nvidia/triangle/hlBVH2/box-calc.comp.spv" },
+                { VT_VENDOR_NVIDIA, "./intrusive/nvidia/hlBVH2/triangle/box-calc.comp.spv" },
                 { VT_VENDOR_INTEL, "./intrusive/intel/hlBVH2/triangle/box-calc.comp.spv" },
                 { VT_VENDOR_UNIVERSAL, "./intrusive/universal/hlBVH2/triangle/box-calc.comp.spv" }
             };
