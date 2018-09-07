@@ -122,12 +122,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const vec2 bndsf2 = 1.f * vec2(-1.f-1e-4f, 1.f+1e-4f);
+    const mat3x2 bndsf2 = transpose(mat2x3(bvhBlock.sceneMin.xyz, bvhBlock.sceneMax.xyz));
     const int entry = (valid ? BVH_ENTRY : -1);
 
     // initial traversing state
-    //traverseState.idx = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, mat3x2(bndsf2,bndsf2,bndsf2), nfe) ? entry : -1, traverseState.idx = nfe.x >= (INFINITY-IOFF) ? -1 : traverseState.idx;
-    traverseState.idx = entry, traverseState.idx = nfe.x >= (INFINITY-IOFF) ? -1 : traverseState.idx; // unable to intersect the root box 
+    traverseState.idx = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe) ? entry : -1, traverseState.idx = nfe.x >= (INFINITY-IOFF) ? -1 : traverseState.idx;
+    //traverseState.idx = entry, traverseState.idx = nfe.x >= (INFINITY-IOFF) ? -1 : traverseState.idx; // unable to intersect the root box 
     traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0, traverseState.minDist = 0.f; const float diffOffset = min(-nfe.x, 0.f);
     traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(diffOffset.xxxx)));
     traverseState.directInv = fvec4_(dirproj) * fvec4_(hCorrection.xxxx);

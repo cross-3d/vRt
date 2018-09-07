@@ -319,14 +319,14 @@ namespace rnd {
         std::chrono::high_resolution_clock::time_point tStart; // starting time
 
         // camera position 
-        const glm::vec3 scale = glm::vec3(0.125f); // correction for precisions
+        const glm::vec3 scale = glm::vec3(0.0625f); // correction for precisions
         glm::vec3 eyePos = glm::vec3(-3.5f, 10.5f, -50.6f).zyx();
         glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
         glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
         glm::vec3 upVector = glm::vec3(1e-5f, 1.f, 1e-5f);
 
         // precision correction for boxes
-        glm::vec4 optDensity = glm::vec4(glm::vec3(64.f) / glm::vec3(8.f), 1.f);
+        glm::vec4 optDensity = glm::vec4(glm::vec3(1.f) / glm::vec3(256.f), 1.f);
 
         // output objects
         VtDeviceImage outputImage = {}, normalPass = {}, originPass = {}, specularPass = {}, depthImage = {};

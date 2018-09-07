@@ -51,7 +51,7 @@ struct BTYPE_ {
 layout ( binding = 2, set = 1, std430 ) restrict buffer bvhBoxesResultingB { BTYPE_ bvhNodes[]; };
 
 
-const float fpInner       = 0.00390625f * 0.0000152587890625f;
+const float fpInner       = 0.0000152587890625f;
 
 #ifdef USE_F32_BVH
 const float fpCorrect     = 0.f;

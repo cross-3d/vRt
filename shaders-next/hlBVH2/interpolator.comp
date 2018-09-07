@@ -46,6 +46,7 @@ void main() {
 
         [[flatten]] if (!overflow && hitID >= 0) { // verify intersection
             const int triID = floatBitsToInt(hit.uvt.w)-1; imageAtomicMax(rayLink, (hit.rayID-1)<<1, (hitID+1).x);
+            SB_BARRIER
 
             // interpolate hit
             if (triID >= 0) {
