@@ -122,8 +122,8 @@ lowp bool_ equalF       (in float a, in float b) { return bool_(abs(a-b) <=  PRE
 */
 
 // precision utils
-#define precIssue(a) (sign(a)*max(abs(a),0.00000011920928955078125f))
-//#define precIssue(a) (a)
+//#define precIssue(a) (sign(a)*max(abs(a),1e-5f))
+#define precIssue(a) (a)
 
 
 // vector math utils

@@ -130,7 +130,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     traverseState.idx = entry, traverseState.idx = nfe.x >= (INFINITY-IOFF) ? -1 : traverseState.idx; // unable to intersect the root box 
     traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0, traverseState.minDist = 0.f; const float diffOffset = min(-nfe.x, 0.f);
     traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(diffOffset.xxxx)));
-    traverseState.directInv = fvec4_(dirproj) * hCorrection;
+    traverseState.directInv = fvec4_(dirproj) * fvec4_(hCorrection.xxxx);
     
     // initial intersection state
     primitiveState.orig = fma(direct, diffOffset.xxxx, torig);

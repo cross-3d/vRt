@@ -51,14 +51,23 @@ struct BTYPE_ {
 layout ( binding = 2, set = 1, std430 ) restrict buffer bvhBoxesResultingB { BTYPE_ bvhNodes[]; };
 
 
-const float fpInner       = 0.00006103515625f;
+const float fpInner       = 0.00390625f * 0.0000152587890625f;
 
 #ifdef USE_F32_BVH
 const float fpCorrect     = 0.f;
+const float fpProgression = 1.f/256.f;
 #else
-const float16_t fpCorrect = 0.0001220703125hf;
+const float16_t fpCorrect = float16_t(2.f*0.0000152587890625f);
+const float fpProgression = 1.f/16.f;
 #endif
 
+
+bbox_t calcTriBox(in mat3x4 triverts, in vec4 vSpace) {
+    bbox_t result;
+    result.mn = min3_wrap(triverts[0], triverts[1], triverts[2]) - max(vSpace*fpInner*fpProgression, fpInner);
+    result.mx = max3_wrap(triverts[0], triverts[1], triverts[2]) + max(vSpace*fpInner*fpProgression, fpInner);
+    return result;
+};
 
 bbox_t calcTriBox(in mat3x4 triverts) {
     bbox_t result;
