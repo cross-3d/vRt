@@ -63,7 +63,7 @@ bbox_t calcTriBox(in mat3x4 triverts) {
 
 bbox_t calcTriBox(in mat3x4 triverts, in vec4 vRange) {
     bbox_t result;
-    result.mn = min3_wrap(triverts[0], triverts[1], triverts[2]) - vRange*fpInner;
-    result.mx = max3_wrap(triverts[0], triverts[1], triverts[2]) + vRange*fpInner;
+    result.mn = fma(vRange, -fpInner.xxxx, min3_wrap(triverts[0], triverts[1], triverts[2]));
+    result.mx = fma(vRange, +fpInner.xxxx, max3_wrap(triverts[0], triverts[1], triverts[2]));
     return result;
 };
