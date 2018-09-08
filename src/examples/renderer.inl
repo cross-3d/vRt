@@ -326,7 +326,7 @@ namespace rnd {
         glm::vec3 upVector = glm::vec3(1e-5f, 1.f, 1e-5f);
 
         // precision correction for boxes
-        glm::vec4 optDensity = glm::vec4(glm::vec3(256.f) / glm::vec3(1.f), 1.f);
+        glm::vec4 optDensity = glm::vec4(glm::vec3(64.f) / glm::vec3(1.f), 1.f);
 
         // output objects
         VtDeviceImage outputImage = {}, normalPass = {}, originPass = {}, specularPass = {}, depthImage = {};

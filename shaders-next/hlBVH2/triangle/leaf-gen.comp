@@ -32,7 +32,11 @@ void main() {
         [[flatten]] IFALL (to >= wsize) break;
 
         const uint tri = bvhBlock.primitiveOffset+clamp(to, 0, bvhBlock.primitiveCount-1);
+
+        // incarnated mode 
         //const mat3x4 triverts = mat3x4(TLOAD(lvtx, int(tri*3+0)).xyzw, TLOAD(lvtx, int(tri*3+1)).xyzw, TLOAD(lvtx, int(tri*3+2)).xyzw);
+
+        // unit mode
         const mat3x4 triverts = mat3x4(
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, int(tri*3+0)).xyzw)),
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, int(tri*3+1)).xyzw)),
@@ -87,11 +91,17 @@ void main() {
 #endif
         };
 
-        bbox_t lbox = Leafs[to].lbox;
-        //vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax;
-        vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx;
-        vec4 bcenter = vec4((triverts[0] + triverts[1] + triverts[2]).xyz * 0.33333333333333f, 0.f), boxrang = sceneMax - sceneMin;
-        bcenter.xyz = (bcenter.xyz - sceneMin.xyz) / boxrang.xyz, bcenter.w = length(lbox.mx-lbox.mn)/length(boxrang);
+          // incarnated mode 
+        //const vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax, sceneRes = sceneMax - sceneMin;
+        //const bbox_t lbox = Leafs[to].lbox;
+
+          // unit mode 
+          const vec4 sceneMin = -1.f.xxxx,         sceneMax = 1.f.xxxx,          sceneRes = sceneMax - sceneMin;
+          const bbox_t lbox = calcTriBox(triverts, (bvhBlock.sceneMax - bvhBlock.sceneMin) / sceneRes);
+        
+        
+        vec4 bcenter = vec4((triverts[0] + triverts[1] + triverts[2]).xyz * 0.33333333333333f, 0.f);
+        bcenter.xyz = (bcenter.xyz - sceneMin.xyz) / sceneRes.xyz, bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
 
 #ifdef USE_MORTON_32
         const uint mortonCode = encodeMorton(packUnorm4x8(bcenter));
@@ -102,7 +112,7 @@ void main() {
         // store leaf data
         [[flatten]] if (to < wsize && to >= 0) {
             // re-arrange box
-            Leafs[to].lbox = calcTriBox(triverts, (bvhBlock.sceneMax - bvhBlock.sceneMin) / boxrang);
+            Leafs[to].lbox = lbox;
             
             // save morton codes 
             Mortoncodes[to] = mortonCode, MortoncodesIndices[to] = int(to+1);
