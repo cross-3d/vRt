@@ -29,7 +29,7 @@ void main() {
     vec4 gmn = INFINITY.xxxx, gmx = -INFINITY.xxxx;
 
     // calculate box boundary of scene 
-    [[unroll, dependency_length(4)]]
+    [[unroll]]
     for (uint I=0u;I<256u;I+=Wave_Size_RT) { SB_BARRIER
         const uint it = I + Lane_Idx;
         gmn = min(gmn, subgroupMin(minmax[it*2+0]));

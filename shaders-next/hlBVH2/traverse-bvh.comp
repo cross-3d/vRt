@@ -36,7 +36,7 @@ void main() {
     traverseState.cacheID = int(gl_GlobalInvocationID.x);
     traverseState.minDist = 0.f;
 
-    [[unroll, dependency_length(4)]]
+    [[unroll, dependency_infinite]]
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);

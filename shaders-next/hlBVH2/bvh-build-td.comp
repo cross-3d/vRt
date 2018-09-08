@@ -112,7 +112,7 @@ void main() {
         // split nodes
         const int dT = int(m==0?rID(iT):wID(iT)), OSi = int(gS*(m==0?gl_NumWorkGroups.x:1));
         [[flatten]] IFANY (asize <= 0) break; // check-out limits
-        [[unroll, dependency_length(4)]]
+        [[unroll, dependency_infinite]]
         for (int fT=0;fT<asize;fT+=OSi) { SB_BARRIER
             const int iWD = fT+dT;
             [[flatten]] IFALL (iWD >= osize) break;

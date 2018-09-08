@@ -29,7 +29,7 @@ void main() {
     IFALL (wsize <= 0) return;
 
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-    [[unroll, dependency_length(4)]]
+    [[unroll, dependency_infinite]]
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);

@@ -38,7 +38,7 @@ void main() {
     // use SIMD lanes for calculate histograms
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
 
-    [[unroll, dependency_length(4)]]
+    [[unroll, dependency_infinite]]
     for ( uint wk = 0; wk < bcount; wk++ ) {
         bvec4 validAddress = lessThan(addr, blocks.limit.xxxx);
         [[flatten]] IFALL(all(not(validAddress))) break;

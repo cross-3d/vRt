@@ -47,7 +47,7 @@ void main() {
     IFALL (wsize <= 0) return;
     // move to work list
     const uint rng = gS*gl_NumWorkGroups.x;
-    [[unroll, dependency_length(4)]]
+    [[unroll, dependency_infinite]]
     for (uint w=gS*gl_WorkGroupID.x;w<wsize;w+=rng) {
         SB_BARRIER
         const uint globalID = (w + lID);
