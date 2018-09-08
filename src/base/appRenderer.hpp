@@ -1,5 +1,5 @@
 #pragma once
-#include "../base/appBase.hpp"
+#include "appBase.hpp"
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION

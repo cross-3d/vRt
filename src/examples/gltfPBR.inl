@@ -1,5 +1,5 @@
 #pragma once
-#include "renderer.inl"
+#include "../base/appRenderer.hpp"
 
 namespace rnd {
 
