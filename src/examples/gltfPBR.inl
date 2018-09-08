@@ -517,13 +517,13 @@ namespace rnd {
         for (auto b : VDataSpace) { bviews.push_back(b); };
 
         {
-            createBufferFast(deviceQueue, VBufferRegions, sizeof(VtVertexRegionBinding));
-            createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexAccessor) * model.accessors.size());
-            createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexBufferView) * model.bufferViews.size());
-            createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024 * 1024);
-            createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4) * 1024 * 1024);
-            createBufferFast(deviceQueue, materialDescs, vte::strided<VtAppMaterial>(128));
-            createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImage>(64));
+            createBufferFast(deviceQueue, VBufferRegions, sizeof(VtVertexRegionBinding) * 2ull);
+            createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexAccessor) * (1ull+model.accessors.size()));
+            createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexBufferView) * (1ull+model.bufferViews.size()));
+            createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024ull * 1024ull);
+            createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4) * 1024ull * 1024ull);
+            createBufferFast(deviceQueue, materialDescs, sizeof(VtAppMaterial) * (1ull+model.materials.size()));
+            createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImage>(256));
         };
 
         {
