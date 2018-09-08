@@ -1,57 +1,24 @@
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.10)
 set (PROJECT_NAME vRt)
 project (${PROJECT_NAME})
-
 
 # Architecture specific
 if (COMPILER_ID MATCHES "MSVC")
   set(MSVC_${lang}_ARCHITECTURE_ID "${ARCHITECTURE_ID}")
 endif()
 
-
-find_package(Vulkan REQUIRED)
-
+# Import modules 
+set (DEP_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set (CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${DEP_DIR}" "${DEP_DIR}/lib/cmake/")
+find_package (Vulkan REQUIRED)
+find_package (glfw3  REQUIRED)
 
 # Set source directories
 set(SOURCES_LIST 
-    "./src/include/*/*.hpp"
-    "./src/include/*/*.hh"
-    "./src/include/*/*.h"
-    "./src/include/*/*/*.hpp"
-    "./src/include/*/*/*.hh"
-    "./src/include/*/*/*.h"
-    "./src/include/*.hpp"
-    "./src/include/*.hh"
-    "./src/include/*.h"
-    "./src/imgui/*.hpp"
-    "./src/imgui/*.hh"
-    "./src/imgui/*.h"
-    "./src/imgui/imgui_draw.cpp"
-    "./src/imgui/imgui.cpp"
-    
     "./src/examples/*.hpp"
     "./src/examples/*.hxx"
     "./src/examples/*.inl"
     
-    "./src/base/*.hpp"
-    "./src/base/*.cpp"
-    "./src/base/*.c"
-    "./src/base/*.h"
-    
-    "./src/*.h"
-    "./src/*.hpp"
-    "./src/*.hxx"
-    "./src/*.inl"
-    
-    "./src/*/*/*.hpp"
-    "./src/*/*/*.cpp"
-    "./src/*/*/*.c"
-    "./src/*/*/*.h"
-    
-    "./include/imgui/*.c"
-    "./include/imgui/*.cpp"
-    "./include/imgui/*/*.c"
-    "./include/imgui/*/*.cpp"
     "./include/vulkan/*.c"
     "./include/vulkan/*.cpp"
     "./include/vulkan/*/*.c"
@@ -62,23 +29,23 @@ set(SOURCES_LIST
     "./include/*.h"
     "./include/*.hpp"
     "./include/*.inl"
+    
     "./include/*/*.h"
     "./include/*/*.hpp"
     "./include/*/*.inl"
+    
     "./include/*/*/*.h"
     "./include/*/*/*.hpp"
     "./include/*/*/*.inl"
+    
     "./include/*/*/*/*.h"
     "./include/*/*/*/*.hpp"
     "./include/*/*/*/*.inl"
+    
     "./include/*/*/*/*/*.h"
     "./include/*/*/*/*/*.hpp"
     "./include/*/*/*/*/*.inl"
-    "./include/*/*/*/*/*/*.h"
-    "./include/*/*/*/*/*/*.hpp"
-    "./include/*/*/*/*/*/*.inl"
 )
-
 
 # Set definition
 set (DEFINES
@@ -91,13 +58,9 @@ set (DEFINES
     -DEXPERIMENTAL_GLTF
     -DNSM=vte
     -DTINY_RENDERER_VK
-#    -DVRT_ENABLE_VEZ_INTEROP
-#    -DVRT_DONT_USE_VOLK
 )
 
-
 # Set MSVC/Windows specific 
-# Linux TODO 
 if (MSVC OR MSVS OR MSYS OR MINGW)
     set(DEFINES ${DEFINES} -DOS_WIN -DWIN32) 
 endif()
@@ -107,11 +70,13 @@ if (UNIX OR LINUX)
     set(DEFINES ${DEFINES} -DOS_LNX) 
 endif()
 
-
 # set libs and include dirs of projects
-set (DEP_DIR "${PROJECT_SOURCE_DIR}")
-set (LIB_DIR "${DEP_DIR}/lib"     "${DEP_DIR}/src/lib")
-set (INC_DIR "${DEP_DIR}/include" "${DEP_DIR}/src/include" "${DEP_DIR}/src/" "${DEP_DIR}/src/base/" "${DEP_DIR}/src/base/imgui" "${PROJECT_SOURCE_DIR}" ${Vulkan_INCLUDE_DIR})
+set (LIB_DIR "${DEP_DIR}/lib")
+set (INC_DIR ${Vulkan_INCLUDE_DIR}
+    "${DEP_DIR}/include" 
+    "${DEP_DIR}/src/" 
+    "${DEP_DIR}/src/base/" 
+    "${DEP_DIR}")
 
 # set required libs
 set (LIBS glfw3 ${Vulkan_LIBRARY})
@@ -124,22 +89,17 @@ find_package(X11 QUIET)
         set (LIBS ${LIBS} ${X11_LIBRARIES})
         set (INC_DIR ${INC_DIR} ${X11_INCLUDE_DIR})
     endif()
-    #set (LIBS ${LIBS} -static-libgcc -static-libstdc++ -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl)
     set (LIBS ${LIBS} -static-libgcc -static-libstdc++ -lglfw3 -lX11 -lXrandr -lpthread -ldl)
 endif()
 
-
 # set language specific
-set (CMAKE_CXX_EXTENSIONS ON)
-set (CMAKE_CXX_STANDARD 20)
+set (CMAKE_CXX_EXTENSIONS 1)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_C_STANDARD 11)
 
-
 # compiler specific options
-if (MSVC)
-    #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -Wa,-mbig-obj -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx") # Clang in Visual Studio 2017
+if (MSVC) # Clang in Visual Studio 2017
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest /arch:AVX2 /fp:strict /permissive- /Ot /W3 /NODEFAULTLIB:library") # Native compiler of Visual Studio 2017
-    #set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}"")
     set (CMAKE_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")
 else()
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
@@ -150,13 +110,9 @@ else()
     endif()
 endif()
 
-
 # set optimizations for build types
-set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS} -O0")
-set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS}")
-set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${CMAKE_C_FLAGS} -O0")
-set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
-
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 # set default compiler options
 add_definitions(${DEFINES})
@@ -164,32 +120,14 @@ link_directories(${LIB_DIR})
 include_directories(${INC_DIR})
 file (GLOB RSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCES_LIST})
 
-
-# make helloTriangle
-#set (APPLICATION_NAME helloTriangle)
-#add_executable(${APPLICATION_NAME} src/examples/helloTriangle.cpp ${RSOURCES})
-#target_link_libraries(${APPLICATION_NAME} ${LIBS})
-
-
-# make gltfBasic
-#set (APPLICATION_NAME gltfBasic)
-#add_executable(${APPLICATION_NAME} src/examples/gltfBasic.cpp ${RSOURCES})
-#target_link_libraries(${APPLICATION_NAME} ${LIBS})
-
-
 # make gltfPBR
 set (APPLICATION_NAME gltfPBR)
 add_executable(${APPLICATION_NAME} src/examples/gltfPBR.cpp ${RSOURCES})
 target_link_libraries(${APPLICATION_NAME} ${LIBS})
 
-
-# make static library
-#set (LIBRARY_NAME vRt)
-#add_library(${LIBRARY_NAME} include/vRt/vRt_lib.cpp ${RSOURCES})
-#target_link_libraries(${LIBRARY_NAME} ${LIBS})
+# add includes to MSVC explorer 
 foreach(source IN LISTS RSOURCES)
     get_filename_component(source_path "${source}" PATH)
     string(REPLACE "/" "\\" source_path_msvc "${source_path}")
     source_group("${source_path_msvc}" FILES "${source}")
 endforeach()
-
