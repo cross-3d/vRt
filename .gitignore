@@ -35,3 +35,6 @@ build/
 cmake-build*/
 */sponza.zip
 *.zip
+*/glm/
+*/gli/
+*/models/
