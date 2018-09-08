@@ -19,8 +19,8 @@ namespace vrt { // store in official namespace
         const void* pNext = nullptr;
         uint32_t mainQueueFamily = 0;
 
-        VkDeviceSize sharedCacheSize = 1024u * 1024u;
-        VkDeviceSize maxPrimitives = 1024u * 256u;
+        VkDeviceSize sharedCacheSize = 4096ull * 4096ull * 4ull;
+        VkDeviceSize maxPrimitives = 1024ull * 256ull;
         
 #ifdef VRT_ENABLE_STRING_VIEW
         std::string_view shaderPath = "./";

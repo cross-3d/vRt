@@ -124,9 +124,11 @@ void main() {
 
             // get textured data
             textured.bump.xyz = getNormalMapping(texcoord);
-            textured.diffuse = toLinear(fetchDiffuse(texcoord));
+            textured.diffuse = fetchDiffuse(texcoord);
             textured.specular = fetchSpecular(texcoord);
             textured.emissive = fetchEmission(texcoord);
+
+            vec4 diffuse = toLinear( textured.diffuse );
 
             // block TBN change manually if non valid normal mapped texture
             hitp.normalHeight.xyz = validateTexture(material.bumpTexture) ? (textured.bump.xyz * tbn) : normal.xyz; // apply TBN with normal mapping
@@ -144,13 +146,12 @@ void main() {
             // convert metallic roughness to glossiness specular PBR model
             const float fresnel = clamp01(pow(abs(dot(rdirect, normal.xyz)), sIOR - 1.f));
             const vec3 fresnelColor = toLinear(clamp01(fmix(max_fresnel_color * 0.9f, min_fresnel_color * 0.2f, fresnel.xxx)));
-            const vec3 specularColor = clamp01(mix(fresnelColor, textured.diffuse.xyz, textured.specular.zzz)); // use correct specular
+            const vec3 specularColor = clamp01(mix(fresnelColor, toLinear(diffuse).xyz, textured.specular.zzz)); // use correct specular
             const vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
             
             // TODO: dynamic light
-            const vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f)); 
-            const vec3 lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
-            hitp.albedo = (textured.diffuse * vec4(  mix(lightColor*0.25f, lightColor*2.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx)  , 1.f));
+            const vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f)), lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
+            hitp.albedo = (diffuse * vec4(  mix(lightColor*0.25f, lightColor*2.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx)  , 1.f));
             hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
             
             // triangle intersection test

@@ -67,6 +67,7 @@ namespace rnd {
         vrt::vtSetBufferSubData<T>(vctr, deviceQueue->device->rtDev);
         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
             VkBufferImageCopy bfc = { 0, dImage->_extent.width, dImage->_extent.height, dImage->_subresourceLayers, VkOffset3D{0u,0u,0u}, dImage->_extent };
+            vrt::vtCmdImageBarrier(cmdBuf, dImage);
             vrt::vtCmdCopyHostToDeviceImage(cmdBuf, deviceQueue->device->rtDev, dImage, 1, &bfc);
         });
         return result;

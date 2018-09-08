@@ -34,10 +34,10 @@ namespace NSM {
         vk::Device logical = nullptr;
         vk::PhysicalDevice physical = nullptr;
 
-        vk::DescriptorPool descriptorPool = nullptr;
-        vk::PipelineCache pipelineCache = nullptr;
+        //vk::DescriptorPool descriptorPool = nullptr;
+        //vk::PipelineCache pipelineCache = nullptr;
         vk::DispatchLoaderDynamic dldid = {};
-        VmaAllocator allocator;
+        //VmaAllocator allocator;
 
         std::vector<DevQueue> queues;
         operator vk::Device() const { return logical; }

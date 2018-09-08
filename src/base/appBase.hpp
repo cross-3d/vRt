@@ -316,6 +316,7 @@ namespace NSM
 
                 // init dispatch loader
                 devicePtr->dldid = vk::DispatchLoaderDynamic(instance, devicePtr->logical);
+                /*
                 VmaVulkanFunctions vfuncs = {};
 
 #ifdef VOLK_H_
@@ -348,7 +349,8 @@ namespace NSM
                 vfuncs.vkMapMemory = vktable.vkMapMemory;
                 vfuncs.vkUnmapMemory = vktable.vkUnmapMemory;
 #endif
-
+*/
+                /*
                 // create allocator
                 VmaAllocatorCreateInfo allocatorInfo = {};
 #ifdef VOLK_H_
@@ -363,16 +365,12 @@ namespace NSM
                 allocatorInfo.pAllocationCallbacks = nullptr;
                 allocatorInfo.pHeapSizeLimit = nullptr;
                 vmaCreateAllocator(&allocatorInfo, &devicePtr->allocator);
+                */
 
                 // pool sizes, and create descriptor pool
-                std::vector<vk::DescriptorPoolSize> psizes = {
-                    vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 64),
-                    vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 16),
-                    vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 16),
-                    vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 128),
-                    vk::DescriptorPoolSize(vk::DescriptorType::eSampler, 16) };
-                devicePtr->descriptorPool = devicePtr->logical.createDescriptorPool(vk::DescriptorPoolCreateInfo().setPPoolSizes(psizes.data()).setPoolSizeCount(psizes.size()).setMaxSets(16));
-                devicePtr->pipelineCache = devicePtr->logical.createPipelineCache(vk::PipelineCacheCreateInfo());
+                //std::vector<vk::DescriptorPoolSize> psizes = { };
+                //devicePtr->descriptorPool = devicePtr->logical.createDescriptorPool(vk::DescriptorPoolCreateInfo().setPPoolSizes(psizes.data()).setPoolSizeCount(psizes.size()).setMaxSets(0));
+                //devicePtr->pipelineCache = devicePtr->logical.createPipelineCache(vk::PipelineCacheCreateInfo());
             }
 
             // assign queues
@@ -399,9 +397,8 @@ namespace NSM
                 vrt::VtArtificalDeviceExtension dbi;
                 dbi.mainQueueFamily = deviceQueuePtr->familyIndex;
                 dbi.shaderPath = shaderPath;
-                dbi.allocator = devicePtr->allocator;
-                dbi.sharedCacheSize = 1024 * 1024 * 64; // 512Mb?
-                dbi.maxPrimitives = 1024 * 1024 * 4;
+                dbi.sharedCacheSize = 4096ull * 4096ull * 4ull;
+                dbi.maxPrimitives = 1024ull * 1024ull * 4ull;
                 vrt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
 
                 //devicePtr->allocator = deviceQueuePtr->device->rtDev->_allocator;
@@ -638,7 +635,7 @@ namespace NSM
             allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
             VmaAllocation _allocation = {};
-            vmaCreateImage(queue->device->allocator, &imageInfoVK, &allocCreateInfo, &depthImage, &_allocation, nullptr); // allocators planned structs
+            vmaCreateImage(queue->device->rtDev, &imageInfoVK, &allocCreateInfo, &depthImage, &_allocation, nullptr); // allocators planned structs
 #endif
 
             // image view for usage

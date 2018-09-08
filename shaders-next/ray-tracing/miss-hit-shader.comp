@@ -58,8 +58,8 @@ void main() {
             // ray direction debug emission
             //hitp.emission = vec4(viewVec*0.5f+0.5f, 1.f);
             //hitp.emission = vec4(toLinear(vec3(0.05f, 0.05f, 0.2f)), 1.f);
-            hitp.emission = vec4(toLinear(vec3(135, 206, 235)/255.f.xxx), 1.f);
-            //hitp.emission = vec4(toLinear(vec3(0.1f, 0.105f, 0.12f)), 1.f);
+            //hitp.emission = vec4(toLinear(vec3(135, 206, 235)/255.f.xxx), 1.f);
+            hitp.emission = vec4(toLinear(vec3(0.01f, 0.015f, 0.12f)), 1.f);
 
             // additional validation of hit (hit point interpolated offset test)
             [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0) {

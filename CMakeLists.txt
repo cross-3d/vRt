@@ -15,9 +15,13 @@ find_package (glfw3  REQUIRED)
 
 # Set source directories
 set(SOURCES_LIST 
-    "./src/examples/*.hpp"
-    "./src/examples/*.hxx"
-    "./src/examples/*.inl"
+    "./src/*/*.hpp"
+    "./src/*/*.hxx"
+    "./src/*/*.inl"
+    
+    "./src/*/*/*.hpp"
+    "./src/*/*/*.hxx"
+    "./src/*/*/*.inl"
     
     "./include/vulkan/*.c"
     "./include/vulkan/*.cpp"

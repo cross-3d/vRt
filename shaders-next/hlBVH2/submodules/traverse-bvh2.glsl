@@ -93,8 +93,8 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     
     // different length of box space and global space
     const float phslen = length(tdir);
-    //const float dirlen = phslen, invlen = 1.f/precIssue(dirlen);
-    const float dirlen = 1.f, invlen = 1.f/precIssue(dirlen);
+    const float dirlen = phslen, invlen = 1.f/precIssue(dirlen);
+    //const float dirlen = 1.f, invlen = 1.f/precIssue(dirlen);
     const vec4 direct = tdir * invlen, dirproj = 1.f / precIssue(direct);
 
     // limitation of distance
@@ -184,4 +184,4 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     // correction of hit distance
     primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z, invlen, -diffOffset*invlen);
     primitiveState.lastIntersection.z = min(primitiveState.lastIntersection.z, INFINITY); // clamp by infinite
-}
+};

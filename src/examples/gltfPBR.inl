@@ -170,7 +170,7 @@ namespace rnd {
             customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
 
             // create descriptor set, based on layout
-            auto dsc = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setPSetLayouts(customedLayouts.data()).setDescriptorSetCount(customedLayouts.size()));
+            auto dsc = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->rtDev->_descriptorPool).setPSetLayouts(customedLayouts.data()).setDescriptorSetCount(customedLayouts.size()));
             usrDescSet = dsc[0];
         }
 
@@ -313,7 +313,7 @@ namespace rnd {
             customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
 
             // create descriptor set, based on layout
-            auto dsc = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setPSetLayouts(customedLayouts.data()).setDescriptorSetCount(customedLayouts.size()));
+            auto dsc = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->rtDev->_descriptorPool).setPSetLayouts(customedLayouts.data()).setDescriptorSetCount(customedLayouts.size()));
             vtxDescSet = dsc[0];
         }
 
@@ -345,7 +345,7 @@ namespace rnd {
 
         // pipeline layout and cache
         auto pipelineLayout = deviceQueue->device->logical.createPipelineLayout(vk::PipelineLayoutCreateInfo().setPSetLayouts(descriptorSetLayouts.data()).setSetLayoutCount(descriptorSetLayouts.size()));
-        auto descriptorSets = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setDescriptorSetCount(descriptorSetLayouts.size()).setPSetLayouts(descriptorSetLayouts.data()));
+        auto descriptorSets = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->rtDev->_descriptorPool).setDescriptorSetCount(descriptorSetLayouts.size()).setPSetLayouts(descriptorSetLayouts.data()));
         drawDescriptorSets = {descriptorSets[0]};
 
         // create pipeline
@@ -374,7 +374,7 @@ namespace rnd {
             auto vertexInputState = vk::PipelineVertexInputStateCreateInfo();
             auto rasterizartionState = vk::PipelineRasterizationStateCreateInfo();
 
-            trianglePipeline = deviceQueue->device->logical.createGraphicsPipeline(deviceQueue->device->pipelineCache, vk::GraphicsPipelineCreateInfo()
+            trianglePipeline = deviceQueue->device->logical.createGraphicsPipeline(deviceQueue->device->rtDev->_pipelineCache, vk::GraphicsPipelineCreateInfo()
                 .setPStages(pipelineShaderStages.data()).setStageCount(pipelineShaderStages.size())
                 .setFlags(vk::PipelineCreateFlagBits::eAllowDerivatives)
                 .setPVertexInputState(&vertexInputState)
@@ -439,7 +439,7 @@ namespace rnd {
             // create graphics context
             context->queue = deviceQueue;
             context->pipeline = trianglePipeline;
-            context->descriptorPool = deviceQueue->device->descriptorPool;
+            context->descriptorPool = deviceQueue->device->rtDev->_descriptorPool;
             context->descriptorSets = drawDescriptorSets;
             context->pipelineLayout = pipelineLayout;
 
@@ -550,15 +550,10 @@ namespace rnd {
             dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
             dii.size = { uint32_t(I.width), uint32_t(I.height), 1 };
             vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
-
-            // dispatch image barrier
-            vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
-                for (auto& mI : mImages) { vtCmdImageBarrier(cmdBuf, mI); }
-            });
-
             writeIntoImage<uint8_t>(deviceQueue, I.image, image, 0);
         }
 
+        // create samplers
         if (model.samplers.size() > 0) {
             for (auto& S : model.samplers)
             {
@@ -609,13 +604,13 @@ namespace rnd {
                 auto& material = materials[materials.size() - 1];
                 material.diffuse = glm::vec4(1.f);
                 material.diffuseTexture = 0;
+                material.specular = glm::vec4(1.f, 0.f, 1.f, 1.f);
 
-                if (M.values.find("baseColorTexture") != M.values.end()) material.diffuseTexture = M.values.at("baseColorTexture").TextureIndex() + 1;
-                if (M.values.find("metallicRoughnessTexture") != M.values.end()) material.specularTexture = M.values.at("metallicRoughnessTexture").TextureIndex() + 1;
-                if (M.additionalValues.find("emissiveTexture") != M.additionalValues.end()) material.emissiveTexture = M.additionalValues.at("emissiveTexture").TextureIndex() + 1;
-                if (M.additionalValues.find("normalTexture") != M.additionalValues.end()) material.bumpTexture = M.additionalValues.at("normalTexture").TextureIndex() + 1;
-
-                if (M.values.find("metallicFactor") != M.values.end()) material.specular.z = M.values.at("metallicFactor").number_value;
+                if (M.additionalValues.find("emissiveTexture") != M.additionalValues.end()) material.emissiveTexture = int32_t(M.additionalValues.at("emissiveTexture").json_double_value.at("index") + 1e-5) + 1;
+                if (M.additionalValues.find("normalTexture") != M.additionalValues.end()) material.bumpTexture = int32_t(M.additionalValues.at("normalTexture").json_double_value.at("index") + 1e-5) + 1;
+                if (M.values.find("baseColorTexture") != M.values.end()) material.diffuseTexture = int32_t(M.values.at("baseColorTexture").json_double_value.at("index") + 1e-5) + 1;
+                if (M.values.find("metallicRoughnessTexture") != M.values.end()) material.specularTexture = int32_t(M.values.at("metallicRoughnessTexture").json_double_value.at("index") + 1e-5) + 1;
+                if (M.values.find("metallicFactor" ) != M.values.end()) material.specular.z = M.values.at("metallicFactor" ).number_value;
                 if (M.values.find("roughnessFactor") != M.values.end()) material.specular.y = M.values.at("roughnessFactor").number_value;
                 if (M.values.find("baseColorFactor") != M.values.end()) material.diffuse = glm::vec4(glm::make_vec3(M.values.at("baseColorFactor").number_array.data()), 1.f);
             }
@@ -853,7 +848,7 @@ namespace rnd {
 
         // pipeline layout and cache
         auto pipelineLayout = deviceQueue->device->logical.createPipelineLayout(vk::PipelineLayoutCreateInfo().setPSetLayouts(descriptorSetLayouts.data()).setSetLayoutCount(descriptorSetLayouts.size()));
-        auto descriptorSets = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->descriptorPool).setDescriptorSetCount(descriptorSetLayouts.size()).setPSetLayouts(descriptorSetLayouts.data()));
+        auto descriptorSets = deviceQueue->device->logical.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(deviceQueue->device->rtDev->_descriptorPool).setDescriptorSetCount(descriptorSetLayouts.size()).setPSetLayouts(descriptorSetLayouts.data()));
 
         // create pipeline
         {
@@ -881,7 +876,7 @@ namespace rnd {
             auto vertexInputState = vk::PipelineVertexInputStateCreateInfo();
             auto rasterizartionState = vk::PipelineRasterizationStateCreateInfo();
 
-            firstGenPipeline = deviceQueue->device->logical.createGraphicsPipeline(deviceQueue->device->pipelineCache, vk::GraphicsPipelineCreateInfo()
+            firstGenPipeline = deviceQueue->device->logical.createGraphicsPipeline(deviceQueue->device->rtDev->_pipelineCache, vk::GraphicsPipelineCreateInfo()
                 .setPStages(pipelineShaderStages.data()).setStageCount(pipelineShaderStages.size())
                 .setFlags(vk::PipelineCreateFlagBits::eAllowDerivatives)
                 .setPVertexInputState(&vertexInputState)

@@ -30,18 +30,44 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-        VmaAllocatorCreateInfo allocatorInfo = {};
-        allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice);
-        allocatorInfo.device = vtDevice->_device;
-        allocatorInfo.preferredLargeHeapBlockSize = 32 * sizeof(uint32_t);
-        allocatorInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-        allocatorInfo.pAllocationCallbacks = nullptr;
-        allocatorInfo.pVulkanFunctions = nullptr;
-        allocatorInfo.pHeapSizeLimit = nullptr;
-
         if (vtExtension.allocator) {
             vtDevice->_allocator = vtExtension.allocator; result = VK_SUCCESS;
         } else {
+            VmaAllocatorCreateInfo allocatorInfo = {};
+            allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice);
+            allocatorInfo.device = vtDevice->_device;
+            allocatorInfo.preferredLargeHeapBlockSize = 32 * sizeof(uint32_t);
+            allocatorInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+            allocatorInfo.pAllocationCallbacks = nullptr;
+            allocatorInfo.pVulkanFunctions = nullptr;
+            allocatorInfo.pHeapSizeLimit = nullptr;
+
+#ifdef VOLK_H_
+            // load API calls for mapping
+            VolkDeviceTable vktable;
+            volkLoadDeviceTable(&vktable, vtDevice->_device);
+
+            // mapping volk with VMA functions
+            VmaVulkanFunctions vfuncs = {};
+            vfuncs.vkAllocateMemory = vktable.vkAllocateMemory;
+            vfuncs.vkBindBufferMemory = vktable.vkBindBufferMemory;
+            vfuncs.vkBindImageMemory = vktable.vkBindImageMemory;
+            vfuncs.vkCreateBuffer = vktable.vkCreateBuffer;
+            vfuncs.vkCreateImage = vktable.vkCreateImage;
+            vfuncs.vkDestroyBuffer = vktable.vkDestroyBuffer;
+            vfuncs.vkDestroyImage = vktable.vkDestroyImage;
+            vfuncs.vkFreeMemory = vktable.vkFreeMemory;
+            vfuncs.vkGetBufferMemoryRequirements = vktable.vkGetBufferMemoryRequirements;
+            vfuncs.vkGetBufferMemoryRequirements2KHR = vktable.vkGetBufferMemoryRequirements2KHR;
+            vfuncs.vkGetImageMemoryRequirements = vktable.vkGetImageMemoryRequirements;
+            vfuncs.vkGetImageMemoryRequirements2KHR = vktable.vkGetImageMemoryRequirements2KHR;
+            vfuncs.vkGetPhysicalDeviceMemoryProperties = vkGetPhysicalDeviceMemoryProperties;
+            vfuncs.vkGetPhysicalDeviceProperties = vkGetPhysicalDeviceProperties;
+            vfuncs.vkMapMemory = vktable.vkMapMemory;
+            vfuncs.vkUnmapMemory = vktable.vkUnmapMemory;
+            allocatorInfo.pVulkanFunctions = &vfuncs;
+#endif
+
             if (vmaCreateAllocator(&allocatorInfo, &vtDevice->_allocator) == VK_SUCCESS) { result = VK_SUCCESS; };
         }
 #endif
@@ -54,16 +80,16 @@ namespace _vt {
         vtDevice->_pipelineCache = vkPipelineCache;
 
         // make descriptor pool
-        size_t mult = 8;
-        std::vector<vk::DescriptorPoolSize> dps = {
-            vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 8 * mult),
-            vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 32 * mult),
-            vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 32 * mult),
-            vk::DescriptorPoolSize(vk::DescriptorType::eSampledImage, 256 * mult),
-            vk::DescriptorPoolSize(vk::DescriptorType::eSampler, 32 * mult),
-            vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 256 * mult),
-            vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 4 * mult),
-            vk::DescriptorPoolSize(vk::DescriptorType::eUniformTexelBuffer, 8 * mult),
+        const size_t mult = 2;
+        std::vector<vk::DescriptorPoolSize> dps = { 
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(256 * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageImage).setDescriptorCount(256 * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageBuffer).setDescriptorCount(256 * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(256 * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampler).setDescriptorCount(64 * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eCombinedImageSampler).setDescriptorCount(256 * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageTexelBuffer).setDescriptorCount(256 * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(256 * mult),
         };
         vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(1024).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size())));
         vtDevice->_mainFamilyIndex = vtExtension.mainQueueFamily;
