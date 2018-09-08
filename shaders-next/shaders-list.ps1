@@ -106,7 +106,6 @@ function BuildAllShaders($Pfx = "") {
     # ray tracing shaders
     BuildCompute "closest-hit-shader.comp"  "$INDIR$RNDR" "$OUTDIR$RNDR"
     BuildCompute "htgen-shader.comp"        "$INDIR$RNDR" "$OUTDIR$RNDR"
-    BuildCompute "closest-hit-shader.comp"  "$INDIR$RNDR" "$OUTDIR$RNDR"
     BuildCompute "generation-shader.comp"   "$INDIR$RNDR" "$OUTDIR$RNDR"
     BuildCompute "htgen-shader.comp"        "$INDIR$RNDR" "$OUTDIR$RNDR"
     BuildCompute "rfgen-shader.comp"        "$INDIR$RNDR" "$OUTDIR$RNDR"

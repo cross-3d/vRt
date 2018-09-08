@@ -52,7 +52,7 @@ void main() {
         ray = rays[rayID];
         const int hitIdc = vtFetchHitIdc(rayID);
         const int hitpId = hits[hitIdc].payloadID-1;
-        vec4 emisson = hitp.emission, reflc = hitp.specularGlossiness;
+        vec4 diffuse = hitp.albedo, reflc = hitp.specularGlossiness;
 
         // get output image 2D coord
         const uvec2 ucoord = vtFetchIndex(rayID);
@@ -69,8 +69,8 @@ void main() {
             writeColor(ray.dcolor, vec4(0.f.xxx, 1.f));
 
             // alternate of http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
-            const float alph = (emisson.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(dcolor))) || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
-            //const float alph = (emisson.a >= 0.5f || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
+            const float alph = (diffuse.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(dcolor))) || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
+            //const float alph = (diffuse.a >= 0.5f || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
 
             // transparency ray
             VtRay newray = ray; {
@@ -82,7 +82,7 @@ void main() {
             
             // create data for reflection rays
             const vec3 vcolor = dcolor.xyz * alph.xxx; // visible ray color energy
-            [[flatten]] if (alph > 0.f) {
+            //[[flatten]] if (alph > 0.f) {
                 const vec3 vdir = reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz), shift = vdir;
                 const vec3 orig = fma(shift, shiftLenght.xxx, ray.origin.xyz);
                 const vec3 rcol = vcolor * reflc.xyz;
@@ -90,11 +90,11 @@ void main() {
                 ISTORE(OriginPass, icoord, vec4(orig, 1.f));
                 ISTORE(NormalPass, icoord, vec4(vdir, 0.f));
                 ISTORE(SpecularPass, icoord, vec4(rcol, reflc.w));
-            }
+            //}
 
             { // output color
                 const vec3 outcolor = vcolor * (1.f.xxx - reflc.xyz);
-                ISTORE(ColorOutput, icoord, vec4(fma(emisson.xyz, outcolor.xyz, bcolor.xyz), 1.f));
+                ISTORE(ColorOutput, icoord, vec4(fma(diffuse.xyz, outcolor.xyz, bcolor.xyz), 1.f));
             }
         }
     }
