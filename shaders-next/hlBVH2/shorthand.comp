@@ -39,7 +39,7 @@ void main() {
 
     // these operations calculating only on one ALU, so can be used more precised point
     // also, it no require so much free registers
-    [[flatten]] if (electedInvoc()) {
+     if (electedInvoc()) {
         const mat4 inversedpj = inverse(mat4(transpose(bvhBlock.projection))); // set inversed version of projection
         bvhBlock.projectionInv = transpose(mat4(inversedpj)), bvhBlock.sceneMin = gmn, bvhBlock.sceneMax = gmx;
 

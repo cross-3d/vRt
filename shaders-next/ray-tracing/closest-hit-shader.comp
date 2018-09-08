@@ -91,7 +91,7 @@ void main() {
     
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     
-    [[unroll, dependency_infinite]]
+     
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
@@ -156,7 +156,7 @@ void main() {
             hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
             
             // triangle intersection test
-            [[flatten]] IFANY (cameraUniform.variant == 1) {
+             IFANY (cameraUniform.variant == 1) {
                 //hitp.emission = vec4(hitp.albedo) + vec4(hitp.emission.xyz, 0.f);
                 //hitp.emission = vec4(fma(hitp.normalHeight.xyz,0.5f.xxx,0.5f.xxx),1.f);
                 //hitp.specularGlossiness = vec4(0.f);
@@ -167,7 +167,7 @@ void main() {
 
             // additional validation of hit (hit point interpolated offset test)
             uint comparable = ~0u;
-            [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0) {
+             if (!overflow && rayID >= 0 && hitID >= 0) {
                 const int pid = atomicIncPayloadHitCount();
                 {
                     hit.payloadID = pid+1;

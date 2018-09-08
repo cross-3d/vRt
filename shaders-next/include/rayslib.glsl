@@ -99,17 +99,17 @@ int atomicIncAttribCount() {return atomicIncVtCounters(7);}
 
 
 int vtReuseRays(in VtRay ray, in uvec2 c2d, in uint type, in int rayID) {
-    [[flatten]] if (max3_vec(f16_f32(ray.dcolor).xyz) >= 1e-3f) {
+     if (max3_vec(f16_f32(ray.dcolor).xyz) >= 1e-3f) {
         parameteri(RAY_TYPE, ray.dcolor.y, int(type));
         
         int rID = atomicIncRayCount();
         rayID = rayID < 0 ? rID : rayID; rays[rayID] = ray;
         
         int gID = atomicIncRayTypedCount(type);
-        [[flatten]] if (gID < MAX_RAYS) rayGroupIndices[MAX_RAYS*(type+1)+gID] = (rayID+1);
-        [[flatten]] if (rID < MAX_RAYS) rayGroupIndices[rID] = (rayID+1);
+         if (gID < MAX_RAYS) rayGroupIndices[MAX_RAYS*(type+1)+gID] = (rayID+1);
+         if (rID < MAX_RAYS) rayGroupIndices[rID] = (rayID+1);
     }
-    [[flatten]] if (rayID >= 0) { imageStore(rayLink, rayID<<1, 0u.xxxx), imageStore(rayLink, (rayID<<1)|1, p2x_16(c2d).xxxx); };
+     if (rayID >= 0) { imageStore(rayLink, rayID<<1, 0u.xxxx), imageStore(rayLink, (rayID<<1)|1, p2x_16(c2d).xxxx); };
     return rayID;
 }
 

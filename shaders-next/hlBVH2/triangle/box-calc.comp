@@ -25,11 +25,11 @@ LOCAL_SIZE_LAYOUT;
 void main() {
     IFALL (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-    [[unroll, dependency_infinite]]
+     
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         SB_BARRIER
         const uint to = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
-        [[flatten]] IFALL (to >= wsize) break;
+         IFALL (to >= wsize) break;
 
         const uint tri = bvhBlock.primitiveOffset+clamp(to, 0, bvhBlock.primitiveCount-1);
         const mat3x4 triverts = mat3x4(
@@ -39,7 +39,7 @@ void main() {
         );
 
         // store leaf data
-        [[flatten]] if (to < wsize && to >= 0) {
+         if (to < wsize && to >= 0) {
             ISTORE(lvtx, int(tri*3+0), triverts[0]), ISTORE(lvtx, int(tri*3+1), triverts[1]), ISTORE(lvtx, int(tri*3+2), triverts[2]);
             Leafs[to].lbox = calcTriBox(triverts), Leafs[to].pdata = ivec4(to.xx, 0, tri+1);
         }

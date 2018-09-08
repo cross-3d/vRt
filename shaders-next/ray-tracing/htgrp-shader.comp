@@ -30,7 +30,7 @@ void main() {
     IFALL (wsize <= 0) return;
 
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-    [[unroll, dependency_infinite]]
+     
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
@@ -48,7 +48,7 @@ void main() {
         uvec2 icoord = vtFetchIndex(rayID);
 
         // 
-        [[flatten]] if (!overflow) {
+         if (!overflow) {
             const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, ivec2(icoord));
             ISTORE(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz, dcolor.xyz, bcolor.xyz), 1.f));
 
@@ -58,7 +58,7 @@ void main() {
             writeColor(newray.dcolor, vec4(0.f.xxx, 1.f));
 
             // resolve ray emission
-            [[flatten]]
+             
             if (max3_vec(f16_f32(newray.dcolor).xyz) >= 1e-4f) {
                 vec3 vdir = dcts(newray.cdirect.xy), shift = hit.vdat.xyz;
                 newray.origin.xyz = fma(faceforward(shift, -vdir, hit.vdat.xyz), (hit.uvt.z*1e-3f).xxx, newray.origin.xyz); // add ray error offset

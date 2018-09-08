@@ -13,10 +13,10 @@ int prefixOf( in int a, in int b ) {
 
 int findSplit( in int left, in int right ) {
     int split = left, nstep = right - left, nsplit = split + nstep, commonPrefix = prefixOf(split, nsplit);
-    [[flatten]] if (commonPrefix >= BIT_FFT) {
+     if (commonPrefix >= BIT_FFT) {
         split = (left + right)>>1;
     } else {
-        [[dependency_infinite]] do {
+         do {
             nstep = (nstep + 1) >> 1, nsplit = split + nstep;
             if (prefixOf(split, nsplit) > commonPrefix) { split = nsplit; }
         } while (nstep > 1);
@@ -26,10 +26,10 @@ int findSplit( in int left, in int right ) {
 
 ivec2 determineRange( in int idx ) {
     int dir = clamp(prefixOf(idx,idx+1) - prefixOf(idx,idx-1), -1, 1), minPref = prefixOf(idx,idx-dir), maxLen = 2;
-    [[dependency_infinite]] while (prefixOf(idx, maxLen*dir+idx) > minPref) maxLen <<= 1;
+     while (prefixOf(idx, maxLen*dir+idx) > minPref) maxLen <<= 1;
 
     int len = 0;
-    [[dependency_infinite]] 
+     
     for (int t = maxLen>>1; t > 0; t>>=1) { if (prefixOf(idx, (len+t)*dir+idx) > minPref) len += t; }
 
     int range = len * dir + idx;
@@ -39,9 +39,9 @@ ivec2 determineRange( in int idx ) {
 // from top to bottom scheme (fine layout)
 void splitNode(in int pID) {
     const ivec2 range = bvhNodes[pID].meta.xy-1;
-    [[flatten]]
+     
     if (range.x >= 0 && range.y >= 0 && range.y < GSIZE) {
-        [[flatten]]
+         
         if (range.x != range.y) {
             const int split = findSplit(range.x, range.y);
             const ivec4 transplit = ivec4(range.x, split+0, split+1, range.y);
@@ -58,8 +58,8 @@ void splitNode(in int pID) {
 #endif
 
             // set leaf indices, without using atomics
-            [[flatten]] if (isLeaf.x) { LeafIndices[split+0] = h.x+1; }
-            [[flatten]] if (isLeaf.y) { LeafIndices[split+1] = h.y+1; }
+             if (isLeaf.x) { LeafIndices[split+0] = h.x+1; }
+             if (isLeaf.y) { LeafIndices[split+1] = h.y+1; }
         }
     }
 }

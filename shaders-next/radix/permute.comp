@@ -29,7 +29,7 @@ void main() {
     [[unroll]]
     for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
         const uint radice = uint(rk + Radice_Idx);
-        [[flatten]] if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
+         if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
     }
     if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(tiled(blocks.count, 4u), 524288u);
     LGROUP_BARRIER
@@ -38,12 +38,12 @@ void main() {
     // calculate blocks
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
 
-    [[unroll, dependency_infinite]]
+     
     for ( uint wk = 0; wk < bcount; wk++ ) {
         bvec4 validAddress = lessThan(addr, blocks.limit.xxxx);
-        [[flatten]] IFALL(all(not(validAddress))) break;
+         IFALL(all(not(validAddress))) break;
 
-        [[flatten]] if (Wave_Idx == 0) {
+         if (Wave_Idx == 0) {
 #ifdef PREFER_UNPACKED 
             key = ((uvec4(
 #else
@@ -66,14 +66,14 @@ void main() {
 #else
             const bvec4 owned = and(equal(up4x_8(key), radice.xxxx), validAddress);
 #endif
-            [[flatten]] if (any(owned)) {
+             if (any(owned)) {
                 WPTR4 offset = WPTR4(countOffset(uint(radice), owned));
-                [[flatten]] if (owned.x) { ValueTmp[offset.x] = ValueIn[addr.x], KeyTmp[offset.x] = KeyIn[addr.x]; }
-                [[flatten]] if (owned.y) { ValueTmp[offset.y] = ValueIn[addr.y], KeyTmp[offset.y] = KeyIn[addr.y]; }
-                [[flatten]] if (owned.z) { ValueTmp[offset.z] = ValueIn[addr.z], KeyTmp[offset.z] = KeyIn[addr.z]; }
-                [[flatten]] if (owned.w) { ValueTmp[offset.w] = ValueIn[addr.w], KeyTmp[offset.w] = KeyIn[addr.w]; }
+                 if (owned.x) { ValueTmp[offset.x] = ValueIn[addr.x], KeyTmp[offset.x] = KeyIn[addr.x]; }
+                 if (owned.y) { ValueTmp[offset.y] = ValueIn[addr.y], KeyTmp[offset.y] = KeyIn[addr.y]; }
+                 if (owned.z) { ValueTmp[offset.z] = ValueIn[addr.z], KeyTmp[offset.z] = KeyIn[addr.z]; }
+                 if (owned.w) { ValueTmp[offset.w] = ValueIn[addr.w], KeyTmp[offset.w] = KeyIn[addr.w]; }
             }
-            [[flatten]] IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
+             IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
         }
 
         LGROUP_BARRIER

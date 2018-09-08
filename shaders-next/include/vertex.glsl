@@ -127,14 +127,14 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 #ifndef VRT_USE_FAST_INTERSECTION
 float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, in bool valid) {
     float T = INFINITY;
-    [[flatten]] IFANY (valid) {
+     IFANY (valid) {
         // gather patterns
         const mat3 ABC = mat3(TLOAD(lvtx, tri*3+0).xyz+orig.xxx, TLOAD(lvtx, tri*3+1).xyz+orig.yyy, TLOAD(lvtx, tri*3+2).xyz+orig.zzz)*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf
         vec3 UVW_ = uvwMap[axis] * inverse(ABC);
-        [[flatten]] IFANY (valid = valid && (all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx)))) {
+         IFANY (valid = valid && (all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx)))) {
             UVW_ /= precIssue(dot(UVW_, vec3(1)));
             UV = vec2(UVW_.yz), UVW_ *= ABC; // calculate axis distances
             T = mix(mix(UVW_.z, UVW_.y, axis == 1), UVW_.x, axis == 0);
@@ -155,20 +155,20 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
     const float a = dot(e1,h);
 
 #ifdef BACKFACE_CULLING
-    [[flatten]] if (a <= 0.f) { _valid = false; }
+     if (a <= 0.f) { _valid = false; }
 #else
-    [[flatten]] if (abs(a) <= 0.f) { _valid = false; }
+     if (abs(a) <= 0.f) { _valid = false; }
 #endif
 
     const float f = 1.f/a;
     const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1);
     uv = f * vec2(dot(s,h),dot(dir.xyz,q));
 
-    [[flatten]] if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
+     if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
 
     float T = f * dot(e2,q);
-    [[flatten]] if (T >= (INFINITY-IOFF) || T < 0.f) { _valid = false; } 
-    [[flatten]] if (!_valid) T = INFINITY;
+     if (T >= (INFINITY-IOFF) || T <= 0.f || isnan(T) || isinf(T)) { _valid = false; } 
+     if (!_valid) T = INFINITY;
     return T;
 }
 #else
@@ -177,10 +177,10 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid, inout float cdist) {
     const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
     const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]), T = oz/dz;
-    [[flatten]] if (T >= (INFINITY-IOFF) || T > cdist || T < 0.f) { _valid = false; };
-    [[flatten]] if (_valid) {
+     if (T >= (INFINITY-IOFF) || T > cdist || T <= 0.f || isnan(T) || isinf(T)) { _valid = false; };
+     if (_valid) {
         const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
-        [[flatten]] if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; };
+         if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; };
     }
     return (_valid ? T : INFINITY);
 }
@@ -205,7 +205,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 void interpolateMeshData(inout VtHitData ht, in int tri) {
     const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
-    [[flatten]]
+     
     if (ht.attribID > 0) {
         [[unroll]]
         for (int i=0;i<ATTRIB_EXTENT;i++) {
@@ -232,7 +232,7 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
 void storeAttribute(in ivec3 cdata, in vec4 fval) {
     ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(cdata.x*ATTRIB_EXTENT+cdata.y));
 
-    [[flatten]]
+     
     if (cdata.z < 3) {
         ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,cdata.z), (fval));
     } else {
@@ -269,11 +269,11 @@ bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in bvec3 sgn, in m
     tMinMax[2] = sgn.z ? tMinMax[2] : tMinMax[2].yx;
 
     float 
-        tNear = (max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x) ), 
-        tFar  = (min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y) )*InOne;
+        tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x)-InZero, 
+        tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y)+InZero;
 
     // resolve hit
-    const bool isCube = tFar>tNear && tFar>=0.f && tNear < (INFINITY-IOFF);
+    const bool isCube = tFar>tNear && tFar>=0.f && tNear < (INFINITY-IOFF) && tFar < (INFINITY-IOFF);//&& !(isnan(tNear) || isnan(tFar) || isinf(tNear) || isinf(tFar));
     nfe.xz = mix(INFINITY.xx, vec2(tNear, tFar), isCube.xx);
     return isCube;
 }
@@ -304,10 +304,16 @@ lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in bvec3 sgn, i
     mediump
 #endif
     fvec2_
-        tNear = (max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy) ), 
-        tFar  = (min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw) )*InOne;
+        tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy)-InZero, 
+        tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw)+InZero;
         
-    const bvec2_ isCube = bvec2_(greaterThan(tFar, tNear)) & bvec2_(greaterThan(tFar, fvec2_(0.0f))) & bvec2_(lessThanEqual(tNear, fvec2_(INFINITY-IOFF)));
+    const bvec2_ isCube = 
+        bvec2_(greaterThan(tFar, tNear)) & 
+        bvec2_(greaterThan(tFar, fvec2_(0.0f))) & 
+        bvec2_(lessThan(tNear, fvec2_(INFINITY-IOFF))) & 
+        bvec2_(lessThan(tFar, fvec2_(INFINITY-IOFF))); //& 
+        //not(bvec2_(isnan(tNear)) | bvec2_(isnan(tFar)) | bvec2_(isinf(tNear)) | bvec2_(isinf(tFar)));
+
     nfe2 = mix(INFINITY.xxxx, vec4(tNear, tFar), bvec4(isCube, isCube));
     return isCube;
 }

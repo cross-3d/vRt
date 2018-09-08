@@ -84,7 +84,7 @@ const int _IZERO = 0;
 #else
 float mid3_wrap(in float a, in float b, in float c) {
     const float m = max3_wrap(a, b, c);
-    [[flatten]] if (m == a) { return max(b, c); } else if (m == b) { return max(a, c); } else { return max(a, b); }
+     if (m == a) { return max(b, c); } else if (m == b) { return max(a, c); } else { return max(a, b); }
 }
 
 vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {

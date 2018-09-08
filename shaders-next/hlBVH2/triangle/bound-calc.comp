@@ -55,7 +55,7 @@ void main() {
     // calculate boxes for per work
     uint i = gl_WorkGroupID.x * (gl_WorkGroupSize.x*2) + tid;
 
-    [[dependency_infinite]]
+     
     while (i < tcount) {
         bbox_t bound = sdata[tid];
         bound = bbox_tunion3(bound, getMinMaxPrimitive(i), getMinMaxPrimitive(i + gl_WorkGroupSize.x));
@@ -67,7 +67,7 @@ void main() {
     // shared reduction
     [[unroll]]
     for (uint ki=(gl_WorkGroupSize.x>>1u);ki>=Wave_Size_RT;ki>>=1) {
-        [[flatten]]
+         
         if (tid < ki) { 
             bbox_t bound = sdata[tid], opbound = sdata[tid + ki]; 
             bound = bbox_tunion(bound, opbound); 
@@ -87,7 +87,7 @@ void main() {
     LGROUP_BARRIER
 
     // store in global memory result of work
-    [[flatten]]
+     
     if (tid == 0) {
         minmax[gl_WorkGroupID.x*2 + 0] = sdata[tid].mn;
         minmax[gl_WorkGroupID.x*2 + 1] = sdata[tid].mx;

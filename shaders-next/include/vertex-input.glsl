@@ -141,15 +141,15 @@ uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) 
 
 void readByAccessorLL(in int accessor, in uint index, inout uvec4 outpx) {
     uint attribution[4] = {outpx.x, outpx.y, outpx.z, outpx.w};
-    [[flatten]] if (accessor >= 0) {
+     if (accessor >= 0) {
         const int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         const uint T = calculateByteOffset(accessor, index, 2);
         const uint C = aComponents(accessors[accessor].bitfield)+1;
         const uint D = 0u; // component decoration
-        [[flatten]] if (C >= 1) attribution[D+0] = M32(BFS,T+0);
-        [[flatten]] if (C >= 2) attribution[D+1] = M32(BFS,T+1);
-        [[flatten]] if (C >= 3) attribution[D+2] = M32(BFS,T+2);
-        [[flatten]] if (C >= 4) attribution[D+3] = M32(BFS,T+3);
+         if (C >= 1) attribution[D+0] = M32(BFS,T+0);
+         if (C >= 2) attribution[D+1] = M32(BFS,T+1);
+         if (C >= 3) attribution[D+2] = M32(BFS,T+2);
+         if (C >= 4) attribution[D+3] = M32(BFS,T+3);
     }
     outpx = uvec4(attribution[0], attribution[1], attribution[2], attribution[3]);
 };
@@ -191,11 +191,11 @@ void readByAccessor(in int accessor, in uint index, inout uint outp) {
 
 // planned read type directly from accessor
 void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
-    [[flatten]] if (accessor >= 0) {
+     if (accessor >= 0) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         const bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
         uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
-        [[flatten]] if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
+         if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
     }
 }
 

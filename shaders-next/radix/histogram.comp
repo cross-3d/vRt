@@ -29,7 +29,7 @@ void main() {
     [[unroll]]
     for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
         const uint radice = uint(rk + Radice_Idx);
-        [[flatten]] if (radice < RADICES) localHistogram[radice] = 0;
+         if (radice < RADICES) localHistogram[radice] = 0;
     }
     if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(tiled(blocks.count, 4u), 524288u);
     LGROUP_BARRIER
@@ -38,12 +38,12 @@ void main() {
     // use SIMD lanes for calculate histograms
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
 
-    [[unroll, dependency_infinite]]
+     
     for ( uint wk = 0; wk < bcount; wk++ ) {
         bvec4 validAddress = lessThan(addr, blocks.limit.xxxx);
-        [[flatten]] IFALL(all(not(validAddress))) break;
+         IFALL(all(not(validAddress))) break;
 
-        [[flatten]] if (Wave_Idx == 0) {
+         if (Wave_Idx == 0) {
 #ifdef PREFER_UNPACKED 
             key = ((uvec4(
 #else
@@ -66,8 +66,8 @@ void main() {
 #else
             const bvec4 owned = and(equal(up4x_8(key), radice.xxxx), validAddress);
 #endif
-            [[flatten]] if (any(owned)) countHistogram(uint(radice), owned);
-            [[flatten]] IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
+             if (any(owned)) countHistogram(uint(radice), owned);
+             IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
         }
 
         LGROUP_BARRIER
@@ -81,7 +81,7 @@ void main() {
     [[unroll]]
     for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
         const lowp uint radice = uint(rk + Radice_Idx);
-        [[flatten]] if (radice < RADICES) {
+         if (radice < RADICES) {
             PrefixSum[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
             Histogram[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
         }

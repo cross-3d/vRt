@@ -36,7 +36,7 @@ void main() {
     traverseState.cacheID = int(gl_GlobalInvocationID.x);
     traverseState.minDist = 0.f;
 
-    [[unroll, dependency_infinite]]
+     
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
@@ -44,13 +44,13 @@ void main() {
 
         // do BVH traversing 
         const int rayID = vtRayIdx(it); int hid = vtFetchHitIdc(rayID);
-        [[flatten]] if (!overflow) traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
+         if (!overflow) traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
         SB_BARRIER
 
         // planned multiple-hits support
-        [[flatten]] if (!overflow) { // verify intersection
+         if (!overflow) { // verify intersection
             const int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
-            [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // reserve one hit
+             if (hid < 0) hid = atomicIncHitCount(); // reserve one hit
 
 #ifdef DMA_HIT
             #define hit hits[hid]
@@ -60,8 +60,8 @@ void main() {
             hit.payloadID = 0, hit.rayID = rayID+1;
 
             // if found as minimum one intersection
-            [[flatten]] IF (triID >= 0) {
-                [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // if required new
+             IF (triID >= 0) {
+                 if (hid < 0) hid = atomicIncHitCount(); // if required new
                 hit.uvt = primitiveState.lastIntersection;
                 hit.attribID = vtVerifyClosestHit(hid,-1)+1;
                 //imageAtomicMax(rayLink,rayID<<1, (hid+1).x);
@@ -69,8 +69,8 @@ void main() {
             
             // if no found any intersection
             // planned to add multi-traversing support, and another resolver
-            [[flatten]] IF (triID < 0) {
-                [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // if required new
+             IF (triID < 0) {
+                 if (hid < 0) hid = atomicIncHitCount(); // if required new
                 hit.uvt = vec4(0.f.xx, INFINITY, intBitsToFloat(-1));
                 hit.attribID = 0; vtVerifyMissedHit(hid, 0);
                 //imageAtomicMax(rayLink,rayID<<1, (hid+1).x);

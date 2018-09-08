@@ -41,7 +41,7 @@ void main() {
     IFALL (wsize <= 0) return;
 
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-    [[unroll, dependency_infinite]]
+     
     for (uint w=0;w<wcount;w+=wgs) {
         SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
@@ -59,7 +59,7 @@ void main() {
         const ivec2 icoord = ivec2(ucoord);
 
         // add support for multi-passing
-        [[flatten]] if (!overflow && rayID >= 0) {
+         if (!overflow && rayID >= 0) {
             // reflection prior (early stage)
             const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, icoord);
             const float shiftLenght = hit.uvt.z*1e-3f;
@@ -82,7 +82,7 @@ void main() {
             
             // create data for reflection rays
             const vec3 vcolor = dcolor.xyz * alph.xxx; // visible ray color energy
-            //[[flatten]] if (alph > 0.f) {
+            // if (alph > 0.f) {
                 const vec3 vdir = reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz), shift = vdir;
                 const vec3 orig = fma(shift, shiftLenght.xxx, ray.origin.xyz);
                 const vec3 rcol = vcolor * reflc.xyz;

@@ -31,7 +31,7 @@ void main() {
     SB_BARRIER
 
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-    [[unroll, dependency_infinite]]
+     
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
@@ -44,7 +44,7 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
-        [[flatten]] if (!overflow && hitID >= 0) { // verify intersection
+         if (!overflow && hitID >= 0) { // verify intersection
             const int triID = floatBitsToInt(hit.uvt.w)-1; imageAtomicMax(rayLink, (hit.rayID-1)<<1, (hitID+1).x);
             SB_BARRIER
 
@@ -61,7 +61,7 @@ void main() {
             const lowp uint rID = floatBitsToUint(hit.vdat.w);
             [[unroll]]
             for (int i=0;i<4;i++) {
-                [[flatten]]
+                 
                 if (rID == i) { vtVerifyClosestHit(hitID, i); break; }
             }
         }

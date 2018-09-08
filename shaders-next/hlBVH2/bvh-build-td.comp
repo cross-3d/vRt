@@ -75,7 +75,7 @@ void main() {
     const uint gS = (groupSize >> 1), iT = threadID >> 1; const int sD = int(threadID & 1);
 
     LGROUP_BARRIER
-    [[flatten]] if (threadID < 8) { _counters[threadID] = 0; }
+     if (threadID < 8) { _counters[threadID] = 0; }
     LGROUP_BARRIER
 
     // create initial (root) node
@@ -91,12 +91,12 @@ void main() {
     IFALL (bvhBlock.leafCount <= 0) return;
 
     // building BVH
-    [[dependency_infinite]]
+     
     for (int m=0;m<65536;m++) {
         LGROUP_BARRIER
 
 #ifdef FIRST_STEP
-        [[flatten]] IFANY ( asize>=WGS && (m&1)==1 ) break; // limit by few elements
+         IFANY ( asize>=WGS && (m&1)==1 ) break; // limit by few elements
 #endif
 
         // swap buffers emulation
@@ -111,15 +111,15 @@ void main() {
         
         // split nodes
         const int dT = int(m==0?rID(iT):wID(iT)), OSi = int(gS*(m==0?gl_NumWorkGroups.x:1));
-        [[flatten]] IFANY (asize <= 0) break; // check-out limits
-        [[unroll, dependency_infinite]]
+         IFANY (asize <= 0) break; // check-out limits
+         
         for (int fT=0;fT<asize;fT+=OSi) { SB_BARRIER
             const int iWD = fT+dT;
-            [[flatten]] IFALL (iWD >= osize) break;
-            [[flatten]] if (iWD < osize) {
+             IFALL (iWD >= osize) break;
+             if (iWD < osize) {
                 const int fID = iWD < osize ? Actives[swapIn+iWD]-1 : -1;
-                [[flatten]] if (sD == 0 && iWD < osize) Actives[swapIn+iWD] = 0;
-                [[flatten]] if (fID >= 0) { splitNode(fID|sD); } // split sibling nodes
+                 if (sD == 0 && iWD < osize) Actives[swapIn+iWD] = 0;
+                 if (fID >= 0) { splitNode(fID|sD); } // split sibling nodes
             }
         }
     }

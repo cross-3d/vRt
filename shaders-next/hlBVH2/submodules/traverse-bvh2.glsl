@@ -40,19 +40,19 @@ shared int localStack[WORK_SIZE][localStackSize];
 #define lstack localStack[Local_Idx]
 
 int loadStack() {
-    [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
+     if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
         lstack = pages[traverseState.cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize; 
     };
     int idx = --traverseState.stackPtr, rsl = idx >= 0 ? lstack[idx] : -1; traverseState.stackPtr = max(traverseState.stackPtr, 0); return rsl;
 };
 
 void storeStack(in int rsl) {
-    [[flatten]] if (rsl >= 0) {
-        [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
+     if (rsl >= 0) {
+         if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
             pages[traverseState.cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
         }
         int idx = traverseState.stackPtr++; 
-        [[flatten]] if (idx < localStackSize) lstack[idx] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
+         if (idx < localStackSize) lstack[idx] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
     }
 };
 
@@ -68,8 +68,8 @@ void doIntersection() {
 #endif
 #define nearhit (primitiveState.lastIntersection.z+(0.f))
 
-    [[flatten]] if (d <= nearhit && d >= traverseState.minDist.x && d < (INFINITY-IOFF)) {
-        [[flatten]] if (abs(primitiveState.lastIntersection.z-d) > 0.f || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
+     if (d <= nearhit && d >= traverseState.minDist.x && d < (INFINITY-IOFF)) {
+         if (abs(primitiveState.lastIntersection.z-d) > 0.f || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
             primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID));
         };
     }; traverseState.defTriangleID=0;
@@ -108,9 +108,9 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     // calculate longest axis
     primitiveState.axis = 2; {
         const vec3 drs = abs(direct);
-        [[flatten]] if (drs.y >= drs.x && drs.y > drs.z) primitiveState.axis = 1;
-        [[flatten]] if (drs.x >= drs.z && drs.x > drs.y) primitiveState.axis = 0;
-        [[flatten]] if (drs.z >= drs.y && drs.z > drs.x) primitiveState.axis = 2;
+         if (drs.y >= drs.x && drs.y > drs.z) primitiveState.axis = 1;
+         if (drs.x >= drs.z && drs.x > drs.y) primitiveState.axis = 0;
+         if (drs.z >= drs.y && drs.z > drs.x) primitiveState.axis = 2;
     }
 
     // calculate affine matrices
@@ -143,12 +143,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z, dirlen, diffOffset);
 
     // two loop based BVH traversing
-    [[dependency_infinite]] for (int hi=0;hi<max_iteraction;hi++) {
-        [[flatten]] if (traverseState.idx >= 0 && traverseState.defTriangleID <= 0) {
-        { [[dependency_infinite]] for (;hi<max_iteraction;hi++) {  _continue = false;
+    for (int hi=0;hi<max_iteraction;hi++) {
+        if (traverseState.idx >= 0 && traverseState.defTriangleID <= 0) {
+        {  for (;hi<max_iteraction;hi++) {  _continue = false;
             
             const ivec2 cnode = traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx;
-            [[flatten]] if (isLeaf(cnode)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
+            if (isLeaf(cnode)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
                 const fmat3x4_ bbox2x = fmat3x4_(bvhNodes[traverseState.idx].cbox[0], bvhNodes[traverseState.idx].cbox[1], bvhNodes[traverseState.idx].cbox[2]);
                 lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
@@ -156,15 +156,15 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 
                 // 
                 int fmask = int((childIntersect.y<<1u)|childIntersect.x);
-                [[flatten]] if (fmask > 0) {
+                 if (fmask > 0) {
                     int primary = -1, secondary = -1;
-                    [[flatten]] if (fmask == 3) { fmask &= nfe.x<=nfe.y ? 1 : 2, secondary = cnode.x^(fmask>>1); }; // if both has intersection
+                     if (fmask == 3) { fmask &= nfe.x<=nfe.y ? 1 : 2, secondary = cnode.x^(fmask>>1); }; // if both has intersection
                     primary = cnode.x^(fmask&1);
                     
                     // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
                     // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
                     ivec2 snode = secondary >= 0 ? bvhNodes[secondary].meta.xy : (0).xx;
-                    [[flatten]] if (isLeaf(snode)) { traverseState.defTriangleID = snode.x, secondary = -1; }; storeStack(secondary);
+                     if (isLeaf(snode)) { traverseState.defTriangleID = snode.x, secondary = -1; } else { storeStack(secondary); };
 
                     // set traversing node id
                     traverseState.idx = primary, _continue = true;
@@ -172,13 +172,13 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
             }
 
             // if all threads had intersection, or does not given any results, break for processing
-            [[flatten]] if (!_continue) { traverseState.idx = loadStack(); } // load from stack 
-            [[flatten]] IFANY (traverseState.defTriangleID > 0 || traverseState.idx <= 0) { break; } // 
+             if (!_continue) { traverseState.idx = loadStack(); } // load from stack 
+             IFANY (traverseState.defTriangleID > 0 || traverseState.idx <= 0) { break; } // 
         }}};
         
         // every-step solving 
-        [[flatten]] if (traverseState.defTriangleID > 0) { doIntersection(); } // if has triangle, do intersection
-        [[flatten]] if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
+         IFANY (traverseState.defTriangleID > 0) { doIntersection(); } // if has triangle, do intersection
+         if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
     };
 
     // correction of hit distance
