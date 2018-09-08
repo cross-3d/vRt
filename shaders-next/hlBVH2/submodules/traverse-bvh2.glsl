@@ -18,10 +18,10 @@ layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYS
 // BVH traversing state
 struct BvhTraverseState {
     int idx, defTriangleID, stackPtr, cacheID, pageID; float minDist; // vec4, vec2
-    bvec3 boxSide; bool fcontinue; // bvec4
+    bvec4 boxSide; // bvec4
     fvec4_ minusOrig, directInv; // vec4 of 32-bits
 } traverseState;
-#define _continue traverseState.fcontinue
+#define _continue traverseState.boxSide.w
 
 
 // intersection current state
@@ -98,7 +98,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     const vec4 direct = tdir * invlen, dirproj = 1.f / precIssue(direct);
 
     // limitation of distance
-    #define bsgn traverseState.boxSide
+    #define bsgn traverseState.boxSide.xyz
     bsgn = bvec3((ivec3(sign(dirproj.xyz))+1)>>1);
 
     // pre-calculate for triangle intersections
@@ -128,6 +128,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     const mat3x2 bndsf2 = mat3x2(bside2, bside2, bside2);
     //const mat3x2 bndsf2 = transpose(mat2x3(bvhBlock.sceneMin.xyz, bvhBlock.sceneMax.xyz));
     const int entry = (valid ? BVH_ENTRY : -1);
+    _continue = false;
 
     // initial traversing state
     //traverseState.idx = entry, traverseState.idx = nfe.x >= (INFINITY-IOFF) ? -1 : traverseState.idx; // unable to intersect the root box 
@@ -150,7 +151,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
             [[flatten]] if (isLeaf(cnode)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
                 const fmat3x4_ bbox2x = fmat3x4_(bvhNodes[traverseState.idx].cbox[0], bvhNodes[traverseState.idx].cbox[1], bvhNodes[traverseState.idx].cbox[2]);
-                lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, traverseState.boxSide.xyz, bbox2x, nfe);
+                lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
                 childIntersect &= bvec2_(lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz)); // it increase FPS by filtering nodes by first triangle intersection
                 
                 // 
@@ -172,12 +173,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
             // if all threads had intersection, or does not given any results, break for processing
             [[flatten]] if (!_continue) { traverseState.idx = loadStack(); } // load from stack 
-            [[flatten]] IFANY (traverseState.defTriangleID > 0 || traverseState.idx < 0) { break; } // 
+            [[flatten]] IFANY (traverseState.defTriangleID > 0 || traverseState.idx <= 0) { break; } // 
         }}};
         
         // every-step solving 
         [[flatten]] if (traverseState.defTriangleID > 0) { doIntersection(); } // if has triangle, do intersection
-        [[flatten]] if (traverseState.idx < 0) { break; } // if no to traversing - breaking
+        [[flatten]] if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
     };
 
     // correction of hit distance
