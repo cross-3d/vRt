@@ -5,7 +5,7 @@
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 
-#define fpInner 0.f
+#define fpInner 0.f//0.00000011920928955078125f
 
 // force undef fp16
 #ifdef AMD_F16_BVH

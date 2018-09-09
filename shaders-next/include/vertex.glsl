@@ -173,7 +173,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; };
 
         T = f * dot(e2,q);
-        if (T >= N_INFINITY || T > cdist || T <= 0.f /*|| isnan(T) || isinf(T)*/) { _valid = false; };
+        if (T > N_INFINITY || T > cdist || T <= 0.f /*|| isnan(T) || isinf(T)*/) { _valid = false; };
     }
     return (_valid ? T : INFINITY);
 }
@@ -185,7 +185,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
     IFANY (_valid) {
          mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
          float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/dz;
-        if (T >= N_INFINITY || T > cdist || T <= 0.f /*|| isnan(T) || isinf(T)*/) { _valid = false; };
+        if (T > N_INFINITY || T > cdist || T <= 0.f /*|| isnan(T) || isinf(T)*/) { _valid = false; };
         IFANY (_valid) {
              vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
             if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; };
@@ -273,10 +273,10 @@ bool intersectCubeF32Single( vec3 origin,  vec3 dr, in bvec3 sgn, in mat3x2 tMin
     float 
         tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x), 
         tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y);
-        tFar  = (tFar-tNear)*InOne+tNear; // correction of far
+        tFar *= InOne;
 
     // resolve hit
-    bool isCube = tFar>tNear && tFar >= 0.f && tNear < N_INFINITY /*&& !(isnan(tNear) || isnan(tFar) || isinf(tNear) || isinf(tFar))*/;
+    bool isCube = tFar>=tNear && tFar >= 0.f && tNear <= N_INFINITY;
     nfe.xz = mix(nfe.xz, vec2(tNear, tFar), isCube.xx);
     return isCube;
 }
@@ -305,13 +305,12 @@ lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in bvec3 sgn, i
     fvec2_
         tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy), 
         tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw);
-        tFar  = (tFar-tNear)*InOne+tNear; // correction of far
+        tFar *= InOne;
         
      bvec2_ isCube = 
-        bvec2_(greaterThan(tFar, tNear)) & 
+        bvec2_(greaterThanEqual(tFar, tNear)) & 
         bvec2_(greaterThanEqual(tFar, fvec2_(0.0f))) & 
-        bvec2_(lessThan(tNear, fvec2_(N_INFINITY))) /*& 
-        not(bvec2_(isnan(tNear)) | bvec2_(isnan(tFar)) | bvec2_(isinf(tNear)) | bvec2_(isinf(tFar)))*/;
+        bvec2_(lessThanEqual(tNear, fvec2_(N_INFINITY)));
 
     nfe2 = mix(nfe2, vec4(tNear, tFar), bvec4(isCube, isCube));
     return isCube;

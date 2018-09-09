@@ -67,7 +67,7 @@ void doIntersection(in bool isvalid) {
 #endif
 #define nearhit (primitiveState.lastIntersection.z)
 
-     if (d <= nearhit && d >= traverseState.minDist.x && d < N_INFINITY && isvalid) {
+     if (d <= nearhit && d >= traverseState.minDist.x && d <= N_INFINITY && isvalid) {
          if (abs(primitiveState.lastIntersection.z-d) > 0.f || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
             primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID));
         };
@@ -125,14 +125,15 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const   vec2 bside2 = vec2(-1.001, 1.001f);
-    const mat3x2 bndsf2 = mat3x2(bside2, bside2, bside2);
+    const   vec3 interm = bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz;
+    const   vec2 bside2 = vec2(-1.f, 1.f);
+    const mat3x2 bndsf2 = mat3x2( fma(InZero,interm.x,1.f)*bside2, fma(InZero,interm.y,1.f)*bside2, fma(InZero,interm.z,1.f)*bside2 );
     //const mat3x2 bndsf2 = transpose(mat2x3(bvhBlock.sceneMin.xyz, bvhBlock.sceneMax.xyz));
-     int entry = (valid ? BVH_ENTRY : -1);
+    const int entry = (valid ? BVH_ENTRY : -1);
 
     // initial traversing state
     //traverseState.idx = entry, traverseState.idx = nfe.x >= N_INFINITY ? -1 : traverseState.idx; // unable to intersect the root box 
-    traverseState.idx = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe) ? entry : -1, traverseState.idx = nfe.x >= N_INFINITY ? -1 : traverseState.idx;
+    traverseState.idx = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe) ? entry : -1, traverseState.idx = nfe.x > N_INFINITY ? -1 : traverseState.idx;
     traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0, traverseState.minDist = 0.f;  float diffOffset = min(-nfe.x, 0.f);
     traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(diffOffset.xxxx)));
     traverseState.directInv = fvec4_(dirproj) * fvec4_(hCorrection.xxxx);

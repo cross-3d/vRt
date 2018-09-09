@@ -8,16 +8,16 @@
 // NEXT standard consts in current
 // Ray tracing NEXT capable shader standard development planned begin in 2019 year
 const float PHI = 1.6180339887498948482f;
-const float INFINITY = 1e+5f, IOFF = 1e-5f;
+const float INFINITY = 1e+5f;//, IOFF = 1e-5f;
 const float PI = 3.1415926535897932384626422832795028841971f;
 const float TWO_PI = 6.2831853071795864769252867665590057683943f;
 const float SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
 const float E = 2.7182818284590452353602874713526624977572f;
-const float N_INFINITY = INFINITY - IOFF;
+const float N_INFINITY = 99999.f;//INFINITY - IOFF;
 
 
-const float SFN = 0.00000011920928955078125f;
-const float N1024 = 1024.f;
+const float SFN = 128.f*0.00000011920928955078125f;
+//const float N1024 = 1024.f;
 #ifdef AMD_F16_BVH
 const float16_t InZero = 0.0009765625hf, InOne = 1.0009765625hf;
 #else

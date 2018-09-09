@@ -13,7 +13,7 @@ int prefixOf( in int a, in int b ) {
 
 int findSplit( in int left, in int right ) {
     int split = left, nstep = right - left, nsplit = split + nstep, commonPrefix = prefixOf(split, nsplit);
-     if (commonPrefix >= BIT_FFT) {
+    [[flatten]] IFALL (commonPrefix >= BIT_FFT) {
         split = (left + right)>>1;
     } else {
          do {
