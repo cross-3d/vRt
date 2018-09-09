@@ -29,6 +29,7 @@
 #extension GL_ARB_gpu_shader_int64 : enable
 #extension GL_EXT_control_flow_attributes : enable
 #extension GL_EXT_shader_image_load_formatted : enable
+#extension GL_KHR_memory_scope_semantics : enable
 
 // subgroup operations
 #extension GL_KHR_shader_subgroup_basic            : require
