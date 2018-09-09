@@ -56,8 +56,6 @@ void main() {
 
     // calculate boxes for per work
     uint i = gl_WorkGroupID.x * (gl_WorkGroupSize.x*2) + tid;
-
-     
     while (i < tcount) {
         bbox_t bound = sdata[tid];
         bound = bbox_tunion3(bound, getMinMaxPrimitive(i), getMinMaxPrimitive(i + gl_WorkGroupSize.x));

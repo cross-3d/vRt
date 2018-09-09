@@ -62,7 +62,7 @@ layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB {
     vec4 sceneMin, sceneMax;
 } bvhBlock;
 
-vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4(bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz, 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
+vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4(precIssue(bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
 
 
 
@@ -266,14 +266,9 @@ void storePosition(in ivec2 cdata, in vec4 fval) {
 
 bool intersectCubeF32Single( vec3 origin,  vec3 dr, in bvec3 sgn, in mat3x2 tMinMax, inout vec4 nfe) {
     nfe = INFINITY.xxxx;
-    tMinMax = mat3x2(
-        fma(tMinMax[0], dr.xx, origin.xx),
-        fma(tMinMax[1], dr.yy, origin.yy),
-        fma(tMinMax[2], dr.zz, origin.zz)
-    ),
-    tMinMax[0] = sgn.x ? tMinMax[0] : tMinMax[0].yx,
-    tMinMax[1] = sgn.y ? tMinMax[1] : tMinMax[1].yx,
-    tMinMax[2] = sgn.z ? tMinMax[2] : tMinMax[2].yx;
+    tMinMax = mat3x2(fma(tMinMax[0], dr.xx, origin.xx), fma(tMinMax[1], dr.yy, origin.yy), fma(tMinMax[2], dr.zz, origin.zz));
+    //[[unroll]] for (int i=0;i<3;i++) tMinMax[i] = tMinMax[i].x <= tMinMax[i].y ? tMinMax[i] : tMinMax[i].yx;
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec2(min(tMinMax[i].x, tMinMax[i].y), max(tMinMax[i].x, tMinMax[i].y));
 
     float 
         tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x), 
@@ -281,7 +276,7 @@ bool intersectCubeF32Single( vec3 origin,  vec3 dr, in bvec3 sgn, in mat3x2 tMin
         tFar  = (tFar-tNear)*InOne+tNear; // correction of far
 
     // resolve hit
-    bool isCube = tFar>=tNear && tFar>=0.f && tNear < N_INFINITY && tFar < N_INFINITY /*&& !(isnan(tNear) || isnan(tFar) || isinf(tNear) || isinf(tFar))*/;
+    bool isCube = tFar>tNear && tFar >= 0.f && tNear < N_INFINITY /*&& !(isnan(tNear) || isnan(tFar) || isinf(tNear) || isinf(tFar))*/;
     nfe.xz = mix(nfe.xz, vec2(tNear, tFar), isCube.xx);
     return isCube;
 }
@@ -300,14 +295,9 @@ lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in bvec3 sgn, i
 #endif
 {
     nfe2 = INFINITY.xxxx;
-    tMinMax = fmat3x4_(
-        fma(tMinMax[0], dr.xxxx, origin.xxxx),
-        fma(tMinMax[1], dr.yyyy, origin.yyyy),
-        fma(tMinMax[2], dr.zzzz, origin.zzzz)
-    ),
-    tMinMax[0] = sgn.x ? tMinMax[0] : tMinMax[0].zwxy,
-    tMinMax[1] = sgn.y ? tMinMax[1] : tMinMax[1].zwxy,
-    tMinMax[2] = sgn.z ? tMinMax[2] : tMinMax[2].zwxy;
+    tMinMax = fmat3x4_(fma(tMinMax[0], dr.xxxx, origin.xxxx), fma(tMinMax[1], dr.yyyy, origin.yyyy), fma(tMinMax[2], dr.zzzz, origin.zzzz));
+    //[[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec4(mix(tMinMax[i].zwxy, tMinMax[i], lessThanEqual(tMinMax[i].xy, tMinMax[i].zw).xyxy));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec4_(min(tMinMax[i].xy, tMinMax[i].zw), max(tMinMax[i].xy, tMinMax[i].zw));
 
 #if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
     mediump
@@ -318,10 +308,9 @@ lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in bvec3 sgn, i
         tFar  = (tFar-tNear)*InOne+tNear; // correction of far
         
      bvec2_ isCube = 
-        bvec2_(greaterThanEqual(tFar, tNear)) & 
-        bvec2_(greaterThan(tFar, fvec2_(0.0f))) & 
-        bvec2_(lessThan(tNear, fvec2_(N_INFINITY))) & 
-        bvec2_(lessThan(tFar, fvec2_(N_INFINITY))) /*& 
+        bvec2_(greaterThan(tFar, tNear)) & 
+        bvec2_(greaterThanEqual(tFar, fvec2_(0.0f))) & 
+        bvec2_(lessThan(tNear, fvec2_(N_INFINITY))) /*& 
         not(bvec2_(isnan(tNear)) | bvec2_(isnan(tFar)) | bvec2_(isinf(tNear)) | bvec2_(isinf(tFar)))*/;
 
     nfe2 = mix(nfe2, vec4(tNear, tFar), bvec4(isCube, isCube));

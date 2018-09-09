@@ -54,9 +54,7 @@ void main() {
             }
 
             lowp uint rID = floatBitsToUint(hit.vdat.w);
-            [[unroll]] for (int i=0;i<4;i++) {
-                if (rID == i) { vtVerifyClosestHit(hitID, i); break; }
-            }
+            [[unroll]] for (lowp int i=0;i<4;i++) { if (rID == i) { vtVerifyClosestHit(hitID, i); break; } }
         }
     }
 

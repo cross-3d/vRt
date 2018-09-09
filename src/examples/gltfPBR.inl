@@ -238,7 +238,7 @@ namespace rnd {
 
         {
             // use single layer only (for experimenting, can changed)
-            const uint32_t transparencyOrders = 1;
+            const uint32_t transparencyOrders = 6;
 
             // make ray tracing command buffer
             rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
@@ -273,7 +273,7 @@ namespace rnd {
     inline void Renderer::InitRayTracing() {
         {
             // box matrix optimizer ( by default 16.f geometry density per 1.f unit, not bound by global box ) 
-            const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz()*float(modelScale)*10.0f)) );
+            const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
 
             // create accelerator set
             VtAcceleratorSetCreateInfo acci;

@@ -39,7 +39,7 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
-        [[ flatten ]] if (!overflow && rayID >= 0 && hitID >= 0) {
+        [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0) {
             vec3 viewVec = dcts(cray.cdirect.xy);
             vec3 rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;

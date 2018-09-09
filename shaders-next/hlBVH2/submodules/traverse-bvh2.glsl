@@ -18,10 +18,10 @@ layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYS
 // BVH traversing state
 struct BvhTraverseState {
     int idx, defTriangleID, stackPtr, cacheID, pageID; float minDist; // vec4, vec2
-    bvec4 boxSide; // bvec4
+    //bvec4 boxSide; // bvec4
     fvec4_ minusOrig, directInv; // vec4 of 32-bits
 } traverseState;
-#define _continue traverseState.boxSide.w
+//#define _continue traverseState.boxSide.w
 
 
 // intersection current state
@@ -82,6 +82,7 @@ const float hCorrection = 1.f;
 const float16_t hCorrection = 1.hf;
 #endif
 
+const bvec3 bsgn = false.xxx;
 
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
@@ -98,8 +99,8 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     const vec4 direct = tdir * invlen, dirproj = 1.f / precIssue(direct);
 
     // limitation of distance
-    #define bsgn traverseState.boxSide.xyz
-    bsgn = bvec3((ivec3(sign(dirproj.xyz))+1)>>1);
+    //#define bsgn traverseState.boxSide.xyz
+    //bsgn = greaterThan(direct.xyz, 0.f.xxx);
 
     // pre-calculate for triangle intersections
 #ifdef VRT_USE_FAST_INTERSECTION
@@ -114,7 +115,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     }
 
     // calculate affine matrices
-     vec4 vm = vec4(-direct, 1.f) / (primitiveState.axis == 0 ? direct.x : (primitiveState.axis == 1 ? direct.y : direct.z));
+     vec4 vm = vec4(-direct, 1.f) / precIssue(primitiveState.axis == 0 ? direct.x : (primitiveState.axis == 1 ? direct.y : direct.z));
     primitiveState.iM = transpose(mat3(
         primitiveState.axis == 0 ? vm.wyz : vec3(1.f,0.f,0.f),
         primitiveState.axis == 1 ? vm.xwz : vec3(0.f,1.f,0.f),
@@ -124,11 +125,10 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const   vec2 bside2 = vec2(-1.0001, 1.0001f);
+    const   vec2 bside2 = vec2(-1.001, 1.001f);
     const mat3x2 bndsf2 = mat3x2(bside2, bside2, bside2);
     //const mat3x2 bndsf2 = transpose(mat2x3(bvhBlock.sceneMin.xyz, bvhBlock.sceneMax.xyz));
      int entry = (valid ? BVH_ENTRY : -1);
-    _continue = false;
 
     // initial traversing state
     //traverseState.idx = entry, traverseState.idx = nfe.x >= N_INFINITY ? -1 : traverseState.idx; // unable to intersect the root box 
@@ -145,7 +145,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     // two loop based BVH traversing
     [[dependency_infinite]] for (int hi=0;hi<max_iteraction;hi++) {
         [[flatten]] if (traverseState.idx >= 0 && traverseState.defTriangleID <= 0) {
-        { [[dependency_infinite]] for (;hi<max_iteraction;hi++) {  _continue = false;
+        { [[dependency_infinite]] for (;hi<max_iteraction;hi++) { bool _continue = false;
             ivec2 cnode = traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx;
             [[flatten]] if (isLeaf(cnode)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
@@ -155,7 +155,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 
                 // 
                 int fmask = int((childIntersect.y<<1u)|childIntersect.x);
-                 if (fmask > 0) {
+                [[flatten]] if (fmask > 0) {
                     int primary = -1, secondary = -1;
                     [[flatten]] if (fmask == 3) { fmask &= nfe.x<=nfe.y ? 1 : 2, secondary = cnode.x^(fmask>>1); }; // if both has intersection
                     primary = cnode.x^(fmask&1);

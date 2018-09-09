@@ -74,7 +74,7 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
 
     float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0, 0, 1), V)));
     float layerHeight = 1.0f / numLayers;
-    vec2 dtex = parallaxScale * V.xy / V.z * layerHeight;
+    vec2 dtex = parallaxScale * V.xy / precIssue(V.z) * layerHeight;
     vec3 chv = vec3(-dtex, layerHeight);
     
     // start pos

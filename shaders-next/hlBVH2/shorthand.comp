@@ -41,7 +41,7 @@ void main() {
      if (electedInvoc()) {
          mat4 inversedpj = inverse(mat4(transpose(bvhBlock.projection))); // set inversed version of projection
         bvhBlock.projectionInv = transpose(mat4(inversedpj)), bvhBlock.sceneMin = gmn, bvhBlock.sceneMax = gmx;
-        bvhBlock.sceneMin.xyz = min3_vec(bvhBlock.sceneMin.xyz).xxx, bvhBlock.sceneMax.xyz = max3_vec(bvhBlock.sceneMax.xyz).xxx;
+        //bvhBlock.sceneMin.xyz = min3_vec(bvhBlock.sceneMin.xyz).xxx, bvhBlock.sceneMax.xyz = max3_vec(bvhBlock.sceneMax.xyz).xxx;
 
         // transform to unit-box space coordinates ( may to be deprecated )
         //vec4 scale = 1.0f.xxxx/max(vec4(gmx)-vec4(gmn), 1e-5.xxxx), offset = -vec4(gmn)*scale;
@@ -58,8 +58,8 @@ void main() {
             //bvhBlock.transformInv = transpose(mat4(inverse(rtransform)));
 
             // experimental copy to transform matrix
-            bvhBlock.transform = bvhBlock.projection;
-            bvhBlock.transformInv = bvhBlock.projectionInv;
+            //bvhBlock.transform = bvhBlock.projection;
+            //bvhBlock.transformInv = bvhBlock.projectionInv;
         }
     }
 }

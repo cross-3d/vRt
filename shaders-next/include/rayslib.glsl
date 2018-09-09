@@ -98,7 +98,7 @@ int atomicIncAttribCount() {return atomicIncVtCounters(7);}
 
 
 
-int vtReuseRays(in VtRay ray, in uvec2 c2d, in uint type, in int rayID) {
+int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayID) {
      if (max3_vec(f16_f32(ray.dcolor).xyz) >= 1e-3f) {
         parameteri(RAY_TYPE, ray.dcolor.y, int(type));
         
@@ -113,7 +113,7 @@ int vtReuseRays(in VtRay ray, in uvec2 c2d, in uint type, in int rayID) {
     return rayID;
 }
 
-int vtEmitRays(in VtRay ray, in uvec2 c2d, in uint type) {
+int vtEmitRays(in VtRay ray, in highp uvec2 c2d, in uint type) {
     return vtReuseRays(ray, c2d, type, -1);
 }
 
@@ -123,23 +123,21 @@ int vtFetchHitIdc(in int lidx) {
     return int(imageLoad(rayLink, lidx<<1).x)-1;
 }
 
-uvec2 vtFetchIndex(in int lidx) {
-    uint c2dp = imageLoad(rayLink, (lidx<<1)|1).x;
-    return up2x_16(c2dp);
+highp uvec2 vtFetchIndex(in int lidx) {
+    uint c2dp = imageLoad(rayLink, (lidx<<1)|1).x; 
+    return up2x_16(c2dp); 
 }
 
-int vtRayIdx(in int lidx) {
-    return rayGroupIndices[lidx];
-}
+int vtRayIdx(in int lidx) { return rayGroupIndices[lidx]-1; };
 
-int vtVerifyClosestHit(in int closestId, in int g) {
+int vtVerifyClosestHit(in int closestId, in lowp int g) {
     int id = g < 0 ? atomicIncClosestHitCount() : atomicIncClosestHitTypedCount(g);
     //closestHits[id*5+(g+1)] = closestId+1;
     closestHits[(g+1)*MAX_HITS + id] = closestId+1;
     return id;
 }
 
-int vtVerifyMissedHit(in int missId, in int g) {
+int vtVerifyMissedHit(in int missId, in lowp int g) {
     //int id = g < 0 ? atomicIncMissHitCount() : atomicIncMissHitTypedCount(g);
     int id = atomicIncMissHitTypedCount(g);
     //missHits[id*5+(g+1)] = missId+1;
@@ -148,8 +146,8 @@ int vtVerifyMissedHit(in int missId, in int g) {
 }
 
 //int vtClosestId(in int id, in int g) {return closestHits[id*5+(g+1)]-1; }
-int vtClosestId(in int id, in int g) {return closestHits[(g+1)*MAX_HITS + id]-1; }
-int vtMissId(in int id, in int g) { return missHits[id]-1; }
+int vtClosestId(in int id, in lowp int g) {return closestHits[(g+1)*MAX_HITS + id]-1; }
+int vtMissId(in int id, in lowp int g) { return missHits[id]-1; }
 //int vtMissId(in int id, in int g) { return missHits[id*5+(g+1)]-1; }
 
 #endif
