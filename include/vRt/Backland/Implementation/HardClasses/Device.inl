@@ -236,7 +236,7 @@ namespace _vt {
         // create dull barrier pipeline
         auto rng = vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2));
         auto ppl = vk::Device(device).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, 0, nullptr, 0, nullptr));
-        vtDevice->_dullBarrier = createComputeHC(device, natives::dullBarrier.at(vtDevice->_vendorName), ppl, vkPipelineCache);
+        //vtDevice->_dullBarrier = createComputeHC(device, natives::dullBarrier.at(vtDevice->_vendorName), ppl, vkPipelineCache);
 
         return result;
     };

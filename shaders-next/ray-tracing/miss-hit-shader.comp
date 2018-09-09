@@ -30,7 +30,7 @@ void main() {
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=wgs) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        const bool overflow = globalID >= wsize || globalID < 0;
+        const bool overflow = globalID >= wsize || globalID < 0; IFALL(overflow) break;
         const int hitID = overflow ? -1 : vtMissId(globalID, stageUniform.currentGroup);
 
 #ifdef DMA_HIT
@@ -39,7 +39,7 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
-        [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0) {
+        [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0 && (imageLoad(rayLink,rayID<<1).x-1) == hitID) { // if hit is valid
             vec3 viewVec = dcts(cray.cdirect.xy);
             vec3 rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;
@@ -56,7 +56,6 @@ void main() {
             //hitp.emission = vec4(toLinear(vec3(0.01f, 0.015f, 0.12f)), 1.f);
 
             hitp.albedo = hitp.emission+vec4(0.f.xxx, 0.f);
-
             // additional validation of hit (hit point interpolated offset test)
             {
                 imageAtomicMax(rayLink,rayID<<1,(hid+1).x);

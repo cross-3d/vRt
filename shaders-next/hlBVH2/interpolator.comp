@@ -41,7 +41,7 @@ void main() {
 #endif
 
          if (!overflow && hitID >= 0) { // verify intersection
-             int triID = floatBitsToInt(hit.uvt.w)-1; imageAtomicMax(rayLink, (hit.rayID-1)<<1, (hitID+1).x);
+            int triID = floatBitsToInt(hit.uvt.w)-1; //imageAtomicMax(rayLink, (hit.rayID-1)<<1, (hitID+1).x);
 
             // interpolate hit
             if (triID >= 0) {

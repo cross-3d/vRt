@@ -42,7 +42,7 @@ void main() {
     for (uint w=0;w<wcount;w+=wgs) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         const int rayID = (globalID < MAX_RAYS ? rayGroupIndicesRead[globalID] : 0)-1;
-        const bool overflow = globalID >= wsize || globalID < 0 || rayID < 0;
+        const bool overflow = globalID >= wsize || globalID < 0 || rayID < 0; IFALL(overflow) break;
 
         // get ray by id
         ray = rays[rayID];

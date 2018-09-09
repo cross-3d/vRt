@@ -90,7 +90,7 @@ void main() {
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=wgs) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        const bool overflow = globalID >= wsize || globalID < 0;
+        const bool overflow = globalID >= wsize || globalID < 0; IFALL(overflow) break;
         const int hitID = overflow ? -1 : vtClosestId(globalID, stageUniform.currentGroup);
 #ifdef DMA_HIT
         #define hit hits[hitID]

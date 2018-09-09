@@ -105,21 +105,17 @@ function BuildAllShaders($Pfx = "") {
 
     # ray tracing shaders
     BuildCompute "closest-hit-shader.comp"  "$INDIR$RNDR" "$OUTDIR$RNDR"
-    BuildCompute "htgen-shader.comp"        "$INDIR$RNDR" "$OUTDIR$RNDR"
     BuildCompute "generation-shader.comp"   "$INDIR$RNDR" "$OUTDIR$RNDR"
-    BuildCompute "htgen-shader.comp"        "$INDIR$RNDR" "$OUTDIR$RNDR"
     BuildCompute "rfgen-shader.comp"        "$INDIR$RNDR" "$OUTDIR$RNDR"
     BuildCompute "miss-hit-shader.comp"     "$INDIR$RNDR" "$OUTDIR$RNDR"
     BuildCompute "group-shader.comp"        "$INDIR$RNDR" "$OUTDIR$RNDR"
-    BuildCompute "htgrp-shader.comp"        "$INDIR$RNDR" "$OUTDIR$RNDR"
 
     # vertex assemblers
     BuildCompute "vtransformed.comp"        "$INDIR$VRTX" "$OUTDIR$VRTX"
     BuildCompute "vinput.comp"              "$INDIR$NTVE" "$HRDDIR$NTVE"
 
-
-    BuildCompute "dull.comp"                "$INDIR$NTVE" "$HRDDIR$NTVE"
-    BuildCompute "triplet.comp"             "$INDIR$NTVE" "$HRDDIR$NTVE"
+    #BuildCompute "dull.comp"                "$INDIR$NTVE" "$HRDDIR$NTVE"
+    #BuildCompute "triplet.comp"             "$INDIR$NTVE" "$HRDDIR$NTVE"
 
     # accelerator structure (hlBVH2)
     BuildCompute "/triangle/bound-calc.comp"    "$INDIR$HLBV" "$HRDDIR$HLBV"
