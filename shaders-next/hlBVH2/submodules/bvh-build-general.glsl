@@ -38,17 +38,17 @@ ivec2 determineRange( in int idx ) {
 
 // from top to bottom scheme (fine layout)
 void splitNode(in int pID) {
-    const ivec2 range = bvhNodes[pID].meta.xy-1;
+     ivec2 range = bvhNodes[pID].meta.xy-1;
      
     if (range.x >= 0 && range.y >= 0 && range.y < GSIZE) {
          
         if (range.x != range.y) {
-            const int split = findSplit(range.x, range.y);
-            const ivec4 transplit = ivec4(range.x, split+0, split+1, range.y);
-            const bvec2 isLeaf = lessThan(transplit.yw - transplit.xz, ivec2(1,1));
+             int split = findSplit(range.x, range.y);
+             ivec4 transplit = ivec4(range.x, split+0, split+1, range.y);
+             bvec2 isLeaf = lessThan(transplit.yw - transplit.xz, ivec2(1,1));
             
             // resolve branch
-            const ivec2 h = ((split+1)<<1).xx|ivec2(0,1);
+             ivec2 h = ((split+1)<<1).xx|ivec2(0,1);
             bvhNodes[pID].meta.xy = h.xy+1, 
             bvhNodes[h.x].meta = ivec4(transplit.xy+1, pID+1,0), 
             bvhNodes[h.y].meta = ivec4(transplit.zw+1, pID+1,0);

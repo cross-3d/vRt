@@ -5,15 +5,17 @@
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 
+#define fpInner 0.f
+
 // force undef fp16
-//#ifdef AMD_F16_BVH
-//#undef AMD_F16_BVH
-//#endif
+#ifdef AMD_F16_BVH
+#undef AMD_F16_BVH
+#endif
 
 // force define fp32
-//#ifndef USE_F32_BVH
-//#define USE_F32_BVH
-//#endif
+#ifndef USE_F32_BVH
+#define USE_F32_BVH
+#endif
 
 #include "../../include/driver.glsl"
 #include "../../include/mathlib.glsl"
@@ -26,7 +28,7 @@
 layout ( std430, binding = 9, set = 0 )  buffer minmaxB {vec4 minmax[]; };
 
 bbox_t getMinMaxPrimitive(in uint idx) {
-    const uint tri = bvhBlock.primitiveOffset+clamp(idx, 0u, max(bvhBlock.primitiveCount,1u)-1u); 
+     uint tri = bvhBlock.primitiveOffset+clamp(idx, 0u, max(bvhBlock.primitiveCount,1u)-1u); 
     return Leafs[tri].lbox;
 }
 
@@ -43,9 +45,9 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 shared bbox_t sdata[ WORK_SIZE_BND ];
 
 void main() {
-    const uint tid = gl_LocalInvocationID.x;
-    const uint gridSize = (gl_WorkGroupSize.x*2) * gl_NumWorkGroups.x;
-    const uint tcount = max( bvhBlock.primitiveCount, 2 );
+     uint tid = gl_LocalInvocationID.x;
+     uint gridSize = (gl_WorkGroupSize.x*2) * gl_NumWorkGroups.x;
+     uint tcount = max( bvhBlock.primitiveCount, 2 );
     IFALL (bvhBlock.primitiveCount <= 0) return;
 
     // 
@@ -65,22 +67,17 @@ void main() {
     LGROUP_BARRIER
 
     // shared reduction
-    [[unroll]]
-    for (uint ki=(gl_WorkGroupSize.x>>1u);ki>=Wave_Size_RT;ki>>=1) {
-         
+    [[unroll]] for (uint ki=(gl_WorkGroupSize.x>>1u);ki>=Wave_Size_RT;ki>>=1) {
         if (tid < ki) { 
             bbox_t bound = sdata[tid], opbound = sdata[tid + ki]; 
-            bound = bbox_tunion(bound, opbound); 
-            SB_BARRIER
+            bound = bbox_tunion(bound, opbound);
             sdata[tid] = bound; 
         }
         LGROUP_BARRIER
     }
 
     { // subgroup min/max
-        SB_BARRIER
-        const vec4 mn = subgroupMin(sdata[tid].mn), mx = subgroupMax(sdata[tid].mx);
-        SB_BARRIER
+        vec4 mn = subgroupMin(sdata[tid].mn), mx = subgroupMax(sdata[tid].mx);
         sdata[tid].mn = mn, sdata[tid].mx = mx;
     }
 

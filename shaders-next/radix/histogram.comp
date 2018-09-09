@@ -22,13 +22,12 @@ initSubgroupIncFunctionTargetQuad(localHistogram[WHERE], countHistogram, 1, uint
 #define bcount blocks.count
 
 void main() {
-    const uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
-    //const uint Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
+     uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
+    // uint Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
 
     // clear histogram of block (planned distribute threads)
-    [[unroll]]
-    for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-        const uint radice = uint(rk + Radice_Idx);
+    [[unroll]] for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+         uint radice = uint(rk + Radice_Idx);
          if (radice < RADICES) localHistogram[radice] = 0;
     }
     if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(tiled(blocks.count, 4u), 524288u);
@@ -37,8 +36,6 @@ void main() {
 
     // use SIMD lanes for calculate histograms
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
-
-     
     for ( uint wk = 0; wk < bcount; wk++ ) {
         bvec4 validAddress = lessThan(addr, blocks.limit.xxxx);
          IFALL(all(not(validAddress))) break;
@@ -58,13 +55,12 @@ void main() {
         LGROUP_BARRIER
 
         // WARP-optimized histogram calculation
-        [[unroll]]
-        for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-            const lowp uint radice = uint(rk + Radice_Idx);
+        [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+             lowp uint radice = uint(rk + Radice_Idx);
 #ifdef PREFER_UNPACKED
-            const bvec4 owned = and(equal(key, radice.xxxx), validAddress);
+             bvec4 owned = and(equal(key, radice.xxxx), validAddress);
 #else
-            const bvec4 owned = and(equal(up4x_8(key), radice.xxxx), validAddress);
+             bvec4 owned = and(equal(up4x_8(key), radice.xxxx), validAddress);
 #endif
              if (any(owned)) countHistogram(uint(radice), owned);
              IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
@@ -78,9 +74,8 @@ void main() {
     // resolve histograms (planned distribute threads) 
     LGROUP_BARRIER
 
-    [[unroll]]
-    for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-        const lowp uint radice = uint(rk + Radice_Idx);
+    [[unroll]] for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+         lowp uint radice = uint(rk + Radice_Idx);
          if (radice < RADICES) {
             PrefixSum[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
             Histogram[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];

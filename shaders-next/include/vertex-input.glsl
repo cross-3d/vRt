@@ -9,7 +9,7 @@
 
 #ifdef ENABLE_AMD_INSTRUCTION_SET
 uint16_t M16(in f16samplerBuffer m, in uint i) {
-    const u16vec2 mpc = float16BitsToUint16(texelFetch(m, int(i>>1)).xy);
+     u16vec2 mpc = float16BitsToUint16(texelFetch(m, int(i>>1)).xy);
     return (i&1)==1?mpc.y:mpc.x;
 }
 
@@ -19,24 +19,24 @@ uint M32(in f16samplerBuffer m, in uint i) {
 #endif
 
 highp uint M16(in highp usamplerBuffer m, in uint i) {
-    const highp uvec2 mpc = texelFetch(m, int(i>>1)).xy;
+     highp uvec2 mpc = texelFetch(m, int(i>>1)).xy;
     return (i&1)==1?mpc.y:mpc.x;
 }
 
 uint M32(in highp usamplerBuffer m, in uint i) {
-    const highp uvec2 mpc = texelFetch(m, int(i)).xy;
+     highp uvec2 mpc = texelFetch(m, int(i)).xy;
     return ((mpc.y<<16u)|mpc.x);
 }
 
 
 highp uint M16(in mediump samplerBuffer m, in uint i) {
-    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i>>1)).xy);
+     highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i>>1)).xy);
     return (i&1)==1?mpc.y:mpc.x;
 }
 
 uint M32(in mediump samplerBuffer m, in uint i) {
     //return packHalf2x16(texelFetch(m, int(i)).xy); // inaccurate 
-    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i)).xy);
+     highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i)).xy);
     return ((mpc.y<<16u)|mpc.x);
 }
 
@@ -142,10 +142,10 @@ uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) 
 void readByAccessorLL(in int accessor, in uint index, inout uvec4 outpx) {
     uint attribution[4] = {outpx.x, outpx.y, outpx.z, outpx.w};
      if (accessor >= 0) {
-        const int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-        const uint T = calculateByteOffset(accessor, index, 2);
-        const uint C = aComponents(accessors[accessor].bitfield)+1;
-        const uint D = 0u; // component decoration
+         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
+         uint T = calculateByteOffset(accessor, index, 2);
+         uint C = aComponents(accessors[accessor].bitfield)+1;
+         uint D = 0u; // component decoration
          if (C >= 1) attribution[D+0] = M32(BFS,T+0);
          if (C >= 2) attribution[D+1] = M32(BFS,T+1);
          if (C >= 3) attribution[D+2] = M32(BFS,T+2);
@@ -193,7 +193,7 @@ void readByAccessor(in int accessor, in uint index, inout uint outp) {
 void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
      if (accessor >= 0) {
         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-        const bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
+        bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
         uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
          if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
     }

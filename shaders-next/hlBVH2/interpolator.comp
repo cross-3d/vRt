@@ -23,20 +23,16 @@ LOCAL_SIZE_LAYOUT;
 //#define wsize closestHitCounterCurrent
 
 void main() {
-    const int wsize = min(closestHitCounterCurrent, MAX_HITS);
-    IFALL (wsize <= 0) return;
+    int wsize = min(closestHitCounterCurrent, MAX_HITS); IFALL (wsize <= 0) return;
 
     // accumulate closest hits
     if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(closestHitCounter, closestHitCounterCurrent); }
-    SB_BARRIER
 
-    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-     
+    uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        SB_BARRIER
-        const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        const bool overflow = globalID >= wsize; IFALL(overflow) break;
-        const int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
+         int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+         bool overflow = globalID >= wsize; IFALL(overflow) break;
+         int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
         
 #ifdef DMA_HIT
         #define hit hits[hitID]
@@ -45,8 +41,7 @@ void main() {
 #endif
 
          if (!overflow && hitID >= 0) { // verify intersection
-            const int triID = floatBitsToInt(hit.uvt.w)-1; imageAtomicMax(rayLink, (hit.rayID-1)<<1, (hitID+1).x);
-            SB_BARRIER
+             int triID = floatBitsToInt(hit.uvt.w)-1; imageAtomicMax(rayLink, (hit.rayID-1)<<1, (hitID+1).x);
 
             // interpolate hit
             if (triID >= 0) {
@@ -58,10 +53,8 @@ void main() {
 #endif
             }
 
-            const lowp uint rID = floatBitsToUint(hit.vdat.w);
-            [[unroll]]
-            for (int i=0;i<4;i++) {
-                 
+            lowp uint rID = floatBitsToUint(hit.vdat.w);
+            [[unroll]] for (int i=0;i<4;i++) {
                 if (rID == i) { vtVerifyClosestHit(hitID, i); break; }
             }
         }

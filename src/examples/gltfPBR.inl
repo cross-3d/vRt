@@ -273,7 +273,7 @@ namespace rnd {
     inline void Renderer::InitRayTracing() {
         {
             // box matrix optimizer ( by default 16.f geometry density per 1.f unit, not bound by global box ) 
-            const auto optMat = glm::mat4(1.f) * glm::transpose( glm::inverse(glm::scale(glm::vec3(modelScale) * glm::vec3(optDensity.xyz))) );
+            const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz()*float(modelScale)*10.0f)) );
 
             // create accelerator set
             VtAcceleratorSetCreateInfo acci;
@@ -722,7 +722,7 @@ namespace rnd {
             });
 
             // matrix with scaling
-            auto matrix = glm::dmat4(1.0) * glm::scale(glm::dvec3(scale) * glm::dvec3(modelScale) * 0.1);
+            auto matrix = glm::dmat4(1.0) * glm::scale(glm::dvec3(scale) * glm::dvec3(modelScale) * 1.0);
 
             // load scene
             uint32_t sceneID = 0;

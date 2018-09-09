@@ -49,8 +49,8 @@
 //uint_ballot ballotHW(in bool i) { return subgroupBallot(i); }
 //uint_ballot ballotHW() { return subgroupBallot(true); }
 //bool electedInvoc() { return subgroupElect(); }
-lowp uvec2 bPrefixSum(in bool val) { const uvec4 blt = subgroupBallot(val); return uvec2(subgroupBallotBitCount(blt), subgroupBallotExclusiveBitCount(blt)); } 
-lowp uvec2 bPrefixSum() { const uvec4 blt = subgroupBallot(true); return uvec2(subgroupBallotBitCount(blt), subgroupBallotExclusiveBitCount(blt)); } 
+lowp uvec2 bPrefixSum(in bool val) {  uvec4 blt = subgroupBallot(val); return uvec2(subgroupBallotBitCount(blt), subgroupBallotExclusiveBitCount(blt)); } 
+lowp uvec2 bPrefixSum() {  uvec4 blt = subgroupBallot(true); return uvec2(subgroupBallotBitCount(blt), subgroupBallotExclusiveBitCount(blt)); } 
 
 // advanced version
 void bPrefixSum(in bvec4 val, inout lowp uvec4 sums, inout lowp uvec4 pfxs) { 
@@ -64,7 +64,7 @@ void bPrefixSum(in bvec4 val, inout lowp uvec4 sums, inout lowp uvec4 pfxs) {
 // statically multiplied
 #define initAtomicSubgroupIncFunction(mem, fname, by, T)\
 T fname() {\
-    const lowp uvec2 pfx = bPrefixSum();\
+     lowp uvec2 pfx = bPrefixSum();\
     T gadd = 0;\
     if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
     return T(pfx.y) * T(by) + readFLane(gadd);\
@@ -73,7 +73,7 @@ T fname() {\
 // statically multiplied
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in uint WHERE) {\
-    const lowp uvec2 pfx = bPrefixSum();\
+     lowp uvec2 pfx = bPrefixSum();\
     T gadd = 0;\
     if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
     return T(pfx.y) * T(by) + readFLane(gadd);\
@@ -82,15 +82,15 @@ T fname(in uint WHERE) {\
 // statically multiplied
 #define initSubgroupIncFunctionTargetDual(mem, fname, by, T, T2)\
 T2 fname(in uint WHERE, in bvec2 a) {\
-    const lowp uvec4 pfx2 = uvec4(bPrefixSum(a.x), bPrefixSum(a.y));\
+     lowp uvec4 pfx2 = uvec4(bPrefixSum(a.x), bPrefixSum(a.y));\
     T gadd = 0;\
     if (subgroupElect() && any(greaterThan(pfx2.xz, (0u).xx))) {gadd = add(mem, T(pfx2.x+pfx2.z)*T(by));}\
     return T(by).xx * T2(pfx2.y, pfx2.w+pfx2.x) + readFLane(gadd).xx;\
 }
 
-const lowp uvec4 pfx0[2] = { 0u.xxxx, 0u.xxxx };
+ lowp uvec4 pfx0[2] = { 0u.xxxx, 0u.xxxx };
 //lowp uvec4 pfx[2] = pfx0; bPrefixSum(a, pfx[0], pfx[1]);
-//const lowp umat2x4 pfx = transpose(umat4x2(bPrefixSum(a.x), bPrefixSum(a.y), bPrefixSum(a.z), bPrefixSum(a.w)));
+// lowp umat2x4 pfx = transpose(umat4x2(bPrefixSum(a.x), bPrefixSum(a.y), bPrefixSum(a.z), bPrefixSum(a.w)));
 
 // statically multiplied
 #define initSubgroupIncFunctionTargetQuad(mem, fname, by, T, T4)\
@@ -117,9 +117,7 @@ bool anyInvoc(in lowp bool_ bc) { return anyInvoc(SSC(bc)); }
 
 
 // subgroup barriers
-//#define SB_BARRIER subgroupMemoryBarrier(),subgroupBarrier();
-//#define LGROUP_BARRIER groupMemoryBarrier(),barrier();
-#define SB_BARRIER subgroupBarrier();
-#define LGROUP_BARRIER barrier();
+#define SB_BARRIER subgroupMemoryBarrier(),subgroupBarrier();
+#define LGROUP_BARRIER groupMemoryBarrier(),barrier();
 
 #endif

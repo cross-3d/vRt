@@ -72,7 +72,7 @@ void main() {
 #define groupSize gl_WorkGroupSize.x
 
     // lane-based
-    const uint gS = (groupSize >> 1), iT = threadID >> 1; const int sD = int(threadID & 1);
+     uint gS = (groupSize >> 1), iT = threadID >> 1;  int sD = int(threadID & 1);
 
     LGROUP_BARRIER
      if (threadID < 8) { _counters[threadID] = 0; }
@@ -91,8 +91,7 @@ void main() {
     IFALL (bvhBlock.leafCount <= 0) return;
 
     // building BVH
-     
-    for (int m=0;m<65536;m++) {
+    [[dependency_infinite]] for (int m=0;m<65536;m++) {
         LGROUP_BARRIER
 
 #ifdef FIRST_STEP
@@ -110,14 +109,12 @@ void main() {
         LGROUP_BARRIER
         
         // split nodes
-        const int dT = int(m==0?rID(iT):wID(iT)), OSi = int(gS*(m==0?gl_NumWorkGroups.x:1));
-         IFANY (asize <= 0) break; // check-out limits
-         
-        for (int fT=0;fT<asize;fT+=OSi) { SB_BARRIER
-            const int iWD = fT+dT;
+        int dT = int(m==0?rID(iT):wID(iT)), OSi = int(gS*(m==0?gl_NumWorkGroups.x:1)); IFANY (asize <= 0) break; // check-out limits
+        for (int fT=0;fT<asize;fT+=OSi) {
+             int iWD = fT+dT;
              IFALL (iWD >= osize) break;
              if (iWD < osize) {
-                const int fID = iWD < osize ? Actives[swapIn+iWD]-1 : -1;
+                 int fID = iWD < osize ? Actives[swapIn+iWD]-1 : -1;
                  if (sD == 0 && iWD < osize) Actives[swapIn+iWD] = 0;
                  if (fID >= 0) { splitNode(fID|sD); } // split sibling nodes
             }

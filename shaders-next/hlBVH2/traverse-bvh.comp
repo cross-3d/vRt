@@ -28,28 +28,25 @@ LOCAL_SIZE_LAYOUT;
 
 //int RTP(in uint groupID) { return groupID < 4 ? rayTypedCounterRead[groupID] : 0; };
 void main() {
-    //const uint wsize = uint(subgroupAdd(RTP(Lane_Idx))); // use subgroup for fast getting of all groups count
-    const uint wsize = min(rayCounter, MAX_RAYS);
-    IFALL (wsize <= 0) return;
+    //uint wsize = uint(subgroupAdd(RTP(Lane_Idx))); // use subgroup for fast getting of all groups count
+    uint wsize = min(rayCounter, MAX_RAYS); IFALL (wsize <= 0) return;
 
-    const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
-    traverseState.cacheID = int(gl_GlobalInvocationID.x);
-    traverseState.minDist = 0.f;
-
+    uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
+    traverseState.cacheID = int(gl_GlobalInvocationID.x), traverseState.minDist = 0.f;
      
     for (uint w=0;w<wcount;w+=wgs) {
-        SB_BARRIER
-        const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        bool overflow = it >= wsize; IFALL(overflow) break;
+         int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+         bool overflow = it >= wsize; IFALL(overflow) break;
 
         // do BVH traversing 
-        const int rayID = vtRayIdx(it); int hid = vtFetchHitIdc(rayID);
+         int rayID = vtRayIdx(it); int hid = vtFetchHitIdc(rayID);
+        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
          if (!overflow) traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
-        SB_BARRIER
 
         // planned multiple-hits support
          if (!overflow) { // verify intersection
-            const int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
+             int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
+             bool found = triID >= 0;
              if (hid < 0) hid = atomicIncHitCount(); // reserve one hit
 
 #ifdef DMA_HIT
@@ -60,7 +57,7 @@ void main() {
             hit.payloadID = 0, hit.rayID = rayID+1;
 
             // if found as minimum one intersection
-             IF (triID >= 0) {
+            if (found) {
                  if (hid < 0) hid = atomicIncHitCount(); // if required new
                 hit.uvt = primitiveState.lastIntersection;
                 hit.attribID = vtVerifyClosestHit(hid,-1)+1;
@@ -69,7 +66,7 @@ void main() {
             
             // if no found any intersection
             // planned to add multi-traversing support, and another resolver
-             IF (triID < 0) {
+            if (!found) {
                  if (hid < 0) hid = atomicIncHitCount(); // if required new
                 hit.uvt = vec4(0.f.xx, INFINITY, intBitsToFloat(-1));
                 hit.attribID = 0; vtVerifyMissedHit(hid, 0);

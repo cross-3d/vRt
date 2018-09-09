@@ -26,22 +26,20 @@ shared VtRay lrays[WORK_SIZE];
 
 // 
 void main() {
-    const int wsize = min(rayTypedCounterRead[stageUniform.currentGroup], MAX_RAYS);
+     int wsize = min(rayTypedCounterRead[stageUniform.currentGroup], MAX_RAYS);
     IFALL (wsize <= 0) return;
 
-    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+     uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
      
     for (uint w=0;w<wcount;w+=wgs) {
-        SB_BARRIER
-        const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        //const int rayID = rayGroupIndicesRead[globalID*5+(stageUniform.currentGroup+1)]-1;
-        const int rayID = rayGroupIndicesRead[globalID]-1;
-        const bool overflow = globalID >= wsize || globalID < 0 || rayID < 0;
+         int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+         int rayID = rayGroupIndicesRead[globalID]-1;
+         bool overflow = globalID >= wsize || globalID < 0 || rayID < 0;
 
         // get ray by id
         ray = rays[rayID];
-        const int hitIdc = vtFetchHitIdc(rayID);
-        const int hitpId = hits[hitIdc].payloadID-1;
+         int hitIdc = vtFetchHitIdc(rayID);
+         int hitpId = hits[hitIdc].payloadID-1;
         vec4 emisson = hitp.emission, reflc = hitp.specularGlossiness;
 
         // get output image 2D coord
@@ -49,7 +47,7 @@ void main() {
 
         // 
          if (!overflow) {
-            const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, ivec2(icoord));
+             vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, ivec2(icoord));
             ISTORE(ColorOutput, ivec2(icoord), vec4(fma(emisson.xyz, dcolor.xyz, bcolor.xyz), 1.f));
 
             // generate secondary rays (reflections)

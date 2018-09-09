@@ -37,13 +37,9 @@ shared VtRay lrays[WORK_SIZE];
 
 // 
 void main() {
-    const int wsize = min(rayTypedCounterRead[stageUniform.currentGroup], MAX_RAYS);
-    IFALL (wsize <= 0) return;
-
+    const int wsize = min(rayTypedCounterRead[stageUniform.currentGroup], MAX_RAYS); IFALL (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-     
     for (uint w=0;w<wcount;w+=wgs) {
-        SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         const int rayID = (globalID < MAX_RAYS ? rayGroupIndicesRead[globalID] : 0)-1;
         const bool overflow = globalID >= wsize || globalID < 0 || rayID < 0;
@@ -52,7 +48,8 @@ void main() {
         ray = rays[rayID];
         const int hitIdc = vtFetchHitIdc(rayID);
         const int hitpId = hits[hitIdc].payloadID-1;
-        vec4 diffuse = hitp.albedo, reflc = hitp.specularGlossiness;
+        const vec4 diffuse = hitp.albedo, reflc = hitp.specularGlossiness;
+        const float shiftLenght = hit.uvt.z*1e-3f;
 
         // get output image 2D coord
         const uvec2 ucoord = vtFetchIndex(rayID);
@@ -62,38 +59,37 @@ void main() {
          if (!overflow && rayID >= 0) {
             // reflection prior (early stage)
             const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, icoord);
-            const float shiftLenght = hit.uvt.z*1e-3f;
 
             // get real origin of ray
             ray.origin.xyz = fma(dcts(ray.cdirect.xy), hit.uvt.zzz, ray.origin.xyz); 
             writeColor(ray.dcolor, vec4(0.f.xxx, 1.f));
 
             // alternate of http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
-            const float alph = (diffuse.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(dcolor))) || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
-            //const float alph = (diffuse.a >= 0.5f || stageUniform.iteration == stageUniform.lastIteration) ? 1.f : 0.f;
+             float alph = diffuse.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(dcolor))) ? 1.f : 0.f;
+             if (stageUniform.iteration == stageUniform.lastIteration) alph = diffuse.a;
 
             // transparency ray
             VtRay newray = ray; {
-                const vec3 vdir = dcts(ray.cdirect.xy), shift = vdir;
+                vec3 vdir = dcts(ray.cdirect.xy), shift = vdir;
                 newray.origin.xyz = fma(shift, shiftLenght.xxx, ray.origin.xyz);
                 writeColor(newray.dcolor, vec4(dcolor.xyz * (1.f - alph).xxx, 1.f));
                 vtReuseRays(newray, ucoord.xy, 0, rayID);
             }
             
             // create data for reflection rays
-            const vec3 vcolor = dcolor.xyz * alph.xxx; // visible ray color energy
-            // if (alph > 0.f) {
-                const vec3 vdir = reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz), shift = vdir;
-                const vec3 orig = fma(shift, shiftLenght.xxx, ray.origin.xyz);
-                const vec3 rcol = vcolor * reflc.xyz;
+            vec3 vcolor = dcolor.xyz * alph.xxx; // visible ray color energy
+            {
+                 vec3 vdir = reflect(dcts(ray.cdirect.xy), hitp.normalHeight.xyz), shift = vdir;
+                 vec3 orig = fma(shift, shiftLenght.xxx, ray.origin.xyz);
+                 vec3 rcol = vcolor * reflc.xyz;
 
                 ISTORE(OriginPass, icoord, vec4(orig, 1.f));
                 ISTORE(NormalPass, icoord, vec4(vdir, 0.f));
                 ISTORE(SpecularPass, icoord, vec4(rcol, reflc.w));
-            //}
+            }
 
             { // output color
-                const vec3 outcolor = vcolor * (1.f.xxx - reflc.xyz);
+                 vec3 outcolor = vcolor * (1.f.xxx - reflc.xyz);
                 ISTORE(ColorOutput, icoord, vec4(fma(diffuse.xyz, outcolor.xyz, bcolor.xyz), 1.f));
             }
         }

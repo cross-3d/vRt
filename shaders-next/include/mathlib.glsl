@@ -7,14 +7,13 @@
 
 // NEXT standard consts in current
 // Ray tracing NEXT capable shader standard development planned begin in 2019 year
-//const float PZERO = 0.0001f;
 const float PHI = 1.6180339887498948482f;
 const float INFINITY = 1e+5f, IOFF = 1e-4f;
 const float PI = 3.1415926535897932384626422832795028841971f;
 const float TWO_PI = 6.2831853071795864769252867665590057683943f;
 const float SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
 const float E = 2.7182818284590452353602874713526624977572f;
-
+const float N_INFINITY = INFINITY - IOFF;
 
 const float N1024 = 1024.f;
 #ifdef AMD_F16_BVH
@@ -22,7 +21,6 @@ const float16_t InZero = 0.0009765625hf, InOne = 1.0009765625hf;
 #else
 const float InZero = 0.00000011920928955078125f, InOne = 1.00000011920928955078125f;
 #endif
-
 
 #ifdef AMD_F16_BVH
 const float16_t One1024 = 0.0009765625hf;
@@ -84,7 +82,8 @@ const int _IZERO = 0;
 #else
 float mid3_wrap(in float a, in float b, in float c) {
     const float m = max3_wrap(a, b, c);
-     if (m == a) { return max(b, c); } else if (m == b) { return max(a, c); } else { return max(a, b); }
+    [[flatten]] if (m == a) { return max(b, c); } else 
+    [[flatten]] if (m == b) { return max(a, c); } else { return max(a, b); }
 }
 
 vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
@@ -111,18 +110,7 @@ const uint UINT_ZERO = 0x0u, UINT_NULL = 0xFFFFFFFFu;
 #define FINT_NULL uintBitsToFloat(UINT_NULL)
 #define FINT_ZERO uintBitsToFloat(UINT_ZERO)
 
-/*
-// inprecise comparsion functions
-const float PRECERR = PZERO;
-lowp bool_ lessEqualF   (in float a, in float b) { return bool_(   (a-b) <=  PRECERR); }
-lowp bool_ lessF        (in float a, in float b) { return bool_(   (a-b) <  -PRECERR); }
-lowp bool_ greaterEqualF(in float a, in float b) { return bool_(   (a-b) >= -PRECERR); }
-lowp bool_ greaterF     (in float a, in float b) { return bool_(   (a-b) >   PRECERR); }
-lowp bool_ equalF       (in float a, in float b) { return bool_(abs(a-b) <=  PRECERR); }
-*/
-
 // precision utils
-//#define precIssue(a) (sign(a)*max(abs(a),1e-5f))
 #define precIssue(a) (a)
 
 
@@ -131,7 +119,7 @@ float sqlen(in vec3 a) { return dot(a, a); }
 float sqlen(in vec2 a) { return dot(a, a); }
 float sqlen(in float v) { return v * v; }
 int modi(in int a, in int b) { return (a % b + b) % b; }
-vec4 divW(in vec4 aw) { return aw / max(abs(aw.w),0.00000011920928955078125f); }
+vec4 divW(in vec4 aw) { return aw / precIssue(aw.w); }
 vec3 rotate_vector( in vec4 quat, in vec3 vec ) { return vec + 2.0 * cross( cross( vec, quat.xyz ) + quat.w * vec, quat.xyz ); }
 vec4 rotation_quat( in vec3 axis, in float half_angle ) { return vec4(axis * sin(half_angle), cos(half_angle)); }
 
@@ -197,7 +185,7 @@ int lsb(in uvec2 pair) {
 #ifdef AMD_PLATFORM
     return findLSB(P2U(pair));
 #else
-    const ivec2 hl = findLSB(pair); return (hl.x >= 0) ? hl.x : (32 + hl.y);
+     ivec2 hl = findLSB(pair); return (hl.x >= 0) ? hl.x : (32 + hl.y);
 #endif
 }
 
@@ -205,7 +193,7 @@ int msb(in uvec2 pair) {
 #ifdef AMD_PLATFORM
     return findMSB(P2U(pair));
 #else
-    const ivec2 hl = findMSB(pair); return (hl.y >= 0) ? (32 + hl.y) : hl.x;
+     ivec2 hl = findMSB(pair); return (hl.y >= 0) ? (32 + hl.y) : hl.x;
 #endif
 }
 
@@ -308,13 +296,13 @@ f16vec4 mix(in f16vec4 a, in f16vec4 b, in lowp bvec4_ c) { return mix(a,b,SSC(c
 
 
 // swap of 16-bits by funnel shifts and mapping 
-uint fast16swap(in uint b32, const lowp bool_ nswp) {
-    const uint vrc = 16u - uint(nswp) * 16u;
+uint fast16swap(in uint b32,  lowp bool_ nswp) {
+     uint vrc = 16u - uint(nswp) * 16u;
     return (b32 << (vrc)) | (b32 >> (32u-vrc));
 }
 
-uint64_t fast32swap(in uint64_t b64, const lowp bool_ nswp) {
-    const uint64_t vrc = 32ul - uint64_t(nswp) * 32ul;
+uint64_t fast32swap(in uint64_t b64,  lowp bool_ nswp) {
+     uint64_t vrc = 32ul - uint64_t(nswp) * 32ul;
     return (b64 << (vrc)) | (b64 >> (64ul-vrc));
 }
 
@@ -398,12 +386,12 @@ lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFFu;};
 
 // improved generic bilinear interpolation
 vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
-    const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, -0.5f.xx), lp = fract(tx), tl = si*(ceil(tx)-0.5f.xx);
-    const mat4 mtr = mat4(
+     vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, -0.5f.xx), lp = fract(tx), tl = si*(ceil(tx)-0.5f.xx);
+     mat4 mtr = mat4(
         textureLodOffset(SMP, tl, LOD, ivec2(0,0)), textureLodOffset(SMP, tl, LOD, ivec2(1,0)),
         textureLodOffset(SMP, tl, LOD, ivec2(0,1)), textureLodOffset(SMP, tl, LOD, ivec2(1,1))
     );
-    const vec4 coef = vec4(
+     vec4 coef = vec4(
         fma( lp.x, lp.y, (1.f-lp.y-lp.x)), // (1.f-lp.x) * (1.f-lp.y)
         fma( lp.x,-lp.y, lp.x),            //      lp.x  * (1.f-lp.y)
         fma(-lp.x, lp.y, lp.y),            // (1.f-lp.x) *      lp.y

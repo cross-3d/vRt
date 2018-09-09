@@ -51,7 +51,10 @@ struct BTYPE_ {
 layout ( binding = 2, set = 1, std430 ) restrict buffer bvhBoxesResultingB { BTYPE_ bvhNodes[]; };
 
 // precision control of boxes
-#define fpInner 0.00000011920928955078125f // as operation 
+#ifndef fpInner
+#define fpInner 1e-5f//0.00000011920928955078125f // as operation 
+#endif
+
 #define fpCorrect InZero
 
 bbox_t calcTriBox(in mat3x4 triverts) {

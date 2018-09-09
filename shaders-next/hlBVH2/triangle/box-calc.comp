@@ -23,25 +23,18 @@ LOCAL_SIZE_LAYOUT;
 #define wsize bvhBlock.primitiveCount
 
 void main() {
-    IFALL (wsize <= 0) return;
-    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-     
+    IFALL (wsize <= 0) return; uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        SB_BARRIER
-        const uint to = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
+         uint to = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
          IFALL (to >= wsize) break;
 
-        const uint tri = bvhBlock.primitiveOffset+clamp(to, 0, bvhBlock.primitiveCount-1);
-        const mat3x4 triverts = mat3x4(
+         uint tri = bvhBlock.primitiveOffset+clamp(to, 0, bvhBlock.primitiveCount-1);
+         mat3x4 triverts = mat3x4(
             divW(mult4(bvhBlock.projection, TLOAD(lvtxIn, int(tri*3+0)).xyzw)),
             divW(mult4(bvhBlock.projection, TLOAD(lvtxIn, int(tri*3+1)).xyzw)),
             divW(mult4(bvhBlock.projection, TLOAD(lvtxIn, int(tri*3+2)).xyzw))
         );
-
-        // store leaf data
-         if (to < wsize && to >= 0) {
-            ISTORE(lvtx, int(tri*3+0), triverts[0]), ISTORE(lvtx, int(tri*3+1), triverts[1]), ISTORE(lvtx, int(tri*3+2), triverts[2]);
-            Leafs[to].lbox = calcTriBox(triverts), Leafs[to].pdata = ivec4(to.xx, 0, tri+1);
-        }
+        ISTORE(lvtx, int(tri*3+0), triverts[0]), ISTORE(lvtx, int(tri*3+1), triverts[1]), ISTORE(lvtx, int(tri*3+2), triverts[2]);
+        Leafs[to].lbox = calcTriBox(triverts), Leafs[to].pdata = ivec4(to.xx, 0, tri+1);
     }
 }

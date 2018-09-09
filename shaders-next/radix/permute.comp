@@ -22,13 +22,12 @@ initSubgroupIncFunctionTargetQuad(localHistogram[WHERE], countOffset, 1, uint, u
 #define bcount blocks.count
 
 void main() {
-    const uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
-    //const uint Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
+     uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
+    // uint Radice_Idx = gl_WorkGroupID.y + Wave_Idx * gl_NumWorkGroups.y;
 
     // set prefix sum (planned distribute threads) 
-    [[unroll]]
-    for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-        const uint radice = uint(rk + Radice_Idx);
+    [[unroll]] for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+         uint radice = uint(rk + Radice_Idx);
          if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
     }
     if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(tiled(blocks.count, 4u), 524288u);
@@ -37,8 +36,6 @@ void main() {
 
     // calculate blocks
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
-
-     
     for ( uint wk = 0; wk < bcount; wk++ ) {
         bvec4 validAddress = lessThan(addr, blocks.limit.xxxx);
          IFALL(all(not(validAddress))) break;
@@ -60,11 +57,11 @@ void main() {
         // WARP-optimized histogram calculation
         [[unroll]]
         for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-            const lowp uint radice = uint(rk + Radice_Idx);
+             lowp uint radice = uint(rk + Radice_Idx);
 #ifdef PREFER_UNPACKED
-            const bvec4 owned = and(equal(key, radice.xxxx), validAddress);
+             bvec4 owned = and(equal(key, radice.xxxx), validAddress);
 #else
-            const bvec4 owned = and(equal(up4x_8(key), radice.xxxx), validAddress);
+             bvec4 owned = and(equal(up4x_8(key), radice.xxxx), validAddress);
 #endif
              if (any(owned)) {
                 WPTR4 offset = WPTR4(countOffset(uint(radice), owned));

@@ -24,28 +24,18 @@ LOCAL_SIZE_LAYOUT;
 //#define lbox Leafs[to].lbox
 
 void main() {
-     IFALL (wsize <= 0) return;
-    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+     IFALL (wsize <= 0) return; uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
       for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        SB_BARRIER
-        const uint to = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
-         IFALL (to >= wsize) break;
-
-        const uint tri = bvhBlock.primitiveOffset+clamp(to, 0, bvhBlock.primitiveCount-1);
+        uint to = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (to >= wsize) break;
+        uint tri = bvhBlock.primitiveOffset+clamp(to, 0, bvhBlock.primitiveCount-1);
 
         // incarnated mode 
-        //const mat3x4 triverts = mat3x4(TLOAD(lvtx, int(tri*3+0)).xyzw, TLOAD(lvtx, int(tri*3+1)).xyzw, TLOAD(lvtx, int(tri*3+2)).xyzw);
-
-        // unit mode
-        const mat3x4 triverts = mat3x4(
-            divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, int(tri*3+0)).xyzw)),
-            divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, int(tri*3+1)).xyzw)),
-            divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, int(tri*3+2)).xyzw))
-        );
+        mat3x4 triverts = mat3x4(TLOAD(lvtx, int(tri*3+0)).xyzw, TLOAD(lvtx, int(tri*3+1)).xyzw, TLOAD(lvtx, int(tri*3+2)).xyzw);
+        triverts[0] = uniteBox(triverts[0]), triverts[1] = uniteBox(triverts[1]), triverts[2] = uniteBox(triverts[2]);
         
         {
 #ifndef VRT_USE_FAST_INTERSECTION
-            const mat4x3 triverts = transpose(triverts);
+             mat4x3 triverts = transpose(triverts);
             ISTORE(lvtx, int(tri*3+0), vec4(triverts[0].xyz, 1.f)), ISTORE(lvtx, int(tri*3+1), vec4(triverts[1].xyz, 1.f)), ISTORE(lvtx, int(tri*3+2), vec4(triverts[2].xyz, 1.f));
 #else
 #ifdef VTX_USE_LEGACY_METHOD
@@ -56,28 +46,28 @@ void main() {
             // http://jcgt.org/published/0005/03/03/paper.pdf
             
             // triangle elements
-            const mat3 vc = mat3(triverts[0].xyz, triverts[1].xyz, triverts[2].xyz);
-            const vec3 e1 = triverts[1].xyz - triverts[0].xyz, e2 = triverts[2].xyz - triverts[0].xyz;
-            const vec3 nl = cross(e1, e2), ni = 1.f/nl, na = abs(nl);
+             mat3 vc = mat3(triverts[0].xyz, triverts[1].xyz, triverts[2].xyz);
+             vec3 e1 = triverts[1].xyz - triverts[0].xyz, e2 = triverts[2].xyz - triverts[0].xyz;
+             vec3 nl = cross(e1, e2), ni = 1.f/nl, na = abs(nl);
             
             // pre-calculate vectors
-            const vec3 v0n = -dot(vc[0], nl).xxx*ni, v1n = cross(vc[0], vc[1])*ni, v2n = cross(vc[2], vc[0])*ni;
-            const vec3 e2d = e2.zxy*ni, e2m = -e2.yzx*ni, e1d = e1.yzx*ni, e1m = -e1.zxy*ni, n1f = nl.yzx*ni, n2f = nl.zxy*ni;
+             vec3 v0n = -dot(vc[0], nl).xxx*ni, v1n = cross(vc[0], vc[1])*ni, v2n = cross(vc[2], vc[0])*ni;
+             vec3 e2d = e2.zxy*ni, e2m = -e2.yzx*ni, e1d = e1.yzx*ni, e1m = -e1.zxy*ni, n1f = nl.yzx*ni, n2f = nl.zxy*ni;
             
             mat4x3 TVI = { vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f) };
-             if ( na.x > na.y && na.x > na.z ) {
+            [[flatten]] if ( na.x > na.y && na.x > na.z ) {
                 TVI[0] = vec3(0.f,0.f,1.f);
                 TVI[1] = vec3(e2d.x,e1m.x,n1f.x);
                 TVI[2] = vec3(e2m.x,e1d.x,n2f.x);
                 TVI[3] = vec3(v2n.x,v1n.x,v0n.x);
             } else 
-             if ( na.y > na.z ) {
+            [[flatten]] if ( na.y > na.z ) {
                 TVI[0] = vec3(e2m.y,e1d.y,n2f.y);
                 TVI[1] = vec3(0.f,0.f,1.f);
                 TVI[2] = vec3(e2d.y,e1m.y,n1f.y);
                 TVI[3] = vec3(v2n.y,v1n.y,v0n.y);
             } else 
-             if ( na.z > 0.f ) {
+            [[flatten]] if ( na.z > 0.f ) {
                 TVI[0] = vec3(e2d.z,e1m.z,n1f.z);
                 TVI[1] = vec3(e2m.z,e1d.z,n2f.z);
                 TVI[2] = vec3(0.f,0.f,1.f);
@@ -85,32 +75,29 @@ void main() {
             }
             
             // get transposed version (for full-filling)
-            const mat3x4 TVIt = transpose(TVI);
+             mat3x4 TVIt = transpose(TVI);
             ISTORE(lvtx, int(tri*3+0), TVIt[0]), ISTORE(lvtx, int(tri*3+1), TVIt[1]), ISTORE(lvtx, int(tri*3+2), TVIt[2]);
 #endif
 #endif
         };
 
-          // incarnated mode 
-        //const vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax, sceneRes = sceneMax - sceneMin;
-        //const bbox_t lbox = Leafs[to].lbox;
 
         // unit mode 
-        const vec4 sceneMin = -1.0001f.xxxx, sceneMax = 1.0001f.xxxx, sceneRes = sceneMax - sceneMin;
-        const bbox_t lbox = calcTriBox(triverts, ((bvhBlock.sceneMax - bvhBlock.sceneMin) / sceneRes));
-        
+        //vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax, sceneRes = sceneMax - sceneMin;
+        vec4 sceneMin = -1e+0f.xxxx, sceneMax = 1e+0f.xxxx, sceneRes = sceneMax - sceneMin;
+        bbox_t lbox = calcTriBox(triverts, sceneRes / (bvhBlock.sceneMax - bvhBlock.sceneMin));
         
         vec4 bcenter = vec4((triverts[0] + triverts[1] + triverts[2]).xyz * 0.33333333333333f, 0.f);
         bcenter.xyz = (bcenter.xyz - sceneMin.xyz) / sceneRes.xyz, bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
 
 #ifdef USE_MORTON_32
-        const uint mortonCode = encodeMorton(packUnorm4x8(bcenter));
+         uint mortonCode = encodeMorton(packUnorm4x8(bcenter));
 #else
-        const uvec2 mortonCode = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
+         uvec2 mortonCode = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
 #endif
 
         // store leaf data
-         if (to < wsize && to >= 0) {
+        [[flatten]] if (to < wsize && to >= 0) {
             // re-arrange box
             Leafs[to].lbox = lbox;
             

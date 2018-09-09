@@ -21,31 +21,25 @@
 VtHitPayload hitp;
 LOCAL_SIZE_LAYOUT;
 
+#define rayID (hit.rayID-1)
 #define wgs gl_NumWorkGroups.x
 //#define wsize missHitTypedCounterRead[stageUniform.currentGroup]
 
 void main() {
-    const int wsize = min(missHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS);
-    IFALL (wsize <= 0) return;
-
+    const  int wsize = min(missHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS); IFALL (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-     
     for (uint w=0;w<wcount;w+=wgs) {
-        SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        bool overflow = globalID >= wsize || globalID < 0;
+        const bool overflow = globalID >= wsize || globalID < 0;
         const int hitID = overflow ? -1 : vtMissId(globalID, stageUniform.currentGroup);
 
-        IFALL(overflow) break;
-        {
 #ifdef DMA_HIT
-            #define hit hits[hitID]
+        #define hit hits[hitID]
 #else
-            VtHitData hit = hits[hitID];
+        VtHitData hit = hits[hitID];
 #endif
 
-            const int rayID = hit.rayID-1;
-
+        [[ flatten ]] if (!overflow && rayID >= 0 && hitID >= 0) {
             vec3 viewVec = dcts(cray.cdirect.xy);
             vec3 rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;
@@ -61,12 +55,12 @@ void main() {
             hitp.emission = vec4(toLinear(vec3(153, 204, 255)/255.f.xxx), 1.f);
             //hitp.emission = vec4(toLinear(vec3(0.01f, 0.015f, 0.12f)), 1.f);
 
-            hitp.albedo = hitp.emission+vec4(0.f.xxx, 1.f);
+            hitp.albedo = hitp.emission+vec4(0.f.xxx, 0.f);
 
             // additional validation of hit (hit point interpolated offset test)
-             if (!overflow && rayID >= 0 && hitID >= 0) {
+            {
                 imageAtomicMax(rayLink,rayID<<1,(hid+1).x);
-                const int pid = atomicIncPayloadHitCount();
+                int pid = atomicIncPayloadHitCount();
                 
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT

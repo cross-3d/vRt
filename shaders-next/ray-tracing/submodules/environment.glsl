@@ -1,4 +1,4 @@
-const float maxHdrExposure = 1.f;
+ float maxHdrExposure = 1.f;
 layout ( binding = 1, set = 2 ) uniform sampler2D skybox[1]; // united state with ray tracing
 
 vec4 readEnv(in vec2 ds) {

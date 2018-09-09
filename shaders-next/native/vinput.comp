@@ -19,13 +19,9 @@ const int VCOUNT = 3;
 #define wsize vertexBlock.primitiveCount
 
 void main() {
-    IFALL (wsize <= 0) return;
-    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-     
+    IFALL (wsize <= 0) return; uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        SB_BARRIER
-        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
-        IFALL (globalID >= wsize) break;
+        uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (globalID >= wsize) break;
         if (globalID < wsize && globalID >= 0) {
             // constant material ID from vertex instance
             uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
@@ -40,8 +36,7 @@ void main() {
             vbitfields[wofft] = vertexBlock.bitfield;
 
             // load vertex data
-            [[unroll]]
-            for (int i=0;i<3;i++) {
+            [[unroll]] for (int i=0;i<3;i++) {
                 vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = rofft * VCOUNT + i;
                 readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
                 readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
@@ -51,9 +46,8 @@ void main() {
             // load attrib data
             [[unroll]]
             for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
-                const int ai = attributes[a].attributeID;
-                [[unroll]]
-                for (int i=0;i<3;i++) {
+                int ai = attributes[a].attributeID;
+                [[unroll]] for (int i=0;i<3;i++) {
                     vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
                     readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
@@ -63,7 +57,7 @@ void main() {
             }
 
             { // pre-compute normals
-                const vec3 v0 = TLOAD(lvtxIn, int(wofft)*3+0).xyz;
+                 vec3 v0 = TLOAD(lvtxIn, int(wofft)*3+0).xyz;
                 ISTORE(lnrm, int(wofft), vec4(normalize(cross(TLOAD(lvtxIn, int(wofft)*3+1).xyz-v0, TLOAD(lvtxIn, int(wofft)*3+2).xyz-v0)), uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[wofft])))));
             }
         }

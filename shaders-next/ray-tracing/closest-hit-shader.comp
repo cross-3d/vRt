@@ -21,11 +21,11 @@
 
 
 // attribute formating
-const int NORMAL_TID = 0;
-const int TEXCOORD_TID = 1;
-const int TANGENT_TID = 2;
-const int BITANGENT_TID = 3;
-const int VCOLOR_TID = 4;
+ int NORMAL_TID = 0;
+ int TEXCOORD_TID = 1;
+ int TANGENT_TID = 2;
+ int BITANGENT_TID = 3;
+ int VCOLOR_TID = 4;
 
 struct VtAppMaterial {
      vec4 diffuse;
@@ -75,7 +75,7 @@ layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
 
 
 #define wgs gl_NumWorkGroups.x
-
+#define rayID (hit.rayID-1)
 
 void main() {
     
@@ -86,26 +86,19 @@ void main() {
     const vec3 max_fresnel_color = vec3(1.f);
     const vec3 min_fresnel_color = vec3(1.f);
 
-    const int wsize = min(closestHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS);
-    IFALL (wsize <= 0) return;
-    
+    const int wsize = min(closestHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS); IFALL (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-    
-     
     for (uint w=0;w<wcount;w+=wgs) {
-        SB_BARRIER
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        bool overflow = globalID >= wsize || globalID < 0;
+        const bool overflow = globalID >= wsize || globalID < 0;
         const int hitID = overflow ? -1 : vtClosestId(globalID, stageUniform.currentGroup);
-        IFALL(overflow) break;
-        {
 #ifdef DMA_HIT
-            #define hit hits[hitID]
+        #define hit hits[hitID]
 #else
-            VtHitData hit = hits[hitID];
+        VtHitData hit = hits[hitID];
 #endif
 
-            const int rayID = hit.rayID-1;
+        [[ flatten ]] if (!overflow && rayID >= 0 && hitID >= 0) {
             hitp = hitPayload[hit.payloadID-1];
             globalInvocationSMP = globalID;
 
@@ -119,7 +112,7 @@ void main() {
             vec3 tangent = imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz;
             mat3 tbn = transpose(mat3(tangent.xyz, bitang.xyz, normal.xyz));
 
-            const vec3 rdirect = dcts(cray.cdirect.xy);
+             vec3 rdirect = dcts(cray.cdirect.xy);
             normal = faceforward(normal, rdirect, normal);
 
             // get textured data
@@ -144,13 +137,13 @@ void main() {
             hitp.normalHeight.xyz = faceforward(hitp.normalHeight.xyz, rdirect, hitp.normalHeight.xyz);
 
             // convert metallic roughness to glossiness specular PBR model
-            const float fresnel = clamp01(pow(abs(dot(rdirect, normal.xyz)), sIOR - 1.f));
-            const vec3 fresnelColor = toLinear(clamp01(fmix(max_fresnel_color * 0.9f, min_fresnel_color * 0.2f, fresnel.xxx)));
-            const vec3 specularColor = clamp01(mix(fresnelColor, diffuse.xyz, textured.specular.zzz)); // use correct specular
-            const vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
+             float fresnel = clamp01(pow(abs(dot(rdirect, normal.xyz)), sIOR - 1.f));
+             vec3 fresnelColor = toLinear(clamp01(fmix(max_fresnel_color * 0.9f, min_fresnel_color * 0.2f, fresnel.xxx)));
+             vec3 specularColor = clamp01(mix(fresnelColor, diffuse.xyz, textured.specular.zzz)); // use correct specular
+             vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
             
             // TODO: dynamic light
-            const vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f)), lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
+             vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f)), lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
             hitp.albedo = (diffuse * vec4(  mix(lightColor*0.25f, lightColor*2.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx)  , 1.f));
             hitp.albedo += vec4(textured.emissive.xyz, 0.f);
             hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
@@ -166,17 +159,12 @@ void main() {
             }
 
             // additional validation of hit (hit point interpolated offset test)
-            uint comparable = ~0u;
-             if (!overflow && rayID >= 0 && hitID >= 0) {
-                const int pid = atomicIncPayloadHitCount();
-                {
-                    hit.payloadID = pid+1;
+            uint comparable = ~0u; int pid = atomicIncPayloadHitCount();
+            hit.payloadID = pid+1;
 #ifndef DMA_HIT
-                    hits[hitID] = hit;
+            hits[hitID] = hit;
 #endif
-                    hitPayload[pid] = hitp;
-                }
-            }
+            hitPayload[pid] = hitp;
         }
     }
 }

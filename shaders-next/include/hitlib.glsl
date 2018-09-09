@@ -24,7 +24,7 @@ int matID = -1;
 
 
 // validate texture object
-bool validateTexture(const uint tbinding) {
+bool validateTexture( uint tbinding) {
     return int(tbinding) > 0;
 }
 
@@ -39,20 +39,20 @@ bool validateTexture(const uint tbinding) {
 
 
 vec4 fetchDiffuse(in vec2 texcoord) {
-    const uint tbinding = material.diffuseTexture;
-    const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.diffuse;
+     uint tbinding = material.diffuseTexture;
+     vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.diffuse;
     return rslt;
 }
 
 vec4 fetchSpecular(in vec2 texcoord) {
-    const uint tbinding = material.specularTexture;
-    const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.specular;
+     uint tbinding = material.specularTexture;
+     vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.specular;
     return rslt;
 }
 
 vec4 fetchEmission(in vec2 texcoord) {
-    const uint tbinding = material.emissiveTexture;
-    const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.emissive;
+     uint tbinding = material.emissiveTexture;
+     vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.emissive;
     return rslt;
 }
 
@@ -70,7 +70,7 @@ const float parallaxScale = 0.02f;
 const float minLayers = 10, maxLayers = 20;
 const int refLayers = 10;
 vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
-    const uint tbinding = material.bumpTexture;
+     uint tbinding = material.bumpTexture;
 
     float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0, 0, 1), V)));
     float layerHeight = 1.0f / numLayers;
@@ -81,15 +81,14 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
     vec3 chd_a = vec3(T, 0.f), chd_b = chd_a;
 
     // parallax sample tracing 
-    for(int l=0;l<256;l++) {
+    [[unroll]] for (int l=0;l<256;l++) {
         float heightFromTexture = 1.f-fetchTexture(tbinding, chd_b.xy).z;
         if ( heightFromTexture <= chd_b.z ) break;
         chd_a = chd_b, chd_b += chv;
     }
     
     // refinement
-    [[unroll]]
-    for(int l=0;l<refLayers;l++) {
+    [[unroll]] for (int l=0;l<refLayers;l++) {
         vec3 chd = mix(chd_a, chd_b, 0.5f);
         float heightFromTexture = 1.f-fetchTexture(tbinding, chd.xy).z;
         if ( heightFromTexture <= chd.z ) { chd_b = chd; } else { chd_a = chd; }
@@ -111,8 +110,8 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
 // generated normal mapping
 vec3 getUVH(in vec2 texcoord) { return vec3(texcoord, fetchTexture(material.bumpTexture, texcoord).x); }
 vec3 getNormalMapping(in vec2 texcoordi) {
-    const uint tbinding = material.bumpTexture;
-    const vec3 tc = validateTexture(tbinding) ? fetchTexture(tbinding, texcoordi).xyz : vec3(0.5f, 0.5f, 1.0f);
+     uint tbinding = material.bumpTexture;
+     vec3 tc = validateTexture(tbinding) ? fetchTexture(tbinding, texcoordi).xyz : vec3(0.5f, 0.5f, 1.0f);
 
     vec3 normal = vec3(0.f,0.f,1.f);
     if ( abs(tc.x-tc.y)<1e-4f && abs(tc.x-tc.z)<1e-4f ) {
@@ -121,7 +120,7 @@ vec3 getNormalMapping(in vec2 texcoordi) {
         vec4 tx4 = vec4(-txs.xy, txs.xy)*0.5f;
         vec4 txu = vec4(-1.f,-1.f,1.f,1.f)*0.5f;
 
-        const float hsize = 2.f;
+         float hsize = 2.f;
         vec3 t00 = vec3(txu.xy, getUVH(texcoordi + tx4.xy).z) * vec3(1.f, 1.f, hsize);
         vec3 t01 = vec3(txu.xw, getUVH(texcoordi + tx4.xw).z) * vec3(1.f, 1.f, hsize);
         vec3 t10 = vec3(txu.zy, getUVH(texcoordi + tx4.zy).z) * vec3(1.f, 1.f, hsize);

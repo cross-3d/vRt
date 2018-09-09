@@ -44,25 +44,15 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 const int _NULL = -1;
 
 void main() {
-    IFALL (wsize <= 0) return;
-    // move to work list
-    const uint rng = gS*gl_NumWorkGroups.x;
-     
+    IFALL (wsize <= 0) return; uint rng = gS*gl_NumWorkGroups.x;
     for (uint w=gS*gl_WorkGroupID.x;w<wsize;w+=rng) {
-        SB_BARRIER
-        const uint globalID = (w + lID);
-        IFALL (globalID >= wsize) break; // add to queue list parent node
+        uint globalID = (w + lID); IFALL (globalID >= wsize) break; // add to queue list parent node
         int idx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
-
-         
-        for (int l=0;l<65536;l++) {
-            SB_BARRIER
+        [[dependency_infinite]] for (int l=0;l<65536;l++) {
              if ( idx < 0 || idx == _NULL ) { break; };
-            SB_BARRIER
-            const int pid = (idx >= 0 ? bvhNodes[idx].meta.z : 0)-1; idx = _NULL;
+             int pid = (idx >= 0 ? bvhNodes[idx].meta.z : 0)-1; idx = _NULL;
              if ( pid >= 0 ) { int ecp = 0; ecp = atomicCompSwap(Flags[pid], 0, 1); idx = (ecp == 1 && ecp != 0) ? pid : _NULL; } else { idx = _NULL; };
              if ( idx >= 0 ) { unifyNodeBox(idx); atomicCompSwap(Flags[idx], 1, 0); };
         }
     }
-    //LGROUP_BARRIER
 }

@@ -62,6 +62,10 @@ layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB {
     vec4 sceneMin, sceneMax;
 } bvhBlock;
 
+vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4(bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz, 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
+
+
+
 #define BVH_ENTRY bvhBlock.entryID
 #define BVH_ENTRY_HALF (bvhBlock.entryID>>1)
 #endif
@@ -123,18 +127,18 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 #ifndef VERTEX_FILLING
 #ifndef BVH_CREATION
 #ifdef ENABLE_VSTORAGE_DATA
-
+ 
 #ifndef VRT_USE_FAST_INTERSECTION
 float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, in bool valid) {
     float T = INFINITY;
-     IFANY (valid) {
+    IFANY (valid) {
         // gather patterns
-        const mat3 ABC = mat3(TLOAD(lvtx, tri*3+0).xyz+orig.xxx, TLOAD(lvtx, tri*3+1).xyz+orig.yyy, TLOAD(lvtx, tri*3+2).xyz+orig.zzz)*M;
+         mat3 ABC = mat3(TLOAD(lvtx, tri*3+0).xyz+orig.xxx, TLOAD(lvtx, tri*3+1).xyz+orig.yyy, TLOAD(lvtx, tri*3+2).xyz+orig.zzz)*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf
         vec3 UVW_ = uvwMap[axis] * inverse(ABC);
-         IFANY (valid = valid && (all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx)))) {
+        IFANY (valid = valid && (all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx)))) {
             UVW_ /= precIssue(dot(UVW_, vec3(1)));
             UV = vec2(UVW_.yz), UVW_ *= ABC; // calculate axis distances
             T = mix(mix(UVW_.z, UVW_.y, axis == 1), UVW_.x, axis == 0);
@@ -149,38 +153,43 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
 #ifdef VRT_USE_FAST_INTERSECTION
 #ifdef VTX_USE_LEGACY_METHOD
 float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid, inout float cdist) {
-    const mat3 vT = mat3(TLOAD(lvtx, tri*3+0).xyz, TLOAD(lvtx, tri*3+1).xyz, TLOAD(lvtx, tri*3+2).xyz);
-    const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
-    const vec3 h = cross(dir.xyz, e2);
-    const float a = dot(e1,h);
+    float T = INFINITY;
+    IFANY (_valid) {
+         mat3 vT = mat3(TLOAD(lvtx, tri*3+0).xyz, TLOAD(lvtx, tri*3+1).xyz, TLOAD(lvtx, tri*3+2).xyz);
+         vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
+         vec3 h = cross(dir.xyz, e2);
+         float a = dot(e1,h);
 
-#ifdef BACKFACE_CULLING
-     if (a <= 0.f) { _valid = false; }
-#else
-     if (abs(a) <= 0.f) { _valid = false; }
-#endif
+    #ifdef BACKFACE_CULLING
+        if (a <= 0.f) { _valid = false; }
+    #else
+        if (abs(a) <= 0.f) { _valid = false; }
+    #endif
 
-    const float f = 1.f/a;
-    const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1);
-    uv = f * vec2(dot(s,h),dot(dir.xyz,q));
+         float f = 1.f/a;
+         vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1);
+        uv = f * vec2(dot(s,h),dot(dir.xyz,q));
 
-     if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; }
+        if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; };
 
-    float T = f * dot(e2,q);
-     if (T >= (INFINITY-IOFF) || T <= 0.f || isnan(T) || isinf(T)) { _valid = false; } 
-     if (!_valid) T = INFINITY;
-    return T;
+        T = f * dot(e2,q);
+        if (T >= N_INFINITY || T > cdist || T <= 0.f /*|| isnan(T) || isinf(T)*/) { _valid = false; };
+    }
+    return (_valid ? T : INFINITY);
 }
 #else
 // intersect triangle by transform
 // alternate of http://jcgt.org/published/0005/03/03/paper.pdf
 float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid, inout float cdist) {
-    const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
-    const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]), T = oz/dz;
-     if (T >= (INFINITY-IOFF) || T > cdist || T <= 0.f || isnan(T) || isinf(T)) { _valid = false; };
-     if (_valid) {
-        const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
-         if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; };
+    float T = INFINITY;
+    IFANY (_valid) {
+         mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
+         float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/dz;
+        if (T >= N_INFINITY || T > cdist || T <= 0.f /*|| isnan(T) || isinf(T)*/) { _valid = false; };
+        IFANY (_valid) {
+             vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
+            if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; };
+        }
     }
     return (_valid ? T : INFINITY);
 }
@@ -203,17 +212,16 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 #define _SWIZV xyz
 // barycentric map (for corrections tangents in POM)
 void interpolateMeshData(inout VtHitData ht, in int tri) {
-    const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
-    const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
+     vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
+     vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
      
     if (ht.attribID > 0) {
-        [[unroll]]
-        for (int i=0;i<ATTRIB_EXTENT;i++) {
+        [[unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
 #ifdef VRT_INTERPOLATOR_TEXEL
-            const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + vs.yz + 0.5f) * sz;
+             vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + vs.yz + 0.5f) * sz;
             ISTORE(attributes, makeAttribID(ht.attribID, i), textureHQ(attrib_texture, trig, 0));
 #else
-            const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
+             vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
             ISTORE(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(
                 SGATHER(attrib_texture, trig, 0)._SWIZV,
                 SGATHER(attrib_texture, trig, 1)._SWIZV,
@@ -231,13 +239,11 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
 #ifdef VERTEX_FILLING
 void storeAttribute(in ivec3 cdata, in vec4 fval) {
     ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(cdata.x*ATTRIB_EXTENT+cdata.y));
-
-     
     if (cdata.z < 3) {
         ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,cdata.z), (fval));
     } else {
 #ifdef VRT_INTERPOLATOR_TEXEL
-        const vec3 vs = vec3(-1.f,1.f,1.f);
+         vec3 vs = vec3(-1.f,1.f,1.f);
         ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,3), mat3x4(
             TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,0)),
             TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,1)),
@@ -258,7 +264,8 @@ void storePosition(in ivec2 cdata, in vec4 fval) {
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
 
-bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in bvec3 sgn, in mat3x2 tMinMax, inout vec4 nfe) {
+bool intersectCubeF32Single( vec3 origin,  vec3 dr, in bvec3 sgn, in mat3x2 tMinMax, inout vec4 nfe) {
+    nfe = INFINITY.xxxx;
     tMinMax = mat3x2(
         fma(tMinMax[0], dr.xx, origin.xx),
         fma(tMinMax[1], dr.yy, origin.yy),
@@ -269,12 +276,13 @@ bool intersectCubeF32Single(const vec3 origin, const vec3 dr, in bvec3 sgn, in m
     tMinMax[2] = sgn.z ? tMinMax[2] : tMinMax[2].yx;
 
     float 
-        tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x)-InZero, 
-        tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y)+InZero;
+        tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x), 
+        tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y);
+        tFar  = (tFar-tNear)*InOne+tNear; // correction of far
 
     // resolve hit
-    const bool isCube = tFar>tNear && tFar>=0.f && tNear < (INFINITY-IOFF) && tFar < (INFINITY-IOFF);//&& !(isnan(tNear) || isnan(tFar) || isinf(tNear) || isinf(tFar));
-    nfe.xz = mix(INFINITY.xx, vec2(tNear, tFar), isCube.xx);
+    bool isCube = tFar>=tNear && tFar>=0.f && tNear < N_INFINITY && tFar < N_INFINITY /*&& !(isnan(tNear) || isnan(tFar) || isinf(tNear) || isinf(tFar))*/;
+    nfe.xz = mix(nfe.xz, vec2(tNear, tFar), isCube.xx);
     return isCube;
 }
 
@@ -291,6 +299,7 @@ lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, inout mediump fvec3_ dr,
 lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in bvec3 sgn, in fmat3x4_ tMinMax, inout vec4 nfe2)
 #endif
 {
+    nfe2 = INFINITY.xxxx;
     tMinMax = fmat3x4_(
         fma(tMinMax[0], dr.xxxx, origin.xxxx),
         fma(tMinMax[1], dr.yyyy, origin.yyyy),
@@ -304,17 +313,18 @@ lowp bvec2_ intersectCubeDual(in fvec3_ origin, inout fvec3_ dr, in bvec3 sgn, i
     mediump
 #endif
     fvec2_
-        tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy)-InZero, 
-        tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw)+InZero;
+        tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy), 
+        tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw);
+        tFar  = (tFar-tNear)*InOne+tNear; // correction of far
         
-    const bvec2_ isCube = 
-        bvec2_(greaterThan(tFar, tNear)) & 
+     bvec2_ isCube = 
+        bvec2_(greaterThanEqual(tFar, tNear)) & 
         bvec2_(greaterThan(tFar, fvec2_(0.0f))) & 
-        bvec2_(lessThan(tNear, fvec2_(INFINITY-IOFF))) & 
-        bvec2_(lessThan(tFar, fvec2_(INFINITY-IOFF))); //& 
-        //not(bvec2_(isnan(tNear)) | bvec2_(isnan(tFar)) | bvec2_(isinf(tNear)) | bvec2_(isinf(tFar)));
+        bvec2_(lessThan(tNear, fvec2_(N_INFINITY))) & 
+        bvec2_(lessThan(tFar, fvec2_(N_INFINITY))) /*& 
+        not(bvec2_(isnan(tNear)) | bvec2_(isnan(tFar)) | bvec2_(isinf(tNear)) | bvec2_(isinf(tFar)))*/;
 
-    nfe2 = mix(INFINITY.xxxx, vec4(tNear, tFar), bvec4(isCube, isCube));
+    nfe2 = mix(nfe2, vec4(tNear, tFar), bvec4(isCube, isCube));
     return isCube;
 }
 

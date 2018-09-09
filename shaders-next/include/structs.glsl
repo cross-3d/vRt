@@ -76,7 +76,7 @@ uvec2 writeColor(inout uvec2 rwby, in vec4 color) {
 
 
 // max attribute packing count
-//const int ATTRIB_EXTENT = 8;
+// int ATTRIB_EXTENT = 8;
 const int ATTRIB_EXTENT = 5;
 
 int makeAttribID(in int hAttribID, in int sub) { return (hAttribID-1)*ATTRIB_EXTENT + sub; }
@@ -108,36 +108,36 @@ const ivec2 VTX_BACK_FACE = ivec2(3, 1); // 0 is enabled, 1 is disabled
 
 
 
-int parameteri(const ivec2 parameter, in uint bitfield) {
+int parameteri( ivec2 parameter, in uint bitfield) {
     return int(BFE_HW(bitfield, parameter.x, parameter.y));
 }
 
-void parameteri(const ivec2 parameter, inout uint bitfield, in int value) {
+void parameteri( ivec2 parameter, inout uint bitfield, in int value) {
     bitfield = BFI_HW(bitfield, uint(value), parameter.x, parameter.y);
 }
 
-lowp bool_ parameterb(const ivec2 parameter, in uint bitfield) {
+lowp bool_ parameterb( ivec2 parameter, in uint bitfield) {
     return bool_(BFE_HW(bitfield, parameter.x, 1));
 }
 
-void parameterb(const ivec2 parameter, inout uint bitfield, in lowp bool_ value) {
+void parameterb( ivec2 parameter, inout uint bitfield, in lowp bool_ value) {
     bitfield = BFI_HW(bitfield, uint(value), parameter.x, 1);
 }
 
 
-int parameteri(const ivec2 parameter, in float bitfield) {
+int parameteri( ivec2 parameter, in float bitfield) {
     return int(BFE_HW(floatBitsToUint(bitfield), parameter.x, parameter.y));
 }
 
-void parameteri(const ivec2 parameter, inout float bitfield, in int value) {
+void parameteri( ivec2 parameter, inout float bitfield, in int value) {
     bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), uint(value), parameter.x, parameter.y));
 }
 
-lowp bool_ parameterb(const ivec2 parameter, in float bitfield) {
+lowp bool_ parameterb( ivec2 parameter, in float bitfield) {
     return bool_(BFE_HW(floatBitsToUint(bitfield), parameter.x, 1));
 }
 
-void parameterb(const ivec2 parameter, inout float bitfield, in lowp bool_ value) {
+void parameterb( ivec2 parameter, inout float bitfield, in lowp bool_ value) {
     bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), uint(value), parameter.x, 1));
 }
 
