@@ -26,14 +26,14 @@
 //#define RADICES_MASK 0x3
 
 // QLC optimized
-//#define BITS_PER_PASS 4
-//#define RADICES 16
-//#define RADICES_MASK 0xF
+#define BITS_PER_PASS 4
+#define RADICES 16
+#define RADICES_MASK 0xF
 
 // 8-bit
-#define BITS_PER_PASS 8
-#define RADICES 256
-#define RADICES_MASK 0xFF
+//#define BITS_PER_PASS 8
+//#define RADICES 256
+//#define RADICES_MASK 0xFF
 
 //#define AFFINITION 1
 #ifdef AMD_PLATFORM
