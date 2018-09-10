@@ -316,7 +316,7 @@ namespace rnd {
         std::string directory = "./";
         
         // timings
-        double modelScale = 1.0, tPastFramerateStreamF = 60.0, tPast = 1e-5;
+        double modelScale = 1.0, tPastFramerateStreamF = 60.0, tPast = 1e-5; int32_t reflectionLevel = 0, transparencyLevel = 0;
         std::chrono::high_resolution_clock::time_point tStart; // starting time
 
         // camera position 

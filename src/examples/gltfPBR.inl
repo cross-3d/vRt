@@ -8,13 +8,16 @@ namespace rnd {
     inline void Renderer::Arguments(int argc, char** argv) {
         args::ArgumentParser parser("This is a test rendering program.", "");
         args::HelpFlag help(parser, "help", "Available flags", { 'h', "help" });
-        args::ValueFlag<int> computeflag(parser, "compute-device-id", "Vulkan compute device (UNDER CONSIDERATION)", { 'c' });
-        args::ValueFlag<int> deviceflag(parser, "graphics-device-id", "Vulkan graphics device to use (also should support compute)", { 'g' });
+        args::ValueFlag<int32_t> computeflag(parser, "compute-device-id", "Vulkan compute device (UNDER CONSIDERATION)", { 'c' });
+        args::ValueFlag<int32_t> deviceflag(parser, "graphics-device-id", "Vulkan graphics device to use (also should support compute)", { 'g' });
         args::ValueFlag<float> scaleflag(parser, "scale", "Scaling of model object", { 's' });
         args::ValueFlag<std::string> directoryflag(parser, "directory", "Directory of resources", { 'd' });
         args::ValueFlag<std::string> shaderflag(parser, "shaders", "Used SPIR-V shader pack", { 'p' });
         args::ValueFlag<std::string> bgflag(parser, "background", "Environment background", { 'b' });
         args::ValueFlag<std::string> modelflag(parser, "model", "Model to view (planned multiple models support)", { 'm' });
+
+        args::ValueFlag<int32_t> reflLV(parser, "reflection-level", "Level of reflections", {'R'});
+        args::ValueFlag<int32_t> trnsLV(parser, "transparency-level", "Level of transparency", {'T'});
 
         try {
             parser.ParseCLI(argc, argv);
@@ -33,6 +36,9 @@ namespace rnd {
         if (directoryflag) directory = args::get(directoryflag);
         if (help) { std::cout << parser; glfwTerminate(); } // required help or no arguments
         if (modelInput == "") { std::cerr << "No model found :(" << std::endl; glfwTerminate(); exit(1); };
+
+        if (reflLV) reflectionLevel = args::get(reflLV);
+        if (trnsLV) transparencyLevel = args::get(trnsLV);
     };
 
     inline void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight) {
@@ -238,7 +244,7 @@ namespace rnd {
 
         {
             // use single layer only (for experimenting, can changed)
-            const uint32_t transparencyOrders = 1;//6;
+            const int32_t transparencyOrders = transparencyLevel;//6;
 
             // make ray tracing command buffer
             rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
@@ -252,15 +258,12 @@ namespace rnd {
 
             // primary rays generation
             vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipeline);
-            vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, transparencyOrders);
+            vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, std::max(transparencyLevel + 1, 1));
 
-            // deferred reflection phase
-            vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);
-            vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, transparencyOrders);
-
-            // (do you want second step of reflections?)
-            //vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);
-            //vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, transparencyOrders);
+            for ( int i = 0; i < reflectionLevel; i++ ) {
+                vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);
+                vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, std::max(transparencyLevel + 1, 1));
+            };
 
             vkEndCommandBuffer(qRtCmdBuf);
         }
