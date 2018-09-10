@@ -219,7 +219,7 @@ namespace _vt {
         cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
         cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
         cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
-        cmdDispatch(*cmdBuf, acclb->_fitPipeline, workGroupSize);
+        cmdDispatch(*cmdBuf, acclb->_fitPipeline, INTENSIVITY);
 
         return result;
     };

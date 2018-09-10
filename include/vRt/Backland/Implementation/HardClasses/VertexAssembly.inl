@@ -53,11 +53,11 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBuffer);
 
-            bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull; // restored due fatal issue
+            bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_verticeBufferSide);
 
-            bfi.bufferSize = sizeof(uint32_t) * 4ull;
+            bfi.bufferSize = sizeof(uint32_t) * 8ull;
             bfi.format = VK_FORMAT_R32_UINT;
             createDeviceBuffer(_vtDevice, bfi, vtVertexAssembly->_countersBuffer);
 
@@ -69,7 +69,7 @@ namespace _vt {
             tfi.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             tfi.layout = VK_IMAGE_LAYOUT_GENERAL;
             tfi.mipLevels = 1;
-            tfi.size = { uint32_t(aWidth), uint32_t(tiled(maxPrimitives * 4ull * ATTRIB_EXTENT, aWidth) + 1ull), 1u };
+            tfi.size = { uint32_t(aWidth), uint32_t(tiled(maxPrimitives * ATTRIB_EXTENT * 3ull, aWidth) + 1ull), 1u };
             createDeviceImage(_vtDevice, tfi, vtVertexAssembly->_attributeTexelBuffer);
         };
 

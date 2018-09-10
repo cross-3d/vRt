@@ -1,7 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-#define WORK_SIZE_BND 1024
+//#define WORK_SIZE_BND 1024
 #define BVH_CREATION
 
 #include "../include/driver.glsl"
@@ -34,8 +34,8 @@ void unifyNodeBox(inout int idx) {
     }
 }
 
-layout ( local_size_x = WORK_SIZE_BND ) in;
-
+//layout ( local_size_x = WORK_SIZE_BND ) in;
+LOCAL_SIZE_LAYOUT;
 #define lID Local_Idx
 #define gS gl_WorkGroupSize.x
 #define wsize bvhBlock.leafCount

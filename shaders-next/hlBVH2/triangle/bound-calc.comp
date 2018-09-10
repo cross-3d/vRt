@@ -25,7 +25,7 @@
 #include "../submodules/includes.glsl"
 
 
-layout ( std430, binding = 9, set = 0 )  buffer minmaxB {vec4 minmax[]; };
+layout ( std430, binding = 9, set = 0 )  buffer minmaxB { vec4 minmax[]; };
 
 bbox_t getMinMaxPrimitive(in uint idx) {
      uint tri = bvhBlock.primitiveOffset+clamp(idx, 0u, max(bvhBlock.primitiveCount,1u)-1u); 

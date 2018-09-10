@@ -73,7 +73,7 @@ namespace _vt {
             VtBufferRegionCreateInfo bfi;
 
             { // allocate buffer regions
-                bfi.bufferSize = rayCount * 32ull;
+                bfi.bufferSize = rayCount * 8ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createBufferRegion(bManager, bfi, vtRTSet->_rayBuffer);
 
@@ -98,7 +98,7 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_closestHitIndiceBuffer);
 
 
-                bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 2ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_missedHitIndiceBuffer);
 
@@ -108,12 +108,12 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_countersBuffer);
 
 
-                bfi.bufferSize = 16ull * sizeof(uint32_t);
+                bfi.bufferSize = 64ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_groupCountersBuffer);
 
 
-                bfi.bufferSize = 16ull * sizeof(uint32_t);
+                bfi.bufferSize = 64ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_groupCountersBufferRead);
 
@@ -127,6 +127,8 @@ namespace _vt {
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_rayLinkPayload);
 
+
+                // ray traversing local cache extension
                 constexpr uint64_t LOCAL_SIZE = 1024ull, STACK_SIZE = 8ull, PAGE_COUNT = 4ull;
                 bfi.bufferSize = RV_INTENSIVITY * STACK_SIZE * LOCAL_SIZE * PAGE_COUNT * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
