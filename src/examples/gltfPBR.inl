@@ -510,15 +510,6 @@ namespace rnd {
         bool ret = loader.LoadASCIIFromFile(&model, &err, input_filename);
         
 
-        //model
-        for (auto&b : model.buffers) {
-            VtDeviceBuffer buf;
-            createBufferFast(deviceQueue, buf, b.data.size());
-            if (b.data.size() > 0) writeIntoBuffer(deviceQueue, b.data, buf);
-            VDataSpace.push_back(buf);
-        }
-        for (auto b : VDataSpace) { bviews.push_back(b); };
-
         {
             createBufferFast(deviceQueue, VBufferRegions, sizeof(VtVertexRegionBinding) * 2ull);
             createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexAccessor) * (1ull+model.accessors.size()));
@@ -529,32 +520,49 @@ namespace rnd {
             createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImage>(256));
         };
 
-        {
-            // write ray tracing user defined descriptor set
-            auto writeTmpl = vk::WriteDescriptorSet(vtxDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
-            std::vector<vk::WriteDescriptorSet> writes = {
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)&VTransforms->_descriptorInfo()),
-            };
-            vk::Device(deviceQueue->device->rtDev).updateDescriptorSets(writes, {});
-        };
+
+        // load gltf buffers to device
+        for (auto&b : model.buffers) {
+            VtDeviceBuffer buf;
+            createBufferFast(deviceQueue, buf, b.data.size());
+            if (b.data.size() > 0) writeIntoBuffer(deviceQueue, b.data, buf);
+            VDataSpace.push_back(buf);
+        }
+        for (auto b : VDataSpace) { bviews.push_back(b); };
+
 
         // create images
-        for (auto& I: model.images) 
-        {
+        if (model.images.size() > 0) {
+            for (auto& I : model.images)
+            {
+                mImages.push_back(VtDeviceImage{});
+                auto& image = mImages[mImages.size() - 1];
+
+                VtDeviceImageCreateInfo dii = {};
+                dii.format = VK_FORMAT_R8G8B8A8_UNORM;
+                dii.familyIndex = deviceQueue->familyIndex;
+                dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+                dii.layout = VK_IMAGE_LAYOUT_GENERAL;
+                dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+                dii.size = { uint32_t(I.width), uint32_t(I.height), 1 };
+                vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
+                writeIntoImage<uint8_t>(deviceQueue, I.image, image, 0);
+            }
+        }
+        else {
             mImages.push_back(VtDeviceImage{});
-            auto& image = mImages[mImages.size()-1];
+            auto& image = mImages[mImages.size() - 1];
 
             VtDeviceImageCreateInfo dii = {};
-            //dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             dii.format = VK_FORMAT_R8G8B8A8_UNORM;
             dii.familyIndex = deviceQueue->familyIndex;
             dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             dii.layout = VK_IMAGE_LAYOUT_GENERAL;
             dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-            dii.size = { uint32_t(I.width), uint32_t(I.height), 1 };
+            dii.size = { 2, 2, 1 };
             vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
-            writeIntoImage<uint8_t>(deviceQueue, I.image, image, 0);
-        }
+        };
+
 
         // create samplers
         if (model.samplers.size() > 0) {
@@ -597,7 +605,29 @@ namespace rnd {
             samplerInfo.magFilter = vk::Filter::eLinear;
             samplerInfo.compareEnable = false;
             sampler = deviceQueue->device->logical.createSampler(samplerInfo);
-        }
+        };
+
+        {
+            std::vector<VtVirtualCombinedImage> textures;
+            for (auto& T : model.textures)
+            {
+                textures.push_back(VtVirtualCombinedImage{});
+                textures[textures.size() - 1].setTextureID(T.source).setSamplerID(T.sampler != -1 ? T.sampler : 0);
+            }
+            writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, textures, materialCombImages, 0);
+        };
+
+
+
+        { // write ray tracing user defined descriptor set
+            auto writeTmpl = vk::WriteDescriptorSet(vtxDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+            std::vector<vk::WriteDescriptorSet> writes = {
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)&VTransforms->_descriptorInfo()),
+            };
+            vk::Device(deviceQueue->device->rtDev).updateDescriptorSets(writes, {});
+        };
+
+
 
         {
             std::vector<VtAppMaterial> materials;
@@ -618,21 +648,14 @@ namespace rnd {
                 if (M.values.find("baseColorFactor") != M.values.end()) material.diffuse = glm::vec4(glm::make_vec3(M.values.at("baseColorFactor").number_array.data()), 1.f);
             }
             writeIntoBuffer<VtAppMaterial>(deviceQueue, materials, materialDescs, 0);
-        }
+        };
 
-        {
-            std::vector<VtVirtualCombinedImage> textures;
-            for (auto& T : model.textures)
-            {
-                textures.push_back(VtVirtualCombinedImage{});
-                textures[textures.size() - 1].setTextureID(T.source).setSamplerID(T.sampler != -1 ? T.sampler : 0);
-            }
-            writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, textures, materialCombImages, 0);
-        }
+
         
         for (auto &acs: model.accessors) { accessors.push_back(VtVertexAccessor{ uint32_t(acs.bufferView), uint32_t(acs.byteOffset), uint32_t(_getFormat(acs)) }); }
         for (auto &bv : model.bufferViews) { bufferViews.push_back(VtVertexBufferView{ uint32_t(bv.buffer), uint32_t(bv.byteOffset), uint32_t(bv.byteStride), uint32_t(bv.byteLength) }); }
-        
+
+
         {
             std::vector<VkDescriptorImageInfo> dsi;
             for (auto& Tr: mImages) { dsi.push_back(Tr->_descriptorInfo()); }
@@ -645,7 +668,8 @@ namespace rnd {
             mtsi.bImageSamplerCombinations = materialCombImages;
             mtsi.materialCount = model.materials.size();
             vtCreateMaterialSet(deviceQueue->device->rtDev, &mtsi, &materialSet);
-        }
+        };
+
 
         std::vector<VtVertexAttributeBinding> attributes = {};
         for (auto& msh: model.meshes) {

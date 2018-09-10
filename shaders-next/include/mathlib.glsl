@@ -16,7 +16,7 @@ const float E = 2.7182818284590452353602874713526624977572f;
 const float N_INFINITY = 99999.f;//INFINITY - IOFF;
 
 
-const float SFN = 64.f*0.00000011920928955078125f;
+const float SFN = 0.00000011920928955078125f;
 //const float N1024 = 1024.f;
 #ifdef AMD_F16_BVH
 const float16_t InZero = 0.0009765625hf, InOne = 1.0009765625hf;
