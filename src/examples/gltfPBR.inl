@@ -574,21 +574,21 @@ namespace rnd {
                 vk::SamplerCreateInfo samplerInfo = {};
                 samplerInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
                 samplerInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
-                samplerInfo.minFilter = vk::Filter::eLinear;
-                samplerInfo.magFilter = vk::Filter::eLinear;
+                samplerInfo.minFilter = vk::Filter::eNearest;
+                samplerInfo.magFilter = vk::Filter::eNearest;
                 samplerInfo.compareEnable = false;
 
                 // set filter and sampling modes
-                if (S.magFilter == VK_FILTER_NEAREST) samplerInfo.magFilter = vk::Filter::eNearest;
-                if (S.minFilter == VK_FILTER_NEAREST) samplerInfo.minFilter = vk::Filter::eNearest;
-                if (S.wrapS == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE) samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;
-                if (S.wrapT == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE) samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;
-                if (S.wrapS == VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT) samplerInfo.addressModeU = vk::SamplerAddressMode::eMirroredRepeat;
-                if (S.wrapT == VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT) samplerInfo.addressModeV = vk::SamplerAddressMode::eMirroredRepeat;
-                if (S.wrapS == VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE) samplerInfo.addressModeU = vk::SamplerAddressMode::eMirrorClampToEdge;
-                if (S.wrapT == VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE) samplerInfo.addressModeV = vk::SamplerAddressMode::eMirrorClampToEdge;
-                if (S.wrapS == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER) samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToBorder;
-                if (S.wrapT == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER) samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToBorder;
+                if (S.magFilter == TINYGLTF_TEXTURE_FILTER_LINEAR) samplerInfo.magFilter = vk::Filter::eLinear;
+                if (S.minFilter == TINYGLTF_TEXTURE_FILTER_LINEAR) samplerInfo.minFilter = vk::Filter::eLinear;
+                if (S.magFilter == TINYGLTF_TEXTURE_FILTER_NEAREST) samplerInfo.magFilter = vk::Filter::eNearest;
+                if (S.minFilter == TINYGLTF_TEXTURE_FILTER_NEAREST) samplerInfo.minFilter = vk::Filter::eNearest;
+                if (S.wrapS == TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE) samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;
+                if (S.wrapT == TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE) samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;
+                if (S.wrapS == TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT) samplerInfo.addressModeU = vk::SamplerAddressMode::eMirroredRepeat;
+                if (S.wrapT == TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT) samplerInfo.addressModeV = vk::SamplerAddressMode::eMirroredRepeat;
+                if (S.wrapS == TINYGLTF_TEXTURE_WRAP_REPEAT) samplerInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
+                if (S.wrapT == TINYGLTF_TEXTURE_WRAP_REPEAT) samplerInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
 
                 // create sampler
                 sampler = deviceQueue->device->logical.createSampler(samplerInfo);
