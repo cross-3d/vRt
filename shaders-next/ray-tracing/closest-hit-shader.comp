@@ -21,11 +21,11 @@
 
 
 // attribute formating
- int NORMAL_TID = 0;
- int TEXCOORD_TID = 1;
- int TANGENT_TID = 2;
- int BITANGENT_TID = 3;
- int VCOLOR_TID = 4;
+const int NORMAL_TID = 0;
+const int TEXCOORD_TID = 1;
+const int TANGENT_TID = 2;
+const int BITANGENT_TID = 3;
+const int VCOLOR_TID = 4;
 
 struct VtAppMaterial {
      vec4 diffuse;
@@ -80,7 +80,7 @@ layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
 void main() {
     
     // constants
-    const float IOR = 1.3333f, sIOR = IOR*IOR;
+    const float IOR = 1.3333f, sIOR = IOR;
     const float diffuse_min_importance = 0.5f;
     const float reflect_min_importance = 0.5f;
     const vec3 max_fresnel_color = vec3(1.f);
@@ -117,11 +117,11 @@ void main() {
 
             // get textured data
             textured.bump.xyz = getNormalMapping(texcoord);
-            textured.diffuse = fetchDiffuse(texcoord);
-            textured.specular = fetchSpecular(texcoord);
-            textured.emissive = fetchEmission(texcoord);
+            textured.diffuse  = toLinear(fetchDiffuse(texcoord));
+            textured.specular = toLinear(fetchSpecular(texcoord));
+            textured.emissive = toLinear(fetchEmission(texcoord)) * 0.5f;
 
-            vec4 diffuse = toLinear( textured.diffuse );
+            //vec4 diffuse = toLinear( textured.diffuse );
 
             // block TBN change manually if non valid normal mapped texture
             hitp.normalHeight.xyz = validateTexture(material.bumpTexture) ? (textured.bump.xyz * tbn) : normal.xyz; // apply TBN with normal mapping
@@ -138,13 +138,14 @@ void main() {
 
             // convert metallic roughness to glossiness specular PBR model
              float fresnel = clamp01(pow(abs(dot(rdirect, normal.xyz)), sIOR - 1.f));
-             vec3 fresnelColor = toLinear(clamp01(fmix(max_fresnel_color * 0.9f, min_fresnel_color * 0.2f, fresnel.xxx)));
-             vec3 specularColor = clamp01(mix(fresnelColor, diffuse.xyz, textured.specular.zzz)); // use correct specular
+             vec3 fresnelColor = clamp01(fmix(max_fresnel_color * 0.001f, min_fresnel_color * 0.2f, 1.f-fresnel.xxx));
+             vec3 specularColor = clamp01(mix(fresnelColor, textured.diffuse.xyz, textured.specular.zzz)); // use correct specular
              vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
             
             // TODO: dynamic light
              vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f)), lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
-            hitp.albedo = (diffuse * vec4(  mix(lightColor*0.25f, lightColor*2.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx)  , 1.f));
+            hitp.albedo = (textured.diffuse * vec4(  mix(lightColor*0.1f, lightColor*1.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx)  , 1.f));
+            hitp.albedo.xyz *= textured.specular.x == 0.f ? 1.f : textured.specular.x; // add pre-calculated AO
             hitp.albedo += vec4(textured.emissive.xyz, 0.f);
             hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
             

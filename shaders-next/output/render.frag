@@ -16,5 +16,5 @@ layout ( binding = 0 ) uniform sampler2D samples;
 #define icolor(tx) textureHQ(samples, tx.xy, 0)
 
 void main() {
-    outFragColor = vec4(fromLinear(icolor(vcoord.xy).xyz), 1.0f);
+    outFragColor = vec4(fromLinear(icolor(vcoord.xy).xyz*2.f), 1.0f);
 }
