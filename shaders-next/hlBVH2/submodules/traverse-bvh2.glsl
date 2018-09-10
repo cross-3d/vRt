@@ -17,11 +17,9 @@ layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYS
 
 // BVH traversing state
 struct BvhTraverseState {
-    int idx, defTriangleID, stackPtr, cacheID, pageID; float minDist; // vec4, vec2
-    //bvec4 boxSide; // bvec4
+    int idx, defTriangleID, stackPtr, cacheID, pageID; float minDist;
     fvec4_ minusOrig, directInv; // vec4 of 32-bits
 } traverseState;
-//#define _continue traverseState.boxSide.w
 
 
 // intersection current state
@@ -47,13 +45,11 @@ int loadStack() {
 };
 
 void storeStack(in int rsl) {
-     //if (rsl >= 0) {
-         if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
-            pages[traverseState.cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
-        }
-        int idx = traverseState.stackPtr++; 
-         if (idx < localStackSize) lstack[idx] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
-    //}
+    if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
+        pages[traverseState.cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
+    }
+    int idx = traverseState.stackPtr++; 
+    [[flatten]] if (idx < localStackSize) lstack[idx] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
 };
 
 
@@ -76,12 +72,6 @@ void doIntersection(in bool isvalid) {
 
 
 // corrections of box intersection
-#ifdef USE_F32_BVH 
-const float hCorrection = 1.f;
-#else
-const float16_t hCorrection = 1.hf;
-#endif
-
 const bvec3 bsgn = false.xxx;
 
 // BVH traversing itself 
@@ -136,7 +126,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     traverseState.idx = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe) ? entry : -1, traverseState.idx = nfe.x > N_INFINITY ? -1 : traverseState.idx;
     traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0, traverseState.minDist = 0.f;  float diffOffset = min(-nfe.x, 0.f);
     traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(diffOffset.xxxx)));
-    traverseState.directInv = fvec4_(dirproj) * fvec4_(hCorrection.xxxx);
+    traverseState.directInv = fvec4_(dirproj);
     
     // initial intersection state
     primitiveState.orig = fma(direct, diffOffset.xxxx, torig);
@@ -148,7 +138,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
         [[flatten]] if (traverseState.idx >= 0 && traverseState.defTriangleID <= 0) {
         { [[dependency_infinite]] for (;hi<max_iteraction;hi++) { bool _continue = false;
             ivec2 cnode = traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx;
-            [[flatten]] if (isLeaf(cnode)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
+            if (isLeaf(cnode)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
                 fmat3x4_ bbox2x = fmat3x4_(bvhNodes[traverseState.idx].cbox[0], bvhNodes[traverseState.idx].cbox[1], bvhNodes[traverseState.idx].cbox[2]);
                 lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);

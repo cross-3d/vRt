@@ -212,11 +212,12 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 #define _SWIZV xyz
 // barycentric map (for corrections tangents in POM)
 void interpolateMeshData(inout VtHitData ht, in int tri) {
-     vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
-     vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
+    vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
+    vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
      
-    if (ht.attribID > 0) {
-        [[unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
+    [[flatten]] if (ht.attribID > 0) {
+        //[[unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
+        [[dont_unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
 #ifdef VRT_INTERPOLATOR_TEXEL
              vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + vs.yz + 0.5f) * sz;
             ISTORE(attributes, makeAttribID(ht.attribID, i), textureHQ(attrib_texture, trig, 0));
@@ -239,7 +240,7 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
 #ifdef VERTEX_FILLING
 void storeAttribute(in ivec3 cdata, in vec4 fval) {
     ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(cdata.x*ATTRIB_EXTENT+cdata.y));
-    if (cdata.z < 3) {
+    [[flatten]] if (cdata.z < 3) {
         ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,cdata.z), (fval));
     } else {
 #ifdef VRT_INTERPOLATOR_TEXEL

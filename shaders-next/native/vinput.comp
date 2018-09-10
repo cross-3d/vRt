@@ -44,7 +44,6 @@ void main() {
             }
 
             // load attrib data
-            [[unroll]]
             for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
                 int ai = attributes[a].attributeID;
                 [[unroll]] for (int i=0;i<3;i++) {

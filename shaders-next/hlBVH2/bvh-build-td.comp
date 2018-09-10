@@ -72,14 +72,14 @@ void main() {
 #define groupSize gl_WorkGroupSize.x
 
     // lane-based
-     uint gS = (groupSize >> 1), iT = threadID >> 1;  int sD = int(threadID & 1);
+    const uint gS = (groupSize >> 1), iT = threadID >> 1;  int sD = int(threadID & 1);
 
     LGROUP_BARRIER
-     if (threadID < 8) { _counters[threadID] = 0; }
+    [[flatten]] if (threadID < 8) { _counters[threadID] = 0; }
     LGROUP_BARRIER
 
     // create initial (root) node
-    if (threadID == 0) {
+    [[flatten]] if (threadID == 0) {
 #ifdef FIRST_STEP
         bvhNodes[0].meta = ivec4(1, bvhBlock.leafCount, 0, 0), bvhNodes[1].meta = ivec4(0, 0, 0, 0);
         Actives[aCounterInc()] = 1;
@@ -88,18 +88,18 @@ void main() {
 #endif
     }
     
-    IFALL (bvhBlock.leafCount <= 0) return;
+    [[flatten]] IFALL (bvhBlock.leafCount <= 0) return;
 
     // building BVH
     [[dependency_infinite]] for (int m=0;m<65536;m++) {
         LGROUP_BARRIER
 
 #ifdef FIRST_STEP
-         IFANY ( asize>=WGS && (m&1)==1 ) break; // limit by few elements
+        [[flatten]] IFANY ( asize>=WGS && (m&1)==1 ) break; // limit by few elements
 #endif
 
         // swap buffers emulation
-        if (threadID == 0) { 
+        [[flatten]] if (threadID == 0) { 
             cBuffer = 1-cBuffer, asize_inv_ = 0, asize = atomicExchange(asize_, 0), swapIn = int(mrQ(1-cBuffer)), swapOut = int(mrQ(cBuffer));//, OSi = int(gS*(m==0?gl_NumWorkGroups.x:1));
 #ifndef FIRST_STEP
             osize = m==0?asize:int(wID(asize));
@@ -109,11 +109,11 @@ void main() {
         LGROUP_BARRIER
         
         // split nodes
-        int dT = int(m==0?rID(iT):wID(iT)), OSi = int(gS*(m==0?gl_NumWorkGroups.x:1)); IFANY (asize <= 0) break; // check-out limits
+        const int dT = int(m==0?rID(iT):wID(iT)), OSi = int(gS*(m==0?gl_NumWorkGroups.x:1)); IFANY (asize <= 0) break; // check-out limits
         for (int fT=0;fT<asize;fT+=OSi) {
-             int iWD = fT+dT;
-             IFALL (iWD >= osize) break;
-             if (iWD < osize) {
+            const int iWD = fT+dT;
+            [[flatten]] IFALL (iWD >= osize) break;
+            [[flatten]] if (iWD < osize) {
                  int fID = iWD < osize ? Actives[swapIn+iWD]-1 : -1;
                  if (sD == 0 && iWD < osize) Actives[swapIn+iWD] = 0;
                  if (fID >= 0) { splitNode(fID|sD); } // split sibling nodes
@@ -124,6 +124,6 @@ void main() {
     LGROUP_BARRIER
 
 #ifdef FIRST_STEP
-    if (threadID == 0) { aCounter[cBuffer] = asize_inv_, aCounter[1-cBuffer] = asize_; }
+    [[flatten]] if (threadID == 0) { aCounter[cBuffer] = asize_inv_, aCounter[1-cBuffer] = asize_; }
 #endif
 }
