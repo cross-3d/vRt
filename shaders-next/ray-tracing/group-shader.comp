@@ -65,7 +65,7 @@ void main() {
             writeColor(ray.dcolor, vec4(0.f.xxx, 1.f));
 
             // alternate of http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
-             float alph = diffuse.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(dcolor))) ? 1.f : 0.f;
+             float alph = diffuse.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(vec4(ray.origin.xyz, 1.f)))) ? 1.f : 0.f;
              if (stageUniform.iteration == stageUniform.lastIteration) alph = diffuse.a;
 
             // transparency ray
