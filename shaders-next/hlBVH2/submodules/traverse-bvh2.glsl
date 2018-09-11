@@ -145,6 +145,10 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
             else { // if not leaf, intersect with nodes
                 fmat3x4_ bbox2x = fmat3x4_(bvhNodes[traverseState.idx].cbox[0], bvhNodes[traverseState.idx].cbox[1], bvhNodes[traverseState.idx].cbox[2]);
                 lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
+
+                // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
+                // but we came up in past years, so sorts of patents may failure 
+                // also, they uses hit queue, but it can very overload stacks, so saving only indices...
                 childIntersect &= bvec2_(lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz)); // it increase FPS by filtering nodes by first triangle intersection
                 
                 // 
