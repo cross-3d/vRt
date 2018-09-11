@@ -27,7 +27,8 @@ LOCAL_SIZE_LAYOUT;
 void main() {
     const uint wsize = min(rayCounter, MAX_RAYS); IFALL (wsize <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
-    traverseState.cacheID = int(gl_GlobalInvocationID.x), traverseState.maxTriangles = bvhBlock.primitiveCount;
+    //traverseState.cacheID = int(gl_GlobalInvocationID.x);
+    traverseState.maxTriangles = bvhBlock.primitiveCount;
     
     for (uint w=0;w<wcount;w+=wgs) {
         const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);

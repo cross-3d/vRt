@@ -11,13 +11,26 @@
 
 
 // global memory stack pages (256-bit)
-const highp int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount, max_iteraction = 8192;
+//#ifdef ENABLE_AMD_INT16
+//const int16_t localStackSize = 8s, pageCount = 4s, computedStackSize = localStackSize*pageCount; 
+//#else 
+const lowp int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount; 
+//#endif
+
+const highp int max_iteraction = 8192;
 layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYSTEM { int pages[][8]; };
 
 
 // BVH traversing state
+#define _cacheID gl_GlobalInvocationID.x
 struct BvhTraverseState {
-    int idx, defTriangleID, stackPtr, cacheID, pageID, maxTriangles;
+    //int idx, defTriangleID, stackPtr, cacheID, pageID, maxTriangles;
+    int idx, defTriangleID, maxTriangles; 
+//#ifdef ENABLE_AMD_INT16
+//    int16_t stackPtr, pageID;
+//#else
+    lowp int stackPtr, pageID;
+//#endif
     fvec4_ minusOrig, directInv; // vec4 of 32-bits
 } traverseState;
 
@@ -39,14 +52,14 @@ shared int localStack[WORK_SIZE][localStackSize];
 
 int loadStack() {
     [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
-        lstack = pages[traverseState.cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize; 
+        lstack = pages[_cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize; 
     };
     int idx = --traverseState.stackPtr, rsl = idx >= 0 ? lstack[idx] : -1; traverseState.stackPtr = max(traverseState.stackPtr, 0); return rsl;
 };
 
 void storeStack(in int rsl) {
     [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
-        pages[traverseState.cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
+        pages[_cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
     }
     int idx = traverseState.stackPtr++; 
     [[flatten]] if (idx < localStackSize) lstack[idx] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
