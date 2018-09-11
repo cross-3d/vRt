@@ -23,7 +23,6 @@ int main(int argc, char** argv) {
     renderer->Preload();
     renderer->CreateFbo();
     renderer->InitCommands();
-
     
     // looping rendering
     while (!glfwWindowShouldClose(renderer->window)) {
@@ -37,4 +36,4 @@ int main(int argc, char** argv) {
     glfwDestroyWindow(renderer->window); 
     glfwTerminate();
     return 0;
-}
+};

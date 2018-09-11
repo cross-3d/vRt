@@ -55,22 +55,23 @@ void storeStack(in int rsl) {
 
 // triangle intersection, when it found
 void doIntersection(in bool isvalid) {
-    isvalid = isvalid && traverseState.defTriangleID < traverseState.maxTriangles;
-
-    vec2 uv = vec2(0.f.xx); float d = 
+    isvalid = isvalid && traverseState.defTriangleID > 0 && traverseState.defTriangleID <= traverseState.maxTriangles;
+    IFANY (isvalid) {
+        vec2 uv = vec2(0.f.xx); float d = 
 #ifdef VRT_USE_FAST_INTERSECTION
-        intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid, primitiveState.lastIntersection.z);
+            intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid, primitiveState.lastIntersection.z);
 #else
-        intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID-1, uv.xy, isvalid);
+            intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID-1, uv.xy, isvalid);
 #endif
 #define nearhit (primitiveState.lastIntersection.z)
 
-    [[flatten]] if (d <= nearhit && d <= N_INFINITY && isvalid) {
-        [[flatten]] if (abs(primitiveState.lastIntersection.z-d) > 0.f || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
-            primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID));
+        [[flatten]] if (d <= nearhit && d <= N_INFINITY && isvalid) {
+            [[flatten]] if (abs(primitiveState.lastIntersection.z-d) > 0.f || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
+                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID));
+            };
         };
     }; traverseState.defTriangleID=0;
-}
+};
 
 
 // corrections of box intersection
@@ -169,7 +170,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
         }}};
         
         // every-step solving 
-        IFANY (traverseState.defTriangleID > 0) { doIntersection( valid ); } // if has triangle, do intersection
+        IFANY (traverseState.defTriangleID > 0) { doIntersection( true ); } // if has triangle, do intersection
         if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
     };
 
