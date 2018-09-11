@@ -108,7 +108,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     }
 
     // calculate affine matrices
-     vec4 vm = vec4(-direct, 1.f) / precIssue(primitiveState.axis == 0 ? direct.x : (primitiveState.axis == 1 ? direct.y : direct.z));
+    const vec4 vm = vec4(-direct, 1.f) / precIssue(primitiveState.axis == 0 ? direct.x : (primitiveState.axis == 1 ? direct.y : direct.z));
     primitiveState.iM = transpose(mat3(
         primitiveState.axis == 0 ? vm.wyz : vec3(1.f,0.f,0.f),
         primitiveState.axis == 1 ? vm.xwz : vec3(0.f,1.f,0.f),
@@ -140,10 +140,14 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     [[dependency_infinite]] for (int hi=0;hi<max_iteraction;hi++) {
         [[flatten]] if (traverseState.idx >= 0 && traverseState.defTriangleID <= 0) {
         { [[dependency_infinite]] for (;hi<max_iteraction;hi++) { bool _continue = false;
-            ivec2 cnode = traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx;
-            if (isLeaf(cnode)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
+            const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
+            #define cnode bvhNode.meta // reuse already got
+            //ivec2 cnode = traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx;
+            
+            if (isLeaf(cnode.xy)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
-                fmat3x4_ bbox2x = fmat3x4_(bvhNodes[traverseState.idx].cbox[0], bvhNodes[traverseState.idx].cbox[1], bvhNodes[traverseState.idx].cbox[2]);
+                //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
+                #define bbox2x fmat3x4_(bvhNode.cbox[0],bvhNode.cbox[1],bvhNode.cbox[2]) // use same memory
                 lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
 
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
@@ -160,8 +164,10 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                     
                     // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
                     // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
-                    ivec2 snode = secondary >= 0 ? bvhNodes[secondary].meta.xy : (0).xx;
-                    if (isLeaf(snode)) { traverseState.defTriangleID = snode.x, secondary = -1; } else if (secondary > 0) { storeStack(secondary); };
+                    [[flatten]] if (secondary > 0) { // also, root element also can't be secondary member
+                        const ivec2 snode = bvhNodes[secondary].meta.xy;
+                        if (isLeaf(snode)) { traverseState.defTriangleID = snode.x; } else { storeStack(secondary); };
+                    };
 
                     // set traversing node id
                     traverseState.idx = primary, _continue = true;
