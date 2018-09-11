@@ -31,14 +31,13 @@ void main() {
     }
     [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
     LGROUP_BARRIER
-    [[flatten]] IFALL (bcount <= 0) return;
+    IFALL (bcount <= 0) return;
 
     // calculate blocks
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
-        const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx);
-        [[flatten]] IFALL(all(not(validAddress))) break;
+        const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
         [[flatten]] if (Wave_Idx == 0) {
 #ifdef PREFER_UNPACKED 
             key = ((uvec4(
@@ -68,7 +67,7 @@ void main() {
                 [[flatten]] if (owned.z) { ValueTmp[offset.z] = ValueIn[addr.z], KeyTmp[offset.z] = KeyIn[addr.z]; }
                 [[flatten]] if (owned.w) { ValueTmp[offset.w] = ValueIn[addr.w], KeyTmp[offset.w] = KeyIn[addr.w]; }
             }
-            [[flatten]] IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
+            IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
         }
         addr += (Wave_Size_RT<<2);
     }

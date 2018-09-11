@@ -45,9 +45,9 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 shared bbox_t sdata[ WORK_SIZE_BND ];
 
 void main() {
-     uint tid = gl_LocalInvocationID.x;
-     uint gridSize = (gl_WorkGroupSize.x*2) * gl_NumWorkGroups.x;
-     uint tcount = max( bvhBlock.primitiveCount, 2 );
+    const uint tid = gl_LocalInvocationID.x;
+    const uint gridSize = (gl_WorkGroupSize.x*2) * gl_NumWorkGroups.x;
+    const uint tcount = max( bvhBlock.primitiveCount, 2 );
     IFALL (bvhBlock.primitiveCount <= 0) return;
 
     // 

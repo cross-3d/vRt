@@ -112,8 +112,9 @@ bool anyInvoc(in bool bc) { return subgroupAny(bc); }
 bool allInvoc(in lowp bool_ bc) { return allInvoc(SSC(bc)); }
 bool anyInvoc(in lowp bool_ bc) { return anyInvoc(SSC(bc)); }
 
-#define IFALL(b)if(allInvoc(b))
-#define IFANY(b)if(anyInvoc(b))
+//#define IFALL(b) [[flatten]]if(allInvoc(b))
+#define IFALL(b) [[flatten]]if(allInvoc(b))
+#define IFANY(b)            if(anyInvoc(b))
 
 
 // subgroup barriers

@@ -24,10 +24,10 @@ LOCAL_SIZE_LAYOUT;
 //#define lbox Leafs[to].lbox
 
 void main() {
-     IFALL (wsize <= 0) return; uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
-      for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        uint to = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (to >= wsize) break;
-        uint tri = bvhBlock.primitiveOffset+clamp(to, 0, bvhBlock.primitiveCount-1);
+    IFALL (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
+        const uint to = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (to >= wsize) break;
+        const uint tri = bvhBlock.primitiveOffset+clamp(to, 0, bvhBlock.primitiveCount-1);
 
         // incarnated mode 
         mat3x4 triverts = mat3x4(TLOAD(lvtx, int(tri*3+0)).xyzw, TLOAD(lvtx, int(tri*3+1)).xyzw, TLOAD(lvtx, int(tri*3+2)).xyzw);
