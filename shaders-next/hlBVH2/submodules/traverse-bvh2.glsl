@@ -140,11 +140,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     [[dependency_infinite]] for (int hi=0;hi<max_iteraction;hi++) {
         [[flatten]] if (traverseState.idx >= 0 && traverseState.defTriangleID <= 0) {
         { [[dependency_infinite]] for (;hi<max_iteraction;hi++) { bool _continue = false;
-            const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
-            #define cnode bvhNode.meta // reuse already got
-            //ivec2 cnode = traverseState.idx >= 0 ? bvhNodes[traverseState.idx].meta.xy : (0).xx;
+            //const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
+            #define bvhNode bvhNodes[traverseState.idx] // ref directly
+            //#define cnode (bvhNode.meta.xy) // reuse already got
             
-            if (isLeaf(cnode.xy)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
+            ivec2 cnode = traverseState.idx >= 0 ? bvhNode.meta.xy : (0).xx;
+            [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
                 #define bbox2x fmat3x4_(bvhNode.cbox[0],bvhNode.cbox[1],bvhNode.cbox[2]) // use same memory
@@ -162,11 +163,13 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                     [[flatten]] if (fmask == 3) { fmask &= nfe.x<=nfe.y ? 1 : 2, secondary = cnode.x^(fmask>>1); }; // if both has intersection
                     primary = cnode.x^(fmask&1);
                     
-                    // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
-                    // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
-                    [[flatten]] if (secondary > 0) { // also, root element also can't be secondary member
+                    {
+                        // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
+                        // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
+                        //#define snode (bvhNodes[secondary].meta.xy) // use reference only
                         const ivec2 snode = bvhNodes[secondary].meta.xy;
-                        if (isLeaf(snode)) { traverseState.defTriangleID = snode.x; } else { storeStack(secondary); };
+                        [[flatten]] if (secondary > 0 && isLeaf(snode)) { traverseState.defTriangleID = snode.x; secondary = -1; } else 
+                        [[flatten]] if (secondary > 0) storeStack(secondary);
                     };
 
                     // set traversing node id
@@ -175,13 +178,13 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
             }
 
             // if all threads had intersection, or does not given any results, break for processing
-            if (!_continue) { traverseState.idx = loadStack(); } // load from stack 
-            IFANY (traverseState.defTriangleID > 0 || traverseState.idx <= 0) { break; } // 
+            [[flatten]] if (!_continue) { traverseState.idx = loadStack(); } // load from stack 
+            [[flatten]] IFANY (traverseState.defTriangleID > 0 || traverseState.idx <= 0) { break; } // 
         }}};
         
         // every-step solving 
-        IFANY (traverseState.defTriangleID > 0) { doIntersection( true ); } // if has triangle, do intersection
-        if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
+        [[flatten]] IFANY (traverseState.defTriangleID > 0) { doIntersection( true ); } // if has triangle, do intersection
+        [[flatten]] if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
     };
 
     // correction of hit distance
