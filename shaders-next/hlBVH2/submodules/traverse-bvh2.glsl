@@ -17,7 +17,7 @@ layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYS
 
 // BVH traversing state
 struct BvhTraverseState {
-    int idx, defTriangleID, stackPtr, cacheID, pageID; float minDist;
+    int idx, defTriangleID, stackPtr, cacheID, pageID, maxTriangles;
     fvec4_ minusOrig, directInv; // vec4 of 32-bits
 } traverseState;
 
@@ -38,14 +38,14 @@ shared int localStack[WORK_SIZE][localStackSize];
 #define lstack localStack[Local_Idx]
 
 int loadStack() {
-     if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
+    [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
         lstack = pages[traverseState.cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize; 
     };
     int idx = --traverseState.stackPtr, rsl = idx >= 0 ? lstack[idx] : -1; traverseState.stackPtr = max(traverseState.stackPtr, 0); return rsl;
 };
 
 void storeStack(in int rsl) {
-    if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
+    [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
         pages[traverseState.cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
     }
     int idx = traverseState.stackPtr++; 
@@ -55,6 +55,8 @@ void storeStack(in int rsl) {
 
 // triangle intersection, when it found
 void doIntersection(in bool isvalid) {
+    isvalid = isvalid && traverseState.defTriangleID < traverseState.maxTriangles;
+
     vec2 uv = vec2(0.f.xx); float d = 
 #ifdef VRT_USE_FAST_INTERSECTION
         intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid, primitiveState.lastIntersection.z);
@@ -63,8 +65,8 @@ void doIntersection(in bool isvalid) {
 #endif
 #define nearhit (primitiveState.lastIntersection.z)
 
-     if (d <= nearhit && d >= traverseState.minDist.x && d <= N_INFINITY && isvalid) {
-         if (abs(primitiveState.lastIntersection.z-d) > 0.f || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
+    [[flatten]] if (d <= nearhit && d <= N_INFINITY && isvalid) {
+        [[flatten]] if (abs(primitiveState.lastIntersection.z-d) > 0.f || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
             primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID));
         };
     }; traverseState.defTriangleID=0;
@@ -124,7 +126,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     // initial traversing state
     //traverseState.idx = entry, traverseState.idx = nfe.x >= N_INFINITY ? -1 : traverseState.idx; // unable to intersect the root box 
     traverseState.idx = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe) ? entry : -1, traverseState.idx = nfe.x > N_INFINITY ? -1 : traverseState.idx;
-    traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0, traverseState.minDist = 0.f;  float diffOffset = min(-nfe.x, 0.f);
+    traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0; float diffOffset = min(-nfe.x, 0.f);
     traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(diffOffset.xxxx)));
     traverseState.directInv = fvec4_(dirproj);
     
