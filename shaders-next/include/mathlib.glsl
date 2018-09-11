@@ -16,7 +16,7 @@ const float E = 2.7182818284590452353602874713526624977572f;
 const float N_INFINITY = 99999.f;//INFINITY - IOFF;
 
 
-const float SFN = 0.00000011920928955078125f;
+const float SFN = 0.00000011920928955078125f, SFO = 1.00000011920928955078125f;
 //const float N1024 = 1024.f;
 #ifdef AMD_F16_BVH
 const float16_t InZero = 0.0009765625hf, InOne = 1.0009765625hf;
@@ -120,8 +120,9 @@ const uint UINT_ZERO = 0x0u, UINT_NULL = 0xFFFFFFFFu;
 float sqlen(in vec3 a) { return dot(a, a); }
 float sqlen(in vec2 a) { return dot(a, a); }
 float sqlen(in float v) { return v * v; }
-int modi(in int a, in int b) { return (a % b + b) % b; }
-vec4 divW(in vec4 aw) { return aw / precIssue(aw.w); }
+int modi(in int a, in int b) { return (a % b + b) % b; };
+//vec4 divW(in vec4 aw) { return aw / precIssue(aw.w); };
+vec4 divW(in vec4 aw) { return aw / (aw.w); };
 vec3 rotate_vector( in vec4 quat, in vec3 vec ) { return vec + 2.0 * cross( cross( vec, quat.xyz ) + quat.w * vec, quat.xyz ); }
 vec4 rotation_quat( in vec3 axis, in float half_angle ) { return vec4(axis * sin(half_angle), cos(half_angle)); }
 

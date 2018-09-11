@@ -187,8 +187,9 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
          float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/precIssue(dz);
         if (T > N_INFINITY || T > cdist || T <= 0.f /*|| isnan(T) || isinf(T)*/) { _valid = false; };
         IFANY (_valid) {
-             vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
-            if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; };
+            vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
+            //if (any(lessThan(uv, 0.f.xx)) || (uv.x+uv.y) > 1.f) { _valid = false; };
+            if (any(lessThan(uv, -SFN.xx)) || (uv.x+uv.y) > (SFO)) { _valid = false; };
         }
     }
     return (_valid ? T : INFINITY);
