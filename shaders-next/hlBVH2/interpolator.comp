@@ -23,16 +23,16 @@ LOCAL_SIZE_LAYOUT;
 //#define wsize closestHitCounterCurrent
 
 void main() {
-    int wsize = min(closestHitCounterCurrent, MAX_HITS); IFALL (wsize <= 0) return;
+    const int wsize = min(closestHitCounterCurrent, MAX_HITS); IFALL (wsize <= 0) return;
 
     // accumulate closest hits
     if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(closestHitCounter, closestHitCounterCurrent); }
 
-    uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-         int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-         bool overflow = globalID >= wsize; IFALL(overflow) break;
-         int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
+        const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+        const bool overflow = globalID >= wsize; IFALL(overflow) break;
+        const int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
         
 #ifdef DMA_HIT
         #define hit hits[hitID]
@@ -40,11 +40,11 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
-         if (!overflow && hitID >= 0) { // verify intersection
-            int triID = floatBitsToInt(hit.uvt.w)-1; //imageAtomicMax(rayLink, (hit.rayID-1)<<1, (hitID+1).x);
+        [[flatten]] if (!overflow && hitID >= 0) { // verify intersection
+            const int triID = floatBitsToInt(hit.uvt.w)-1; //imageAtomicMax(rayLink, (hit.rayID-1)<<1, (hitID+1).x);
 
             // interpolate hit
-            if (triID >= 0) {
+            [[flatten]] if (triID >= 0) {
                 hit.uvt.w = intBitsToFloat(vmaterials[triID]);
                 hit.vdat = TLOAD(lnrm, triID); // pick-up pre-computed physical normal
                 interpolateMeshData(hit, triID);
@@ -53,7 +53,7 @@ void main() {
 #endif
             }
 
-            lowp uint rID = floatBitsToUint(hit.vdat.w);
+            const lowp uint rID = floatBitsToUint(hit.vdat.w);
             [[unroll]] for (lowp int i=0;i<4;i++) { if (rID == i) { vtVerifyClosestHit(hitID, i); break; } }
         }
     }
