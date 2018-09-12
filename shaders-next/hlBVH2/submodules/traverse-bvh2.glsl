@@ -146,8 +146,8 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     
     // initial intersection state
     primitiveState.orig = fma(direct, diffOffset.xxxx, torig);
-    primitiveState.lastIntersection = eht >= 0 ? hits[eht].uvt : vec4(0.f.xx, INFINITY, FINT_ZERO), primitiveState.lastIntersection.z = min(primitiveState.lastIntersection.z, INFINITY);
-    primitiveState.lastIntersection.z = fma(primitiveState.lastIntersection.z, dirlen, diffOffset);
+    [[flatten]] if (eht >= 0) primitiveState.lastIntersection = hits[eht].uvt;
+    primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, diffOffset);
 
     // two loop based BVH traversing
     [[dependency_infinite]] for (int hi=0;hi<max_iteraction;hi++) {

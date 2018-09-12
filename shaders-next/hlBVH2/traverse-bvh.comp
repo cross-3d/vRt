@@ -28,7 +28,7 @@ void main() {
     const uint wsize = min(rayCounter, MAX_RAYS); IFALL (wsize <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
     //traverseState.cacheID = int(gl_GlobalInvocationID.x);
-    traverseState.maxTriangles = bvhBlock.primitiveCount;
+    //traverseState.maxTriangles = bvhBlock.primitiveCount;
     
     for (uint w=0;w<wcount;w+=wgs) {
         const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
@@ -36,38 +36,50 @@ void main() {
 
         // do BVH traversing 
         const int rayID = vtRayIdx(it); int hid = vtFetchHitIdc(rayID);
+        traverseState.maxTriangles = bvhBlock.primitiveCount;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection
-            traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
-            const int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
-            const bool found = triID >= 0;
-            if (hid < 0) hid = atomicIncHitCount(); // reserve one hit
+            //int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
+            bool found = false;
 
 #ifdef DMA_HIT
             #define hit hits[hid]
 #else
             VtHitData hit;
 #endif
-            hit.payloadID = 0, hit.rayID = rayID+1;
+            [[unroll]] for (int i=0;i<1;i++) {
+                int ftrID = -1; // current found triangle
 
-            // if found as minimum one intersection
-            [[flatten]] if (found) {
-                if (hid < 0) hid = atomicIncHitCount(); // if required new
-                hit.uvt = primitiveState.lastIntersection;
-                hit.attribID = vtVerifyClosestHit(hid,-1)+1;
-                imageAtomicMax(rayLink,rayID<<1, (hid+1).x);
-            }
-            
+                // traversing triangles
+                [[flatten]] if (traverseState.maxTriangles > 0) {
+                    traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
+                    ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxTriangles = min(traverseState.maxTriangles, ftrID);
+                    //triID = max(ftrID, triID), 
+                }; //else { break; };
+                found = found || ftrID >= 0;
+
+                // if has triangle 
+                [[flatten]] if (ftrID >= 0) {
+                    if (hid < 0) hid = atomicIncHitCount(); // if required new
+                    hit.payloadID = 0, hit.rayID = rayID+1;
+                    hit.uvt = primitiveState.lastIntersection;
+                    hit.attribID = vtVerifyClosestHit(hid,-1)+1;
+                    imageAtomicMax(rayLink,rayID<<1, (hid+1).x); hid = -1;
+                    primitiveState.lastIntersection.w = FINT_ZERO;
+                };
+            };
+
             // if no found any intersection
             // planned to add multi-traversing support, and another resolver
             [[flatten]] if (!found) {
                 if (hid < 0) hid = atomicIncHitCount(); // if required new
-                hit.uvt = vec4(0.f.xx, INFINITY, intBitsToFloat(-1));
+                hit.payloadID = 0, hit.rayID = rayID+1;
+                hit.uvt = primitiveState.lastIntersection;
                 hit.attribID = 0; vtVerifyMissedHit(hid, 0);
                 imageAtomicMax(rayLink,rayID<<1, (hid+1).x);
-            }
+            };
 
 #ifndef DMA_HIT
             hits[hid] = hit;
