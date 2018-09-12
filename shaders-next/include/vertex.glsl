@@ -150,7 +150,7 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
 
 
 #ifdef VRT_USE_FAST_INTERSECTION
-float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid, inout float cdist) {
+float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid, in float cdist) {
     float T = INFINITY;
     IFANY (_valid) {
 #ifdef VTX_USE_LEGACY_METHOD

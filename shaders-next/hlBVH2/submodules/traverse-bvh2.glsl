@@ -67,21 +67,21 @@ void storeStack(in int rsl) {
 
 
 #ifndef fpInner
-#define fpInner (SFN*8.f) //0.00000011920928955078125f
+#define fpInner (128.f*SFN) //0.00000011920928955078125f
 #endif
 
 // triangle intersection, when it found
-void doIntersection(in bool isvalid) {
+void doIntersection(in bool isvalid, in float dlen) {
     isvalid = isvalid && traverseState.defTriangleID > 0 && traverseState.defTriangleID <= traverseState.maxTriangles;
     IFANY (isvalid) {
         vec2 uv = vec2(0.f.xx); float d = 
 #ifdef VRT_USE_FAST_INTERSECTION
-            intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid, primitiveState.lastIntersection.z);
+            intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid, INFINITY);
 #else
             intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID-1, uv.xy, isvalid);
 #endif
 
-        const float tdiff = (primitiveState.lastIntersection.z-d), tmax = fpInner;
+        const float tdiff = (primitiveState.lastIntersection.z-d), tmax = fpInner;// d * fpInner;
         [[flatten]] if (tdiff >= -tmax && d <= N_INFINITY && isvalid) {
             [[flatten]] if (abs(tdiff) > tmax || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
                 primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID));
@@ -102,10 +102,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     torig = -uniteBox(-torig), torigTo = uniteBox(torigTo), tdir = torigTo+torig;
     
     // different length of box space and global space
-    const float phslen = length(tdir);
+    
     //const float dirlen = phslen, invlen = 1.f/precIssue(dirlen);
+    //const float phslen = length(tdir);
     const float dirlen = 1.f, invlen = 1.f/precIssue(dirlen);
     const vec4 direct = tdir * invlen, dirproj = 1.f / precIssue(direct);
+    const float bsize = 1.f;//1.f/phslen;
 
     // limitation of distance
     //#define bsgn traverseState.boxSide.xyz
@@ -134,7 +136,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const   vec3 interm = fma(fpInner.xxx, 8.f.xxx / precIssue(bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f.xxx);
+    const   vec3 interm = fma(fpInner.xxx, 4.f.xxx / precIssue(bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f.xxx);
     const   vec2 bside2 = vec2(-SFO, SFO);
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
     const int entry = (valid ? BVH_ENTRY : -1);
@@ -198,7 +200,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
         }}};
         
         // every-step solving 
-        [[flatten]] IFANY (traverseState.defTriangleID > 0) { doIntersection( true ); } // if has triangle, do intersection
+        [[flatten]] IFANY (traverseState.defTriangleID > 0) { doIntersection( true, bsize ); } // if has triangle, do intersection
         [[flatten]] if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
     };
 

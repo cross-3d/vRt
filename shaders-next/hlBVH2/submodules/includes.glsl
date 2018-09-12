@@ -52,7 +52,7 @@ layout ( binding = 2, set = 1, std430 ) restrict buffer bvhBoxesResultingB { BTY
 
 // precision control of boxes
 #ifndef fpInner
-#define fpInner (SFN*8.f) //0.00000011920928955078125f // as operation 
+#define fpInner (128.f*SFN) // as operation 
 #endif
 
 #define fpCorrect InZero

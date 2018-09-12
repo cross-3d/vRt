@@ -145,7 +145,7 @@ void main() {
             // TODO: dynamic light
             const vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f)), lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
             hitp.albedo = (textured.diffuse * vec4(  mix(lightColor*0.1f, lightColor*1.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx)  , 1.f));
-            hitp.albedo.xyz *= textured.specular.x == 0.f ? 1.f : textured.specular.x; // add pre-calculated AO
+            //hitp.albedo.xyz *= textured.specular.x == 0.f ? 1.f : textured.specular.x; // add pre-calculated AO
             hitp.albedo += vec4(textured.emissive.xyz, 0.f);
             hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
             
@@ -159,7 +159,7 @@ void main() {
                 hitp.emission = vec4(toLinear(imageLoad(attributes, makeAttribID(hit.attribID, VCOLOR_TID)).xyz), 1.f);
             }
 
-            // z-fighting by hashing 
+            // z-fighting by hashing (if fail to alpha test, back layers will still showing)
             [[flatten]] if (hrand(uvec4(imageLoad(rayLink,(rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(vec4(rdirect, 0.f)))) <= hitp.albedo.w) {
                 imageAtomicMin(rayLink,rayID<<1,(hitID+1).x);
             };
