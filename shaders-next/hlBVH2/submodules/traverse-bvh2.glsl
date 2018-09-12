@@ -66,6 +66,10 @@ void storeStack(in int rsl) {
 };
 
 
+#ifndef fpInner
+#define fpInner (SFN*8.f) //0.00000011920928955078125f
+#endif
+
 // triangle intersection, when it found
 void doIntersection(in bool isvalid) {
     isvalid = isvalid && traverseState.defTriangleID > 0 && traverseState.defTriangleID <= traverseState.maxTriangles;
@@ -76,16 +80,15 @@ void doIntersection(in bool isvalid) {
 #else
             intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID-1, uv.xy, isvalid);
 #endif
-#define nearhit (primitiveState.lastIntersection.z)
 
-        [[flatten]] if (d <= nearhit && d <= N_INFINITY && isvalid) {
-            [[flatten]] if (abs(primitiveState.lastIntersection.z-d) > 0.f || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
+        const float tdiff = (primitiveState.lastIntersection.z-d), tmax = fpInner;
+        [[flatten]] if (tdiff >= -tmax && d <= N_INFINITY && isvalid) {
+            [[flatten]] if (abs(tdiff) > tmax || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
                 primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID));
             };
         };
     }; traverseState.defTriangleID=0;
 };
-
 
 // corrections of box intersection
 const bvec3 bsgn = false.xxx;
@@ -131,10 +134,9 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const   vec3 interm = bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz;
-    const   vec2 bside2 = vec2(-1.f, 1.f);
-    const mat3x2 bndsf2 = mat3x2( fma(InZero,interm.x,1.f)*bside2, fma(InZero,interm.y,1.f)*bside2, fma(InZero,interm.z,1.f)*bside2 );
-    //const mat3x2 bndsf2 = transpose(mat2x3(bvhBlock.sceneMin.xyz, bvhBlock.sceneMax.xyz));
+    const   vec3 interm = fma(fpInner.xxx, 8.f.xxx / precIssue(bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f.xxx);
+    const   vec2 bside2 = vec2(-SFO, SFO);
+    const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
     const int entry = (valid ? BVH_ENTRY : -1);
 
     // initial traversing state
@@ -167,7 +169,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 
                 // also, they uses hit queue, but it can very overload stacks, so saving only indices...
-                childIntersect &= bvec2_(lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz)); // it increase FPS by filtering nodes by first triangle intersection
+                childIntersect &= bvec2_(lessThanEqual(nfe.xy/SFO, primitiveState.lastIntersection.zz)); // it increase FPS by filtering nodes by first triangle intersection
                 
                 // 
                 int fmask = int((childIntersect.y<<1u)|childIntersect.x);

@@ -34,8 +34,8 @@ layout ( std430, binding = 6, set = 0 ) readonly restrict buffer VT_CANVAS_INFO 
     ivec2 size; int lastIteration, r0;
 } stageUniform;
 
-#define MAX_HITS stageUniform.maxRayCount
-#define MAX_RAYS stageUniform.maxRayCount
+#define MAX_HITS (stageUniform.maxRayCount*2)
+#define MAX_RAYS (stageUniform.maxRayCount  )
 
 
 // counters

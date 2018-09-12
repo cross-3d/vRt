@@ -72,6 +72,7 @@ namespace _vt {
             
             VtBufferRegionCreateInfo bfi;
 
+            const VkDeviceSize hitCount = rayCount * 2ull;
             { // allocate buffer regions
                 bfi.bufferSize = rayCount * 8ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
@@ -88,17 +89,17 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_groupIndicesBufferRead);
 
 
-                bfi.bufferSize = rayCount * 16ull * sizeof(uint32_t);
+                bfi.bufferSize = hitCount * 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createBufferRegion(bManager, bfi, vtRTSet->_hitBuffer);
 
 
-                bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
+                bfi.bufferSize = hitCount * 5ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_closestHitIndiceBuffer);
 
 
-                bfi.bufferSize = rayCount * 2ull * sizeof(uint32_t);
+                bfi.bufferSize = hitCount * 2ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_missedHitIndiceBuffer);
 
@@ -118,7 +119,7 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_groupCountersBufferRead);
 
 
-                bfi.bufferSize = rayCount * 64ull * sizeof(uint32_t);
+                bfi.bufferSize = hitCount * 64ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createBufferRegion(bManager, bfi, vtRTSet->_hitPayloadBuffer);
 
@@ -145,7 +146,7 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_blockBuffer);
 
 
-                bfi.bufferSize = rayCount * 4ull * ATTRIB_EXTENT * sizeof(uint32_t);
+                bfi.bufferSize = hitCount * 4ull * ATTRIB_EXTENT * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32G32B32A32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_attribBuffer);
 

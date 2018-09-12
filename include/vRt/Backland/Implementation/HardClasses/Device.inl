@@ -80,7 +80,7 @@ namespace _vt {
         vtDevice->_pipelineCache = vkPipelineCache;
 
         // make descriptor pool
-        const size_t mult = 2;
+        const size_t mult = 4;
         std::vector<vk::DescriptorPoolSize> dps = { 
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(256 * mult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageImage).setDescriptorCount(256 * mult),
