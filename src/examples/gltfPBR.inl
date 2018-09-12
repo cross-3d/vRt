@@ -645,7 +645,7 @@ namespace rnd {
                 if (M.values.find("metallicRoughnessTexture") != M.values.end()) material.specularTexture = int32_t(M.values.at("metallicRoughnessTexture").json_double_value.at("index") + 1e-5) + 1;
                 if (M.values.find("metallicFactor" ) != M.values.end()) material.specular.z = M.values.at("metallicFactor" ).number_value;
                 if (M.values.find("roughnessFactor") != M.values.end()) material.specular.y = M.values.at("roughnessFactor").number_value;
-                if (M.values.find("baseColorFactor") != M.values.end()) material.diffuse = glm::vec4(glm::make_vec3(M.values.at("baseColorFactor").number_array.data()), 1.f);
+                if (M.values.find("baseColorFactor") != M.values.end()) material.diffuse = glm::vec4(glm::make_vec4(M.values.at("baseColorFactor").number_array.data()));
             }
             writeIntoBuffer<VtAppMaterial>(deviceQueue, materials, materialDescs, 0);
         };
