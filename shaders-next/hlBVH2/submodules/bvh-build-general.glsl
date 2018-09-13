@@ -16,7 +16,7 @@ int findSplit( in int left, in int right ) {
     IFALL (commonPrefix >= BIT_FFT) {
         split = (left + right)>>1;
     } else {
-         do {
+        [[dependency_infinite]] do {
             nstep = (nstep + 1) >> 1, nsplit = split + nstep;
             if (prefixOf(split, nsplit) > commonPrefix) { split = nsplit; }
         } while (nstep > 1);
