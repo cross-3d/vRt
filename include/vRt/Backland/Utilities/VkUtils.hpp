@@ -32,7 +32,7 @@ namespace _vt {
     constexpr const static inline auto VRT_USE_MORTON_32 = true;
 
     constexpr const static inline auto RV_INTENSIVITY = 256ull;
-    constexpr const static inline auto VX_INTENSIVITY = 2048ull;
+    constexpr const static inline auto VX_INTENSIVITY = 64ull;
 
     template <typename T>
     static inline auto sgn(T val) { return (T(0) < val) - (val < T(0)); }
