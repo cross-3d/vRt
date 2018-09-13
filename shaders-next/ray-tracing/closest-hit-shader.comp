@@ -131,7 +131,7 @@ void main() {
             
             // convert metallic roughness to glossiness specular PBR model
             const float fresnel = clamp01(pow(abs(dot(rdirect, normal.xyz)), sIOR - 1.f));
-            const vec3 fresnelColor = clamp01(fmix(max_fresnel_color * 0.001f, min_fresnel_color * 0.2f, 1.f-fresnel.xxx));
+            const vec3 fresnelColor = clamp01(mix(min_fresnel_color * 0.01f, max_fresnel_color * 0.25f, 1.f-fresnel.xxx));
             const vec3 specularColor = clamp01(mix(fresnelColor, textured.diffuse.xyz, textured.specular.zzz)); // use correct specular
             const vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
             
@@ -141,7 +141,7 @@ void main() {
             
             // temporary solution - add emission to albedo
             hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
-            hitp.albedo += vec4(hitp.emission.xyz * hitp.emission.a * 0.5f, 0.f);
+            hitp.albedo += vec4(hitp.emission.xyz * hitp.emission.a, 0.f);
 
             // z-fighting by hashing (if fail to alpha test, back layers will still showing)
             [[flatten]] if (hrand(uvec4(imageLoad(rayLink,(rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(vec4(rdirect, 0.f)))) <= hitp.albedo.w) {
