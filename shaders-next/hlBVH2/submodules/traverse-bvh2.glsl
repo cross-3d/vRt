@@ -83,7 +83,7 @@ void doIntersection(in bool isvalid, in float dlen) {
 
 // corrections of box intersection
 const bvec3 bsgn = false.xxx;
-const float dirlen = 1.f, invlen = 1.f,bsize = 1.f;
+const float dirlen = 1.f, invlen = 1.f, bsize = 1.f;
 
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
@@ -94,7 +94,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     torig = -uniteBox(-torig), torigTo = uniteBox(torigTo), tdir = torigTo+torig;
 
     // different length of box space and global space
-    //const float dirlen = length(tdir), invlen = 1.f / precIssue(dirlen), bsize = 1.f/phslen;
+    //const float dirlen  = length(tdir), invlen = 1.f / precIssue(dirlen);
     const vec4 direct = tdir * invlen, dirproj = 1.f / precIssue(direct);
 
 /*

@@ -51,7 +51,7 @@ void main() {
 #endif
 
             // traversing from front layer to back layers
-            [[unroll]] for (int i=0;i<2;i++) {
+            [[unroll]] for (int i=0;i<1;i++) {
                 int ftrID = -1; // current found triangle
 
                 // traversing triangles
