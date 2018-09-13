@@ -11,26 +11,17 @@
 
 
 // global memory stack pages (256-bit)
-//#ifdef ENABLE_AMD_INT16
-//const int16_t localStackSize = 8s, pageCount = 4s, computedStackSize = localStackSize*pageCount; 
-//#else 
 const lowp int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount; 
-//#endif
-
 const highp int max_iteraction = 8192;
+
 layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYSTEM { int pages[][8]; };
 
 
 // BVH traversing state
 #define _cacheID gl_GlobalInvocationID.x
 struct BvhTraverseState {
-    //int idx, defTriangleID, stackPtr, cacheID, pageID, maxTriangles;
     int idx, defTriangleID, maxTriangles; 
-//#ifdef ENABLE_AMD_INT16
-//    int16_t stackPtr, pageID;
-//#else
     lowp int stackPtr, pageID;
-//#endif
     fvec4_ minusOrig, directInv; // vec4 of 32-bits
 } traverseState;
 
@@ -92,6 +83,7 @@ void doIntersection(in bool isvalid, in float dlen) {
 
 // corrections of box intersection
 const bvec3 bsgn = false.xxx;
+const float dirlen = 1.f, invlen = 1.f,bsize = 1.f;
 
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
@@ -100,30 +92,22 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     // relative origin and vector
     vec4 torig = -divW(mult4( bvhBlock.projection, vec4(orig, 1.0f))), torigTo = divW(mult4( bvhBlock.projection, vec4(orig, 1.0f) + vec4(dcts(pdir.xy), 0.f))), tdir = torigTo+torig;
     torig = -uniteBox(-torig), torigTo = uniteBox(torigTo), tdir = torigTo+torig;
-    
+
     // different length of box space and global space
-    
-    //const float dirlen = phslen, invlen = 1.f/precIssue(dirlen);
-    //const float phslen = length(tdir);
-    const float dirlen = 1.f, invlen = 1.f/precIssue(dirlen);
+    //const float dirlen = length(tdir), invlen = 1.f / precIssue(dirlen), bsize = 1.f/phslen;
     const vec4 direct = tdir * invlen, dirproj = 1.f / precIssue(direct);
-    const float bsize = 1.f;//1.f/phslen;
 
-    // limitation of distance
-    //#define bsgn traverseState.boxSide.xyz
-    //bsgn = greaterThan(direct.xyz, 0.f.xxx);
-
-    // pre-calculate for triangle intersections
+/*
 #ifdef VRT_USE_FAST_INTERSECTION
     primitiveState.dir = direct;
 #else
     // calculate longest axis
     primitiveState.axis = 2; {
          vec3 drs = abs(direct);
-         if (drs.y >= drs.x && drs.y > drs.z) primitiveState.axis = 1;
          if (drs.x >= drs.z && drs.x > drs.y) primitiveState.axis = 0;
+         if (drs.y >= drs.x && drs.y > drs.z) primitiveState.axis = 1;
          if (drs.z >= drs.y && drs.z > drs.x) primitiveState.axis = 2;
-    }
+    };
 
     // calculate affine matrices
     const vec4 vm = vec4(-direct, 1.f) / precIssue(primitiveState.axis == 0 ? direct.x : (primitiveState.axis == 1 ? direct.y : direct.z));
@@ -133,6 +117,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
         primitiveState.axis == 2 ? vm.xyw : vec3(0.f,0.f,1.f)
     ));
 #endif
+*/
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
@@ -145,13 +130,12 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     //traverseState.idx = entry, traverseState.idx = nfe.x >= N_INFINITY ? -1 : traverseState.idx; // unable to intersect the root box 
     traverseState.idx = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe) ? entry : -1, traverseState.idx = nfe.x > N_INFINITY ? -1 : traverseState.idx;
     traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0; float diffOffset = min(-nfe.x, 0.f);
-    traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(diffOffset.xxxx)));
-    traverseState.directInv = fvec4_(dirproj);
-    
+    traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(diffOffset.xxxx)));
+
     // initial intersection state
-    primitiveState.orig = fma(direct, diffOffset.xxxx, torig);
     [[flatten]] if (eht >= 0) primitiveState.lastIntersection = hits[eht].uvt;
     primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, diffOffset);
+    primitiveState.dir = direct, primitiveState.orig = fma(direct, diffOffset.xxxx, torig);
 
     // two loop based BVH traversing
     [[dependency_infinite]] for (int hi=0;hi<max_iteraction;hi++) {
@@ -160,7 +144,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
             //const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
             #define bvhNode bvhNodes[traverseState.idx] // ref directly
             //#define cnode (bvhNode.meta.xy) // reuse already got
-            
+
             ivec2 cnode = traverseState.idx >= 0 ? bvhNode.meta.xy : (0).xx;
             [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
@@ -172,14 +156,14 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 // but we came up in past years, so sorts of patents may failure 
                 // also, they uses hit queue, but it can very overload stacks, so saving only indices...
                 childIntersect &= bvec2_(lessThanEqual(nfe.xy/SFO, primitiveState.lastIntersection.zz)); // it increase FPS by filtering nodes by first triangle intersection
-                
+
                 // 
                 int fmask = int((childIntersect.y<<1u)|childIntersect.x);
                 [[flatten]] if (fmask > 0) {
                     int primary = -1, secondary = -1;
                     [[flatten]] if (fmask == 3) { fmask &= nfe.x<=nfe.y ? 1 : 2, secondary = cnode.x^(fmask>>1); }; // if both has intersection
                     primary = cnode.x^(fmask&1);
-                    
+
                     {
                         // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
                         // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
@@ -198,7 +182,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
             [[flatten]] if (!_continue) { traverseState.idx = loadStack(); } // load from stack 
             [[flatten]] IFANY (traverseState.defTriangleID > 0 || traverseState.idx <= 0) { break; } // 
         }}};
-        
+
         // every-step solving 
         [[flatten]] IFANY (traverseState.defTriangleID > 0) { doIntersection( true, bsize ); } // if has triangle, do intersection
         [[flatten]] if (traverseState.idx <= 0) { break; } // if no to traversing - breaking

@@ -103,7 +103,8 @@ void main() {
             globalInvocationSMP = globalID;
 
             matID = floatBitsToInt(hit.uvt.w);
-            bool overflow = overflow || rayID < 0;
+            const bool overflow = overflow || rayID < 0;
+            const vec3 rdirect = dcts(cray.cdirect.xy);
 
             // AMD not supported per-lane texture data loading, if texture index is not constant
             vec2 texcoord = imageLoad(attributes, makeAttribID(hit.attribID, TEXCOORD_TID)).xy;
@@ -112,30 +113,22 @@ void main() {
             vec3 tangent = imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz;
             mat3 tbn = transpose(mat3(tangent.xyz, bitang.xyz, normal.xyz));
 
-            const vec3 rdirect = dcts(cray.cdirect.xy);
-            normal = faceforward(normal, rdirect, normal);
-
             // get textured data
             textured.bump.xyz = getNormalMapping(texcoord);
             textured.diffuse  = toLinear(fetchDiffuse(texcoord));
             textured.specular = toLinear(fetchSpecular(texcoord));
-            textured.emissive = toLinear(fetchEmission(texcoord)) * 0.5f;
-
-            //vec4 diffuse = toLinear( textured.diffuse );
+            textured.emissive = toLinear(fetchEmission(texcoord));
 
             // block TBN change manually if non valid normal mapped texture
             hitp.normalHeight.xyz = validateTexture(material.bumpTexture) ? (textured.bump.xyz * tbn) : normal.xyz; // apply TBN with normal mapping
-            hitp.normalHeight.xyz = faceforward(hitp.normalHeight.xyz, rdirect, hitp.normalHeight.xyz);
+            hitp.normalHeight.xyz = faceforward(hitp.normalHeight.xyz, -normal.xyz, normalize(hitp.normalHeight.xyz));
 
             // if normal goes wrong, restore normal
             [[flatten]] if (dot(hitp.normalHeight.xyz,hitp.normalHeight.xyz) < 1e-4 || any(isnan(hitp.normalHeight.xyz)) || any(isinf(hitp.normalHeight.xyz))) {
                 hitp.normalHeight.xyz = normal.xyz;
-            }
-
-            // facing of normal
-            hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz);
-            hitp.normalHeight.xyz = faceforward(hitp.normalHeight.xyz, rdirect, hitp.normalHeight.xyz);
-
+            };
+            hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz); // facing of normal
+            
             // convert metallic roughness to glossiness specular PBR model
             const float fresnel = clamp01(pow(abs(dot(rdirect, normal.xyz)), sIOR - 1.f));
             const vec3 fresnelColor = clamp01(fmix(max_fresnel_color * 0.001f, min_fresnel_color * 0.2f, 1.f-fresnel.xxx));
@@ -144,25 +137,17 @@ void main() {
             
             // TODO: dynamic light
             const vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f)), lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
-            hitp.albedo = (textured.diffuse * vec4(  mix(lightColor*0.1f, lightColor*1.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx)  , 1.f));
-            //hitp.albedo.xyz *= textured.specular.x == 0.f ? 1.f : textured.specular.x; // add pre-calculated AO
-            hitp.albedo += vec4(textured.emissive.xyz, 0.f);
-            hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
+            hitp.albedo = (textured.diffuse * vec4(  mix(lightColor*0.1f, lightColor*1.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx), 1.f));
             
-            // triangle intersection test
-            [[flatten]] IFANY (cameraUniform.variant == 1) {
-                //hitp.emission = vec4(hitp.albedo) + vec4(hitp.emission.xyz, 0.f);
-                //hitp.emission = vec4(fma(hitp.normalHeight.xyz,0.5f.xxx,0.5f.xxx),1.f);
-                //hitp.specularGlossiness = vec4(0.f);
-            } else {
-                hitp.specularGlossiness = vec4(0.f);
-                hitp.emission = vec4(toLinear(imageLoad(attributes, makeAttribID(hit.attribID, VCOLOR_TID)).xyz), 1.f);
-            }
+            // temporary solution - add emission to albedo
+            hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
+            hitp.albedo += vec4(hitp.emission.xyz * hitp.emission.a * 0.5f, 0.f);
 
             // z-fighting by hashing (if fail to alpha test, back layers will still showing)
             [[flatten]] if (hrand(uvec4(imageLoad(rayLink,(rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(vec4(rdirect, 0.f)))) <= hitp.albedo.w) {
                 imageAtomicMin(rayLink,rayID<<1,(hitID+1).x);
             };
+            
             
             {
                 int pid = atomicIncPayloadHitCount();
