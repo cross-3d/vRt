@@ -17,7 +17,7 @@ namespace _vt {
             cmdBuf->_boundVIDescriptorSets = descriptorSets;
         };
         return result;
-    }
+    };
 
     // planned type validations
     VtResult bindPipeline(std::shared_ptr<CommandBuffer> cmdBuf, VtPipelineBindPoint pipelineBindPoint, std::shared_ptr<Pipeline>& pipeline) {
@@ -26,7 +26,7 @@ namespace _vt {
             cmdBuf->_rayTracingPipeline = pipeline;
         };
         return result;
-    }
+    };
 
     // update material data in command
     VtResult bindMaterialSet(std::shared_ptr<CommandBuffer> cmdBuf, VtEntryUsageFlags usageIn, std::shared_ptr<MaterialSet> matrl) {
@@ -35,8 +35,7 @@ namespace _vt {
         return result;
     };
 
-
-
+    // ray-tracing pipeline 
     VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer> cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
         constexpr const auto WG_COUNT = 64u, RADICE_AFFINE = 16u;
 
@@ -146,6 +145,6 @@ namespace _vt {
         }
 
         return result;
-    }
+    };
 
 };
