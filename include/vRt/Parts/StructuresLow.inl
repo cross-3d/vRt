@@ -32,7 +32,7 @@ namespace vrt {
         uint16_t hf_r, hf_g, hf_b, bitfield;
     };
 
-    struct VtPrimitiveBitfield { uint32_t hitGroup : 2, frontFace : 1, backFace : 1; };
+    struct VtPrimitiveBitfield { uint32_t hitGroup : 2, frontFace : 1, backFace : 1, secondary: 1; };
 
     struct VtUniformBlock {
         uint32_t primitiveCount = 0;
