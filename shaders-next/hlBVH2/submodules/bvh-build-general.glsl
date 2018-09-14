@@ -18,7 +18,7 @@ int findSplit( in int left, in int right ) {
     } else {
         [[dependency_infinite]] do {
             nstep = (nstep + 1) >> 1, nsplit = split + nstep;
-            if (prefixOf(split, nsplit) > commonPrefix) { split = nsplit; }
+            [[flatten]] if (prefixOf(split, nsplit) > commonPrefix) { split = nsplit; }
         } while (nstep > 1);
     }
     return clamp(split, left, right-1);
@@ -29,7 +29,7 @@ ivec2 determineRange( in int idx ) {
     [[dependency_infinite]] while (prefixOf(idx, maxLen*dir+idx) > minPref) maxLen <<= 1;
 
     int len = 0;
-    [[dependency_infinite]] for (int t = maxLen>>1; t > 0; t>>=1) { if (prefixOf(idx, (len+t)*dir+idx) > minPref) len += t; }
+    [[dependency_infinite]] for (int t = maxLen>>1; t > 0; t>>=1) { [[flatten]] if (prefixOf(idx, (len+t)*dir+idx) > minPref) len += t; }
 
     const int range = len * dir + idx;
     return clamp(ivec2(min(idx,range), max(idx,range)), (0).xx, (GSIZE-1).xx);
