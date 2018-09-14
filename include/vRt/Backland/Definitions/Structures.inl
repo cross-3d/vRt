@@ -64,6 +64,7 @@ namespace vrt { // store in official namespace
         uint32_t closestModuleCount = 0;
         uint32_t missModuleCount = 0;
         uint32_t groupModuleCount = 0;
+        VkExtent2D tiling = {8u, 8u};
     };
 
     struct VtPipelineLayoutCreateInfo {

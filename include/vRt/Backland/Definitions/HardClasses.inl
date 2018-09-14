@@ -144,6 +144,7 @@ namespace _vt { // store in undercover namespace
         auto& _parent() { return _device; };
     };
 
+    
     class RayTracingSet : public std::enable_shared_from_this<RayTracingSet> {
     public:
         friend Device;
@@ -169,6 +170,10 @@ namespace _vt { // store in undercover namespace
         friend Device;
         const VkPipeline _dullPipeline = VK_NULL_HANDLE; // protect from stupid casting
 
+        // 
+        VkExtent2D _tiling = { 8u, 8u };
+
+        // 
         std::shared_ptr<Device> _device;
         std::shared_ptr<PipelineLayout> _pipelineLayout; // customized pipeline layout, when pipeline was created
 

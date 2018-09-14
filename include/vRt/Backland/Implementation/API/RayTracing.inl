@@ -50,8 +50,8 @@ namespace _vt {
         auto rtppl = cmdBuf->_rayTracingPipeline.lock();
         auto rtset = cmdBuf->_rayTracingSet.lock();
 
-        auto rayCount = x * y;
-        rtset->_cuniform.width = x;
+        const auto rayCount = x * y;
+        rtset->_cuniform.width  = x;
         rtset->_cuniform.height = y;
         rtset->_cuniform.iteration = 0;
         rtset->_cuniform.closestHitOffset = 0;
@@ -80,7 +80,7 @@ namespace _vt {
             cmdClean();
             cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_pipelineLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, 8u), tiled(y, 8u));
+            cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, rtppl->_tiling.width), tiled(y, rtppl->_tiling.height));
         };
 
         // ray trace command
