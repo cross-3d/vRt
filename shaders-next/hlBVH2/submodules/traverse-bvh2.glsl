@@ -65,15 +65,15 @@ void storeStack(in int rsl) {
 // triangle intersection, when it found
 void doIntersection(in bool isvalid, in float dlen) {
     isvalid = isvalid && traverseState.defTriangleID > 0 && traverseState.defTriangleID <= traverseState.maxTriangles;
-    IFANY (isvalid) { 
-        vec2 uv = vec2(0.f.xx); const float d = 
+    IFANY (isvalid) {
+        vec2 uv = vec2(0.f.xx); const float nearT = SFO*primitiveState.lastIntersection.z, d = 
 #ifdef VRT_USE_FAST_INTERSECTION
-            intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid, INFINITY);
+            intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid, nearT);
 #else
             intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID-1, uv.xy, isvalid);
 #endif
 
-        const float tdiff = (primitiveState.lastIntersection.z-d), tmax = fpInner;// d * fpInner;
+        const float tdiff = nearT-d, tmax = 0.f;
         [[flatten]] if (tdiff >= -tmax && d <= N_INFINITY && isvalid) {
             [[flatten]] if (abs(tdiff) > tmax || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
                 primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID));
@@ -100,7 +100,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const   vec3 interm = fma(fpInner.xxx, 4.f.xxx / precIssue(bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f.xxx);
+    const   vec3 interm = fma(fpInner.xxx, 1.f.xxx / precIssue(bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f.xxx);
     const   vec2 bside2 = vec2(-SFO, SFO);
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
     const int entry = (valid ? BVH_ENTRY : -1);

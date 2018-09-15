@@ -160,7 +160,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
         const vec3 h = cross(dir.xyz, e2);
         const float a = dot(e1,h);
-        [[flatten]] if (a <= 0.f) { _valid = false; }
+        [[flatten]] if (abs(a) <= 0.f) { _valid = false; };
         IFANY (_valid) {
             const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1);
             const vec3 uvt = vec3(dot(s,h),dot(dir.xyz,q), dot(e2,q))/precIssue(a);
