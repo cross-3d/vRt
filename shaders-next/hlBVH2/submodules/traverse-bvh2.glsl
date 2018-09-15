@@ -11,10 +11,11 @@
 
 
 // global memory stack pages (256-bit)
-const lowp int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount; 
+//const lowp int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount;
+  const lowp int localStackSize = 4, pageCount = 8, computedStackSize = localStackSize*pageCount; // 128-bit capable (minor GPU, GDDR6 two-channels)
 const highp int max_iteraction = 8192;
 
-layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYSTEM { int pages[][8]; };
+layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYSTEM { int pages[][localStackSize]; };
 
 
 // BVH traversing state
