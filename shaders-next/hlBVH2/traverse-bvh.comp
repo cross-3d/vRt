@@ -58,7 +58,7 @@ void main() {
                     traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
                     ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxTriangles = min(traverseState.maxTriangles, ftrID);
                     //triID = max(ftrID, triID), 
-                } else { break; };
+                } else IFALL (true) { break; };
                 found = found || ftrID >= 0;
 
                 // if has triangle 

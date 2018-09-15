@@ -68,6 +68,8 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 
 // I have no idea for optimize registers
 void main() {
+    IFALL (bvhBlock.leafCount <= 0) return;
+
 #define threadID Local_Idx
 #define groupSize gl_WorkGroupSize.x
 
@@ -88,7 +90,7 @@ void main() {
 #endif
     }
     
-    IFALL (bvhBlock.leafCount <= 0) return;
+    //IFALL (bvhBlock.leafCount <= 0) return;
 
     // building BVH
     [[dependency_infinite]] for (int m=0;m<65536;m++) {
