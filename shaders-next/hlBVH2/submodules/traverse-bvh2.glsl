@@ -98,28 +98,6 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     //const float dirlen  = length(tdir), invlen = 1.f / precIssue(dirlen);
     const vec4 direct = tdir * invlen, dirproj = 1.f / precIssue(direct);
 
-/*
-#ifdef VRT_USE_FAST_INTERSECTION
-    primitiveState.dir = direct;
-#else
-    // calculate longest axis
-    primitiveState.axis = 2; {
-         vec3 drs = abs(direct);
-         if (drs.x >= drs.z && drs.x > drs.y) primitiveState.axis = 0;
-         if (drs.y >= drs.x && drs.y > drs.z) primitiveState.axis = 1;
-         if (drs.z >= drs.y && drs.z > drs.x) primitiveState.axis = 2;
-    };
-
-    // calculate affine matrices
-    const vec4 vm = vec4(-direct, 1.f) / precIssue(primitiveState.axis == 0 ? direct.x : (primitiveState.axis == 1 ? direct.y : direct.z));
-    primitiveState.iM = transpose(mat3(
-        primitiveState.axis == 0 ? vm.wyz : vec3(1.f,0.f,0.f),
-        primitiveState.axis == 1 ? vm.xwz : vec3(0.f,1.f,0.f),
-        primitiveState.axis == 2 ? vm.xyw : vec3(0.f,0.f,1.f)
-    ));
-#endif
-*/
-
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
     const   vec3 interm = fma(fpInner.xxx, 4.f.xxx / precIssue(bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f.xxx);
@@ -151,8 +129,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
             else { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
                 #define bbox2x fmat3x4_(bvhNode.cbox[0],bvhNode.cbox[1],bvhNode.cbox[2]) // use same memory
-                lowp bvec2_ childIntersect = bvec2_(traverseState.idx >= 0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
-                childIntersect &= (cnode.x&1).xx; // validate BVH node
+                lowp bvec2_ childIntersect = (cnode.x&1) & bool_(cnode.x>0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
 
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 
