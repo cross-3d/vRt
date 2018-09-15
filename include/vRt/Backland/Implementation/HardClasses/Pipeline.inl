@@ -18,6 +18,7 @@ namespace _vt {
         //auto vtPipeline = (_vtPipeline = std::make_shared<Pipeline>());
         vtPipeline = std::make_shared<Pipeline>();
         vtPipeline->_device = _vtDevice;
+        vtPipeline->_tiling = info.tiling; // fixed 15.09.2018
         vtPipeline->_pipelineLayout = info.pipelineLayout._vtHandle;
         const auto vendorName = _vtDevice->_vendorName;
 
