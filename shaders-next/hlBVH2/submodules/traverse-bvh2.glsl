@@ -156,7 +156,7 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 
                 // also, they uses hit queue, but it can very overload stacks, so saving only indices...
-                childIntersect &= bvec2_(lessThanEqual(nfe.xy/SFO, primitiveState.lastIntersection.zz)); // it increase FPS by filtering nodes by first triangle intersection
+                childIntersect &= bvec2_(lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz*SFO)); // it increase FPS by filtering nodes by first triangle intersection
 
                 // 
                 int fmask = int((childIntersect.y<<1u)|childIntersect.x);
