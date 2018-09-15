@@ -54,10 +54,8 @@
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION))
 // bvh uniform unified
 layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { 
-    mat4x4 transform;
-    mat4x4 transformInv;
-    mat4x4 projection;
-    mat4x4 projectionInv;
+    mat4x4  transform,  transformInv;
+    mat4x4 projection, projectionInv;
     int leafCount, primitiveCount, entryID, primitiveOffset;
     vec4 sceneMin, sceneMax;
 } bvhBlock;
