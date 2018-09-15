@@ -11,9 +11,9 @@
 
 
 // global memory stack pages (256-bit)
-//const lowp int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount;
-  const lowp int localStackSize = 4, pageCount = 8, computedStackSize = localStackSize*pageCount; // 128-bit capable (minor GPU, GDDR6 two-channels)
-const highp int max_iteraction = 8192;
+//const  lowp int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount;
+  const  lowp  int localStackSize = 4, pageCount = 8, computedStackSize = localStackSize*pageCount; // 128-bit capable (minor GPU, GDDR6 two-channels)
+  const highp uint  maxIterations = 8192;
 
 layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYSTEM { int pages[][localStackSize]; };
 
@@ -21,7 +21,7 @@ layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYS
 // BVH traversing state
 #define _cacheID gl_GlobalInvocationID.x
 struct BvhTraverseState {
-    int idx, defTriangleID, maxTriangles; 
+         int idx, defTriangleID, maxTriangles; 
     lowp int stackPtr, pageID;
     fvec4_ minusOrig, directInv; // vec4 of 32-bits
 } traverseState;
@@ -46,14 +46,14 @@ int loadStack() {
     [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
         lstack = pages[_cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize; 
     };
-    int idx = --traverseState.stackPtr, rsl = idx >= 0 ? lstack[idx] : -1; traverseState.stackPtr = max(traverseState.stackPtr, 0); return rsl;
+    const int idx = --traverseState.stackPtr, rsl = idx >= 0 ? lstack[idx] : -1; traverseState.stackPtr = max(traverseState.stackPtr, 0); return rsl;
 };
 
 void storeStack(in int rsl) {
     [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
         pages[_cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
     }
-    int idx = traverseState.stackPtr++; 
+    const int idx = traverseState.stackPtr++; 
     [[flatten]] if (idx < localStackSize) lstack[idx] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
 };
 
@@ -65,8 +65,8 @@ void storeStack(in int rsl) {
 // triangle intersection, when it found
 void doIntersection(in bool isvalid, in float dlen) {
     isvalid = isvalid && traverseState.defTriangleID > 0 && traverseState.defTriangleID <= traverseState.maxTriangles;
-    IFANY (isvalid) {
-        vec2 uv = vec2(0.f.xx); float d = 
+    IFANY (isvalid) { 
+        vec2 uv = vec2(0.f.xx); const float d = 
 #ifdef VRT_USE_FAST_INTERSECTION
             intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid, INFINITY);
 #else
@@ -139,14 +139,14 @@ void traverseBvh2(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     primitiveState.dir = direct, primitiveState.orig = fma(direct, diffOffset.xxxx, torig);
 
     // two loop based BVH traversing
-    [[dependency_infinite]] for (int hi=0;hi<max_iteraction;hi++) {
+    [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {
         [[flatten]] if (traverseState.idx >= 0 && traverseState.defTriangleID <= 0) {
-        { [[dependency_infinite]] for (;hi<max_iteraction;hi++) { bool _continue = false;
+        { [[dependency_infinite]] for (;hi<maxIterations;hi++) { bool _continue = false;
             //const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
             #define bvhNode bvhNodes[traverseState.idx] // ref directly
             //#define cnode (bvhNode.meta.xy) // reuse already got
 
-            ivec2 cnode = traverseState.idx >= 0 ? bvhNode.meta.xy : (0).xx;
+            const ivec2 cnode = traverseState.idx >= 0 ? bvhNode.meta.xy : (0).xx;
             [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
