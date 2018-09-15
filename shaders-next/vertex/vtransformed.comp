@@ -25,8 +25,8 @@ const int VCOUNT = 3;
 
 bool nvlda(in vec4 a) { return (dot(a,a)<1e-4f || any(isnan(a)) || any(isinf(a))); }
 void calculateTBN(in int trip){
-     int itri = trip*3;
-     vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
+    const int itri = trip*3;
+    const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
 
     // alloc arrays
     vec4 normals[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
@@ -38,12 +38,12 @@ void calculateTBN(in int trip){
 
     // calculate geometrical normal
     mat3x3 dlps = mat3x3(vertice[0].xyz, vertice[1].xyz, vertice[2].xyz); dlps[1] -= dlps[0], dlps[2] -= dlps[0];
-     vec4 gnormal = vec4(normalize(cross(dlps[1], dlps[2])), 0.f);
+    const vec4 gnormal = vec4(normalize(cross(dlps[1], dlps[2])), 0.f);
     ISTORE(lnrm, trip, vec4(gnormal.xyz, uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[trip])))));
 
     // fix zero normals and get texcoords with vertices
-     ivec2 NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID));
-     ivec2 TEXCOORD_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TEXCOORD_TID));
+    const ivec2 NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID));
+    const ivec2 TEXCOORD_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TEXCOORD_TID));
     [[unroll]] for (int i=0;i<3;i++) {
          ivec2 nmi = mosaicIdc(NORMAL_,i); vec4 normal = TLOAD(attrib_texture_out, nmi);
          if (nvlda(normal)) ISTORE(attrib_texture_out, nmi, normal = gnormal);
@@ -52,8 +52,8 @@ void calculateTBN(in int trip){
 
     // getting tangents and bitangents
     mat3x2 dlts = mat3x2(texcoord[0].xy, texcoord[1].xy, texcoord[2].xy); dlts[1] -= dlts[0], dlts[2] -= dlts[0];
-     ivec2 TANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TANGENT_TID));
-     ivec2 BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
+    const ivec2 TANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TANGENT_TID));
+    const ivec2 BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
     [[unroll]] for (int i=0;i<3;i++) {
         // calc raw TBN 
         float idet = 1.f/precIssue(determinant(mat2(dlts[1],dlts[2]))); // inv determinant
@@ -91,14 +91,14 @@ layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { Transfo
 #define wsize vertexBlock.primitiveCount
 
 void main() {
-    IFALL (wsize <= 0) return; uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    IFALL (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-         uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
+        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
         IFALL (globalID >= wsize) break;
-        if (globalID < wsize && globalID >= 0) {
+        [[flatten]] if (globalID < wsize && globalID >= 0) {
 
             // constant material ID from vertex instance
-             uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
+            const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
 
             // read material accessor
             uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
@@ -118,12 +118,12 @@ void main() {
 
             // load attrib data
             for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
-                int ai = attributes[a].attributeID;
+                const int ai = attributes[a].attributeID;
                 [[unroll]] for (int i=0;i<3;i++) {
                     vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
                     readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-                    if (ai == NORMAL_TID || ai == TANGENT_TID || ai == BITANGENT_TID) { attribValue = vec4(normalize(mult4(vTransforms[inputID].transformNrm, attribValue).xyz), 0.f); }
+                    [[flatten]] if (ai == NORMAL_TID || ai == TANGENT_TID || ai == BITANGENT_TID) { attribValue = vec4(normalize(mult4(vTransforms[inputID].transformNrm, attribValue).xyz), 0.f); }
                     storeAttribute(ivec3(wofft, ai, i), attribValue);
                 }
                 storeAttribute(ivec3(wofft, ai, 3), 0.f.xxxx);

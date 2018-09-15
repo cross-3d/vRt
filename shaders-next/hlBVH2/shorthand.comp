@@ -29,8 +29,8 @@ void main() {
     vec4 gmn = INFINITY.xxxx, gmx = -INFINITY.xxxx;
 
     // calculate box boundary of scene 
-    [[unroll, dependency_length(32)]] for (uint I=0u;I<256u;I+=Wave_Size_RT) {
-         uint it = I + Lane_Idx;
+    [[unroll, dependency_length(4)]] for (uint I=0u;I<256u;I+=Wave_Size_RT) {
+        const uint it = I + Lane_Idx;
         gmn = min(gmn, subgroupMin(minmax[it*2+0]));
         gmx = max(gmx, subgroupMax(minmax[it*2+1]));
     }
@@ -39,7 +39,7 @@ void main() {
     // these operations calculating only on one ALU, so can be used more precised point
     // also, it no require so much free registers
      if (electedInvoc()) {
-         mat4 inversedpj = inverse(mat4(transpose(bvhBlock.projection))); // set inversed version of projection
+        const mat4 inversedpj = inverse(mat4(transpose(bvhBlock.projection))); // set inversed version of projection
         bvhBlock.projectionInv = transpose(mat4(inversedpj)), bvhBlock.sceneMin = gmn, bvhBlock.sceneMax = gmx;
         //bvhBlock.sceneMin.xyz = min3_vec(bvhBlock.sceneMin.xyz).xxx, bvhBlock.sceneMax.xyz = max3_vec(bvhBlock.sceneMax.xyz).xxx;
 
