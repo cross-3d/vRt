@@ -8,7 +8,7 @@ LOCAL_SIZE_LAYOUT;
 
 void main() {
 #define wsize push_block.NumKeys
-    IFALL (wsize <= 0) return; uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
+    IFANY (wsize <= 0) return; uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
     [[dependency_infinite]] for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
          uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + Local_Idx;
          if (globalID < wsize) { KeyTmp[globalID] = KeyIn[globalID], ValueTmp[globalID] = ValueIn[globalID]; }

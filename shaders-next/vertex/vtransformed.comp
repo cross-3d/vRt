@@ -91,7 +91,7 @@ layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { Transfo
 #define wsize vertexBlock.primitiveCount
 
 void main() {
-    IFALL (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
         IFALL (globalID >= wsize) break;

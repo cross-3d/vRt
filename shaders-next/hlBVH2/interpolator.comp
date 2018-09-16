@@ -23,7 +23,7 @@ LOCAL_SIZE_LAYOUT;
 //#define wsize closestHitCounterCurrent
 
 void main() {
-    const int wsize = min(closestHitCounterCurrent, MAX_HITS); IFALL (wsize <= 0) return;
+    const int wsize = min(closestHitCounterCurrent, MAX_HITS); IFANY (wsize <= 0) return;
 
     // accumulate closest hits
     if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(closestHitCounter, closestHitCounterCurrent); }

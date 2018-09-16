@@ -31,7 +31,7 @@ void main() {
     }
     [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
     LGROUP_BARRIER
-    IFALL (bcount <= 0) return;
+    IFANY (bcount <= 0) return;
 
     // calculate blocks
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);

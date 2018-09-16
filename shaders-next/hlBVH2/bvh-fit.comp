@@ -44,7 +44,7 @@ LOCAL_SIZE_LAYOUT;
 const int _NULL = -1;
 
 void main() {
-    IFALL (wsize <= 0) return; const uint rng = gS*gl_NumWorkGroups.x;
+    IFANY (wsize <= 0) return; const uint rng = gS*gl_NumWorkGroups.x;
     for (uint w=gS*gl_WorkGroupID.x;w<wsize;w+=rng) {
         const uint globalID = (w + lID); IFALL (globalID >= wsize) break; // add to queue list parent node
                int idx = globalID < wsize ? LeafIndices[globalID]-1 : -1;

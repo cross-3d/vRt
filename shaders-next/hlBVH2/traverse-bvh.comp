@@ -25,7 +25,8 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    const uint wsize = min(rayCounter, MAX_RAYS); IFALL (wsize <= 0) return;
+    IFANY (bvhBlock.primitiveCount <= 0) return;
+    const uint wsize = min(rayCounter, MAX_RAYS); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
     //traverseState.cacheID = int(gl_GlobalInvocationID.x);
     //traverseState.maxTriangles = bvhBlock.primitiveCount;
@@ -49,16 +50,19 @@ void main() {
             VtHitData hit;
 #endif
 
+            initTraversing(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
+            
             // traversing from front layer to back layers
             [[unroll]] for (int i=0;i<1;i++) {
                 int ftrID = -1; // current found triangle
 
                 // traversing triangles
                 [[flatten]] if (traverseState.maxTriangles > 0) {
-                    traverseBvh2(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
+                    //traverseBVH2(i > 0, !overflow);
+                    traverseBVH2(i > 0, true);
                     ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxTriangles = min(traverseState.maxTriangles, ftrID);
                     //triID = max(ftrID, triID), 
-                } else IFALL (true) { break; };
+                }; //else IFALL (true) { break; };
                 found = found || ftrID >= 0;
 
                 // if has triangle 

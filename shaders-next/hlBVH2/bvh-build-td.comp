@@ -68,7 +68,7 @@ layout ( local_size_x = WORK_SIZE_BND ) in;
 
 // I have no idea for optimize registers
 void main() {
-    IFALL (bvhBlock.leafCount <= 0) return;
+    IFANY (bvhBlock.leafCount <= 0) return;
 
 #define threadID Local_Idx
 #define groupSize gl_WorkGroupSize.x
