@@ -1,0 +1,66 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#include "./includes.glsl"
+
+layout (local_size_x = BLOCK_SIZE) in;
+
+shared uint localHistogram[RADICES];
+
+// wide of 128 elements, each element should be in uint16_t, but for compatibility used uint32_t
+#ifdef PREFER_UNPACKED 
+shared lowp uvec4 _data[Wave_Size];
+#else
+shared uint_rdc_wave_lcm _data[Wave_Size];
+#endif
+
+shared blocks_info blocks;
+#define key _data[Lane_Idx]
+
+initSubgroupIncFunctionTargetQuad(localHistogram[WHERE], countOffset, 1, uint, uvec4)
+
+#define bcount blocks.count
+
+void main() {
+    const lowp uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
+
+    // set prefix sum (planned distribute threads) 
+    [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+        const lowp uint radice = uint(rk + Radice_Idx);
+        [[flatten]] if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
+    };
+    [[flatten]] if (Local_Idx == 0) { blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u); };
+    LGROUP_BARRIER
+    IFANY (bcount <= 0) return;
+
+    // calculate blocks
+    WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
+    [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
+        LGROUP_BARRIER
+        const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
+        const uint  kroffset = push_block.Shift * push_block.NumKeys;
+        
+        // each waves reads rows
+        [[flatten]] if (Wave_Idx == 0) { key.x = KeyIn[kroffset+addr.x]; };
+        [[flatten]] if (Wave_Idx == 1) { key.y = KeyIn[kroffset+addr.y]; };
+        [[flatten]] if (Wave_Idx == 2) { key.z = KeyIn[kroffset+addr.z]; };
+        [[flatten]] if (Wave_Idx == 3) { key.w = KeyIn[kroffset+addr.w]; };
+        LGROUP_BARRIER
+
+        // WARP-optimized histogram calculation
+        [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+            const lowp uint radice = uint(rk + Radice_Idx);
+            const bvec4 owned = and(equal(key, radice.xxxx), validAddress);
+            [[flatten]] if (any(owned)) {
+                const WPTR4 offset = WPTR4(countOffset(uint(radice), owned));
+                const uint koffset = push_block.NumKeys*(push_block.Shift+1);
+                [[flatten]] if (owned.x) { OffsetOut[offset.x] = OffsetIn[addr.x], KeyOut[koffset + offset.x] = KeyIn[koffset + addr.x]; };
+                [[flatten]] if (owned.y) { OffsetOut[offset.y] = OffsetIn[addr.y], KeyOut[koffset + offset.y] = KeyIn[koffset + addr.y]; };
+                [[flatten]] if (owned.z) { OffsetOut[offset.z] = OffsetIn[addr.z], KeyOut[koffset + offset.z] = KeyIn[koffset + addr.z]; };
+                [[flatten]] if (owned.w) { OffsetOut[offset.w] = OffsetIn[addr.w], KeyOut[koffset + offset.w] = KeyIn[koffset + addr.w]; };
+            }
+            IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
+        };
+        addr += (Wave_Size_RT<<2);
+    };
+}

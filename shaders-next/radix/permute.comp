@@ -22,11 +22,11 @@ initSubgroupIncFunctionTargetQuad(localHistogram[WHERE], countOffset, 1, uint, u
 #define bcount blocks.count
 
 void main() {
-    const uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
+    const lowp uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
 
     // set prefix sum (planned distribute threads) 
-    [[unroll]] for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-        const uint radice = uint(rk + Radice_Idx);
+    [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+        const lowp uint radice = uint(rk + Radice_Idx);
         [[flatten]] if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
     }
     [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
@@ -37,7 +37,8 @@ void main() {
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
-        const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
+
+        /*
         [[flatten]] if (Wave_Idx == 0) {
 #ifdef PREFER_UNPACKED 
             key = ((uvec4(
@@ -50,6 +51,13 @@ void main() {
                 BFE(validAddress.w ? KeyIn[addr.w] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
             )));
         }
+        */
+
+        const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
+        [[flatten]] if (Wave_Idx == 0) { key.x = BFE(validAddress.x ? KeyIn[addr.x] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
+        [[flatten]] if (Wave_Idx == 1) { key.y = BFE(validAddress.y ? KeyIn[addr.y] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
+        [[flatten]] if (Wave_Idx == 2) { key.z = BFE(validAddress.z ? KeyIn[addr.z] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
+        [[flatten]] if (Wave_Idx == 3) { key.w = BFE(validAddress.w ? KeyIn[addr.w] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
         LGROUP_BARRIER
 
         // WARP-optimized histogram calculation

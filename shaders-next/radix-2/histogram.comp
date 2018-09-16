@@ -29,7 +29,7 @@ void main() {
         const lowp uint radice = uint(rk + Radice_Idx);
         [[flatten]] if (radice < RADICES) localHistogram[radice] = 0;
     };
-    [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
+    [[flatten]] if (Local_Idx == 0) { blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u); };
     LGROUP_BARRIER
     IFANY (bcount <= 0) return;
 
@@ -37,49 +37,32 @@ void main() {
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
-        
-        /*
-        [[flatten]] if (Wave_Idx == 0) {
-#ifdef PREFER_UNPACKED 
-            key = ((uvec4(
-#else
-            key = uint_rdc_wave_lcm(p4x_8(uvec4(
-#endif
-                BFE(validAddress.x ? KeyIn[addr.x] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
-                BFE(validAddress.y ? KeyIn[addr.y] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
-                BFE(validAddress.z ? KeyIn[addr.z] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
-                BFE(validAddress.w ? KeyIn[addr.w] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
-            )));
-        }
-        */
-
         const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
-        [[flatten]] if (Wave_Idx == 0) { key.x = BFE(validAddress.x ? KeyIn[addr.x] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
-        [[flatten]] if (Wave_Idx == 1) { key.y = BFE(validAddress.y ? KeyIn[addr.y] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
-        [[flatten]] if (Wave_Idx == 2) { key.z = BFE(validAddress.z ? KeyIn[addr.z] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
-        [[flatten]] if (Wave_Idx == 3) { key.w = BFE(validAddress.w ? KeyIn[addr.w] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
+        const uint  kroffset = push_block.Shift * push_block.NumKeys;
+
+        // each waves reads rows
+        [[flatten]] if (Wave_Idx == 0) { key.x = KeyIn[kroffset+addr.x]; };
+        [[flatten]] if (Wave_Idx == 1) { key.y = KeyIn[kroffset+addr.y]; };
+        [[flatten]] if (Wave_Idx == 2) { key.z = KeyIn[kroffset+addr.z]; };
+        [[flatten]] if (Wave_Idx == 3) { key.w = KeyIn[kroffset+addr.w]; };
         LGROUP_BARRIER
 
         // WARP-optimized histogram calculation
         [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
             const lowp uint radice = uint(rk + Radice_Idx);
-#ifdef PREFER_UNPACKED
             const bvec4 owned = and(equal(key, radice.xxxx), validAddress);
-#else
-            const bvec4 owned = and(equal(up4x_8(key), radice.xxxx), validAddress);
-#endif
-             [[flatten]] if (any(owned)) countHistogram(uint(radice), owned);
-             IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
+            [[flatten]] if (any(owned)) countHistogram(uint(radice), owned);
+            IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;
         }
         addr += (Wave_Size_RT << 2);
-    }
+    };
 
     // resolve histograms (planned distribute threads) 
     LGROUP_BARRIER
 
     [[unroll]] for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-         const lowp uint radice = uint(rk + Radice_Idx);
-         [[flatten]] if (radice < RADICES) {
+        const lowp uint radice = uint(rk + Radice_Idx);
+        [[flatten]] if (radice < RADICES) {
             PrefixSum[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
             Histogram[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
         }
