@@ -10,8 +10,8 @@
 #endif
 
 
-// global memory stack pages (256-bit)
-//const  lowp int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount;
+
+//const  lowp  int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount; // 256-bit global memory stack pages
   const  lowp  int localStackSize = 4, pageCount = 8, computedStackSize = localStackSize*pageCount; // 128-bit capable (minor GPU, GDDR6 two-channels)
   const highp uint  maxIterations = 8192;
 
