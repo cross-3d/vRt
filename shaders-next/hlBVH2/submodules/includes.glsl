@@ -52,15 +52,15 @@ layout ( binding = 2, set = 1, std430 ) restrict buffer bvhBoxesResultingB { BTY
 
 // precision control of boxes
 #ifndef fpInner
-#define fpInner (128.f*SFN) // as operation 
+#define fpInner 128.f*SFN // as operation 
 #endif
 
 #define fpCorrect InZero
 
 bbox_t calcTriBox(in mat3x4 triverts) {
     bbox_t result;
-    result.mn = min3_wrap(triverts[0], triverts[1], triverts[2]) - fpInner;
-    result.mx = max3_wrap(triverts[0], triverts[1], triverts[2]) + fpInner;
+    result.mn = -fpInner + min3_wrap(triverts[0], triverts[1], triverts[2]);
+    result.mx =  fpInner + max3_wrap(triverts[0], triverts[1], triverts[2]);
     return result;
 };
 

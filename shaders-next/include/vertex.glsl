@@ -100,7 +100,7 @@ ivec2 gatherMosaic(in ivec2 uniformCoord) {
 const int WARPED_WIDTH = 4096;
 const ivec2 mit[4] = {ivec2(0,1), ivec2(1,1), ivec2(1,0), ivec2(0,0)};
 ivec2 gatherMosaic(in ivec2 uniformCoord) {
-    return ivec2((uniformCoord.x * 3) + (uniformCoord.y % 3), uniformCoord.y);
+    return ivec2(uniformCoord.x * 3 + (uniformCoord.y % 3), uniformCoord.y);
 }
 
 #endif
@@ -125,7 +125,7 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 #ifndef VERTEX_FILLING
 #ifndef BVH_CREATION
 #ifdef ENABLE_VSTORAGE_DATA
- 
+
 #ifndef VRT_USE_FAST_INTERSECTION
 float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, in bool _valid) {
     float T = INFINITY;
@@ -136,7 +136,7 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
         // http://jcgt.org/published/0002/01/05/paper.pdf
         vec3 UVW_ = uvwMap[axis] * inverse(ABC);
         IFANY ((all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx))) && _valid) {
-            UVW_ /= precIssue(dot(UVW_, vec3(1)));
+            UVW_ /= precIssue(dot(UVW_, 1.f.xxx));
             UV = vec2(UVW_.yz), UVW_ *= ABC; // calculate axis distances
             T = mix(mix(UVW_.z, UVW_.y, axis == 1), UVW_.x, axis == 0);
             [[flatten]] if ( T < (-SFN) || T >= N_INFINITY ) _valid = false;

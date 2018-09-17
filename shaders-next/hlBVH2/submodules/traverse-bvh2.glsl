@@ -58,10 +58,13 @@ void storeStack(in int rsl) {
 };
 
 
-#ifndef fpInner
-#define fpInner (128.f*SFN) //0.00000011920928955078125f
-#define fpOne 1.f
-#endif
+//#ifndef fpInner
+//#define fpInner (128.f*SFN) //0.00000011920928955078125f
+//#define fpOne 1.f
+//#endif
+
+const float fpInner = 128.f*SFN;
+const float fpOne = 1.f;
 
 // triangle intersection, when it found
 void doIntersection(in bool isvalid, in float dlen) {
