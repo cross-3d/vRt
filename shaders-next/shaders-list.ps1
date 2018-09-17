@@ -73,7 +73,8 @@ function OptimizeMainline($Pfx = "") {
     Optimize "leaf-link.comp" "$HRDDIR$HLBV" 
     Optimize "/triangle/bound-calc.comp" "$HRDDIR$HLBV" 
     Optimize "/triangle/leaf-gen.comp" "$HRDDIR$HLBV" 
-
+    Optimize "/triangle/box-calc.comp" "$HRDDIR$HLBV" 
+    
     # optimize vertex assemblers
     Optimize "vinput.comp"       "$HRDDIR$NTVE" # native
     Optimize "vtransformed.comp" "$OUTDIR$VRTX" 
