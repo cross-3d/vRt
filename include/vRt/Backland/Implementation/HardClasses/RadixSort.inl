@@ -35,7 +35,7 @@ namespace _vt {
         VtBufferRegionCreateInfo bfi;
         {
             bfi.format = VK_FORMAT_R32_UINT;
-            bfi.bufferSize = vtExtension.maxPrimitives * sizeof(uint32_t);
+            bfi.bufferSize = vtExtension.maxPrimitives * sizeof(uint64_t);
             createBufferRegion(bManager, bfi, vtRadix->_tmpValuesBuffer);
 
             bfi.format = VK_FORMAT_R32G32_UINT;

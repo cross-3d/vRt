@@ -15,7 +15,6 @@ layout (local_size_x = 1024) in; // use many as possible
 
 // X axis is workgroup count, Y is radices
 void main() {
-
     localHistogram[Local_Idx] = 0u;
     LGROUP_BARRIER
 
@@ -31,7 +30,7 @@ void main() {
             }
         }
         [[flatten]] if (electedInvoc()) localHistogram[radice] = radcount; // collect all radice counts
-    }
+    };
 
     LGROUP_BARRIER
 
@@ -46,6 +45,5 @@ void main() {
                 PrefixSum[widx] += subgroupExclusiveAdd(localHistogram[radice]) + add(gprefix, subgroupAdd(localHistogram[radice]));
             }
         }
-    }
-
-}
+    };
+};

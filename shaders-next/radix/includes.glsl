@@ -103,9 +103,9 @@ layout (push_constant) uniform PushBlock { uint NumKeys; int Shift; } push_block
 // division of radix sort
 struct blocks_info { uint count; uint offset; uint limit; uint r0; };
 blocks_info get_blocks_info(in uint n) {
-    uint block_tile = Wave_Size_RT << 2u;
-    uint block_size = tiled(n, gl_NumWorkGroups.x);
-    uint block_count = tiled(n, block_tile * gl_NumWorkGroups.x);
-    uint block_offset = gl_WorkGroupID.x * block_tile * block_count;
+    const uint block_tile = Wave_Size_RT << 2u;
+    const uint block_size = tiled(n, gl_NumWorkGroups.x);
+    const uint block_count = tiled(n, block_tile * gl_NumWorkGroups.x);
+    const uint block_offset = gl_WorkGroupID.x * block_tile * block_count;
     return blocks_info(block_count, block_offset, min(block_offset + tiled(block_size, block_tile)*block_tile, n), 0);
-}
+};

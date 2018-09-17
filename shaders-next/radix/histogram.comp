@@ -37,21 +37,6 @@ void main() {
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
-        
-        /*
-        [[flatten]] if (Wave_Idx == 0) {
-#ifdef PREFER_UNPACKED 
-            key = ((uvec4(
-#else
-            key = uint_rdc_wave_lcm(p4x_8(uvec4(
-#endif
-                BFE(validAddress.x ? KeyIn[addr.x] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
-                BFE(validAddress.y ? KeyIn[addr.y] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
-                BFE(validAddress.z ? KeyIn[addr.z] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS),
-                BFE(validAddress.w ? KeyIn[addr.w] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)
-            )));
-        }
-        */
 
         const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
         [[flatten]] if (Wave_Idx == 0) { key.x = BFE(validAddress.x ? KeyIn[addr.x] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
@@ -83,5 +68,5 @@ void main() {
             PrefixSum[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
             Histogram[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
         }
-    }
-}
+    };
+};

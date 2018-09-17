@@ -66,5 +66,5 @@ void main() {
             PrefixSum[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
             Histogram[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
         }
-    }
-}
+    };
+};

@@ -87,19 +87,17 @@ struct RadicePropStruct { uint Descending; uint IsSigned; };
 
 const KEYTYPE OutOfRange = KEYTYPE(0xFFFFFFFFu);
 
-//#define KEYTYPE uint
-layout (std430, binding = 0, set = INDIR )  readonly coherent buffer KeyInB {  uint8_t KeyIn[]; };
-layout (std430, binding = 1, set = INDIR )  readonly coherent buffer ValueInB { uint ValueIn[]; };
+#define KEYTYPE uint
 
-//layout (std430, binding = 0, set = OUTDIR )  coherent buffer KeyTmpB {KEYTYPE KeyTmp[]; };
-//layout (std430, binding = 1, set = OUTDIR )  coherent buffer ValueTmpB {uint ValueTmp[]; };
+layout (std430, binding = 0, set = INDIR )  readonly coherent buffer KeyInB   { lowp uint    KeyIn[]; };
+layout (std430, binding = 1, set = INDIR )  readonly coherent buffer ValueInB {      uint OffsetIn[]; };
 
-//layout (std430, binding = 0, set = OUTDIR )  coherent buffer KeyTmpB   { uint8_t KeyTmp[]; };
-//layout (std430, binding = 1, set = OUTDIR )  coherent buffer ValueTmpB { uint  ValueTmp[]; };
+layout (std430, binding = 0, set = OUTDIR )  coherent buffer KeyTmpB   { lowp uint    KeyOut[]; };
+layout (std430, binding = 1, set = OUTDIR )  coherent buffer ValueTmpB {      uint OffsetOut[]; };
 
 layout (std430, binding = 2, set = 0 )  readonly buffer VarsB { RadicePropStruct radProps[]; };
-layout (std430, binding = 3, set = 0 )  restrict buffer HistogramB {uint Histogram[]; };
-layout (std430, binding = 4, set = 0 )  restrict buffer PrefixSumB {uint PrefixSum[]; };
+layout (std430, binding = 3, set = 0 )  restrict buffer HistogramB { uint Histogram[]; };
+layout (std430, binding = 4, set = 0 )  restrict buffer PrefixSumB { uint PrefixSum[]; };
 
 // push constant in radix sort
 layout (push_constant) uniform PushBlock { uint NumKeys; int Shift; } push_block;
@@ -107,9 +105,9 @@ layout (push_constant) uniform PushBlock { uint NumKeys; int Shift; } push_block
 // division of radix sort
 struct blocks_info { uint count; uint offset; uint limit; uint r0; };
 blocks_info get_blocks_info(in uint n) {
-    uint block_tile = Wave_Size_RT << 2u;
-    uint block_size = tiled(n, gl_NumWorkGroups.x);
-    uint block_count = tiled(n, block_tile * gl_NumWorkGroups.x);
-    uint block_offset = gl_WorkGroupID.x * block_tile * block_count;
+    const uint block_tile = Wave_Size_RT << 2u;
+    const uint block_size = tiled(n, gl_NumWorkGroups.x);
+    const uint block_count = tiled(n, block_tile * gl_NumWorkGroups.x);
+    const uint block_offset = gl_WorkGroupID.x * block_tile * block_count;
     return blocks_info(block_count, block_offset, min(block_offset + tiled(block_size, block_tile)*block_tile, n), 0);
-}
+};
