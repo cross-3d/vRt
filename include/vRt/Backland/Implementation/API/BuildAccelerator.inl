@@ -203,6 +203,7 @@ namespace _vt {
         auto accel = cmdBuf->_acceleratorSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
 
+        // 
         accel->_vertexAssemblySet = vertx; // bind vertex assembly with accelerator structure 
         accel->_bvhBlockData.primitiveOffset = accel->_primitiveOffset;
         accel->_bvhBlockData.primitiveCount = (accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount;
@@ -214,27 +215,34 @@ namespace _vt {
         accel->_bvhBlockData.transformInv = IdentifyMat4;
         cmdUpdateBuffer(*cmdBuf, accel->_bvhBlockUniform, 0, sizeof(accel->_bvhBlockData), &accel->_bvhBlockData);
 
-        // building hlBVH2 process
-        // planned to use secondary buffer for radix sorting
-        auto bounder = accel;
-        cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, acclb->_mortonCodesBuffer);
-        cmdFillBuffer<0u>(*cmdBuf, acclb->_countersBuffer); // reset counters
-        cmdFillBuffer<0u>(*cmdBuf, acclb->_fitStatusBuffer);
-        updateCommandBarrier(*cmdBuf);
+        // if has advanced accelerator
+        if (device->_advancedAccelerator) {
+            result = device->_advancedAccelerator->_buildAccelerator(cmdBuf, accel);
+        }
+        else {
 
-        const auto workGroupSize = 16u;
-        std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
-        vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
-        cmdDispatch(*cmdBuf, acclb->_boxCalcPipeline, INTENSIVITY); // calculate general box of BVH
-        cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH
-        cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
-        cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes
-        radixSort(cmdBuf, acclb->_sortDescriptorSet, accel->_bvhBlockData.leafCount);
-        vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
-        cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
-        cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
-        cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
-        cmdDispatch(*cmdBuf, acclb->_fitPipeline, INTENSIVITY);
+            // building hlBVH2 process
+            // planned to use secondary buffer for radix sorting
+            auto bounder = accel;
+            cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, acclb->_mortonCodesBuffer);
+            cmdFillBuffer<0u>(*cmdBuf, acclb->_countersBuffer); // reset counters
+            cmdFillBuffer<0u>(*cmdBuf, acclb->_fitStatusBuffer);
+            updateCommandBarrier(*cmdBuf);
+
+            const auto workGroupSize = 16u;
+            std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
+            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+            cmdDispatch(*cmdBuf, acclb->_boxCalcPipeline, INTENSIVITY); // calculate general box of BVH
+            cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH
+            cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
+            cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes
+            radixSort(cmdBuf, acclb->_sortDescriptorSet, accel->_bvhBlockData.leafCount);
+            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+            cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
+            cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
+            cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
+            cmdDispatch(*cmdBuf, acclb->_fitPipeline, INTENSIVITY);
+        };
 
         return result;
     };

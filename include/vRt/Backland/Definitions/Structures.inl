@@ -8,10 +8,21 @@ namespace vrt { // store in official namespace
     // Description structs for make vRt objects
     // Note: structures already have default headers for identifying
 
+
     // in general that is conversion
     struct VtInstanceConversionInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_INSTANCE_CONVERSION_INFO;
         const void* pNext = nullptr;
+    };
+
+    // planned connection with VtAcceleratorName, and automatic initialization
+    // passing with pNext to VtArtificalDeviceExtension
+    struct VtAdvancedAccelerationExtensionInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_ADVANCED_ACCELERATION_EXTENSION_INFO;
+        const void* pNext = nullptr;
+
+        VtAcceleratorName acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN;
+        const void* pAccelerationExtensionInfo = nullptr; // structure which passing advanced accelerator
     };
 
     struct VtArtificalDeviceExtension {
@@ -28,6 +39,7 @@ namespace vrt { // store in official namespace
         std::string shaderPath = "./";
 #endif
         VmaAllocator allocator = nullptr;
+        VkBool32 enableAdvancedAcceleration = false; // such as RTX, in current moment have no any support 
     };
 
     struct VtDeviceConversionInfo {

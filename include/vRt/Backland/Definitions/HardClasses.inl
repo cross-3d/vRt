@@ -70,6 +70,7 @@ namespace _vt { // store in undercover namespace
         VkDevice _device = VK_NULL_HANDLE;
         std::shared_ptr<DeviceFeatures> _features = {};
         std::shared_ptr<PhysicalDevice> _physicalDevice = {};
+        std::shared_ptr<AdvancedAcceleratorBase> _advancedAccelerator = {};
 
         uint32_t _mainFamilyIndex = 0;
         std::string _shadersPath = "./";
@@ -231,8 +232,10 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
-        std::shared_ptr<Device> _device;
-        std::shared_ptr<VertexAssemblySet> _vertexAssemblySet; // in-bound vertex assembly 
+        std::shared_ptr<Device> _device = {};
+        std::shared_ptr<AcceleratorSetExtensionBase> _EXtension = {};
+        std::shared_ptr<VertexAssemblySet> _vertexAssemblySet = {}; // in-bound vertex assembly 
+        
 
         // vertex and bvh export 
         std::shared_ptr<DeviceBuffer> _sharedBuffer;
@@ -485,5 +488,49 @@ namespace _vt { // store in undercover namespace
 
         auto& uniform() { return _uniformBlock; };
         const auto& uniform() const { return _uniformBlock; };
+    };
+
+
+    // unused, planned in 2019 
+    class AdvancedAcceleratorBase : public std::enable_shared_from_this<AdvancedAcceleratorBase> {
+    public:
+        friend Device;
+        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
+        std::weak_ptr<Device> _device;
+
+        // minimal requirement of... 
+        virtual VtResult _doIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) = 0;
+        virtual VtResult _buildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet) = 0;
+        virtual VtResult _init(const void* extensionStructure = nullptr) = 0; // initialize by extension 
+    };
+
+    // planned in 2019, inherits from AdvancedAcceleratorBase
+    class RTXAccelerator : public AdvancedAcceleratorBase, std::enable_shared_from_this<RTXAccelerator> {
+    public:
+        friend Device;
+        friend AdvancedAcceleratorBase;
+        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_RTX; // identify as RTX 
+        
+    };
+
+    // planned in 2019
+    class AcceleratorSetExtensionBase : public std::enable_shared_from_this<AcceleratorSetExtensionBase> {
+    public:
+        friend Device;
+        //VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
+        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
+        std::shared_ptr<Device> _device = {};
+
+        //operator VkDescriptorSet() const { return _descriptorSet; };
+        auto _parent() const { return _device; };
+        auto& _parent() { return _device; };
+    };
+
+    // planned in 2019
+    class RTXAcceleratorSetExtension : public AcceleratorSetExtensionBase, std::enable_shared_from_this<RTXAcceleratorSetExtension> {
+    public:
+        friend Device;
+        friend AcceleratorSetExtensionBase;
+        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_RTX; // identify as RTX 
     };
 };

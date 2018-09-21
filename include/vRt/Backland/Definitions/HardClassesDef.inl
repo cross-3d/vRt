@@ -38,4 +38,12 @@ namespace _vt { // store in undercover namespace
     class BufferManager;
     class BufferRegion;
     class DeviceFeatures;
+
+    // will inherits
+    class AdvancedAcceleratorBase;
+    class RTXAccelerator;
+
+    // extension for accelerator sets
+    class AcceleratorSetExtensionBase;
+    class RTXAcceleratorSetExtension;
 };

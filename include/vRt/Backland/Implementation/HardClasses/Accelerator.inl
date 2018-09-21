@@ -155,6 +155,8 @@ namespace _vt {
         return result;
     };
 
+
+    // planned advanced accelerator construction too
     VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
         VtResult result = VK_SUCCESS;
         auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());

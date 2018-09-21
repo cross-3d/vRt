@@ -90,16 +90,22 @@ namespace _vt {
 
             // run traverse processing (single accelerator supported at now)
             if (vertx && vertx->_calculatedPrimitiveCount > 0) {
-                std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
-                vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
+                if (device->_advancedAccelerator) {
+                    result = device->_advancedAccelerator->_doIntersections(cmdBuf, accel, rtset);
+                }
+                else {
+                    std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
+                    vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
 
-                // reset hit counter before new intersections
-                auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
-                cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, RV_INTENSIVITY); // traverse BVH
-                if (acclb->_interpolatorPipeline) {
-                    cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, RV_INTENSIVITY); // interpolate intersections
-                } else {
-                    std::cerr << "HARDWARE ISSUE DETECTED, HALTING!" << std::endl; assert(0);
+                    // reset hit counter before new intersections
+                    auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
+                    cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, RV_INTENSIVITY); // traverse BVH
+                    if (acclb->_interpolatorPipeline) {
+                        cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, RV_INTENSIVITY); // interpolate intersections
+                    }
+                    else {
+                        std::cerr << "HARDWARE ISSUE DETECTED, HALTING!" << std::endl; assert(0);
+                    }
                 }
                 cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), strided<uint32_t>(1)) });
             }
