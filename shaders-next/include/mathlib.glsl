@@ -158,8 +158,14 @@ vec3  clamp01(in vec3 c)  { return clamp(c, 0.f.xxx,  (1.f-SFN).xxx);  };
 vec4  clamp01(in vec4 c)  { return clamp(c, 0.f.xxxx, (1.f-SFN).xxxx); };
 
 // matrix math (simular DX12)
-vec4 mult4(in vec4 vec, in mat4 tmat) { return tmat * vec; }
-vec4 mult4(in mat4 tmat, in vec4 vec) { return vec * tmat; }
+vec4 mult4(in vec4 vec, in mat4 tmat) { return tmat * vec; };
+vec4 mult4(in mat4 tmat, in vec4 vec) { return vec * tmat; };
+
+vec4 mult4(in vec3 vec, in mat3x4 tmat) { return tmat * vec; };
+vec3 mult4(in mat3x4 tmat, in vec4 vec) { return vec * tmat; };
+
+vec3 mult4(in vec4 vec, in mat4x3 tmat) { return tmat * vec; };
+vec4 mult4(in mat4x3 tmat, in vec3 vec) { return vec * tmat; };
 
 
 // 64-bit packing
@@ -389,12 +395,12 @@ lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFFu;};
 
 // improved generic bilinear interpolation
 vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
-     vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, -0.5f.xx), lp = fract(tx), tl = si*(ceil(tx)-0.5f.xx);
-     mat4 mtr = mat4(
+    const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, -0.5f.xx), lp = fract(tx), tl = si*(ceil(tx)-0.5f.xx);
+    const mat4 mtr = mat4(
         textureLodOffset(SMP, tl, LOD, ivec2(0,0)), textureLodOffset(SMP, tl, LOD, ivec2(1,0)),
         textureLodOffset(SMP, tl, LOD, ivec2(0,1)), textureLodOffset(SMP, tl, LOD, ivec2(1,1))
     );
-     vec4 coef = vec4(
+    const vec4 coef = vec4(
         fma( lp.x, lp.y, (1.f-lp.y-lp.x)), // (1.f-lp.x) * (1.f-lp.y)
         fma( lp.x,-lp.y, lp.x),            //      lp.x  * (1.f-lp.y)
         fma(-lp.x, lp.y, lp.y),            // (1.f-lp.x) *      lp.y

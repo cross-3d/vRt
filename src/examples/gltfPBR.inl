@@ -515,7 +515,7 @@ namespace rnd {
             createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexAccessor) * (1ull+model.accessors.size()));
             createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexBufferView) * (1ull+model.bufferViews.size()));
             createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024ull * 1024ull);
-            createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4) * 1024ull * 1024ull);
+            createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4x3) * 1024ull * 1024ull);
             createBufferFast(deviceQueue, materialDescs, sizeof(VtAppMaterial) * (1ull+model.materials.size()));
             createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImage>(256));
         };
@@ -726,19 +726,22 @@ namespace rnd {
             std::shared_ptr<std::function<void(const tinygltf::Node &, glm::dmat4, int)>> vertexLoader = {};
             vertexLoader = std::make_shared<std::function<void(const tinygltf::Node &, glm::dmat4, int)>>([&](const tinygltf::Node & node, glm::dmat4 inTransform, int recursive)->void {
                 glm::dmat4 localTransform(1.0);
-                localTransform *= (node.matrix.size() >= 16 ? glm::make_mat4(node.matrix.data()) : glm::dmat4(1.0));
-                localTransform *= (node.translation.size() >= 3 ? glm::translate(glm::make_vec3(node.translation.data())) : glm::dmat4(1.0));
-                localTransform *= (node.scale.size() >= 3 ? glm::scale(glm::make_vec3(node.scale.data())) : glm::dmat4(1.0));
-                localTransform *= (node.rotation.size() >= 4 ? glm::mat4_cast(glm::make_quat(node.rotation.data())) : glm::dmat4(1.0));
+                localTransform *= glm::dmat4(node.matrix.size() >= 16 ? glm::make_mat4(node.matrix.data()) : glm::dmat4(1.0));
+                localTransform *= glm::dmat4(node.translation.size() >= 3 ? glm::translate(glm::make_vec3(node.translation.data())) : glm::dmat4(1.0));
+                localTransform *= glm::dmat4(node.scale.size() >= 3 ? glm::scale(glm::make_vec3(node.scale.data())) : glm::dmat4(1.0));
+                localTransform *= glm::dmat4((node.rotation.size() >= 4 ? glm::mat4_cast(glm::make_quat(node.rotation.data())) : glm::dmat4(1.0)));
 
-                glm::dmat4 transform = inTransform * localTransform;
+                glm::dmat4 transform = glm::dmat4(inTransform) * glm::dmat4(localTransform);
                 if (node.mesh >= 0) {
                     auto mesh = vertexInputs[node.mesh]; // load mesh object (it just vector of primitives)
                     for (auto geom : mesh) {
                         //geom->getUniformSet()->getStructure(p).setTransform(transform); // here is bottleneck with host-GPU exchange
                         inputs.push_back(geom);
-                        transforms.push_back(glm::transpose(transform));
-                        transforms.push_back(glm::inverse(transform));
+                        transforms.push_back(glm::mat3x4(glm::transpose(transform)));
+                        transforms.push_back(glm::mat3x4(glm::inverse(transform)));
+
+                        //transforms.push_back(glm::mat3x4(transform));
+                        //transforms.push_back(glm::mat3x4(glm::transpose(glm::inverse(transform))));
                     }
                 }
                 if (node.children.size() > 0 && node.mesh < 0) {
@@ -749,14 +752,14 @@ namespace rnd {
             });
 
             // matrix with scaling
-            auto matrix = glm::dmat4(1.0) * glm::scale(glm::dvec3(scale) * glm::dvec3(modelScale) * 1.0);
+            auto matrix = glm::scale(glm::dvec3(scale) * glm::dvec3(modelScale) * 1.0);
 
             // load scene
             uint32_t sceneID = 0;
             if (model.scenes.size() > 0) {
                 for (int n = 0; n < model.scenes[sceneID].nodes.size(); n++) {
                     tinygltf::Node & node = model.nodes[model.scenes[sceneID].nodes[n]];
-                    (*vertexLoader)(node, glm::dmat4(matrix), 16);
+                    (*vertexLoader)(node, matrix, 16);
                 }
             }
         }

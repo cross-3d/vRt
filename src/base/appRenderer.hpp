@@ -343,7 +343,7 @@ namespace rnd {
         std::vector<VtVertexBufferView> bufferViews = {};
         std::vector<std::vector<VtVertexInputSet>> vertexInputs;
         std::vector<VtVertexInputSet> inputs;
-        std::vector<glm::mat4> transforms;
+        std::vector<glm::mat3x4> transforms;
         std::vector<vk::DescriptorSetLayout> customedLayouts;
         std::vector<vk::DescriptorSet> drawDescriptorSets;
 

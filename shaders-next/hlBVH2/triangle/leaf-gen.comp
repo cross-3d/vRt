@@ -35,7 +35,7 @@ void main() {
         
         {
 #ifndef VRT_USE_FAST_INTERSECTION
-             mat4x3 triverts = transpose(triverts);
+            const mat4x3 triverts = transpose(triverts);
             ISTORE(lvtx, int(tri*3+0), vec4(triverts[0].xyz, 1.f)), ISTORE(lvtx, int(tri*3+1), vec4(triverts[1].xyz, 1.f)), ISTORE(lvtx, int(tri*3+2), vec4(triverts[2].xyz, 1.f));
 #else
 #ifdef VTX_USE_LEGACY_METHOD
@@ -46,13 +46,13 @@ void main() {
             // http://jcgt.org/published/0005/03/03/paper.pdf
             
             // triangle elements
-             mat3 vc = mat3(triverts[0].xyz, triverts[1].xyz, triverts[2].xyz);
-             vec3 e1 = triverts[1].xyz - triverts[0].xyz, e2 = triverts[2].xyz - triverts[0].xyz;
-             vec3 nl = cross(e1, e2), ni = 1.f/nl, na = abs(nl);
+            const mat3 vc = mat3(triverts[0].xyz, triverts[1].xyz, triverts[2].xyz);
+            const vec3 e1 = triverts[1].xyz - triverts[0].xyz, e2 = triverts[2].xyz - triverts[0].xyz;
+            const vec3 nl = cross(e1, e2), ni = 1.f/nl, na = abs(nl);
             
             // pre-calculate vectors
-             vec3 v0n = -dot(vc[0], nl).xxx*ni, v1n = cross(vc[0], vc[1])*ni, v2n = cross(vc[2], vc[0])*ni;
-             vec3 e2d = e2.zxy*ni, e2m = -e2.yzx*ni, e1d = e1.yzx*ni, e1m = -e1.zxy*ni, n1f = nl.yzx*ni, n2f = nl.zxy*ni;
+            const vec3 v0n = -dot(vc[0], nl).xxx*ni, v1n = cross(vc[0], vc[1])*ni, v2n = cross(vc[2], vc[0])*ni;
+            const vec3 e2d = e2.zxy*ni, e2m = -e2.yzx*ni, e1d = e1.yzx*ni, e1m = -e1.zxy*ni, n1f = nl.yzx*ni, n2f = nl.zxy*ni;
             
             mat4x3 TVI = { vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f) };
             [[flatten]] if ( na.x > na.y && na.x > na.z ) {
@@ -75,7 +75,7 @@ void main() {
             }
             
             // get transposed version (for full-filling)
-             mat3x4 TVIt = transpose(TVI);
+            const mat3x4 TVIt = transpose(TVI);
             ISTORE(lvtx, int(tri*3+0), TVIt[0]), ISTORE(lvtx, int(tri*3+1), TVIt[1]), ISTORE(lvtx, int(tri*3+2), TVIt[2]);
 #endif
 #endif
