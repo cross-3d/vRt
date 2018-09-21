@@ -735,13 +735,8 @@ namespace rnd {
                 if (node.mesh >= 0) {
                     auto mesh = vertexInputs[node.mesh]; // load mesh object (it just vector of primitives)
                     for (auto geom : mesh) {
-                        //geom->getUniformSet()->getStructure(p).setTransform(transform); // here is bottleneck with host-GPU exchange
                         inputs.push_back(geom);
                         transforms.push_back(glm::mat3x4(glm::transpose(transform)));
-                        transforms.push_back(glm::mat3x4(glm::inverse(transform)));
-
-                        //transforms.push_back(glm::mat3x4(transform));
-                        //transforms.push_back(glm::mat3x4(glm::transpose(glm::inverse(transform))));
                     }
                 }
                 if (node.children.size() > 0 && node.mesh < 0) {

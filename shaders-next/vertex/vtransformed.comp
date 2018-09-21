@@ -85,16 +85,18 @@ void calculateTBN(in int trip){
     }
 }
 
-struct Transforms { mat3x4 transform, transformNrm; };
-layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { Transforms vTransforms[]; };
+//struct Transforms { mat3x4 transform, transformNrm; };
+//layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { Transforms vTransforms[]; };
+  layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { mat3x4 vTransforms[]; };
 
 #define wsize vertexBlock.primitiveCount
 
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
+    const mat3x4 transformNrm = mat3x4(transpose(inverse(mat4(vTransforms[inputID]))));
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
-        IFALL (globalID >= wsize) break;
+        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (globalID >= wsize) break;
         [[flatten]] if (globalID < wsize && globalID >= 0) {
 
             // constant material ID from vertex instance
@@ -108,12 +110,12 @@ void main() {
             vbitfields[wofft] = vertexBlock.bitfield;
             
             // load vertex data
-            uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
+            
             [[unroll]] for (int i=0;i<3;i++) {
                 vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = rofft * VCOUNT + i;
                 readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
                 readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice);
-                vertice.xyz = mult4(vTransforms[inputID].transform, vertice);
+                vertice.xyz = mult4(vTransforms[inputID], vertice);
                 storePosition(ivec2(wofft, i), vertice);
                 //storePosition(ivec2(wofft, i), vec4(mult4(vertice, vTransforms[inputID].transform).xyz, 1.f));
             };
@@ -126,7 +128,7 @@ void main() {
                     readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
                     //[[flatten]] if (ai == NORMAL_TID || ai == TANGENT_TID || ai == BITANGENT_TID) { attribValue = vec4(normalize(mult4(attribValue, vTransforms[inputID].transformNrm)), 0.f); }
-                    [[flatten]] if (ai == NORMAL_TID || ai == TANGENT_TID || ai == BITANGENT_TID) { attribValue.xyz = normalize(mult4(vTransforms[inputID].transformNrm, attribValue)); }
+                    [[flatten]] if (ai == NORMAL_TID || ai == TANGENT_TID || ai == BITANGENT_TID) { attribValue.xyz = normalize(mult4(transformNrm, attribValue)); }
                     storeAttribute(ivec3(wofft, ai, i), attribValue);
                 }
                 storeAttribute(ivec3(wofft, ai, 3), 0.f.xxxx);
