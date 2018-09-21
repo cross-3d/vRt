@@ -172,7 +172,7 @@ namespace NSM
             appinfo.pNext = nullptr;
             appinfo.pApplicationName = "VKTest";
 #ifndef VRT_ENABLE_VEZ_INTEROP
-            appinfo.apiVersion = VK_MAKE_VERSION(1, 1, 82);
+            appinfo.apiVersion = VK_MAKE_VERSION(1, 1, 85); // in day, when will get RTX card, everywhere will that version (and higher)
 #endif
 
             // create instance info
