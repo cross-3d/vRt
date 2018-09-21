@@ -136,6 +136,13 @@ namespace vrt { // store in official namespace
         // 
         VkBuffer bTransformData = nullptr;
         VkDeviceSize transformOffset = 0;
+
+        // vertex accessor (required for direct mode on RTX-like raytracers)
+        // buffer-based accessors also can be used, but only in vertex assembly middleware mode (i.e. eqaulize as single geometry) 
+        // also, planned partitions of vertex assembly buffer for enable transformation support (i.e. fake multiple geometry mode) 
+        VkBool32 directModeSupport = false; // may help to provide faster acceleration 
+        const VtVertexAccessor* pVertexAccessor = nullptr;
+        const VtVertexAccessor* pIndiceAccessor = nullptr; // WARNING: RTX does not support striding in direct mode
     };
 
     // use as low level typed descriptor set
