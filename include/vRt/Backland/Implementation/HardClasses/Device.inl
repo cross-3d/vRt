@@ -91,6 +91,7 @@ namespace _vt {
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageTexelBuffer).setDescriptorCount(256 * mult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(256 * mult),
         };
+
         vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(1024).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size())));
         vtDevice->_mainFamilyIndex = vtExtension.mainQueueFamily;
         vtDevice->_shadersPath = vtExtension.shaderPath;
@@ -100,7 +101,6 @@ namespace _vt {
         dbfi.bufferSize = strided<uint32_t>(vtExtension.sharedCacheSize);
         dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
         dbfi.familyIndex = vtExtension.mainQueueFamily;
-
 
         // make weak proxy (avoid cycled linking)
         vtDevice->_bufferTraffic = std::make_shared<BufferTraffic>();

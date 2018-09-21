@@ -62,31 +62,17 @@ namespace _vt {
             };
         };
 
-        return result;
-    };
-
-    VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
-        VtResult result = VK_SUCCESS;
-        auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
-        auto vkDevice = _vtDevice->_device;
-        vtAccelerator->_device = _vtDevice;
-        vtAccelerator->_entryID = (info.entryID>>1u)<<1u; // unpreferred to make entry ID non power of 2
-
-        // planned import from descriptor
-        const auto maxPrimitives = info.maxPrimitives;
-        vtAccelerator->_primitiveCount = info.primitiveCount;
-        vtAccelerator->_primitiveOffset = info.primitiveOffset;
-        vtAccelerator->_bvhBlockData.projection = info.coverMat;
 
         std::shared_ptr<BufferManager> bManager; createBufferManager(_vtDevice, bManager);
 
-        VtDeviceBufferCreateInfo bfic;
+        VtDeviceBufferCreateInfo bfic = {};
         bfic.familyIndex = _vtDevice->_mainFamilyIndex;
         bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
-        VtBufferRegionCreateInfo bfi;
+        VtBufferRegionCreateInfo bfi = {};
+        const auto maxPrimitives = info.maxPrimitives;
 
-        if (!info.secondary)
+        //if (!info.secondary)
         { // solve building BVH conflicts by creation in accelerator set
             bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull;
             bfi.format = VK_FORMAT_UNDEFINED;
@@ -104,11 +90,11 @@ namespace _vt {
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_onWorkBoxes);
 
-            bfi.bufferSize = (maxPrimitives+4ull) * sizeof(uint32_t) * 16ull * 4ull; // denends by work group counts 
+            bfi.bufferSize = (maxPrimitives + 4ull) * sizeof(uint32_t) * 16ull * 4ull; // denends by work group counts 
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_currentNodeIndices);
 
-            bfi.bufferSize = (maxPrimitives+4ull) * sizeof(uint32_t) * 2ull;
+            bfi.bufferSize = (maxPrimitives + 4ull) * sizeof(uint32_t) * 2ull;
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_fitStatusBuffer);
 
@@ -125,35 +111,12 @@ namespace _vt {
             createBufferRegion(bManager, bfi, vtAccelerator->_generalBoundaryResultBuffer);
         };
 
-        // UNUSED
-        if (!info.bvhMetaBuffer) {
-            bfi.bufferSize = sizeof(uint32_t) * 32ull;
-            bfi.format = VK_FORMAT_R32_UINT;
-            createBufferRegion(bManager, bfi, vtAccelerator->_bvhMetaBuffer);
-        }
-
-        if (!info.bvhBoxBuffer) {
-            bfi.bufferSize = sizeof(uint32_t) * maxPrimitives * 32ull;
-            bfi.format = VK_FORMAT_R32G32B32A32_UINT;
-            createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer);
-        }
-
-        {
-            bfi.bufferSize = sizeof(VtBvhBlock) * 4ull;
-            bfi.format = VK_FORMAT_UNDEFINED;
-            createBufferRegion(bManager, bfi, vtAccelerator->_bvhBlockUniform);
-        }
-
         { // build final shared buffer for this class
             createSharedBuffer(bManager, vtAccelerator->_sharedBuffer, bfic);
-        }
+        };
 
-
-        if (!info.secondary)
         {
-            std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2work"])
-            };
+            std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2work"]) };
 
             // create pipeline layout
             auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
@@ -173,9 +136,8 @@ namespace _vt {
             };
             vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };
-
-        // write radix sort descriptor sets
-        {
+        
+        { // write radix sort descriptor sets
             std::vector<vk::DescriptorSetLayout> dsLayouts = {
                 vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["radixSortBind"]),
             };
@@ -190,13 +152,56 @@ namespace _vt {
             vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };
 
+        return result;
+    };
+
+    VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
+        VtResult result = VK_SUCCESS;
+        auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
+        auto vkDevice = _vtDevice->_device;
+        vtAccelerator->_device = _vtDevice;
+        vtAccelerator->_entryID = (info.entryID >> 1u) << 1u; // unpreferred to make entry ID non power of 2
+
+        // planned import from descriptor
+        const auto maxPrimitives = info.maxPrimitives;
+        vtAccelerator->_primitiveCount = info.primitiveCount;
+        vtAccelerator->_primitiveOffset = info.primitiveOffset;
+        vtAccelerator->_bvhBlockData.projection = info.coverMat;
+
+        std::shared_ptr<BufferManager> bManager; createBufferManager(_vtDevice, bManager);
+
+        VtDeviceBufferCreateInfo bfic = {};
+        bfic.familyIndex = _vtDevice->_mainFamilyIndex;
+        bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
+
+        VtBufferRegionCreateInfo bfi = {};
+
+        // UNUSED
+        if (!info.bvhMetaBuffer) {
+            bfi.bufferSize = sizeof(uint32_t) * 32ull;
+            bfi.format = VK_FORMAT_R32_UINT;
+            createBufferRegion(bManager, bfi, vtAccelerator->_bvhMetaBuffer);
+        };
+
+        if (!info.bvhBoxBuffer) {
+            bfi.bufferSize = sizeof(uint32_t) * maxPrimitives * 32ull;
+            bfi.format = VK_FORMAT_R32G32B32A32_UINT;
+            createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer);
+        };
+
+        {
+            bfi.bufferSize = sizeof(VtBvhBlock) * 4ull;
+            bfi.format = VK_FORMAT_UNDEFINED;
+            createBufferRegion(bManager, bfi, vtAccelerator->_bvhBlockUniform);
+        };
+
+        { // build final shared buffer for this class
+            createSharedBuffer(bManager, vtAccelerator->_sharedBuffer, bfic);
+        };
+
         { // build BVH builder program
-            std::vector<vk::PushConstantRange> constRanges = {
-                vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2))
-            };
-            std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"])
-            };
+            std::vector<vk::PushConstantRange> constRanges = { vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2)) };
+            std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"]) };
 
             // create descriptor set
             auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
@@ -228,7 +233,6 @@ namespace _vt {
             auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 16ull * sizeof(int32_t) * info.bvhBoxOffset, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
             auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
             std::vector<vk::WriteDescriptorSet> writes = {
-                //vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView(&metaView),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView(&metaView),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&metaBufferDesc),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo(&boxBuffer),

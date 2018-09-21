@@ -232,19 +232,13 @@ namespace _vt { // store in undercover namespace
         friend Device;
         VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
+        std::shared_ptr<VertexAssemblySet> _vertexAssemblySet; // in-bound vertex assembly 
 
         // vertex and bvh export 
         std::shared_ptr<DeviceBuffer> _sharedBuffer;
         std::shared_ptr<BufferRegion> _bvhMetaBuffer, _bvhBoxBuffer, _bvhBlockUniform;
         uint32_t _entryID = 0, _primitiveCount = -1, _primitiveOffset = 0;
         VtBvhBlock _bvhBlockData;
-
-        // build descriptor set 
-        VkDescriptorSet _buildDescriptorSet = VK_NULL_HANDLE;
-        VkDescriptorSet _sortDescriptorSet = VK_NULL_HANDLE;
-
-        // internal buffers
-        std::shared_ptr<BufferRegion> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
 
@@ -268,6 +262,15 @@ namespace _vt { // store in undercover namespace
 
         // static pipeline layout for stages 
         VkPipelineLayout _buildPipelineLayout = VK_NULL_HANDLE, _traversePipelineLayout = VK_NULL_HANDLE;
+
+        // build descriptor set 
+        VkDescriptorSet _buildDescriptorSet = VK_NULL_HANDLE;
+        VkDescriptorSet _sortDescriptorSet = VK_NULL_HANDLE;
+
+        // internal buffers
+        std::shared_ptr<DeviceBuffer> _sharedBuffer;
+        std::shared_ptr<BufferRegion> _mortonCodesBuffer, _mortonIndicesBuffer, _leafBuffer, _generalBoundaryResultBuffer, _leafNodeIndices, _currentNodeIndices, _fitStatusBuffer, _countersBuffer, _onWorkBoxes;
+
 
         operator VkPipeline() const { return _dullPipeline; };
     };
