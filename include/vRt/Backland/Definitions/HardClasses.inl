@@ -469,8 +469,12 @@ namespace _vt { // store in undercover namespace
         VtUniformBlock _uniformBlock = {};
 
         // vertex assembly pipeline bound
-        std::shared_ptr<DeviceBuffer> _uniformBlockBuffer;
+        std::shared_ptr<DeviceBuffer> _uniformBlockBuffer; // binding of uniform arrays
         std::shared_ptr<VertexAssemblyPipeline> _vertexAssembly;
+        std::shared_ptr<DeviceBuffer> _inlineTransformBuffer; // if have no required
+
+        // TODO: RTX capable buffers 
+        
 
         auto _parent() const { return _device; };
         auto& _parent() { return _device; };

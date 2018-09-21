@@ -128,7 +128,7 @@ struct VtVIUniform {
 layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
 layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
 #define vertexBlock _vertexBlock[gl_GlobalInvocationID.y + cblock.inputID]
-
+layout ( binding = 6, set = 1, std430 ) readonly buffer VT_TRANSFORMS { mat3x4 vTransforms[]; };
 
 
 uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) { //bytecorrect -= 1;
@@ -198,5 +198,28 @@ void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
          if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
     }
 }
+
+void storeAttribute(in ivec3 cdata, in vec4 fval) {
+    const ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(cdata.x*ATTRIB_EXTENT+cdata.y));
+    [[flatten]] if (cdata.z < 3) {
+        ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,cdata.z), (fval));
+    } else {
+#ifdef VRT_INTERPOLATOR_TEXEL
+        const vec3 vs = vec3(-1.f,1.f,1.f);
+        ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,3), mat3x4(
+            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,0)),
+            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,1)),
+            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,2))
+        ) * vs);
+#endif
+    }
+}
+
+void storePosition(in ivec2 cdata, in vec4 fval) {
+    const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
+    fval.xyz = mult4(vTransforms[inputID], fval);
+    ISTORE(lvtxIn, cdata.x*3+cdata.y, fval);
+}
+
 
 #endif

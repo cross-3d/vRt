@@ -51,6 +51,7 @@ namespace _vt {
     }
 
 
+    
 
     VtResult buildVertexSet(std::shared_ptr<CommandBuffer> cmdBuf, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
         VtResult result = VK_SUCCESS;
@@ -75,6 +76,9 @@ namespace _vt {
             if (cb) { cb(*cmdBuf, int(_bnd), iV->_uniformBlock); };
             if (iV->_uniformBlockBuffer) {
                 cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            };
+            if (iV->_inlineTransformBuffer) {
+                cmdUpdateBuffer(*cmdBuf, iV->_inlineTransformBuffer->_bufferRegion, 0ull, sizeof(IdentifyMat4), &IdentifyMat4);
             };
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
@@ -142,6 +146,9 @@ namespace _vt {
             if (cb) { cb(*cmdBuf, int(_bnd), iV->_uniformBlock); };
             if (iV->_uniformBlockBuffer) {
                 cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            };
+            if (iV->_inlineTransformBuffer) {
+                cmdUpdateBuffer(*cmdBuf, iV->_inlineTransformBuffer->_bufferRegion, 0ull, sizeof(IdentifyMat4), &IdentifyMat4);
             };
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;

@@ -682,6 +682,7 @@ namespace rnd {
                 vtii.verticeAccessor = 0;
                 vtii.indiceAccessor = -1;
                 vtii.topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
+                vtii.bTransformData = VTransforms; // 21.09.2018 
 
                 for (auto& attr: prim.attributes) { //attr
                     if (attr.first.compare("POSITION") == 0) {

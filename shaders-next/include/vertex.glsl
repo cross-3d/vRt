@@ -222,28 +222,6 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
 #endif
 
 
-#ifdef VERTEX_FILLING
-void storeAttribute(in ivec3 cdata, in vec4 fval) {
-    const ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(cdata.x*ATTRIB_EXTENT+cdata.y));
-    [[flatten]] if (cdata.z < 3) {
-        ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,cdata.z), (fval));
-    } else {
-#ifdef VRT_INTERPOLATOR_TEXEL
-        const vec3 vs = vec3(-1.f,1.f,1.f);
-        ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,3), mat3x4(
-            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,0)),
-            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,1)),
-            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,2))
-        ) * vs);
-#endif
-    }
-}
-
-void storePosition(in ivec2 cdata, in vec4 fval) {
-    ISTORE(lvtxIn, cdata.x*3+cdata.y, fval);
-}
-#endif
-
 
 
 // single float 32-bit box intersection

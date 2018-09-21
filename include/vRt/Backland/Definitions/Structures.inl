@@ -107,19 +107,23 @@ namespace vrt { // store in official namespace
 
         // bindings regions
         VkBuffer bBufferRegionBindings = nullptr; // direct descriptor set bind
-        uintptr_t bufferRegionByteOffset = 0;
+        VkDeviceSize bufferRegionByteOffset = 0;
 
         // accessor regions
         VkBuffer bBufferAccessors = nullptr; // direct descriptor set bind
-        uintptr_t bufferAccessorByteOffset = 0;
+        VkDeviceSize bufferAccessorByteOffset = 0;
 
         // attribute bindings (will stored in special patterned image buffer)
         VkBuffer bBufferAttributeBindings = nullptr; // direct descriptor set bind
-        uintptr_t attributeByteOffset = 0; // for buffer maners
+        VkDeviceSize attributeByteOffset = 0; // for buffer maners
 
         // buffer views
         VkBuffer bBufferViews = nullptr; // direct descriptor set bind
-        uintptr_t bufferViewByteOffset = 0;
+        VkDeviceSize bufferViewByteOffset = 0;
+
+        // 
+        VkBuffer bTransformData = nullptr;
+        VkDeviceSize transformOffset = 0;
     };
 
     // use as low level typed descriptor set
