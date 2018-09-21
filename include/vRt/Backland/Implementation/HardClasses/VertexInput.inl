@@ -25,7 +25,7 @@ namespace _vt {
         bfi.format = VK_FORMAT_UNDEFINED;
 
         // planned add external buffer support
-        vtVertexInput->_uniformBlockBuffer = _vtDevice->_bufferTraffic->_uniformVIBuffer;
+        vtVertexInput->_uniformBlockBuffer = _vtDevice->_bufferTraffic->_uniformVIBuffer; // use unified BUS only 
         vtVertexInput->_uniformBlock.primitiveCount = info.primitiveCount;
         vtVertexInput->_uniformBlock.verticeAccessor = info.verticeAccessor;
         vtVertexInput->_uniformBlock.indiceAccessor = info.indiceAccessor;

@@ -61,18 +61,21 @@ namespace _vt {
         auto device = cmdBuf->_parent();
         auto vertbd = device->_vertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
+        vertx->_vertexInputs = cmdBuf->_vertexInputs;
 
         // update constants
         imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
-            auto iV = iV_.lock();
+            auto& iV = iV_;
 
             //iV->_uniformBlock.updateOnly = false;
             iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount;
-            if (cb) cb(*cmdBuf, int(_bnd), iV->_uniformBlock);
-            cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            if (cb) { cb(*cmdBuf, int(_bnd), iV->_uniformBlock); };
+            if (iV->_uniformBlockBuffer) {
+                cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            };
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
         updateCommandBarrier(*cmdBuf);
@@ -80,7 +83,7 @@ namespace _vt {
         vertx->_calculatedPrimitiveCount = calculatedPrimitiveCount;
         if (useInstance) {
             uint32_t _bnd = 0, _szi = cmdBuf->_vertexInputs.size();
-            auto iV = cmdBuf->_vertexInputs[_bnd].lock();
+            auto& iV = cmdBuf->_vertexInputs[_bnd];
 
             // native descriptor sets
             auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
@@ -96,7 +99,7 @@ namespace _vt {
         } else {
             for (auto iV_ : cmdBuf->_vertexInputs) {
                 uint32_t _bnd = _bndc++;
-                auto iV = iV_.lock();
+                auto& iV = iV_;
 
                 // native descriptor sets
                 auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
@@ -114,10 +117,10 @@ namespace _vt {
         }
 
         return result;
-    }
+    };
 
     // update region of vertex set by bound input set
-    VtResult updateVertexSet(std::shared_ptr<CommandBuffer> cmdBuf, uint32_t inputSet = 0, bool multiple = false, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
+    VtResult updateVertexSet(std::shared_ptr<CommandBuffer> cmdBuf, uint32_t inputSet = 0, bool multiple = true, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
         VtResult result = VK_SUCCESS;
 
         // useless to updating
@@ -126,17 +129,20 @@ namespace _vt {
         auto device = cmdBuf->_parent();
         auto vertbd = device->_vertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
+        vertx->_vertexInputs = cmdBuf->_vertexInputs;
 
         // update constants
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto iV_ : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
-            auto iV = iV_.lock();
+            auto& iV = iV_;
 
             //iV->_uniformBlock.updateOnly = true;
-            iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount;
-            if (cb) cb(*cmdBuf, int(_bnd), iV->_uniformBlock);
-            cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount; // every requires newer offset 
+            if (cb) { cb(*cmdBuf, int(_bnd), iV->_uniformBlock); };
+            if (iV->_uniformBlockBuffer) {
+                cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
+            };
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
         updateCommandBarrier(*cmdBuf);
@@ -144,7 +150,7 @@ namespace _vt {
         if (useInstance || !multiple) {
             uint32_t _bnd = inputSet;
             uint32_t _szi = cmdBuf->_vertexInputs.size() - inputSet;
-            auto iV = cmdBuf->_vertexInputs[_bnd].lock();
+            auto& iV = cmdBuf->_vertexInputs[_bnd];
 
             // native descriptor sets
             auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
@@ -161,7 +167,7 @@ namespace _vt {
             for (auto iV_ : cmdBuf->_vertexInputs) {
                 uint32_t _bnd = _bndc++;
                 if (_bnd >= inputSet) {
-                    auto iV = iV_.lock();
+                    auto& iV = iV_;
 
                     // native descriptor sets
                     auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
