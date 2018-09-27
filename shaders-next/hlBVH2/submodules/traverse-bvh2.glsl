@@ -24,7 +24,7 @@ struct BvhTraverseState {
          int idx, defTriangleID, maxTriangles; float diffOffset;
     lowp int stackPtr, pageID;
     fvec4_ minusOrig, directInv; // vec4 of 32-bits
-    bvec3_ bsgn;
+    //bvec3_ bsgn;
 } traverseState;
 
 
@@ -87,7 +87,7 @@ void doIntersection(in bool isvalid, in float dlen) {
 };
 
 // corrections of box intersection
-const bvec3 bsgn = false.xxx;
+const bvec3_ bsgn = false_.xxx;
 const float dirlen = 1.f, invlen = 1.f, bsize = 1.f;
 
 // BVH traversing itself 
@@ -110,8 +110,8 @@ void initTraversing(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
 
     // initial traversing state
-    resetEntry(valid); traverseState.bsgn = bvec3_(greaterThanEqual(dirproj.xyz, 0.f.xxx)); // sign for box intersections
-    [[flatten]] if (!intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, traverseState.bsgn, bndsf2, nfe)) { traverseState.idx = -1; };
+    resetEntry(valid); //traverseState.bsgn = bvec3_(greaterThanEqual(dirproj.xyz, 0.f.xxx)); // sign for box intersections
+    [[flatten]] if (!intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe)) { traverseState.idx = -1; };
     [[flatten]] if (eht.x >= 0) primitiveState.lastIntersection = hits[eht].uvt;
 
     // traversing inputs
@@ -141,7 +141,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
             else { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
                 #define bbox2x bvhNode.cbox // use same memory
-                 bvec2_ childIntersect = bool_(cnode.x&1) & bool_(cnode.x>0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, traverseState.bsgn, bbox2x, nfe);
+                 bvec2_ childIntersect = bool_(cnode.x&1) & bool_(cnode.x>0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
 
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 

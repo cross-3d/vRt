@@ -231,12 +231,12 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
 bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec3_ sgn, in mat3x2 tMinMax, inout vec4 nfe) {
     nfe = INFINITY.xxxx;
 
-    tMinMax[0] = sgn.x==true_ ? tMinMax[0] : tMinMax[0].yx;
-    tMinMax[1] = sgn.y==true_ ? tMinMax[1] : tMinMax[1].yx;
-    tMinMax[2] = sgn.z==true_ ? tMinMax[2] : tMinMax[2].yx;
+    //tMinMax[0] = sgn.x==true_ ? tMinMax[0] : tMinMax[0].yx;
+    //tMinMax[1] = sgn.y==true_ ? tMinMax[1] : tMinMax[1].yx;
+    //tMinMax[2] = sgn.z==true_ ? tMinMax[2] : tMinMax[2].yx;
     
     tMinMax = mat3x2(fma(tMinMax[0], dr.xx, origin.xx), fma(tMinMax[1], dr.yy, origin.yy), fma(tMinMax[2], dr.zz, origin.zz));
-    //[[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec2(min(tMinMax[i].x, tMinMax[i].y), max(tMinMax[i].x, tMinMax[i].y));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i]=vec2(min(tMinMax[i].x, tMinMax[i].y), max(tMinMax[i].x, tMinMax[i].y));
 
     const float 
         tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x), 
@@ -267,14 +267,15 @@ bvec2_ intersectCubeDual(in fvec3_ origin, in fvec3_ dr, in bvec3_ sgn, in fvec2
     nfe2 = INFINITY.xxxx;
     
     // choice the side
-    tMinMax[0] = fvec2_[2](tMinMax[0][uint(sgn.x^true_)], tMinMax[0][uint(sgn.x)]);
-    tMinMax[1] = fvec2_[2](tMinMax[1][uint(sgn.y^true_)], tMinMax[1][uint(sgn.y)]);
-    tMinMax[2] = fvec2_[2](tMinMax[2][uint(sgn.z^true_)], tMinMax[2][uint(sgn.z)]);
+    //tMinMax[0] = fvec2_[2](tMinMax[0][uint(sgn.x^true_)], tMinMax[0][uint(sgn.x)]);
+    //tMinMax[1] = fvec2_[2](tMinMax[1][uint(sgn.y^true_)], tMinMax[1][uint(sgn.y)]);
+    //tMinMax[2] = fvec2_[2](tMinMax[2][uint(sgn.z^true_)], tMinMax[2][uint(sgn.z)]);
 
     // calculate intersection
     tMinMax[0] = fvec2_[2](fma(tMinMax[0][0], dr.xx, origin.xx), fma(tMinMax[0][1], dr.xx, origin.xx));
     tMinMax[1] = fvec2_[2](fma(tMinMax[1][0], dr.yy, origin.yy), fma(tMinMax[1][1], dr.yy, origin.yy));
     tMinMax[2] = fvec2_[2](fma(tMinMax[2][0], dr.zz, origin.zz), fma(tMinMax[2][1], dr.zz, origin.zz));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i]=fvec2_[2](min(tMinMax[i][0],tMinMax[i][1]),max(tMinMax[i][0],tMinMax[i][1]));
 
     const 
 #if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
