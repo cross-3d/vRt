@@ -28,7 +28,9 @@ namespace vrt {
 };
 
 
-// low-level implementations (WIP)
+// lower level hard classes (WIP)
+#include "vRt/Backland/Definitions/HardClasses.inl"
+
 namespace _vt {
 
 
