@@ -24,7 +24,6 @@ struct BvhTraverseState {
          int idx, defTriangleID, maxTriangles; float diffOffset;
     lowp int stackPtr, pageID;
     fvec4_ minusOrig, directInv; // vec4 of 32-bits
-    //bvec3_ bsgn;
 } traverseState;
 
 
@@ -59,10 +58,6 @@ void storeStack(in int rsl) {
 };
 
 
-//#ifndef fpInner
-//#define fpInner (128.f*SFN) //0.00000011920928955078125f
-//#define fpOne 1.f
-//#endif
 
 const float fpInner = 128.f*SFN, fpOne = 1.f;
 

@@ -228,15 +228,12 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
 
-bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec3_ sgn, in mat3x2 tMinMax, inout vec4 nfe) {
-    nfe = INFINITY.xxxx;
+bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec3_ sgn, in mat3x2 tMinMax, inout vec4 nfe) 
+{ nfe = INFINITY.xxxx; // indefined distance
 
-    //tMinMax[0] = sgn.x==true_ ? tMinMax[0] : tMinMax[0].yx;
-    //tMinMax[1] = sgn.y==true_ ? tMinMax[1] : tMinMax[1].yx;
-    //tMinMax[2] = sgn.z==true_ ? tMinMax[2] : tMinMax[2].yx;
-    
-    tMinMax = mat3x2(fma(tMinMax[0], dr.xx, origin.xx), fma(tMinMax[1], dr.yy, origin.yy), fma(tMinMax[2], dr.zz, origin.zz));
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i]=vec2(min(tMinMax[i].x, tMinMax[i].y), max(tMinMax[i].x, tMinMax[i].y));
+    // calculate intersection
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec2(fma(tMinMax[i], dr[i].xx, origin[i].xx));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec2(min(tMinMax[i].x, tMinMax[i].y), max(tMinMax[i].x, tMinMax[i].y));
 
     const float 
         tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x), 
@@ -244,7 +241,7 @@ bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec3_ sgn, in mat3x2
 
     // resolve hit
     const bool isCube = tFar>=tNear && tFar >= -SFN && tNear < N_INFINITY;
-    nfe.xz = mix(nfe.xz, vec2(tNear, tFar), isCube.xx);
+    [[flatten]] if (isCube) nfe.xz = vec2(tNear, tFar);
     return isCube;
 };
 
@@ -262,20 +259,11 @@ bvec2_ intersectCubeDual(in mediump fvec3_ origin, in mediump fvec3_ dr, in bvec
 // bvec2_ intersectCubeDual(in fvec3_ origin, in fvec3_ dr, in bvec3 sgn, in fmat3x4_ tMinMax, inout vec4 nfe2)
 bvec2_ intersectCubeDual(in fvec3_ origin, in fvec3_ dr, in bvec3_ sgn, in fvec2_[3][2] tMinMax, inout vec4 nfe2)
 #endif
-{
-    // indefined distance
-    nfe2 = INFINITY.xxxx;
-    
-    // choice the side
-    //tMinMax[0] = fvec2_[2](tMinMax[0][uint(sgn.x^true_)], tMinMax[0][uint(sgn.x)]);
-    //tMinMax[1] = fvec2_[2](tMinMax[1][uint(sgn.y^true_)], tMinMax[1][uint(sgn.y)]);
-    //tMinMax[2] = fvec2_[2](tMinMax[2][uint(sgn.z^true_)], tMinMax[2][uint(sgn.z)]);
+{ nfe2 = INFINITY.xxxx; // indefined distance
 
     // calculate intersection
-    tMinMax[0] = fvec2_[2](fma(tMinMax[0][0], dr.xx, origin.xx), fma(tMinMax[0][1], dr.xx, origin.xx));
-    tMinMax[1] = fvec2_[2](fma(tMinMax[1][0], dr.yy, origin.yy), fma(tMinMax[1][1], dr.yy, origin.yy));
-    tMinMax[2] = fvec2_[2](fma(tMinMax[2][0], dr.zz, origin.zz), fma(tMinMax[2][1], dr.zz, origin.zz));
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i]=fvec2_[2](min(tMinMax[i][0],tMinMax[i][1]),max(tMinMax[i][0],tMinMax[i][1]));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](fma(tMinMax[i][0], dr[i].xx, origin[i].xx), fma(tMinMax[i][1], dr[i].xx, origin[i].xx));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](min(tMinMax[i][0], tMinMax[i][1]), max(tMinMax[i][0], tMinMax[i][1]));
 
     const 
 #if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
