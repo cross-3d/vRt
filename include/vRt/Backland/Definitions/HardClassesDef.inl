@@ -24,8 +24,10 @@ namespace _vt { // store in undercover namespace
     class VertexAssemblySet;
     class RayTracingSet;
     class BufferTraffic;
+    class PipelineLayout;
 
     // use roled buffers
+    // TODO: need's unified base class for some cases
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY> class RoledBuffer;
 
     using DeviceBuffer = RoledBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
@@ -41,7 +43,9 @@ namespace _vt { // store in undercover namespace
 
     // will inherits
     class AdvancedAcceleratorBase;
+    class AdvancedAcceleratorDataBase;
 
     // extension for accelerator sets
     class AcceleratorSetExtensionBase;
+    class AcceleratorSetExtensionDataBase;
 };

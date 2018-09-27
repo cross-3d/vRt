@@ -75,8 +75,7 @@ namespace vrt { // store in official namespace
         VT_VENDOR_INTEL
     } VtVendor;
 
-    typedef enum VtAcceleratorName : uint32_t {
-        VT_ACCELERATOR_NAME_UNKNOWN = 0,
-        //VT_ACCELERATOR_NAME_RTX // planned in 2019
-    } VtAcceleratorName;
+    typedef enum VtAccelerationName : uint32_t {
+        VT_ACCELERAION_NAME_UNKNOWN = 0,
+    } VtAccelerationName;
 };

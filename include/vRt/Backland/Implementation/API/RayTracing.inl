@@ -148,4 +148,12 @@ namespace _vt {
         return result;
     };
 
+    // create wrapped command buffer
+    VtResult queryCommandBuffer(std::shared_ptr<Device> _vtDevice, VkCommandBuffer cmdBuf, std::shared_ptr<CommandBuffer>& vtCmdBuf) {
+        vtCmdBuf = std::make_shared<CommandBuffer>();
+        vtCmdBuf->_device = _vtDevice;
+        vtCmdBuf->_commandBuffer = cmdBuf;
+        return VK_SUCCESS;
+    };
+
 };

@@ -92,9 +92,9 @@ void main() {
         bcenter.xyz = (bcenter.xyz - sceneMin.xyz) / precIssue(sceneRes.xyz), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
 
 #ifdef USE_MORTON_32
-         uint mortonCode = encodeMorton(packUnorm4x8(bcenter));
+        const uint mortonCode = encodeMorton(packUnorm4x8(bcenter));
 #else
-         uvec2 mortonCode = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
+        const uvec2 mortonCode = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
 #endif
 
         // store leaf data

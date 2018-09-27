@@ -13,13 +13,16 @@ namespace _vt {
 namespace vrt {
 
     // extending to enum type
-    auto VT_ACCELERATOR_NAME_RTX = VtAcceleratorName(0x00001000u); // planned in 2019
+    auto VT_ACCELERATION_NAME_RTX = VtAccelerationName(0x00001000u); // planned in 2019
 
     // passing structure
     class VtRTXAccelerationExtension : public VtDeviceAccelerationExtension {
     public: 
         friend VtDeviceAccelerationExtension;
-        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_RTX;
+
+        virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; };
+
+
     };
 
 };
@@ -29,12 +32,31 @@ namespace vrt {
 namespace _vt {
 
 
+    class RTXAcceleratorSetExtensionData : public AcceleratorSetExtensionDataBase, std::enable_shared_from_this<RTXAcceleratorSetExtensionData> {
+    public:
+        friend Device;
+
+
+    };
+
     // planned in 2019
     class RTXAcceleratorSetExtension : public AcceleratorSetExtensionBase, std::enable_shared_from_this<RTXAcceleratorSetExtension> {
     public:
         friend Device;
         friend AcceleratorSetExtensionBase;
-        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_RTX; // identify as RTX 
+        virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; };
+
+        // built-in operators for getting inner data 
+        auto* operator->()  { return (RTXAcceleratorSetExtensionData*)_dataPtr.get(); };
+        auto* operator->() const  { return (RTXAcceleratorSetExtensionData*)_dataPtr.get(); };
+    };
+
+
+    class RTXAcceleratorData : public AdvancedAcceleratorDataBase, std::enable_shared_from_this<RTXAcceleratorData> {
+    public:
+        friend Device;
+
+
     };
 
     // planned in 2019
@@ -42,7 +64,10 @@ namespace _vt {
     public:
         friend Device;
         friend AdvancedAcceleratorBase;
-        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_RTX; // identify as RTX 
+        virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; };
 
+        // built-in operators for getting inner data 
+        auto* operator->()  { return (RTXAcceleratorData*)_dataPtr.get(); };
+        auto* operator->() const  { return (RTXAcceleratorData*)_dataPtr.get(); };
     };
 };

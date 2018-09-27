@@ -1,7 +1,8 @@
 #pragma once
 
 // implementable
-#include "HardClasses.inl"
+#include "../../Parts/HandlersDef.inl" // no, shouldn't 
+#include "HardClassesDef.inl" // no, shouldn't 
 
 // implement of handlers
 namespace vrt { // store in official namespace
@@ -29,47 +30,47 @@ namespace vrt { // store in official namespace
 
     class VtInstance : public VtHandle<_vt::Instance> {
     public:
-        operator VkInstance() const { return *_vtHandle; };
+        operator VkInstance() const;
     };
 
     class VtPhysicalDevice : public VtHandle<_vt::PhysicalDevice> {
     public:
-        operator VkPhysicalDevice() const { return *_vtHandle; };
+        operator VkPhysicalDevice() const;
     };
 
     class VtCommandBuffer : public VtHandle<_vt::CommandBuffer> {
     public:
-        operator VkCommandBuffer() const { return *_vtHandle; };
+        operator VkCommandBuffer() const;
     };
 
     class VtPipelineLayout : public VtHandle<_vt::PipelineLayout> {
     public:
-        operator VkPipelineLayout() const { return *_vtHandle; };
+        operator VkPipelineLayout() const;
     };
 
     class VtVertexInputSet : public VtHandle<_vt::VertexInputSet> {
     public:
-        operator VkDescriptorSet() const { return *_vtHandle; };
+        operator VkDescriptorSet() const;
     };
 
     class VtRayTracingSet : public VtHandle<_vt::RayTracingSet> {
     public:
-        operator VkDescriptorSet() const { return *_vtHandle; };
+        operator VkDescriptorSet() const;
     };
 
     class VtAcceleratorSet : public VtHandle<_vt::AcceleratorSet> {
     public:
-        operator VkDescriptorSet() const { return *_vtHandle; };
+        operator VkDescriptorSet() const;
     };
 
     class VtVertexAssemblySet : public VtHandle<_vt::VertexAssemblySet> {
     public:
-        operator VkDescriptorSet() const { return *_vtHandle; };
+        operator VkDescriptorSet() const;
     };
 
     class VtMaterialSet : public VtHandle<_vt::MaterialSet> {
     public:
-        operator VkDescriptorSet() const { return *_vtHandle; };
+        operator VkDescriptorSet() const;
     };
 
     template<VmaMemoryUsage U>
@@ -77,43 +78,47 @@ namespace vrt { // store in official namespace
     private:
         using P = VtHandle<_vt::RoledBuffer<U>>;
     public:
-        operator VkBuffer() const { return *P::_vtHandle; };
-        operator VkBuffer&() { return *P::_vtHandle; };
+        operator VkBuffer() const; //{ return *P::_vtHandle; };
+        operator VkBuffer&();// { return *P::_vtHandle; };
 
         // deprecated bufferView in buffer
-        operator VkBufferView() const { return *P::_vtHandle; };
-        operator VkBufferView&() { return *P::_vtHandle; };
+        operator VkBufferView() const; //{ return *P::_vtHandle; };
+        operator VkBufferView&(); //{ return *P::_vtHandle; };
     };
+
+    // templated implementations
+    template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBuffer() const { return *P::_vtHandle; };
+    template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBuffer&() { return *P::_vtHandle; };
+    template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView() const { return *P::_vtHandle; };
+    template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView&() { return *P::_vtHandle; };
 
     class VtDeviceImage : public VtHandle<_vt::DeviceImage> {
     public:
-        operator VkImage() const { return *_vtHandle; };
-        operator VkImageView() const { return *_vtHandle; };
-        operator VkImage&() { return *_vtHandle; };
-        operator VkImageView&() { return *_vtHandle; };
+        operator VkImage() const; //{ return *_vtHandle; };
+        operator VkImageView() const; //{ return *_vtHandle; };
+        operator VkImage&(); //{ return *_vtHandle; };
+        operator VkImageView&(); //{ return *_vtHandle; };
     };
 
     class VtDevice : public VtHandle<_vt::Device> {
     public:
-        operator VkDevice() const { return *_vtHandle; }
-        operator VkPipelineCache() const { return *_vtHandle; };
-        operator VkDescriptorPool() const { return *_vtHandle; };
+        operator VkDevice() const; //{ return *_vtHandle; }
+        operator VkPipelineCache() const; //{ return *_vtHandle; };
+        operator VkDescriptorPool() const; //{ return *_vtHandle; };
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-        operator VmaAllocator() const { return *_vtHandle; }
+        operator VmaAllocator() const; //{ return *_vtHandle; }
 #endif
         // casting operators with traffic buffers
-        operator VtHostToDeviceBuffer() const { return VtHostToDeviceBuffer{ _vtHandle->_bufferTraffic->_uploadBuffer }; };
-        operator VtDeviceToHostBuffer() const { return VtDeviceToHostBuffer{ _vtHandle->_bufferTraffic->_downloadBuffer }; };
+        operator VtHostToDeviceBuffer() const; //{ return VtHostToDeviceBuffer{ _vtHandle->_bufferTraffic->_uploadBuffer }; };
+        operator VtDeviceToHostBuffer() const; //{ return VtDeviceToHostBuffer{ _vtHandle->_bufferTraffic->_downloadBuffer }; };
 
         // getter of descriptor layout from device VtDevice
 #ifdef VRT_ENABLE_STRING_VIEW
-        auto getDescriptorLayout(const std::string_view& name) const {
+        VkDescriptorSetLayout getDescriptorLayout(const std::string_view& name) const;
 #else
-        auto getDescriptorLayout(const std::string& name) const {
+        VkDescriptorSetLayout getDescriptorLayout(const std::string& name) const;
 #endif
-            return _vtHandle->_descriptorLayoutMap[std::string(name)];
-        };
     };
 
 };

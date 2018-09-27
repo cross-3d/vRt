@@ -279,6 +279,7 @@ namespace _vt { // store in undercover namespace
     };
 
     // this is wrapped advanced buffer class
+    // TODO: need's unified base class for some cases
     template<VmaMemoryUsage U>
     class RoledBuffer : public std::enable_shared_from_this<RoledBuffer<U>> {
     public:
@@ -491,17 +492,39 @@ namespace _vt { // store in undercover namespace
     };
 
 
+
+
+    // 
+    class AdvancedAcceleratorDataBase : public std::enable_shared_from_this<AdvancedAcceleratorDataBase> {
+    public:
+        friend Device;
+        virtual ~AdvancedAcceleratorDataBase() {}; // with overridabable virtual desctructor
+    };
+
+    // 
+    class AcceleratorSetExtensionDataBase : public std::enable_shared_from_this<AcceleratorSetExtensionDataBase> {
+    public:
+        friend Device;
+        virtual ~AcceleratorSetExtensionDataBase() {}; // with overridabable virtual desctructor
+    };
+
     // unused, planned in 2019 
     class AdvancedAcceleratorBase : public std::enable_shared_from_this<AdvancedAcceleratorBase> {
     public:
         friend Device;
-        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
+        //VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
         std::weak_ptr<Device> _device = {};
+        std::shared_ptr<AdvancedAcceleratorDataBase> _dataPtr = {};
 
         // minimal requirement of... 
         virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) = 0;
         virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet) = 0;
-        virtual VtResult _Init(const void* extensionStructure = nullptr) = 0; // initialize by extension 
+        virtual VtResult _Init(const VtAdvancedAccelerationExtensionInfo* extensionStructure = nullptr) = 0; // initialize by extension 
+        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
+
+         // built-in method's
+        auto* operator->() { return _dataPtr.get(); };
+        auto* operator->() const { return _dataPtr.get(); };
     };
 
     // planned in 2019
@@ -509,13 +532,22 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         //VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
-        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
+        //VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
         std::shared_ptr<Device> _device = {};
+        std::shared_ptr<AcceleratorSetExtensionDataBase> _dataPtr = {};
 
         //operator VkDescriptorSet() const { return _descriptorSet; };
         auto _parent() const { return _device; };
         auto& _parent() { return _device; };
+        //virtual VtResult _Init(const void* extensionStructure = nullptr) = 0; // initialize by extension (TODO)
+        virtual VtResult _Construction(std::shared_ptr<AcceleratorSet> accelSet) = 0; // accessing by same address
+        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
+
+        // built-in method's
+        auto* operator->() { return _dataPtr.get(); };
+        auto* operator->() const { return _dataPtr.get(); };
     };
+
 
 
 };

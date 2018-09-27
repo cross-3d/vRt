@@ -21,11 +21,10 @@ namespace vrt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_ACCELERATION_EXTENSION;
         const void* pNext = nullptr;
 
-        VtAcceleratorName acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN;
-
         // API in-runtime implementation (dynamic polymorphism)
         virtual bool _Criteria(std::shared_ptr<_vt::Device> lwDevice) = 0;
         virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice) = 0;
+        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; }; // in-runtime return acceleration extension name
     };
 
 
@@ -35,8 +34,8 @@ namespace vrt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_ADVANCED_ACCELERATION_EXTENSION_INFO;
         const void* pNext = nullptr;
 
-        VtAcceleratorName acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN;
-        const VtDeviceAccelerationExtension* pAccelerationExtensionInfo = nullptr; // structure which passing advanced accelerator
+        VtAccelerationName accelerationName = VT_ACCELERAION_NAME_UNKNOWN; // required for statical identify extension 
+        const VtDeviceAccelerationExtension* pAccelerationExtension = nullptr; // structure which passing advanced accelerator
     };
 
     struct VtArtificalDeviceExtension {
