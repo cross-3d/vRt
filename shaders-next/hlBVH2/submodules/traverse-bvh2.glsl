@@ -11,9 +11,9 @@
 
 
 
-  const  lowp  int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount; // 256-bit global memory stack pages
-//const  lowp  int localStackSize = 4, pageCount = 8, computedStackSize = localStackSize*pageCount; // 128-bit capable (minor GPU, GDDR6 two-channels)
-  const highp uint  maxIterations = 8192;
+//const  lowp  int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount; // 256-bit global memory stack pages
+  const  lowp  int localStackSize = 4, pageCount = 8, computedStackSize = localStackSize*pageCount; // 128-bit capable (minor GPU, GDDR6 two-channels)
+  const highp uint maxIterations  = 8192;
 
 layout ( std430, binding = _CACHE_BINDING, set = 0 ) coherent buffer VT_PAGE_SYSTEM { int pages[][localStackSize]; };
 
@@ -58,10 +58,10 @@ void storeStack(in int rsl) {
 };
 
 
-
-const float fpInner = 128.f*SFN, fpOne = 1.f;//SFO;
-//const float fpInner = 0.f, fpOne = SFO;
-//const float fpInner = SFN, fpOne = 1.f;//SFO;
+//const float fpInner = 128.f*SFN, fpOne = 1.f;//SFO;
+#ifndef fpInner
+const float fpInner = 0.0000152587890625, fpOne = 1.f;
+#endif
 
 // triangle intersection, when it found
 void doIntersection(in bool isvalid, in float dlen) {
