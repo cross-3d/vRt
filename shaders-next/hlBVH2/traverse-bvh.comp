@@ -71,9 +71,9 @@ void main() {
                     hit.payloadID = 0, hit.rayID = rayID+1;
                     hit.uvt = primitiveState.lastIntersection;
                     hit.attribID = vtVerifyClosestHit(hid,-1)+1;
-                    imageStore(rayLink,r2ID,max(imageLoad(rayLink,r2ID),hid+1)); hid = -1;
+                    //imageStore(rayLink,r2ID,max(imageLoad(rayLink,r2ID),hid+1)); hid = -1;
+                    imageAtomicMax(rayLink,r2ID,(hid+1).x); hid = -1;
                     primitiveState.lastIntersection.w = FINT_ZERO;
-                    //imageAtomicMax(rayLink,r2ID,(hid+1).x); hid = -1;
                 };
             };
 
@@ -84,8 +84,8 @@ void main() {
                 hit.payloadID = 0, hit.rayID = rayID+1;
                 hit.uvt = primitiveState.lastIntersection;
                 hit.attribID = 0; vtVerifyMissedHit(hid, 0);
-                imageStore(rayLink,r2ID,max(imageLoad(rayLink,r2ID),hid+1));
-                //imageAtomicMax(rayLink,r2ID,(hid+1).x);
+                //imageStore(rayLink,r2ID,max(imageLoad(rayLink,r2ID),hid+1));
+                imageAtomicMax(rayLink,r2ID,(hid+1).x);
             };
 
 #ifndef DMA_HIT

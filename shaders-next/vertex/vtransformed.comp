@@ -23,7 +23,7 @@ const int VCOLOR_TID = 4;
 const int VCOUNT = 3;
 
 
-bool nvlda(in vec4 a) { return (dot(a,a)<1e-4f || any(isnan(a)) || any(isinf(a))); }
+bool nvlda(in vec4 a) { return dot(a,a)<1e-5f; };
 void calculateTBN(in int rofft, in int trip, in mat3x4 transformNrm) {
     const int itri = trip*3;
     const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
@@ -49,8 +49,8 @@ void calculateTBN(in int rofft, in int trip, in mat3x4 transformNrm) {
     const ivec2 NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID));
     const ivec2 TEXCOORD_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TEXCOORD_TID));
     [[unroll]] for (int i=0;i<3;i++) {
-         ivec2 nmi = mosaicIdc(NORMAL_,i); vec4 normal = TLOAD(attrib_texture_out, nmi);
-         if (nvlda(normal)) ISTORE(attrib_texture_out, nmi, normal = gnormal);
+        const ivec2 nmi = mosaicIdc(NORMAL_,i); vec4 normal = TLOAD(attrib_texture_out, nmi);
+        [[flatten]] if (nvlda(normal)) ISTORE(attrib_texture_out, nmi, normal = gnormal);
         normals[i] = normal, texcoord[i] = TLOAD(attrib_texture_out, mosaicIdc(TEXCOORD_,i));
     }
 
@@ -82,9 +82,9 @@ void calculateTBN(in int rofft, in int trip, in mat3x4 transformNrm) {
         }
 
         const ivec2 tmi = mosaicIdc(TANGENT_, i);
-        ISTORE(attrib_texture_out, mosaicIdc(BITANGENT_, i), vec4(normalize(mult4(transformNrm, vec4(idet*b,0.f))), 0.0f));
+        ISTORE(attrib_texture_out, mosaicIdc(BITANGENT_, i), vec4(normalize(mult4(transformNrm, vec4(normalize(idet*b),0.f))), 0.0f));
         [[flatten]] if (nvlda(TLOAD(attrib_texture_out, tmi))) {
-            ISTORE(attrib_texture_out, tmi, vec4(normalize(mult4(transformNrm, vec4(idet*t,0.f))), 0.0f));
+            ISTORE(attrib_texture_out, tmi, vec4(normalize(mult4(transformNrm, vec4(normalize(idet*t),0.f))), 0.0f));
         }
     }
 }

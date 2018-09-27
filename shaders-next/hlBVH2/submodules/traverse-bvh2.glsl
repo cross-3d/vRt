@@ -59,7 +59,9 @@ void storeStack(in int rsl) {
 
 
 
-const float fpInner = 128.f*SFN, fpOne = 1.f;
+const float fpInner = 128.f*SFN, fpOne = 1.f;//SFO;
+//const float fpInner = 0.f, fpOne = SFO;
+//const float fpInner = SFN, fpOne = 1.f;//SFO;
 
 // triangle intersection, when it found
 void doIntersection(in bool isvalid, in float dlen) {
@@ -110,7 +112,8 @@ void initTraversing(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     [[flatten]] if (eht.x >= 0) primitiveState.lastIntersection = hits[eht].uvt;
 
     // traversing inputs
-    traverseState.diffOffset = min(-nfe.x, 0.f), traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(traverseState.diffOffset.xxxx)));
+    traverseState.diffOffset = min(-nfe.x, 0.f);
+    traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(traverseState.diffOffset.xxxx)));
 
     // intersection inputs
     primitiveState.dir = direct, primitiveState.orig = fma(direct, traverseState.diffOffset.xxxx, torig);

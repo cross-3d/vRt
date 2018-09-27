@@ -15,6 +15,20 @@ namespace vrt { // store in official namespace
         const void* pNext = nullptr;
     };
 
+
+    // should be implemented support for enabling
+    class VtDeviceAccelerationExtension {
+        VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_ACCELERATION_EXTENSION;
+        const void* pNext = nullptr;
+
+        VtAcceleratorName acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN;
+
+        // API in-runtime implementation (dynamic polymorphism)
+        virtual bool _Criteria(std::shared_ptr<_vt::Device> lwDevice) = 0;
+        virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice) = 0;
+    };
+
+
     // planned connection with VtAcceleratorName, and automatic initialization
     // passing with pNext to VtArtificalDeviceExtension
     struct VtAdvancedAccelerationExtensionInfo {
@@ -22,7 +36,7 @@ namespace vrt { // store in official namespace
         const void* pNext = nullptr;
 
         VtAcceleratorName acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN;
-        const void* pAccelerationExtensionInfo = nullptr; // structure which passing advanced accelerator
+        const VtDeviceAccelerationExtension* pAccelerationExtensionInfo = nullptr; // structure which passing advanced accelerator
     };
 
     struct VtArtificalDeviceExtension {

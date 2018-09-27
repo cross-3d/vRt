@@ -34,7 +34,7 @@ void main() {
     IFANY (bcount <= 0) return;
 
     // use SIMD lanes for calculate histograms
-    WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR(blocks.offset).xxxx + WPTR4(Lane_Idx.xxxx);
+    WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR4(blocks.offset.xxxx) + WPTR4(Lane_Idx.xxxx);
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
 
@@ -47,11 +47,11 @@ void main() {
 
         // WARP-optimized histogram calculation
         [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-            const lowp uint radice = uint(rk + Radice_Idx);
+            const BOTTLE_TYPE radice = BOTTLE_TYPE(rk + Radice_Idx);
 #ifdef PREFER_UNPACKED
-            const bvec4 owned = and(equal(key, radice.xxxx), validAddress);
+            const bvec4 owned = and(equal(BOTTLE_TYPE_VEC(key), radice.xxxx), validAddress);
 #else
-            const bvec4 owned = and(equal(up4x_8(key), radice.xxxx), validAddress);
+            const bvec4 owned = and(equal(BOTTLE_TYPE_VEC(up4x_8(key)), radice.xxxx), validAddress);
 #endif
              [[flatten]] if (any(owned)) countHistogram(uint(radice), owned);
              IFALL (all(or((radice >= RADICES).xxxx, or(owned, not(validAddress))))) break;

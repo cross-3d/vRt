@@ -16,7 +16,7 @@
     }
     #else
     highp uint M16(in f16samplerBuffer m, in uint i) {
-        return bitfieldExtract(packHalf2x16(texelFetch(m, int(i>>1)).xy), int(i&1)<<4, 16); // unified sentence of uint16_t values
+        return bitfieldExtract(packFloat2x16(texelFetch(m, int(i>>1)).xy), int(i&1)<<4, 16); // unified sentence of uint16_t values
     }
     #endif
 
@@ -26,24 +26,24 @@ uint M32(in f16samplerBuffer m, in uint i) {
 #endif
 
 highp uint M16(in highp usamplerBuffer m, in uint i) {
-     highp uvec2 mpc = texelFetch(m, int(i>>1)).xy;
+    const highp uvec2 mpc = texelFetch(m, int(i>>1)).xy;
     return (i&1)==1?mpc.y:mpc.x;
 }
 
 uint M32(in highp usamplerBuffer m, in uint i) {
-     highp uvec2 mpc = texelFetch(m, int(i)).xy;
+    const highp uvec2 mpc = texelFetch(m, int(i)).xy;
     return ((mpc.y<<16u)|mpc.x);
 }
 
 
 highp uint M16(in mediump samplerBuffer m, in uint i) {
-     highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i>>1)).xy);
+    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i>>1)).xy);
     return (i&1)==1?mpc.y:mpc.x;
 }
 
 uint M32(in mediump samplerBuffer m, in uint i) {
     //return packHalf2x16(texelFetch(m, int(i)).xy); // inaccurate 
-     highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i)).xy);
+    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i)).xy);
     return ((mpc.y<<16u)|mpc.x);
 }
 
@@ -139,24 +139,24 @@ layout ( binding = 6, set = 1, std430 ) readonly buffer VT_TRANSFORMS { mat3x4 v
 
 
 uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) { //bytecorrect -= 1;
-    int bufferView = accessors[accessorID].bufferView;
+    const int bufferView = accessors[accessorID].bufferView;
+    const uint stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1) << bytecorrect); // get true stride 
     uint offseT = bufferViews[bufferView].byteOffset + accessors[accessorID].byteOffset; // calculate byte offset 
-    uint stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1) << bytecorrect); // get true stride 
     offseT += index * stride; // calculate structure indexed offset
     return offseT >> bytecorrect;
 };
 
 void readByAccessorLL(in int accessor, in uint index, inout uvec4 outpx) {
     uint attribution[4] = {outpx.x, outpx.y, outpx.z, outpx.w};
-     if (accessor >= 0) {
-         int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-         uint T = calculateByteOffset(accessor, index, 2);
-         uint C = aComponents(accessors[accessor].bitfield)+1;
-         uint D = 0u; // component decoration
-         if (C >= 1) attribution[D+0] = M32(BFS,T+0);
-         if (C >= 2) attribution[D+1] = M32(BFS,T+1);
-         if (C >= 3) attribution[D+2] = M32(BFS,T+2);
-         if (C >= 4) attribution[D+3] = M32(BFS,T+3);
+    [[flatten]] if (accessor >= 0) {
+        const int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
+        const uint T = calculateByteOffset(accessor, index, 2);
+        const uint C = aComponents(accessors[accessor].bitfield)+1;
+        const uint D = 0u; // component decoration
+        [[flatten]] if (C >= 1) attribution[D+0] = M32(BFS,T+0);
+        [[flatten]] if (C >= 2) attribution[D+1] = M32(BFS,T+1);
+        [[flatten]] if (C >= 3) attribution[D+2] = M32(BFS,T+2);
+        [[flatten]] if (C >= 4) attribution[D+3] = M32(BFS,T+3);
     }
     outpx = uvec4(attribution[0], attribution[1], attribution[2], attribution[3]);
 };
@@ -198,11 +198,11 @@ void readByAccessor(in int accessor, in uint index, inout uint outp) {
 
 // planned read type directly from accessor
 void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
-     if (accessor >= 0) {
-        int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-        bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
-        uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
-         if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
+    [[flatten]] if (accessor >= 0) {
+        const int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
+        const bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
+        const uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
+        [[flatten]] if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
     }
 }
 

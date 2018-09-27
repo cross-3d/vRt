@@ -49,14 +49,14 @@ void main() {
         const int hitIdc = vtFetchHitIdc(rayID);
         const int hitpId = hits[hitIdc].payloadID-1;
         const vec4 diffuse = hitp.albedo, reflc = hitp.specularGlossiness;
-        const float shiftLenght = hit.uvt.z*1e-3f;
+        const float shiftLenght = sqrt(hit.uvt.z)*1e-3f; // TODO: advanced correction of ray starting
 
         // get output image 2D coord
         const uvec2 ucoord = vtFetchIndex(rayID);
         const ivec2 icoord = ivec2(ucoord);
 
         // add support for multi-passing
-         if (!overflow && rayID >= 0) {
+        [[flatten]] if (!overflow && rayID >= 0) {
             // reflection prior (early stage)
             const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, icoord);
             const vec3 orgdir = dcts(ray.cdirect.xy);

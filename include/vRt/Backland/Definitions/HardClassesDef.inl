@@ -41,9 +41,7 @@ namespace _vt { // store in undercover namespace
 
     // will inherits
     class AdvancedAcceleratorBase;
-    class RTXAccelerator;
 
     // extension for accelerator sets
     class AcceleratorSetExtensionBase;
-    class RTXAcceleratorSetExtension;
 };

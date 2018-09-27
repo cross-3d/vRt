@@ -496,21 +496,12 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
-        std::weak_ptr<Device> _device;
+        std::weak_ptr<Device> _device = {};
 
         // minimal requirement of... 
-        virtual VtResult _doIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) = 0;
-        virtual VtResult _buildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet) = 0;
-        virtual VtResult _init(const void* extensionStructure = nullptr) = 0; // initialize by extension 
-    };
-
-    // planned in 2019, inherits from AdvancedAcceleratorBase
-    class RTXAccelerator : public AdvancedAcceleratorBase, std::enable_shared_from_this<RTXAccelerator> {
-    public:
-        friend Device;
-        friend AdvancedAcceleratorBase;
-        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_RTX; // identify as RTX 
-        
+        virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) = 0;
+        virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet) = 0;
+        virtual VtResult _Init(const void* extensionStructure = nullptr) = 0; // initialize by extension 
     };
 
     // planned in 2019
@@ -526,11 +517,5 @@ namespace _vt { // store in undercover namespace
         auto& _parent() { return _device; };
     };
 
-    // planned in 2019
-    class RTXAcceleratorSetExtension : public AcceleratorSetExtensionBase, std::enable_shared_from_this<RTXAcceleratorSetExtension> {
-    public:
-        friend Device;
-        friend AcceleratorSetExtensionBase;
-        VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_RTX; // identify as RTX 
-    };
+
 };

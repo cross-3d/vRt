@@ -62,10 +62,20 @@
 #define uint_rdc_wave_lcm uint
 
 // pointer of...
-#define WPTR uint
+//#define WPTR uint
 //#define WPTR2 uvec2
 #define WPTR4 uvec4
 #define PREFER_UNPACKED
+
+
+#ifdef ENABLE_AMD_INT16
+#define BOTTLE_TYPE uint16_t
+#define BOTTLE_TYPE_VEC u16vec4
+#else
+#define BOTTLE_TYPE uint
+#define BOTTLE_TYPE_VEC uvec4
+#endif
+
 
 #ifdef USE_MORTON_32
 #define KEYTYPE uint

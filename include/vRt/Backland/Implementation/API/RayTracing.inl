@@ -92,7 +92,7 @@ namespace _vt {
             if (vertx && vertx->_calculatedPrimitiveCount > 0) {
                 auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
                 if (device->_advancedAccelerator) {
-                    result = device->_advancedAccelerator->_doIntersections(cmdBuf, accel, rtset);
+                    result = device->_advancedAccelerator->_DoIntersections(cmdBuf, accel, rtset);
                 }
                 else {
                     std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };

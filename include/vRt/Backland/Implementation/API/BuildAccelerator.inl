@@ -217,7 +217,7 @@ namespace _vt {
 
         // if has advanced accelerator
         if (device->_advancedAccelerator) {
-            result = device->_advancedAccelerator->_buildAccelerator(cmdBuf, accel);
+            result = device->_advancedAccelerator->_BuildAccelerator(cmdBuf, accel);
         }
         else {
 

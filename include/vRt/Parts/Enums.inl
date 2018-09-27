@@ -37,7 +37,8 @@ namespace vrt { // store in official namespace
         VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_PIPELINE_CREATE_INFO = 0x11F00011,
         VT_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO = 0x11F00012,
         VT_STRUCTURE_TYPE_BUFFER_REGION_CREATE_INFO = 0x11F00013,
-        VT_STRUCTURE_TYPE_ADVANCED_ACCELERATION_EXTENSION_INFO = 0x11F00014
+        VT_STRUCTURE_TYPE_ADVANCED_ACCELERATION_EXTENSION_INFO = 0x11F00014,
+        VT_STRUCTURE_TYPE_DEVICE_ACCELERATION_EXTENSION = 0x11F00015
     } VtStructureType;
 
     // use constexpr VtFormat constants
@@ -76,6 +77,6 @@ namespace vrt { // store in official namespace
 
     typedef enum VtAcceleratorName : uint32_t {
         VT_ACCELERATOR_NAME_UNKNOWN = 0,
-        VT_ACCELERATOR_NAME_RTX // planned in 2019
+        //VT_ACCELERATOR_NAME_RTX // planned in 2019
     } VtAcceleratorName;
 };
