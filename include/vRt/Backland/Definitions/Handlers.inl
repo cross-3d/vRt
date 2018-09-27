@@ -10,8 +10,10 @@ namespace vrt { // store in official namespace
     // unified template for making regular classes
     template<class T>
     class VtHandle {
-    public:
+    protected:
         std::shared_ptr<T> _vtHandle = nullptr;
+    public:
+        VtHandle(std::shared_ptr<T> _H = nullptr) { _vtHandle = _H; }; // constructor
         auto* operator->() { return _vtHandle.get(); };
         auto* operator->() const { return _vtHandle.get(); };
         operator T() const { return *_vtHandle; };

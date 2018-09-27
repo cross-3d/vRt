@@ -48,6 +48,7 @@
 #include <functional>
 #include <cstdint>
 #include <cstddef>
+#include <utility>
 
 // include late C++17 string_view support
 #ifdef VRT_ENABLE_STRING_VIEW
