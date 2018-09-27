@@ -126,7 +126,7 @@ file (GLOB RSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCES_LIST})
 
 # make gltfPBR
 set (APPLICATION_NAME gltfPBR)
-add_executable(${APPLICATION_NAME} src/examples/gltfPBR.cpp ${RSOURCES})
+add_executable(${APPLICATION_NAME} src/examples/gltfPBR.cpp src/examples/main.cpp ${RSOURCES})
 target_link_libraries(${APPLICATION_NAME} ${LIBS})
 
 # add includes to MSVC explorer 

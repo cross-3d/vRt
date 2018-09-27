@@ -1,8 +1,5 @@
 #pragma once
 #include "appBase.hpp"
-#define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <tinygltf/tiny_gltf.h>
 
 namespace rnd {
@@ -283,8 +280,10 @@ namespace rnd {
 
 
     // defined inline static members of shared area
+#ifdef VTE_RENDERER_IMPLEMENTATION
     inline Active Shared::active = Active{};
     inline GLFWwindow* Shared::window = nullptr;
+#endif
 
     // renderer biggest class 
     class Renderer : public std::enable_shared_from_this<Renderer> {
