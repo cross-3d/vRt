@@ -21,6 +21,7 @@ namespace vrt {
 
 
     // advanced class (buffer)
+    class VtRoledBufferBase; // 
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
     class VtRoledBuffer;
 

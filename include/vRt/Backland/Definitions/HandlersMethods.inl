@@ -18,10 +18,10 @@ namespace vrt { // store in official namespace
     VtMaterialSet::operator VkDescriptorSet() const { return *_vtHandle; };
 
     // can't be implemented here
-    //template<VmaMemoryUsage U>  VtRoledBuffer<U>::operator VkBuffer() const { return *P::_vtHandle; };
-    //template<VmaMemoryUsage U>  VtRoledBuffer<U>::operator VkBuffer&() { return *P::_vtHandle; };
-    //template<VmaMemoryUsage U>  VtRoledBuffer<U>::operator VkBufferView() const { return *P::_vtHandle; };
-    //template<VmaMemoryUsage U>  VtRoledBuffer<U>::operator VkBufferView&() { return *P::_vtHandle; };
+    //VtRoledBufferBase::operator VkBuffer() const { return *P::_vtHandle; };
+    //VtRoledBufferBase::operator VkBuffer&() { return *P::_vtHandle; };
+    //VtRoledBufferBase::operator VkBufferView() const { return *P::_vtHandle; };
+    //VtRoledBufferBase::operator VkBufferView&() { return *P::_vtHandle; };
 
     VtDeviceImage::operator VkImage() const { return *_vtHandle; };
     VtDeviceImage::operator VkImage&() { return *_vtHandle; };

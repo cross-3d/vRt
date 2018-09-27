@@ -75,17 +75,19 @@ namespace vrt { // store in official namespace
         operator VkDescriptorSet() const;
     };
 
+
+
+
+    // handlers can't have base classes
     template<VmaMemoryUsage U>
     class VtRoledBuffer : public VtHandle<_vt::RoledBuffer<U>> {
-    private:
-        using P = VtHandle<_vt::RoledBuffer<U>>;
+    private: using P = VtHandle<_vt::RoledBuffer<U>>;
     public:
-        operator VkBuffer() const; //{ return *P::_vtHandle; };
-        operator VkBuffer&();// { return *P::_vtHandle; };
+        operator VkBuffer() const;
+        operator VkBuffer&();
 
-        // deprecated bufferView in buffer
-        operator VkBufferView() const; //{ return *P::_vtHandle; };
-        operator VkBufferView&(); //{ return *P::_vtHandle; };
+        operator VkBufferView() const;
+        operator VkBufferView&();
     };
 
     // templated implementations
@@ -93,6 +95,8 @@ namespace vrt { // store in official namespace
     template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBuffer&() { return *P::_vtHandle; };
     template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView() const { return *P::_vtHandle; };
     template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView&() { return *P::_vtHandle; };
+
+
 
     class VtDeviceImage : public VtHandle<_vt::DeviceImage> {
     public:

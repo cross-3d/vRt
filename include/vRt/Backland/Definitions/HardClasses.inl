@@ -278,14 +278,13 @@ namespace _vt { // store in undercover namespace
         operator VkPipeline() const { return _dullPipeline; };
     };
 
-    // this is wrapped advanced buffer class
-    // TODO: need's unified base class for some cases
-    template<VmaMemoryUsage U>
-    class RoledBuffer : public std::enable_shared_from_this<RoledBuffer<U>> {
+
+    class RoledBufferBase : public std::enable_shared_from_this<RoledBufferBase> {
     public:
-        ~RoledBuffer();
+        ~RoledBufferBase();
 
         friend Device;
+
         VkBuffer _buffer = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
         std::shared_ptr<BufferRegion> _bufferRegion = {};
@@ -314,6 +313,16 @@ namespace _vt { // store in undercover namespace
         VmaAllocationInfo _allocationInfo = {};
         auto _hostMapped() const { return _allocationInfo.pMappedData; };
 #endif
+    };
+
+    // this is wrapped advanced buffer class
+    template<VmaMemoryUsage U>
+    class RoledBuffer : public RoledBufferBase, std::enable_shared_from_this<RoledBuffer<U>> {
+    public:
+        //~RoledBuffer();
+
+        friend Device;
+        friend RoledBufferBase;
     };
 
     // this is wrapped advanced image class
@@ -357,7 +366,7 @@ namespace _vt { // store in undercover namespace
         VkBufferView _sBufferView = {};
         std::shared_ptr<Device> _device;
 
-        std::weak_ptr<DeviceBuffer> _boundBuffer;
+        std::weak_ptr<RoledBufferBase> _boundBuffer;
         VkFormat _format = VK_FORMAT_UNDEFINED; VkDescriptorBufferInfo _sDescriptorInfo = {VK_NULL_HANDLE, 0, VK_WHOLE_SIZE};
 
         auto  _descriptorInfo() const { return _sDescriptorInfo; };
@@ -384,12 +393,12 @@ namespace _vt { // store in undercover namespace
 
 
     // avoid compilation issues
-    inline BufferRegion::operator VkBuffer&() { return _boundBuffer.lock()->_buffer; };
-    inline BufferRegion::operator VkBuffer() const { return _boundBuffer.lock()->_buffer; };
-    template<VmaMemoryUsage U> inline VkDescriptorBufferInfo  RoledBuffer<U>::_descriptorInfo() const { return _bufferRegion->_descriptorInfo(); };
-    template<VmaMemoryUsage U> inline VkDescriptorBufferInfo& RoledBuffer<U>::_descriptorInfo() { return _bufferRegion->_descriptorInfo(); };
-    template<VmaMemoryUsage U> inline VkBufferView  RoledBuffer<U>::_bufferView() const { return _bufferRegion->_bufferView(); };
-    template<VmaMemoryUsage U> inline VkBufferView& RoledBuffer<U>::_bufferView() { return _bufferRegion->_bufferView(); };
+     inline BufferRegion::operator VkBuffer&() { return _boundBuffer.lock()->_buffer; };
+     inline BufferRegion::operator VkBuffer() const { return _boundBuffer.lock()->_buffer; };
+     inline VkDescriptorBufferInfo  RoledBufferBase::_descriptorInfo() const { return _bufferRegion->_descriptorInfo(); };
+     inline VkDescriptorBufferInfo& RoledBufferBase::_descriptorInfo() { return _bufferRegion->_descriptorInfo(); };
+     inline VkBufferView  RoledBufferBase::_bufferView() const { return _bufferRegion->_bufferView(); };
+     inline VkBufferView& RoledBufferBase::_bufferView() { return _bufferRegion->_bufferView(); };
 
 
 

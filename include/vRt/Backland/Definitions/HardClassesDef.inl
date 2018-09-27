@@ -28,6 +28,7 @@ namespace _vt { // store in undercover namespace
 
     // use roled buffers
     // TODO: need's unified base class for some cases
+    class RoledBufferBase;
     template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY> class RoledBuffer;
 
     using DeviceBuffer = RoledBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;

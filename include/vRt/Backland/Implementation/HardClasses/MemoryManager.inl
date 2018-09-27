@@ -9,8 +9,7 @@ namespace _vt {
 
 
     // destructor of advanced buffer
-    template<VmaMemoryUsage U>
-    inline RoledBuffer<U>::~RoledBuffer() {
+    RoledBufferBase::~RoledBufferBase() {
         std::async([=]() {
 #ifdef VRT_ENABLE_VEZ_INTEROP
             vezDestroyBuffer(_device->_device, _buffer);
@@ -19,38 +18,6 @@ namespace _vt {
 #endif
         });
     };
-
-    /*
-    DeviceBuffer::~RoledBuffer() {
-        std::async([=]() {
-#ifdef VRT_ENABLE_VEZ_INTEROP
-            vezDestroyBuffer(_device->_device, _buffer);
-#else
-            vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
-#endif
-        });
-    };
-
-    HostToDeviceBuffer::~RoledBuffer() {
-        std::async([=]() {
-#ifdef VRT_ENABLE_VEZ_INTEROP
-            vezDestroyBuffer(_device->_device, _buffer);
-#else
-            vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
-#endif
-        });
-    };
-
-    DeviceToHostBuffer::~RoledBuffer() {
-        std::async([=]() {
-#ifdef VRT_ENABLE_VEZ_INTEROP
-            vezDestroyBuffer(_device->_device, _buffer);
-#else
-            vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
-#endif
-        });
-    };
-    */
 
     VtResult createBufferView(std::shared_ptr<BufferRegion> bRegion) {
         auto device = bRegion->_device;
