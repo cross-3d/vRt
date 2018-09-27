@@ -24,6 +24,7 @@ struct BvhTraverseState {
          int idx, defTriangleID, maxTriangles; float diffOffset;
     lowp int stackPtr, pageID;
     fvec4_ minusOrig, directInv; // vec4 of 32-bits
+    bvec3_ bsgn;
 } traverseState;
 
 
@@ -63,8 +64,7 @@ void storeStack(in int rsl) {
 //#define fpOne 1.f
 //#endif
 
-const float fpInner = 128.f*SFN;
-const float fpOne = 1.f;
+const float fpInner = 128.f*SFN, fpOne = 1.f;
 
 // triangle intersection, when it found
 void doIntersection(in bool isvalid, in float dlen) {
@@ -110,13 +110,13 @@ void initTraversing(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
 
     // initial traversing state
-    resetEntry(valid);
-    [[flatten]] if (!intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe)) { traverseState.idx = -1; };
+    resetEntry(valid); traverseState.bsgn = bvec3_(greaterThanEqual(dirproj.xyz, 0.f.xxx)); // sign for box intersections
+    [[flatten]] if (!intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, traverseState.bsgn, bndsf2, nfe)) { traverseState.idx = -1; };
     [[flatten]] if (eht.x >= 0) primitiveState.lastIntersection = hits[eht].uvt;
 
     // traversing inputs
     traverseState.diffOffset = min(-nfe.x, 0.f), traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(traverseState.diffOffset.xxxx)));
-    
+
     // intersection inputs
     primitiveState.dir = direct, primitiveState.orig = fma(direct, traverseState.diffOffset.xxxx, torig);
 };
@@ -140,8 +140,8 @@ void traverseBVH2( in bool reset, in bool valid ) {
             [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
-                #define bbox2x fmat3x4_(bvhNode.cbox[0],bvhNode.cbox[1],bvhNode.cbox[2]) // use same memory
-                lowp bvec2_ childIntersect = (cnode.x&1) & bool_(cnode.x>0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
+                #define bbox2x bvhNode.cbox // use same memory
+                 bvec2_ childIntersect = bool_(cnode.x&1) & bool_(cnode.x>0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, traverseState.bsgn, bbox2x, nfe);
 
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 
@@ -149,11 +149,11 @@ void traverseBVH2( in bool reset, in bool valid ) {
                 childIntersect &= bvec2_(lessThanEqual(nfe.xy, fma(primitiveState.lastIntersection.z,fpOne,fpInner).xx)); // it increase FPS by filtering nodes by first triangle intersection
 
                 // 
-                int fmask = int((childIntersect.y<<1u)|childIntersect.x);
+                bool_ fmask = bool_((childIntersect.y<<1u)|childIntersect.x);
                 [[flatten]] if (fmask > 0) {
                     int primary = -1, secondary = -1;
-                    [[flatten]] if (fmask == 3) { fmask &= nfe.x<=nfe.y ? 1 : 2, secondary = cnode.x^(fmask>>1); }; // if both has intersection
-                    primary = cnode.x^(fmask&1);
+                    [[flatten]] if (fmask == 3) { fmask &= bool_(1u)<<bool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
+                    primary = cnode.x^int(fmask&1u);
 
                     // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
                     // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections

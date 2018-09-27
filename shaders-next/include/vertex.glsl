@@ -72,10 +72,10 @@ vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f))
 #if (defined(ENABLE_VSTORAGE_DATA) && !defined(BVH_CREATION) && !defined(VERTEX_FILLING))
 struct NTYPE_ {
 #ifdef USE_F32_BVH
-     vec4 cbox[3];
+     vec2 cbox[3][2];
     ivec4 meta;
 #else
-    f16vec4 cbox[3];
+    f16vec2 cbox[3][2];
       ivec4 meta;
 #endif
 };
@@ -228,10 +228,14 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
 
-bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec3 sgn, in mat3x2 tMinMax, inout vec4 nfe) {
+bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec3_ sgn, in mat3x2 tMinMax, inout vec4 nfe) {
     nfe = INFINITY.xxxx;
+
+    tMinMax[0] = sgn.x==true_ ? tMinMax[0] : tMinMax[0].yx;
+    tMinMax[1] = sgn.y==true_ ? tMinMax[1] : tMinMax[1].yx;
+    tMinMax[2] = sgn.z==true_ ? tMinMax[2] : tMinMax[2].yx;
+    
     tMinMax = mat3x2(fma(tMinMax[0], dr.xx, origin.xx), fma(tMinMax[1], dr.yy, origin.yy), fma(tMinMax[2], dr.zz, origin.zz));
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = tMinMax[i].x <= tMinMax[i].y ? tMinMax[i] : tMinMax[i].yx;
     //[[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec2(min(tMinMax[i].x, tMinMax[i].y), max(tMinMax[i].x, tMinMax[i].y));
 
     const float 
@@ -252,23 +256,33 @@ bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec3 sgn, in mat3x2 
 // compatible with NVidia GPU too
 
 #if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
-lowp bvec2_ intersectCubeDual(in mediump fvec3_ origin, in mediump fvec3_ dr, in bvec3 sgn, in highp fmat3x4_ tMinMax, inout vec4 nfe2)
+// bvec2_ intersectCubeDual(in mediump fvec3_ origin, in mediump fvec3_ dr, in bvec3 sgn, in highp fmat3x4_ tMinMax, inout vec4 nfe2)
+bvec2_ intersectCubeDual(in mediump fvec3_ origin, in mediump fvec3_ dr, in bvec3_ sgn, in highp fvec2_[3][2] tMinMax, inout vec4 nfe2)
 #else
-lowp bvec2_ intersectCubeDual(in fvec3_ origin, in fvec3_ dr, in bvec3 sgn, in fmat3x4_ tMinMax, inout vec4 nfe2)
+// bvec2_ intersectCubeDual(in fvec3_ origin, in fvec3_ dr, in bvec3 sgn, in fmat3x4_ tMinMax, inout vec4 nfe2)
+bvec2_ intersectCubeDual(in fvec3_ origin, in fvec3_ dr, in bvec3_ sgn, in fvec2_[3][2] tMinMax, inout vec4 nfe2)
 #endif
 {
+    // indefined distance
     nfe2 = INFINITY.xxxx;
-    tMinMax = fmat3x4_(fma(tMinMax[0], dr.xxxx, origin.xxxx), fma(tMinMax[1], dr.yyyy, origin.yyyy), fma(tMinMax[2], dr.zzzz, origin.zzzz));
-    //[[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec4(mix(tMinMax[i].zwxy, tMinMax[i], lessThanEqual(tMinMax[i].xy, tMinMax[i].zw).xyxy));
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec4_(min(tMinMax[i].xy, tMinMax[i].zw), max(tMinMax[i].xy, tMinMax[i].zw));
+    
+    // choice the side
+    tMinMax[0] = fvec2_[2](tMinMax[0][uint(sgn.x^true_)], tMinMax[0][uint(sgn.x)]);
+    tMinMax[1] = fvec2_[2](tMinMax[1][uint(sgn.y^true_)], tMinMax[1][uint(sgn.y)]);
+    tMinMax[2] = fvec2_[2](tMinMax[2][uint(sgn.z^true_)], tMinMax[2][uint(sgn.z)]);
+
+    // calculate intersection
+    tMinMax[0] = fvec2_[2](fma(tMinMax[0][0], dr.xx, origin.xx), fma(tMinMax[0][1], dr.xx, origin.xx));
+    tMinMax[1] = fvec2_[2](fma(tMinMax[1][0], dr.yy, origin.yy), fma(tMinMax[1][1], dr.yy, origin.yy));
+    tMinMax[2] = fvec2_[2](fma(tMinMax[2][0], dr.zz, origin.zz), fma(tMinMax[2][1], dr.zz, origin.zz));
 
     const 
 #if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
     mediump
 #endif
     fvec2_
-        tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy), 
-        tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw) * InOne;
+        tNear = max3_wrap(tMinMax[0][0], tMinMax[1][0], tMinMax[2][0]), 
+        tFar  = min3_wrap(tMinMax[0][1], tMinMax[1][1], tMinMax[2][1]) * InOne;
         
     const bvec2_ isCube = 
         bvec2_(greaterThanEqual(tFar, tNear)) & 

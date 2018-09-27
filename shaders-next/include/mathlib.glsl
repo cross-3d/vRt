@@ -98,14 +98,27 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 }
 #endif
 
-
+#ifdef ENABLE_AMD_INT16
+#define bvec4_ u16vec4
+#define bvec3_ u16vec3
+#define bvec2_ u16vec2
+#define bool_ uint16_t
+#else
 #define bvec4_ uvec4
 #define bvec3_ uvec3
 #define bvec2_ uvec2
 #define bool_ uint
+#endif
 
+
+#ifdef ENABLE_AMD_INT16 // if has integer 16-bit support
+const bool_ true_ = bool_(1us), false_ = bool_(0us); 
+const bvec2_ true2_ = true_.xx, false2_ = false_.xx;
+#else
 const lowp bool_ true_ = bool_(1u), false_ = bool_(0u); 
 const lowp bvec2_ true2_ = true_.xx, false2_ = false_.xx;
+#endif
+
 
 // null of indexing in float representation
 const uint UINT_ZERO = 0x0u, UINT_NULL = 0xFFFFFFFFu;
@@ -261,18 +274,18 @@ vec4 fromLinear(in vec4 linearRGB) { return vec4(fromLinear(linearRGB.xyz), line
 vec4 toLinear(in vec4 sRGB) { return vec4(toLinear(sRGB.xyz), sRGB.w); }
 
 // boolean binary compatibility
-bool SSC(in lowp bool_ b) {return bool(b);}
-bvec2 SSC(in lowp bvec2_ b) {return bvec2(b);}
-bvec4 SSC(in lowp bvec4_ b) {return bvec4(b);}
+bool SSC(in bool_ b) {return bool(b);}
+bvec2 SSC(in bvec2_ b) {return bvec2(b);}
+bvec4 SSC(in bvec4_ b) {return bvec4(b);}
 
 bool SSC(in bool b) {return b;}
 bvec2 SSC(in bvec2 b) {return b;}
 bvec4 SSC(in bvec4 b) {return b;}
 
-lowp bool_ any(in lowp bvec2_ b) {return b.x|b.y;}
-lowp bool_ all(in lowp bvec2_ b) {return b.x&b.y;}
-lowp bool_ not(in lowp bool_ b) {return true_^b;}
-lowp bvec2_ not(in lowp bvec2_ b) {return true2_^b;}
+ bool_ any(in bvec2_ b) {return b.x|b.y;}
+ bool_ all(in bvec2_ b) {return b.x&b.y;}
+ bool_ not(in bool_ b) {return true_^b;}
+ bvec2_ not(in bvec2_ b) {return true2_^b;}
 
 #define IF(b)if(SSC(b))
 
@@ -280,37 +293,37 @@ lowp bvec2_ not(in lowp bvec2_ b) {return true2_^b;}
 
 
 // select by boolean
-int mix(in int a, in int b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
-uint mix(in uint a, in uint b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
-float mix(in float a, in float b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
-ivec2 mix(in ivec2 a, in ivec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
-uvec2 mix(in uvec2 a, in uvec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
-vec2 mix(in vec2 a, in vec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
-vec4 mix(in vec4 a, in vec4 b, in lowp bvec4_ c) { return mix(a,b,SSC(c)); }
+int mix(in int a, in int b, in  bool_ c) { return mix(a,b,SSC(c)); }
+uint mix(in uint a, in uint b, in  bool_ c) { return mix(a,b,SSC(c)); }
+float mix(in float a, in float b, in  bool_ c) { return mix(a,b,SSC(c)); }
+ivec2 mix(in ivec2 a, in ivec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
+uvec2 mix(in uvec2 a, in uvec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
+vec2 mix(in vec2 a, in vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
+vec4 mix(in vec4 a, in vec4 b, in  bvec4_ c) { return mix(a,b,SSC(c)); }
 
 // 16-bit int/uint
 #ifdef ENABLE_AMD_INT16
- int16_t mix(in  int16_t a, in  int16_t b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
-uint16_t mix(in uint16_t a, in uint16_t b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
-i16vec2 mix(in i16vec2 a, in i16vec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
-u16vec2 mix(in u16vec2 a, in u16vec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
+ int16_t mix(in  int16_t a, in  int16_t b, in  bool_ c) { return mix(a,b,SSC(c)); }
+uint16_t mix(in uint16_t a, in uint16_t b, in  bool_ c) { return mix(a,b,SSC(c)); }
+i16vec2 mix(in i16vec2 a, in i16vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
+u16vec2 mix(in u16vec2 a, in u16vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
 #endif
 
 // 16-bit float
 #ifdef ENABLE_AMD_INSTRUCTION_SET
-float16_t mix(in float16_t a, in float16_t b, in lowp bool_ c) { return mix(a,b,SSC(c)); }
-f16vec2 mix(in f16vec2 a, in f16vec2 b, in lowp bvec2_ c) { return mix(a,b,SSC(c)); }
-f16vec4 mix(in f16vec4 a, in f16vec4 b, in lowp bvec4_ c) { return mix(a,b,SSC(c)); }
+float16_t mix(in float16_t a, in float16_t b, in  bool_ c) { return mix(a,b,SSC(c)); }
+f16vec2 mix(in f16vec2 a, in f16vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
+f16vec4 mix(in f16vec4 a, in f16vec4 b, in  bvec4_ c) { return mix(a,b,SSC(c)); }
 #endif
 
 
 // swap of 16-bits by funnel shifts and mapping 
-uint fast16swap(in uint b32,  lowp bool_ nswp) {
+uint fast16swap(in uint b32,   bool_ nswp) {
      uint vrc = 16u - uint(nswp) * 16u;
     return (b32 << (vrc)) | (b32 >> (32u-vrc));
 }
 
-uint64_t fast32swap(in uint64_t b64,  lowp bool_ nswp) {
+uint64_t fast32swap(in uint64_t b64,   bool_ nswp) {
      uint64_t vrc = 32ul - uint64_t(nswp) * 32ul;
     return (b64 << (vrc)) | (b64 >> (64ul-vrc));
 }
@@ -318,13 +331,13 @@ uint64_t fast32swap(in uint64_t b64,  lowp bool_ nswp) {
 
 // swap x and y swizzle by funnel shift (AMD half float)
 #ifdef ENABLE_AMD_INSTRUCTION_SET
-f16vec2 fast16swap(in f16vec2 b32, in lowp bool_ nswp) { 
+f16vec2 fast16swap(in f16vec2 b32, in  bool_ nswp) { 
     return mix(b32.yx, b32, nswp.xx); // use swizzle version (some device can be slower)
 }
 #endif
 
 // swap x and y swizzle by funnel shift
-vec2 fast32swap(in vec2 b64, in lowp bool_ nswp) { 
+vec2 fast32swap(in vec2 b64, in  bool_ nswp) { 
     return mix(b64.yx, b64, nswp.xx); // use swizzle version (some device can be slower)
 }
 

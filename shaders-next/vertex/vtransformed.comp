@@ -24,7 +24,7 @@ const int VCOUNT = 3;
 
 
 bool nvlda(in vec4 a) { return (dot(a,a)<1e-4f || any(isnan(a)) || any(isinf(a))); }
-void calculateTBN(in int trip){
+void calculateTBN(in int rofft, in int trip, in mat3x4 transformNrm) {
     const int itri = trip*3;
     const vec3 v0 = TLOAD(lvtxIn, itri+0).xyz;
 
@@ -34,7 +34,11 @@ void calculateTBN(in int trip){
     vec4 vertice[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
     
     // get vertices
-    [[unroll]] for (int i=0;i<3;i++) {vertice[i] = imageLoad(lvtxIn, itri+i);}
+    [[unroll]] for (int i=0;i<3;i++) {
+        uint indiceID = rofft * VCOUNT + i;
+        readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
+        readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice[i]);
+    };
 
     // calculate geometrical normal
     mat3x3 dlps = mat3x3(vertice[0].xyz, vertice[1].xyz, vertice[2].xyz); dlps[1] -= dlps[0], dlps[2] -= dlps[0];
@@ -60,13 +64,13 @@ void calculateTBN(in int trip){
         vec3 t = fma(dlts[2].yyy, dlps[1], -dlts[1].y * dlps[2]), b = fma(dlts[1].xxx, dlps[2], -dlts[2].x * dlps[1]), n = normals[i].xyz; // pre-tbn
 
         // if texcoord not found or incorrect, calculate by axis
-         if (
+        [[flatten]] if (
             all(lessThanEqual(abs(dlts[1]), 1e-5f.xx)) || 
             all(lessThanEqual(abs(dlts[2]), 1e-5f.xx)) || 
             all(lessThanEqual(abs(dlps[1]), 1e-5f.xxx)) || 
             all(lessThanEqual(abs(dlps[2]), 1e-5f.xxx))
         ) {
-             vec3 c0 = cross(n, vec3(0.f, 0.f, 1.f)), c1 = cross(n, vec3(0.f, 1.f, 0.f));
+            const vec3 c0 = cross(n, vec3(0.f, 0.f, 1.f)), c1 = cross(n, vec3(0.f, 1.f, 0.f));
             t = length(c0) >= length(c1) ? c0 : c1, b = cross(t, n);
             idet = 1.f;
         }
@@ -77,10 +81,10 @@ void calculateTBN(in int trip){
             b -= t * dot( b, t );
         }
 
-         ivec2 tmi = mosaicIdc(TANGENT_, i);
-        ISTORE(attrib_texture_out, mosaicIdc(BITANGENT_, i), vec4(normalize(idet*b), 0.0f));
-         if (nvlda(TLOAD(attrib_texture_out, tmi))) {
-            ISTORE(attrib_texture_out, tmi, vec4(normalize(idet*t), 0.0f));
+        const ivec2 tmi = mosaicIdc(TANGENT_, i);
+        ISTORE(attrib_texture_out, mosaicIdc(BITANGENT_, i), vec4(normalize(mult4(transformNrm, vec4(idet*b,0.f))), 0.0f));
+        [[flatten]] if (nvlda(TLOAD(attrib_texture_out, tmi))) {
+            ISTORE(attrib_texture_out, tmi, vec4(normalize(mult4(transformNrm, vec4(idet*t,0.f))), 0.0f));
         }
     }
 }
@@ -132,7 +136,7 @@ void main() {
             };
 
             // 
-            calculateTBN(int(wofft));
+            calculateTBN(int(rofft), int(wofft), transformNrm);
         }
     }
 }

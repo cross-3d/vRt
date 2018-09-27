@@ -8,10 +8,17 @@
 
 
 #ifdef ENABLE_AMD_INSTRUCTION_SET
-uint16_t M16(in f16samplerBuffer m, in uint i) {
-     u16vec2 mpc = float16BitsToUint16(texelFetch(m, int(i>>1)).xy);
-    return (i&1)==1?mpc.y:mpc.x;
-}
+
+    #ifdef ENABLE_AMD_INT16 // native 16-bit integer support
+    uint16_t M16(in f16samplerBuffer m, in uint i) {
+        const u16vec2 mpc = float16BitsToUint16(texelFetch(m, int(i>>1)).xy);
+        return (i&1)==1?mpc.y:mpc.x;
+    }
+    #else
+    highp uint M16(in f16samplerBuffer m, in uint i) {
+        return bitfieldExtract(packHalf2x16(texelFetch(m, int(i>>1)).xy), int(i&1)<<4, 16); // unified sentence of uint16_t values
+    }
+    #endif
 
 uint M32(in f16samplerBuffer m, in uint i) { 
     return packFloat2x16(texelFetch(m, int(i)).xy);
