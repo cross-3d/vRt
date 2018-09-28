@@ -345,6 +345,7 @@ namespace _vt {
         "VK_KHR_shader_float16_int8",
         "VK_KHR_shader_float_controls",
         "VK_KHX_shader_explicit_arithmetic_types",
+        "VK_KHR_dedicated_allocation",
 
         "VK_NVX_raytracing",
         "VK_NV_compute_shader_derivatives",

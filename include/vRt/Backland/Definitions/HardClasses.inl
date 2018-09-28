@@ -524,12 +524,18 @@ namespace _vt { // store in undercover namespace
         //VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
         std::weak_ptr<Device> _device = {};
         std::shared_ptr<AdvancedAcceleratorDataBase> _dataPtr = {};
+        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
 
         // minimal requirement of... 
-        virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) = 0;
-        virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet) = 0;
-        virtual VtResult _Init(const VtDeviceAdvancedAccelerationExtension* extensionStructure = nullptr) = 0; // initialize by extension 
-        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
+        virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        };
+        virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet) {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        };
+        virtual VtResult _Init(const VtDeviceAdvancedAccelerationExtension* extensionStructure = nullptr) {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        }; // initialize by extension 
 
          // built-in method's
         auto* operator->() { return _dataPtr.get(); };
@@ -542,15 +548,20 @@ namespace _vt { // store in undercover namespace
         friend Device;
         //VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
         //VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
-        std::shared_ptr<Device> _device = {};
+        std::weak_ptr<Device> _device = {};
         std::shared_ptr<AcceleratorSetExtensionDataBase> _dataPtr = {};
 
         //operator VkDescriptorSet() const { return _descriptorSet; };
-        auto _parent() const { return _device; };
-        auto& _parent() { return _device; };
-        //virtual VtResult _Init(const void* extensionStructure = nullptr) = 0; // initialize by extension (TODO)
-        virtual VtResult _Construction(std::shared_ptr<AcceleratorSet> accelSet) = 0; // accessing by same address
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
+        virtual VtResult _Init(const void* extensionStructure = nullptr) {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        }; // initialize by extension (TODO)
+        virtual VtResult _Construction(std::shared_ptr<AcceleratorSet> accelSet) { 
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        }; // accessing by same address
+        
+        auto  _parent() const { return _device; };
+        auto& _parent() { return _device; };
 
         // built-in method's
         auto* operator->() { return _dataPtr.get(); };

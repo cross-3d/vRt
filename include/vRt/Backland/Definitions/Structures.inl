@@ -20,13 +20,21 @@ namespace vrt { // store in official namespace
     // planned connection with VtAcceleratorName, and automatic initialization
     // passing with pNext to VtArtificalDeviceExtension
     class VtDeviceAdvancedAccelerationExtension {
-        VtStructureType sType = VT_STRUCTURE_TYPE_ADVANCED_DEVICE_ACCELERATION_EXTENSION;
+    public: // regular API chaining
+        VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_ADVANCED_ACCELERATION_EXTENSION;
         const void* pNext = nullptr;
 
-        // API in-runtime implementation (dynamic polymorphism)
-        virtual bool _Criteria(std::shared_ptr<_vt::Device> lwDevice) = 0;
-        virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice) = 0;
+    public: // API in-runtime implementation (dynamic polymorphism)
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; }; // in-runtime return acceleration extension name
+        virtual VkBool32 _Criteria(std::shared_ptr<_vt::Device> lwDevice) const {
+            return false;
+        };
+        virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice) {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        };
+
+    public: // can have custom data...
+        
     };
 
     struct VtArtificalDeviceExtension {
