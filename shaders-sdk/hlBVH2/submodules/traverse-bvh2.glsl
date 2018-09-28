@@ -10,10 +10,13 @@
 #endif
 
 
-
+#ifdef ENABLE_VEGA_INSTRUCTION_SET
   const  lowp  int localStackSize = 8, pageCount = 4, computedStackSize = localStackSize*pageCount; // 256-bit global memory stack pages
-//const  lowp  int localStackSize = 4, pageCount = 8, computedStackSize = localStackSize*pageCount; // 128-bit capable (minor GPU, GDDR6 two-channels)
+#else
+  const  lowp  int localStackSize = 4, pageCount = 8, computedStackSize = localStackSize*pageCount; // 128-bit capable (minor GPU, GDDR6 two-channels)
+#endif
   const highp uint maxIterations  = 8192;
+
 
 layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYSTEM { int pages[][localStackSize]; };
 
