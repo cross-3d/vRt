@@ -39,10 +39,9 @@ void main() {
         LGROUP_BARRIER
 
         const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
-        [[flatten]] if (Wave_Idx == 0) { key.x = BFE(validAddress.x ? KeyIn[addr.x] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
-        [[flatten]] if (Wave_Idx == 1) { key.y = BFE(validAddress.y ? KeyIn[addr.y] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
-        [[flatten]] if (Wave_Idx == 2) { key.z = BFE(validAddress.z ? KeyIn[addr.z] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
-        [[flatten]] if (Wave_Idx == 3) { key.w = BFE(validAddress.w ? KeyIn[addr.w] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
+        [[unroll]] for (int w=0;w<4;w++) {
+            [[flatten]] if (Wave_Idx == w) { key[w] = BFE(validAddress[w] ? KeyIn[addr[w]] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
+        };
         LGROUP_BARRIER
 
         // WARP-optimized histogram calculation

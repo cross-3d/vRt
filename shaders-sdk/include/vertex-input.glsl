@@ -9,36 +9,34 @@
 
 #ifdef ENABLE_AMD_INSTRUCTION_SET
 
-    #ifdef ENABLE_AMD_INT16 // native 16-bit integer support
-    uint16_t M16(in f16samplerBuffer m, in uint i) {
-        const u16vec2 mpc = float16BitsToUint16(texelFetch(m, int(i>>1)).xy);
-        return (i&1)==1?mpc.y:mpc.x;
-    }
-    #else
-    highp uint M16(in f16samplerBuffer m, in uint i) {
-        return bitfieldExtract(packFloat2x16(texelFetch(m, int(i>>1)).xy), int(i&1)<<4, 16); // unified sentence of uint16_t values
-    }
-    #endif
+#ifdef ENABLE_AMD_INT16 // native 16-bit integer support
+uint16_t M16(in f16samplerBuffer m, in uint i) {
+    return float16BitsToUint16(texelFetch(m, int(i>>1)).xy)[i&1u];
+};
+#else
+highp uint M16(in f16samplerBuffer m, in uint i) {
+    return bitfieldExtract(packFloat2x16(texelFetch(m, int(i>>1)).xy), int(i&1)<<4, 16); // unified sentence of uint16_t values
+};
+#endif
 
 uint M32(in f16samplerBuffer m, in uint i) { 
     return packFloat2x16(texelFetch(m, int(i)).xy);
-}
+};
 #endif
 
 highp uint M16(in highp usamplerBuffer m, in uint i) {
-    const highp uvec2 mpc = texelFetch(m, int(i>>1)).xy;
-    return (i&1)==1?mpc.y:mpc.x;
-}
+    return texelFetch(m, int(i>>1))[i&1];
+};
 
 uint M32(in highp usamplerBuffer m, in uint i) {
     const highp uvec2 mpc = texelFetch(m, int(i)).xy;
     return ((mpc.y<<16u)|mpc.x);
-}
+};
 
-
+/*
 highp uint M16(in mediump samplerBuffer m, in uint i) {
     const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i>>1)).xy);
-    return (i&1)==1?mpc.y:mpc.x;
+    return floatBitsToUint(texelFetch(m, int(i>>1)).xy)[i&1];
 }
 
 uint M32(in mediump samplerBuffer m, in uint i) {
@@ -46,7 +44,7 @@ uint M32(in mediump samplerBuffer m, in uint i) {
     const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i)).xy);
     return ((mpc.y<<16u)|mpc.x);
 }
-
+*/
 
 // buffer region
 struct VtBufferRegion {
@@ -83,17 +81,10 @@ const ivec2 COMPONENTS = ivec2(0, 2);
 const ivec2 ATYPE = ivec2(2, 4);
 const ivec2 NORMALIZED = ivec2(6, 1);
 
-int aComponents(in uint bitfield) {
-    return parameteri(COMPONENTS, bitfield);
-}
+int aComponents(in uint bitfield) { return int(parameteri(COMPONENTS, bitfield)); };
+int aNormalized(in uint bitfield) { return int(parameteri(NORMALIZED, bitfield)); };
+int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 
-int aType(in uint bitfield) {
-    return parameteri(ATYPE, bitfield);
-}
-
-int aNormalized(in uint bitfield) {
-    return parameteri(NORMALIZED, bitfield);
-}
 
 
 
@@ -139,10 +130,9 @@ layout ( binding = 6, set = 1, std430 ) readonly buffer VT_TRANSFORMS { mat3x4 v
 
 
 uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) { //bytecorrect -= 1;
-    const int bufferView = accessors[accessorID].bufferView;
+    const uint bufferView = uint(accessors[accessorID].bufferView);
     const uint stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1) << bytecorrect); // get true stride 
-    uint offseT = bufferViews[bufferView].byteOffset + accessors[accessorID].byteOffset; // calculate byte offset 
-    offseT += index * stride; // calculate structure indexed offset
+    const uint offseT = index * stride + (bufferViews[bufferView].byteOffset+accessors[accessorID].byteOffset); // calculate byte offset 
     return offseT >> bytecorrect;
 };
 
@@ -153,10 +143,9 @@ void readByAccessorLL(in int accessor, in uint index, inout uvec4 outpx) {
         const uint T = calculateByteOffset(accessor, index, 2);
         const uint C = aComponents(accessors[accessor].bitfield)+1;
         const uint D = 0u; // component decoration
-        [[flatten]] if (C >= 1) attribution[D+0] = M32(BFS,T+0);
-        [[flatten]] if (C >= 2) attribution[D+1] = M32(BFS,T+1);
-        [[flatten]] if (C >= 3) attribution[D+2] = M32(BFS,T+2);
-        [[flatten]] if (C >= 4) attribution[D+3] = M32(BFS,T+3);
+        [[unroll]] for (int i=0;i<4;i++) {
+            [[flatten]] if (C > i) attribution[D+i] = M32(BFS,T+i);
+        };
     }
     outpx = uvec4(attribution[0], attribution[1], attribution[2], attribution[3]);
 };

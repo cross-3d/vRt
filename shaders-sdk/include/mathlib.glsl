@@ -407,19 +407,38 @@ lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFFu;};
 #define f16_f32 unpackHalf4x16
 
 // improved generic bilinear interpolation
+const ivec2 offsets[4] = {ivec2(0,1), ivec2(1,1), ivec2(1,0), ivec2(0,0)};
+const  vec2 offsetf[4] = { vec2(0,1),  vec2(1,1),  vec2(1,0),  vec2(0,0)}; // float version (for faster accessing)
 vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, -0.5f.xx), lp = fract(tx), tl = si*(ceil(tx)-0.5f.xx);
-    const mat4 mtr = mat4(
-        textureLodOffset(SMP, tl, LOD, ivec2(0,0)), textureLodOffset(SMP, tl, LOD, ivec2(1,0)),
-        textureLodOffset(SMP, tl, LOD, ivec2(0,1)), textureLodOffset(SMP, tl, LOD, ivec2(1,1))
-    );
+    //const mat4 mtr = mat4(
+    //    textureLodOffset(SMP, tl, LOD, ivec2(0,0)), textureLodOffset(SMP, tl, LOD, ivec2(1,0)),
+    //    textureLodOffset(SMP, tl, LOD, ivec2(0,1)), textureLodOffset(SMP, tl, LOD, ivec2(1,1))
+    //);
+
+    //const vec4 coef = vec4(
+    //    fma( lp.x, lp.y, (1.f-lp.y-lp.x)), // (1.f-lp.x) * (1.f-lp.y)
+    //    fma( lp.x,-lp.y, lp.x),            //      lp.x  * (1.f-lp.y)
+    //    fma(-lp.x, lp.y, lp.y),            // (1.f-lp.x) *      lp.y
+    //    lp.x*lp.y                          //      lp.x  *      lp.y
+    //);
+
     const vec4 coef = vec4(
-        fma( lp.x, lp.y, (1.f-lp.y-lp.x)), // (1.f-lp.x) * (1.f-lp.y)
-        fma( lp.x,-lp.y, lp.x),            //      lp.x  * (1.f-lp.y)
         fma(-lp.x, lp.y, lp.y),            // (1.f-lp.x) *      lp.y
-        lp.x*lp.y                          //      lp.x  *      lp.y
+        lp.x*lp.y,                         //      lp.x  *      lp.y
+        fma( lp.x,-lp.y, lp.x),            //      lp.x  * (1.f-lp.y)
+        fma( lp.x, lp.y, (1.f-lp.y-lp.x))  // (1.f-lp.x) * (1.f-lp.y)
     );
-    return mtr*coef;
+
+    // linear interpolation by dot products
+    vec4 fcolor = 0.f.xxxx;
+    [[unroll]] for (int j=0;j<4;j++){fcolor=fma(coef[j].xxxx,textureLod(SMP,fma(si,offsetf[j],tl),LOD),fcolor);}; // compile-time issues with textureLodOffset
+    //[[unroll]] for (int j=0;j<4;j++){fcolor[j]=dot(coef,textureGather(SMP,tl,j));}; // compile-time issues with textureGather
+    //fcolor[0] = dot(coef,textureGather(SMP,tl,0));
+    //fcolor[1] = dot(coef,textureGather(SMP,tl,1));
+    //fcolor[2] = dot(coef,textureGather(SMP,tl,2));
+    //fcolor[3] = dot(coef,textureGather(SMP,tl,3));
+    return fcolor;
 };
 
 #endif

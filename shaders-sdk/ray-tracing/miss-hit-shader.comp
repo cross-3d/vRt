@@ -40,8 +40,8 @@ void main() {
 #endif
 
         [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0 && (imageLoad(rayLink,rayID<<1).x-1) == hitID) { // if hit is valid
-            vec3 viewVec = dcts(cray.cdirect.xy);
-            vec3 rorigin = cray.origin.xyz;
+            const vec3 viewVec = dcts(cray.cdirect.xy);
+            const vec3 rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;
 
             // environment
@@ -59,7 +59,7 @@ void main() {
             // additional validation of hit (hit point interpolated offset test)
             {
                 imageAtomicMax(rayLink,rayID<<1,(hid+1).x);
-                int pid = atomicIncPayloadHitCount();
+                const int pid = atomicIncPayloadHitCount();
                 
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT

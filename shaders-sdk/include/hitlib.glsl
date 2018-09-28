@@ -14,45 +14,38 @@ layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[MAX_SAMP
 
 // material set (in main descriptor set)
 layout ( std430, binding = 2, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
-layout ( std430, binding = 3, set = SETS_DESC_SET_ID ) readonly buffer VT_COMBINED { uvec2 vtexures[]; };
+layout ( std430, binding = 3, set = SETS_DESC_SET_ID ) readonly buffer VT_COMBINED { uvec2 vtexures[]; }; // TODO: replace by native combinations
 layout ( std430, binding = 4, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_INFO { uint materialCount, materialOffset; };
 
 
 int matID = -1;
 #define material submats[matID]
 
-
-
 // validate texture object
-bool validateTexture( uint tbinding) {
-    return int(tbinding) > 0;
-}
-
+bool validateTexture(in uint tbinding) { return tbinding > 0u && tbinding != -1u && int(tbinding) > 0; };
 
 // also fixes AMD Vega texturing issues with nonuniformEXT
-
 //#define sampler2Dv(m) sampler2D(images[vtexures[m].x-1], samplers[vtexures[m].y-1])
 //#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(nonuniformEXT(tbinding-1)), tcoord, 0)
-
-#define sampler2Dv(m) sampler2D(images[nonuniformEXT(vtexures[m].x-1)], samplers[nonuniformEXT(vtexures[m].y-1)])
-#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(tbinding-1), tcoord, 0)
+#define sampler2Dv(m) sampler2D(images[nonuniformEXT(vtexures[m].x-1)],samplers[nonuniformEXT(vtexures[m].y-1)]) // TODO: replace by native combinations
+#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(nonuniformEXT(tbinding-1)),tcoord,0)
 
 
 vec4 fetchDiffuse(in vec2 texcoord) {
-     uint tbinding = material.diffuseTexture;
-     vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.diffuse;
+    const uint tbinding = material.diffuseTexture;
+    const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.diffuse;
     return rslt;
 }
 
 vec4 fetchSpecular(in vec2 texcoord) {
-     uint tbinding = material.specularTexture;
-     vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.specular;
+    const uint tbinding = material.specularTexture;
+    const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.specular;
     return rslt;
 }
 
 vec4 fetchEmission(in vec2 texcoord) {
-     uint tbinding = material.emissiveTexture;
-     vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.emissive;
+    const uint tbinding = material.emissiveTexture;
+    const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.emissive;
     return rslt;
 }
 

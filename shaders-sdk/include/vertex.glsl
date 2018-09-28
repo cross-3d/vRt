@@ -195,7 +195,10 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 
 #ifdef ENABLE_VSTORAGE_DATA
 #ifdef ENABLE_VERTEX_INTERPOLATOR
+
+//const  vec2 tpattern[4] = { vec2(0,1),  vec2(1,1),  vec2(1,0),  vec2(0,0)};
 #define _SWIZV xyz
+
 // barycentric map (for corrections tangents in POM)
 void interpolateMeshData(inout VtHitData ht, in int tri) {
     const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
@@ -208,12 +211,21 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
             ISTORE(attributes, makeAttribID(ht.attribID, i), textureHQ(attrib_texture, trig, 0));
 #else
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
-            ISTORE(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(
+
+            vec4 attrib = 0.f.xxxx;
+            [[unroll]] for (int j=0;j<3;j++){attrib=fma(vs[j].xxxx,textureLod(attrib_texture,fma(sz,offsetf[j],trig),0),attrib);}; // using accumulation sequence
+            //[[unroll]] for (int j=0;j<4;j++) { attrib[j] = dot(vs, SGATHER(attrib_texture, trig, j)._SWIZV); }; // constant-time issues with textureGather
+             //attrib[0] = dot(vs, SGATHER(attrib_texture, trig, 0)._SWIZV);
+             //attrib[1] = dot(vs, SGATHER(attrib_texture, trig, 1)._SWIZV);
+             //attrib[2] = dot(vs, SGATHER(attrib_texture, trig, 2)._SWIZV);
+             //attrib[3] = dot(vs, SGATHER(attrib_texture, trig, 3)._SWIZV);
+            ISTORE(attributes, makeAttribID(ht.attribID, i), attrib);
+            /*ISTORE(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(
                 SGATHER(attrib_texture, trig, 0)._SWIZV,
                 SGATHER(attrib_texture, trig, 1)._SWIZV,
                 SGATHER(attrib_texture, trig, 2)._SWIZV,
                 SGATHER(attrib_texture, trig, 3)._SWIZV
-            ));
+            ));*/
 #endif
         }
     }
