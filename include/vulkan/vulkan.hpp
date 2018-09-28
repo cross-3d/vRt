@@ -43189,8 +43189,8 @@ public:
   template <typename Allocator, typename Dispatch> 
   VULKAN_HPP_INLINE typename ResultValueType<std::vector<uint8_t,Allocator>>::type Device::getRaytracingShaderHandlesNVX( Pipeline pipeline, uint32_t firstGroup, uint32_t groupCount, Dispatch const &d ) const
   {
-    std::vector<uint8_t,Allocator> data( dataSize );
-    Result result = static_cast<Result>( d.vkGetRaytracingShaderHandlesNVX( m_device, static_cast<VkPipeline>( pipeline ), firstGroup, groupCount, data.size() * sizeof( T ) , reinterpret_cast<void*>( data.data() ) ) );
+    std::vector<uint8_t,Allocator> data(  );
+    Result result = static_cast<Result>( d.vkGetRaytracingShaderHandlesNVX( m_device, static_cast<VkPipeline>( pipeline ), firstGroup, groupCount, data.size() * sizeof( VkDeviceSize ) , reinterpret_cast<void*>( data.data() ) ) );
     return createResultValue( result, data, VULKAN_HPP_NAMESPACE_STRING"::Device::getRaytracingShaderHandlesNVX" );
   }
 #endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
@@ -43204,8 +43204,8 @@ public:
   template <typename Allocator, typename Dispatch> 
   VULKAN_HPP_INLINE typename ResultValueType<std::vector<uint8_t,Allocator>>::type Device::getAccelerationStructureHandleNVX( AccelerationStructureNVX accelerationStructure, Dispatch const &d ) const
   {
-    std::vector<uint8_t,Allocator> data( dataSize );
-    Result result = static_cast<Result>( d.vkGetAccelerationStructureHandleNVX( m_device, static_cast<VkAccelerationStructureNVX>( accelerationStructure ), data.size() * sizeof( T ) , reinterpret_cast<void*>( data.data() ) ) );
+    std::vector<uint8_t,Allocator> data(  );
+    Result result = static_cast<Result>( d.vkGetAccelerationStructureHandleNVX( m_device, static_cast<VkAccelerationStructureNVX>( accelerationStructure ), data.size() * sizeof( VkDeviceSize ) , reinterpret_cast<void*>( data.data() ) ) );
     return createResultValue( result, data, VULKAN_HPP_NAMESPACE_STRING"::Device::getAccelerationStructureHandleNVX" );
   }
 #endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
