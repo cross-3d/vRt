@@ -521,9 +521,12 @@ namespace _vt { // store in undercover namespace
     class AdvancedAcceleratorBase : public std::enable_shared_from_this<AdvancedAcceleratorBase> {
     public:
         friend Device;
-        //VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
+
+    protected:
         std::weak_ptr<Device> _device = {};
         std::shared_ptr<AdvancedAcceleratorDataBase> _dataPtr = {};
+
+    public:
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
 
         // minimal requirement of... 
@@ -546,11 +549,12 @@ namespace _vt { // store in undercover namespace
     class AcceleratorSetExtensionBase : public std::enable_shared_from_this<AcceleratorSetExtensionBase> {
     public:
         friend Device;
-        //VkDescriptorSet _descriptorSet = VK_NULL_HANDLE;
-        //VtAcceleratorName _acceleratorName = VT_ACCELERATOR_NAME_UNKNOWN; // required for identify used hardware accelerator 
+
+    protected:
         std::weak_ptr<Device> _device = {};
         std::shared_ptr<AcceleratorSetExtensionDataBase> _dataPtr = {};
 
+    public:
         //operator VkDescriptorSet() const { return _descriptorSet; };
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
         virtual VtResult _Init(const void* extensionStructure = nullptr) {

@@ -40,9 +40,9 @@ namespace _vt {
         friend AcceleratorSetExtensionBase;
         virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; };
 
-        // built-in operators for getting inner data 
-        auto* operator->()  { return (RTXAcceleratorSetExtensionData*)_dataPtr.get(); };
-        auto* operator->() const  { return (RTXAcceleratorSetExtensionData*)_dataPtr.get(); };
+        // accessors of data 
+        auto* operator->()  { return dynamic_cast<RTXAcceleratorSetExtensionData*>(_dataPtr.get()); };
+        auto* operator->() const  { return dynamic_cast<RTXAcceleratorSetExtensionData*>(_dataPtr.get()); };
     };
 
     // 
@@ -60,9 +60,9 @@ namespace _vt {
         friend AdvancedAcceleratorBase;
         virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; };
 
-        // built-in operators for getting inner data 
-        auto* operator->()  { return (RTXAcceleratorData*)_dataPtr.get(); };
-        auto* operator->() const  { return (RTXAcceleratorData*)_dataPtr.get(); };
+        // accessors of data
+        auto* operator->()  { return dynamic_cast<RTXAcceleratorData*>(_dataPtr.get()); };
+        auto* operator->() const  { return dynamic_cast<RTXAcceleratorData*>(_dataPtr.get()); };
     };
 
 };
