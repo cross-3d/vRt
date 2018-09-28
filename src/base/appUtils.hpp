@@ -40,6 +40,9 @@
 // include ray tracing library
 #include "vRt/vRt.h"
 
+// include extensions
+//#include "vRt/vRtX/RTXAcceleratorExtension.hpp"
+
 // include VMA for compatibility
 #include <vulkan/vk_mem_alloc.h>
 
