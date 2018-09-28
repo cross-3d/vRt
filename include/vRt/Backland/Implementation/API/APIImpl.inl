@@ -1,12 +1,12 @@
 #pragma once
 
 // implementables
-#include "../vRt_subimpl.inl"
+#include "../../vRt_subimpl.inl"
 
 // modules
-#include "API/BuildAccelerator.inl"
-#include "API/RayTracing.inl"
-#include "API/RadixSort.inl"
+#include "../Cmd/BuildAccelerator.inl"
+#include "../Cmd/RayTracing.inl"
+#include "../Cmd/RadixSort.inl"
 
 
 namespace vrt {
