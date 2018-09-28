@@ -264,17 +264,11 @@ bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec3_ sgn, in mat3x2
 // also, optimized for RPM (Rapid Packed Math) https://radeon.com/_downloads/vega-whitepaper-11.6.17.pdf
 // compatible with NVidia GPU too
 
-#if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
-// bvec2_ intersectCubeDual(in mediump fvec3_ origin, in mediump fvec3_ dr, in bvec3 sgn, in highp fmat3x4_ tMinMax, inout vec4 nfe2)
-bvec2_ intersectCubeDual(in mediump fvec3_ origin, in mediump fvec3_ dr, in bvec3_ sgn, in highp fvec2_[3][2] tMinMax, inout vec4 nfe2)
-#else
-// bvec2_ intersectCubeDual(in fvec3_ origin, in fvec3_ dr, in bvec3 sgn, in fmat3x4_ tMinMax, inout vec4 nfe2)
-bvec2_ intersectCubeDual(in fvec3_ origin, in fvec3_ dr, in bvec3_ sgn, in fvec2_[3][2] tMinMax, inout vec4 nfe2)
-#endif
+bvec2_ intersectCubeDual(inout fvec3_ origin, inout fvec3_ dr, in bvec3_ sgn, in fvec2_[3][2] tMinMax, inout vec4 nfe2)
 { nfe2 = INFINITY.xxxx; // indefined distance
 
     // calculate intersection
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](fma(tMinMax[i][0], dr[i].xx, origin[i].xx), fma(tMinMax[i][1], dr[i].xx, origin[i].xx));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](fvec2_(vec2(fma(tMinMax[i][0],dr[i].xx,origin[i].xx))),fvec2_(vec2(fma(tMinMax[i][1],dr[i].xx,origin[i].xx))));
     [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](min(tMinMax[i][0], tMinMax[i][1]), max(tMinMax[i][0], tMinMax[i][1]));
 
     const 

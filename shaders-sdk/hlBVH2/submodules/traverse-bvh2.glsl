@@ -23,7 +23,7 @@ layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYS
 struct BvhTraverseState {
          int idx, defTriangleID, maxTriangles; float diffOffset;
     lowp int stackPtr, pageID;
-    fvec4_ minusOrig, directInv; // vec4 of 32-bits
+    fvec4_ directInv, minusOrig;
 } traverseState;
 
 
@@ -113,7 +113,8 @@ void initTraversing(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
 
     // traversing inputs
     traverseState.diffOffset = min(-nfe.x, 0.f);
-    traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(fma(fvec4_(torig), fvec4_(dirproj), fvec4_(traverseState.diffOffset.xxxx)));
+    traverseState.directInv = fvec4_(dirproj);
+    traverseState.minusOrig = fvec4_(vec4(fma(fvec4_(torig), traverseState.directInv, ftype_(traverseState.diffOffset).xxxx)));
 
     // intersection inputs
     primitiveState.dir = direct, primitiveState.orig = fma(direct, traverseState.diffOffset.xxxx, torig);
