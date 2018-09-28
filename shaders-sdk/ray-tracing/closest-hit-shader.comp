@@ -124,13 +124,12 @@ void main() {
             hitp.normalHeight.xyz = faceforward(hitp.normalHeight.xyz, -normal.xyz, normalize(hitp.normalHeight.xyz));
 
             // if normal goes wrong, restore normal
-            [[flatten]] if (dot(hitp.normalHeight.xyz,hitp.normalHeight.xyz) < 1e-4 || any(isnan(hitp.normalHeight.xyz)) || any(isinf(hitp.normalHeight.xyz))) {
-                hitp.normalHeight.xyz = normal.xyz;
-            };
+            [[flatten]] if (dot(hitp.normalHeight.xyz,hitp.normalHeight.xyz) <= SFN) { hitp.normalHeight.xyz = normal.xyz; };
             hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz); // facing of normal
             
             // convert metallic roughness to glossiness specular PBR model
-            const float fresnel = clamp01(pow(abs(dot(rdirect, normal.xyz)), sIOR - 1.f));
+            const vec3 faceNormal = faceforward(hitp.normalHeight.xyz, rdirect, hitp.normalHeight.xyz);
+            const float fresnel = clamp01(pow(abs(dot(rdirect, faceNormal)), sIOR - 1.f));
             const vec3 fresnelColor = clamp01(mix(min_fresnel_color * 0.01f, max_fresnel_color * 0.25f, 1.f-fresnel.xxx));
             const vec3 specularColor = clamp01(mix(fresnelColor, textured.diffuse.xyz, textured.specular.zzz)); // use correct specular
             const vec4 specularGlossiness = vec4(specularColor, textured.specular.y);

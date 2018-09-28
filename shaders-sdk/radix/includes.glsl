@@ -82,7 +82,7 @@
 uint BFE(in uint ua, in int o, in int n) { return BFE_HW(ua, o, n); }
 #else
 #define KEYTYPE uvec2
-uint BFE(in uvec2 ua, in int o, in int n) { return uint(o >= 32u ? BFE_HW(ua.y, o-32, n) : BFE_HW(ua.x, o, n)); }
+uint BFE(in uvec2 ua, in int o, in int n) { return uint(o >= 32 ? BFE_HW(ua.y, o-32, n) : BFE_HW(ua.x, o, n)); }
 #endif
 
 struct RadicePropStruct { uint Descending; uint IsSigned; };
@@ -98,17 +98,16 @@ struct RadicePropStruct { uint Descending; uint IsSigned; };
 const KEYTYPE OutOfRange = KEYTYPE(0xFFFFFFFFu);
 
 //#define KEYTYPE uint
-layout (std430, binding = 0, set = INDIR )  readonly coherent buffer KeyInB {KEYTYPE KeyIn[]; };
-layout (std430, binding = 1, set = INDIR )  readonly coherent buffer ValueInB {uint ValueIn[]; };
-
-layout (std430, binding = 0, set = OUTDIR )  coherent buffer KeyTmpB {KEYTYPE KeyTmp[]; };
-layout (std430, binding = 1, set = OUTDIR )  coherent buffer ValueTmpB {uint ValueTmp[]; };
-layout (std430, binding = 2, set = 0 )  readonly buffer VarsB { RadicePropStruct radProps[]; };
-layout (std430, binding = 3, set = 0 )  restrict buffer HistogramB {uint Histogram[]; };
-layout (std430, binding = 4, set = 0 )  restrict buffer PrefixSumB {uint PrefixSum[]; };
+layout ( binding = 0, set = INDIR, std430 )  readonly coherent buffer KeyInB {KEYTYPE KeyIn[]; };
+layout ( binding = 1, set = INDIR, std430 )  readonly coherent buffer ValueInB {uint ValueIn[]; };
+layout ( binding = 0, set = OUTDIR, std430 )  coherent buffer KeyTmpB {KEYTYPE KeyTmp[]; };
+layout ( binding = 1, set = OUTDIR, std430 )  coherent buffer ValueTmpB {uint ValueTmp[]; };
+layout ( binding = 2, set = 0, std430 )  readonly buffer VarsB { RadicePropStruct radProps[]; };
+layout ( binding = 3, set = 0, std430 )  restrict buffer HistogramB {uint Histogram[]; };
+layout ( binding = 4, set = 0, std430 )  restrict buffer PrefixSumB {uint PrefixSum[]; };
 
 // push constant in radix sort
-layout (push_constant) uniform PushBlock { uint NumKeys; int Shift; } push_block;
+layout ( push_constant ) uniform PushBlock { uint NumKeys; int Shift; } push_block;
 
 // division of radix sort
 struct blocks_info { uint count; uint offset; uint limit; uint r0; };

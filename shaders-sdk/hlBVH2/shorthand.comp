@@ -19,7 +19,7 @@ layout ( binding = 0, set = 1, std430 ) buffer bvhBlockB {
     vec4 sceneMin, sceneMax;
 } bvhBlock;
 
-layout ( std430, binding = 9, set = 0 ) readonly buffer minmaxB { vec4 minmax[]; };
+layout ( binding = 9, set = 0, std430 ) readonly buffer minmaxB { vec4 minmax[]; };
 
 LOCAL_SIZE_LAYOUT;
 

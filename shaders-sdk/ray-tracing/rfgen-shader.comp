@@ -9,7 +9,10 @@
 #include "../include/random.glsl"
 
 // use partition by 8x8
+const int R_BLOCK_WIDTH = 8, R_BLOCK_HEIGHT = 8;
+const int R_BLOCK_SIZE = R_BLOCK_WIDTH * R_BLOCK_HEIGHT;
 layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT) in;
+//LOCAL_SIZE_LAYOUT;
 
 layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
     mat4x4 camInv;

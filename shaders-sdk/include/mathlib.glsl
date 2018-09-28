@@ -9,12 +9,13 @@
 // Ray tracing NEXT capable shader standard development planned begin in 2019 year
 const float PHI = 1.6180339887498948482f;
 const float INFINITY = 1e+5f;//, IOFF = 1e-5f;
+
 const float PI = 3.1415926535897932384626422832795028841971f;
 const float TWO_PI = 6.2831853071795864769252867665590057683943f;
 const float SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
 const float E = 2.7182818284590452353602874713526624977572f;
 const float N_INFINITY = 99999.999f;//INFINITY - IOFF;
-
+const float INV_PI = 0.3183098861837907f; // TODO: search or calculate more precise version
 
 const float SFN = 0.00000011920928955078125f, SFO = 1.00000011920928955078125f;
 //const float N1024 = 1024.f;
@@ -319,12 +320,12 @@ f16vec4 mix(in f16vec4 a, in f16vec4 b, in  bvec4_ c) { return mix(a,b,SSC(c)); 
 
 // swap of 16-bits by funnel shifts and mapping 
 uint fast16swap(in uint b32,   bool_ nswp) {
-     uint vrc = 16u - uint(nswp) * 16u;
+    const uint vrc = 16u - uint(nswp) * 16u;
     return (b32 << (vrc)) | (b32 >> (32u-vrc));
 }
 
 uint64_t fast32swap(in uint64_t b64,   bool_ nswp) {
-     uint64_t vrc = 32ul - uint64_t(nswp) * 32ul;
+    const uint64_t vrc = 32ul - uint64_t(nswp) * 32ul;
     return (b64 << (vrc)) | (b64 >> (64ul-vrc));
 }
 
@@ -362,15 +363,15 @@ int nlz(in int x) { return nlz(uint(x)); }
 
 
 
-// polar/cartesian coordinates
+// polar/cartesian coordinates (unorm)
 vec2 lcts(in vec3 direct) {
-    direct.xyz = direct.xzy * vec3(1.f,1.f,-1.f);
-    return vec2(atan(direct.y, direct.x), acos(direct.z));
+    //direct.xyz = direct.xzy * vec3(1.f,1.f,-1.f);
+    return vec2(fma(atan(direct.z,direct.x),0.5f*INV_PI,0.5f),acos(-direct.y)*INV_PI); // to unorm
 }
 
 vec3 dcts(in vec2 hr) {
-    //return normalize(vec3(cos(hr.x)*sin(hr.y), sin(hr.x)*sin(hr.y), cos(hr.y))).xzy * vec3(1.f,-1.f,1.f);
-    return (vec3(cos(hr.x)*sin(hr.y), sin(hr.x)*sin(hr.y), cos(hr.y))).xzy * vec3(1.f,-1.f,1.f);
+    hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f)); // from unorm
+    return normalize(vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y)));//.xzy * vec3(1.f,-1.f,1.f);
 }
 
 
@@ -382,7 +383,7 @@ uint p2x_16(in highp uvec2 a) {
 #else
     return (a.x&0xFFFFu)|(a.y<<16u);
 #endif
-};
+}
 
 highp uvec2 up2x_16(in uint a) {
 #if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
@@ -390,7 +391,7 @@ highp uvec2 up2x_16(in uint a) {
 #else
     return uvec2(a&0xFFFFu, a>>16u);
 #endif
-};
+}
 
 
 #if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)

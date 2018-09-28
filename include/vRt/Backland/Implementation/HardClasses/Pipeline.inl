@@ -100,7 +100,7 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_closestHitIndiceBuffer);
 
 
-                bfi.bufferSize = hitCount * 2ull * sizeof(uint32_t);
+                bfi.bufferSize = hitCount * 1ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_missedHitIndiceBuffer);
 
@@ -125,7 +125,7 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_hitPayloadBuffer);
 
 
-                bfi.bufferSize = rayCount * 2ull * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * 4ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_rayLinkPayload);
 

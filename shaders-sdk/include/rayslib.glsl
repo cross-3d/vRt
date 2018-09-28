@@ -16,20 +16,16 @@ struct VtHitPayload {
     vec4 specularGlossiness;
 };
 
-// paging optimized tiling
-const int R_BLOCK_WIDTH = 8, R_BLOCK_HEIGHT = 8;
-const int R_BLOCK_SIZE = R_BLOCK_WIDTH * R_BLOCK_HEIGHT;
-
 // basic ray tracing buffers
-layout ( std430, binding = 0, set = 0 ) coherent buffer VT_RAYS { VtRay rays[]; };
-layout ( std430, binding = 1, set = 0 ) coherent buffer VT_HITS { VtHitData hits[]; };
-layout ( std430, binding = 2, set = 0 ) coherent buffer VT_CLOSEST_HITS { int closestHits[]; };
-layout ( std430, binding = 3, set = 0 ) coherent buffer VT_MISS_HITS { int missHits[]; };
-layout ( std430, binding = 4, set = 0 ) coherent buffer VT_HIT_PAYLOAD { VtHitPayload hitPayload[]; };
-layout ( std430, binding = 5, set = 0 ) coherent buffer VT_RAY_INDICES { int rayGroupIndices[]; };
+layout ( binding = 0, set = 0, std430 ) coherent buffer VT_RAYS { VtRay rays[]; };
+layout ( binding = 1, set = 0, std430 ) coherent buffer VT_HITS { VtHitData hits[]; };
+layout ( binding = 2, set = 0, std430 ) coherent buffer VT_CLOSEST_HITS { int closestHits[]; };
+layout ( binding = 3, set = 0, std430 ) coherent buffer VT_MISS_HITS { int missHits[]; };
+layout ( binding = 4, set = 0, std430 ) coherent buffer VT_HIT_PAYLOAD { VtHitPayload hitPayload[]; };
+layout ( binding = 5, set = 0, std430 ) coherent buffer VT_RAY_INDICES { int rayGroupIndices[]; };
 
 // system canvas info
-layout ( std430, binding = 6, set = 0 ) readonly restrict buffer VT_CANVAS_INFO {
+layout ( binding = 6, set = 0, std430 ) readonly restrict buffer VT_CANVAS_INFO {
     int currentGroup, maxRayCount, maxHitCount, closestHitOffset;
     ivec2 size; int lastIteration, iteration;
 } stageUniform;
@@ -39,32 +35,31 @@ layout ( std430, binding = 6, set = 0 ) readonly restrict buffer VT_CANVAS_INFO 
 
 
 // counters
-layout ( std430, binding = 7, set = 0 ) restrict buffer VT_RT_COUNTERS { int vtCounters[8]; };
+layout ( binding = 7, set = 0, std430 ) restrict buffer VT_RT_COUNTERS { int vtCounters[8]; };
 
-// imported from satellite (blocky indicing)
-#ifdef USE_16BIT_ADDRESS_SPACE
-layout ( std430, binding = 8, set = 0 ) coherent buffer VT_9_LINE { uint16_t ispace[][R_BLOCK_SIZE]; };
-#define m16i(b,i) (int(ispace[b][i])-1)
-#define m16s(a,b,i) (ispace[b][i] = uint16_t(a+1))
-#else
-layout ( std430, binding = 8, set = 0 ) coherent buffer VT_9_LINE { highp uint ispace[][R_BLOCK_SIZE]; };
-#define m16i(b,i) (int(ispace[b][i])-1)
-#define m16s(a,b,i) (ispace[b][i] = uint(a+1))
-#endif
+// on consideration...
+//#ifdef USE_16BIT_ADDRESS_SPACE
+//layout ( binding = 8, set = 0 ) coherent buffer VT_9_LINE { uint16_t ispace[][R_BLOCK_SIZE]; };
+//#define m16i(b,i) (int(ispace[b][i])-1)
+//#define m16s(a,b,i) (ispace[b][i] = uint16_t(a+1))
+//#else
+//layout ( binding = 8, set = 0 ) coherent buffer VT_9_LINE { highp uint ispace[][R_BLOCK_SIZE]; };
+//#define m16i(b,i) (int(ispace[b][i])-1)
+//#define m16s(a,b,i) (ispace[b][i] = uint(a+1))
+//#endif
 
 // ray and hit linking buffer
 //layout ( rgba32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
-layout ( r32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
-layout ( rgba32f, binding = 11, set = 0 ) uniform imageBuffer attributes;
-
-layout ( std430, binding = 12, set = 0 ) restrict buffer VT_GROUPS_COUNTERS {
+layout ( binding = 10, set = 0, r32ui ) uniform uimageBuffer rayLink;
+layout ( binding = 11, set = 0, rgba32f ) uniform imageBuffer attributes;
+layout ( binding = 12, set = 0, std430 ) restrict buffer VT_GROUPS_COUNTERS {
     int rayTypedCounter[4];
     int closestHitTypedCounter[4];
     int missHitTypedCounter[4];
 };
 
-layout ( std430, binding = 13, set = 0 ) readonly coherent buffer VT_RAY_INDICES_READ {int rayGroupIndicesRead[];};
-layout ( std430, binding = 14, set = 0 ) readonly restrict buffer VT_GROUPS_COUNTERS_READ {
+layout ( binding = 13, set = 0, std430 ) readonly coherent buffer VT_RAY_INDICES_READ {int rayGroupIndicesRead[];};
+layout ( binding = 14, set = 0, std430 ) readonly restrict buffer VT_GROUPS_COUNTERS_READ {
     int rayTypedCounterRead[4];
     int closestHitTypedCounterRead[4];
     int missHitTypedCounterRead[4];

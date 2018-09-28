@@ -13,9 +13,9 @@ layout ( binding = 0, set = SETS_DESC_SET_ID ) uniform texture2D images[MAX_IMAG
 layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[MAX_SAMPLERS];
 
 // material set (in main descriptor set)
-layout ( std430, binding = 2, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
-layout ( std430, binding = 3, set = SETS_DESC_SET_ID ) readonly buffer VT_COMBINED { uvec2 vtexures[]; }; // TODO: replace by native combinations
-layout ( std430, binding = 4, set = SETS_DESC_SET_ID ) readonly buffer VT_MATERIAL_INFO { uint materialCount, materialOffset; };
+layout ( binding = 2, set = SETS_DESC_SET_ID, std430 ) readonly buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
+layout ( binding = 3, set = SETS_DESC_SET_ID, std430 ) readonly buffer VT_COMBINED { uvec2 vtexures[]; }; // TODO: replace by native combinations
+layout ( binding = 4, set = SETS_DESC_SET_ID, std430 ) readonly buffer VT_MATERIAL_INFO { uint materialCount, materialOffset; };
 
 
 int matID = -1;
@@ -63,7 +63,7 @@ const float parallaxScale = 0.02f;
 const float minLayers = 10, maxLayers = 20;
 const int refLayers = 10;
 vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
-     uint tbinding = material.bumpTexture;
+    const uint tbinding = material.bumpTexture;
 
     float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0, 0, 1), V)));
     float layerHeight = 1.0f / numLayers;

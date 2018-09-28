@@ -15,13 +15,10 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 #define OriginPass _devImages[2]
 #define SpecularPass _devImages[3]
 
-// use partition by 8x8
-//layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT);
+
 LOCAL_SIZE_LAYOUT;
 
 #define wgs gl_NumWorkGroups.x
-//#define wsize rayTypedCounterRead[stageUniform.currentGroup]
-
 #define hitp hitPayload[hitpId]
 #define hit hits[hitIdc]
 
@@ -31,18 +28,18 @@ LOCAL_SIZE_LAYOUT;
 // Also, we have another vision of "DPI-pixel-sampling" problem, so we can use sample locations for generation bigger images by progressing smaller count of samples
 // papers: ???.pdf ( no direct equivalent )
 
-
 shared VtRay lrays[WORK_SIZE];
 #define ray lrays[Local_Idx]
 
 // 
+LOCAL_SIZE_LAYOUT;
 void main() {
-    const int wsize = min(rayTypedCounterRead[stageUniform.currentGroup], MAX_RAYS); IFANY (wsize <= 0) return;
-    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    const uint wsize = min(uint(rayTypedCounterRead[stageUniform.currentGroup]), uint(MAX_RAYS)); IFANY (wsize <= 0) return;
+    const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=wgs) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        const int rayID = (globalID < MAX_RAYS ? rayGroupIndicesRead[globalID] : 0)-1;
-        const bool overflow = globalID >= wsize || globalID < 0 || rayID < 0; IFALL(overflow) break;
+        const int rayID = (globalID < wsize ? rayGroupIndicesRead[globalID] : 0)-1;
+        const bool overflow = globalID >= wsize || globalID < 0; IFALL(overflow) break;
 
         // get ray by id
         ray = rays[rayID];
@@ -60,6 +57,7 @@ void main() {
             // reflection prior (early stage)
             const vec4 dcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, icoord);
             const vec3 orgdir = dcts(ray.cdirect.xy);
+            const vec3 normal = hitp.normalHeight.xyz;
 
             // get real origin of ray
             ray.origin.xyz = fma(dcts(ray.cdirect.xy), hit.uvt.zzz, ray.origin.xyz); 
@@ -72,7 +70,7 @@ void main() {
             // transparency ray
             VtRay newray = ray; {
                 const vec3 vdir = orgdir, shift = vdir;
-                newray.origin.xyz = fma(faceforward(hit.vdat.xyz, -shift, hit.vdat.xyz), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
+                newray.origin.xyz = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
                 writeColor(newray.dcolor, vec4(dcolor.xyz * (1.f - alph).xxx, 1.f));
                 vtReuseRays(newray, ucoord.xy, 0, rayID);
             }
@@ -81,7 +79,7 @@ void main() {
             const vec3 vcolor = dcolor.xyz * alph.xxx; // visible ray color energy
             {
                 const vec3 vdir = reflect(orgdir, hitp.normalHeight.xyz), shift = vdir;
-                const vec3 orig = fma(faceforward(hit.vdat.xyz, -shift, hit.vdat.xyz), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
+                const vec3 orig = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
                 const vec3 rcol = vcolor * reflc.xyz;
 
                 ISTORE(OriginPass, icoord, vec4(orig, 1.f));
