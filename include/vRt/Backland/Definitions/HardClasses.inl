@@ -528,7 +528,7 @@ namespace _vt { // store in undercover namespace
         // minimal requirement of... 
         virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) = 0;
         virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet) = 0;
-        virtual VtResult _Init(const VtAdvancedAccelerationExtensionInfo* extensionStructure = nullptr) = 0; // initialize by extension 
+        virtual VtResult _Init(const VtDeviceAdvancedAccelerationExtension* extensionStructure = nullptr) = 0; // initialize by extension 
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
 
          // built-in method's

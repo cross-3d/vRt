@@ -29,8 +29,8 @@ namespace vrt { // store in official namespace
     struct VtRayTracingSetCreateInfo;
     struct VtVertexAssemblySetCreateInfo;
 
-    class VtDeviceAccelerationExtension;
-    struct VtAdvancedAccelerationExtensionInfo;
+    // advanced acceleration extension
+    class VtDeviceAdvancedAccelerationExtension;
 
     // constexpr format compositor
     struct VtFormatDecomp {

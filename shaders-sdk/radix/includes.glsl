@@ -1,31 +1,19 @@
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
-
-//#define OUR_INVOC_TERM
-//uint Radice_Idx = 0;
-//uint Lane_Idx = 0;
-//uint Local_Idx = 0;
-//uint Wave_Idx = 0;
-
-#ifdef INTEL_PLATFORM
-#define Wave_Size 32u
-#endif
-
 #include "../include/ballotlib.glsl"
 
 
-// NO direct paper ???.pdf
 // roundly like http://www.heterogeneouscompute.org/wordpress/wp-content/uploads/2011/06/RadixSort.pdf
 // partially of https://vgc.poly.edu/~csilva/papers/cgf.pdf + and wide subgroup adaptation
 // practice maximal throughput: 256x16 (of Nx256)
 
 
-// MLC optimized
+// 2-bit
 //#define BITS_PER_PASS 2
 //#define RADICES 4
 //#define RADICES_MASK 0x3
 
-// QLC optimized
+// 4-bit
 #define BITS_PER_PASS 4
 #define RADICES 16
 #define RADICES_MASK 0xF
@@ -55,15 +43,18 @@
     #define U8v4 uvec4
 #endif
 
-#define BLOCK_SIZE 1024u
+#ifdef ENABLE_VEGA_INSTRUCTION_SET
+#define BLOCK_SIZE 512u
+#else
+#define BLOCK_SIZE 256u
+#endif
+
 #define BLOCK_SIZE_RT (gl_WorkGroupSize.x)
 #define WRK_SIZE_RT (gl_NumWorkGroups.y * Wave_Count_RX)
 
 #define uint_rdc_wave_lcm uint
 
 // pointer of...
-//#define WPTR uint
-//#define WPTR2 uvec2
 #define WPTR4 uvec4
 #define PREFER_UNPACKED
 
@@ -95,6 +86,7 @@ struct RadicePropStruct { uint Descending; uint IsSigned; };
 #define OUTDIR 0
 #endif
 
+// used when filling
 const KEYTYPE OutOfRange = KEYTYPE(0xFFFFFFFFu);
 
 //#define KEYTYPE uint

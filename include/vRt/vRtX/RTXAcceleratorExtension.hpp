@@ -1,6 +1,8 @@
 #pragma once
 #include "vRt/vRt.h"
 
+// planned after RTX 2070 or after 2019 year
+
 
 // 
 namespace _vt {
@@ -9,21 +11,12 @@ namespace _vt {
 };
 
 
-// planned in 2019
+// TODO Turing
 namespace vrt {
 
     // extending to enum type
     constexpr inline static const auto VT_ACCELERATION_NAME_RTX = VtAccelerationName(0x00001000u); // planned in 2019
-
-    // passing structure
-    class VtRTXAccelerationExtension : public VtDeviceAccelerationExtension {
-    public: 
-        friend VtDeviceAccelerationExtension;
-
-        virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; };
-
-
-    };
+    class VtRTXAccelerationExtension; // structure extension
 
 };
 
@@ -33,7 +26,6 @@ namespace vrt {
 
 namespace _vt {
 
-
     class RTXAcceleratorSetExtensionData : public AcceleratorSetExtensionDataBase, std::enable_shared_from_this<RTXAcceleratorSetExtensionData> {
     public:
         friend Device;
@@ -41,7 +33,7 @@ namespace _vt {
 
     };
 
-    // planned in 2019
+    // 
     class RTXAcceleratorSetExtension : public AcceleratorSetExtensionBase, std::enable_shared_from_this<RTXAcceleratorSetExtension> {
     public:
         friend Device;
@@ -53,7 +45,7 @@ namespace _vt {
         auto* operator->() const  { return (RTXAcceleratorSetExtensionData*)_dataPtr.get(); };
     };
 
-
+    // 
     class RTXAcceleratorData : public AdvancedAcceleratorDataBase, std::enable_shared_from_this<RTXAcceleratorData> {
     public:
         friend Device;
@@ -61,7 +53,7 @@ namespace _vt {
 
     };
 
-    // planned in 2019
+    // 
     class RTXAccelerator : public AdvancedAcceleratorBase, std::enable_shared_from_this<RTXAccelerator> {
     public:
         friend Device;
@@ -71,5 +63,17 @@ namespace _vt {
         // built-in operators for getting inner data 
         auto* operator->()  { return (RTXAcceleratorData*)_dataPtr.get(); };
         auto* operator->() const  { return (RTXAcceleratorData*)_dataPtr.get(); };
+    };
+
+};
+
+namespace vrt {
+    // passing structure
+    class VtRTXAccelerationExtension : public VtDeviceAdvancedAccelerationExtension {
+    public:
+        friend VtDeviceAdvancedAccelerationExtension;
+        virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; };
+
+
     };
 };

@@ -1,7 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-#define WORK_SIZE_BND 1024
+#define EXTEND_LOCAL_GROUPS
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 
