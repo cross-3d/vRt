@@ -19,13 +19,13 @@ const float INV_PI = 0.3183098861837907f; // TODO: search or calculate more prec
 
 const float SFN = 0.00000011920928955078125f, SFO = 1.00000011920928955078125f;
 //const float N1024 = 1024.f;
-#ifdef AMD_F16_BVH
+#ifdef USE_F16_BVH
 const float16_t InZero = 0.0009765625hf, InOne = 1.0009765625hf;
 #else
 const float InZero = 0.00000011920928955078125f, InOne = 1.00000011920928955078125f;
 #endif
 
-#ifdef AMD_F16_BVH
+#ifdef USE_F16_BVH
 const float16_t One1024 = 0.0009765625hf;
 #else
 const float One1024 = 0.0009765625f;
@@ -33,7 +33,7 @@ const float One1024 = 0.0009765625f;
 
 
 // float 16 or 32 bit types
-#ifdef AMD_F16_BVH
+#ifdef USE_F16_BVH
 #define ftype_ float16_t
 #define fvec3_ f16vec3
 #define fvec4_ f16vec4
@@ -59,7 +59,7 @@ const float One1024 = 0.0009765625f;
 const float _FZERO = 0.f;
 const int _IZERO = 0;
 
-//#ifdef ENABLE_AMD_INSTRUCTION_SET
+//#ifdef ENABLE_VEGA_INSTRUCTION_SET
 //    #define ISTORE(img, crd, data) imageStoreLodAMD(img,crd,_IZERO,data)
 //    #define SGATHER(smp, crd, chnl) textureGatherLodAMD(smp,crd,_FZERO,chnl)
 //#else
@@ -69,7 +69,7 @@ const int _IZERO = 0;
 
 
 // AMD min3/max3 ...
-#ifdef ENABLE_AMD_INSTRUCTION_SET
+#ifdef ENABLE_VEGA_INSTRUCTION_SET
 #define min3_wrap(a,b,c) min3(a,b,c)
 #define max3_wrap(a,b,c) max3(a,b,c)
 #else
@@ -80,7 +80,7 @@ const int _IZERO = 0;
 #define min3_vec(a) min3_wrap(a.x,a.y,a.z)
 
 
-#ifdef ENABLE_AMD_INSTRUCTION_SET
+#ifdef ENABLE_VEGA_INSTRUCTION_SET
 #define mid3_wrap(a,b,c) mid3(a,b,c)
 #else
 float mid3_wrap(in float a, in float b, in float c) {
@@ -99,7 +99,7 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 }
 #endif
 
-#ifdef ENABLE_AMD_INT16
+#ifdef ENABLE_INT16_SUPPORT
 #define bvec4_ u16vec4
 #define bvec3_ u16vec3
 #define bvec2_ u16vec2
@@ -112,7 +112,7 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 #endif
 
 
-#ifdef ENABLE_AMD_INT16 // if has integer 16-bit support
+#ifdef ENABLE_INT16_SUPPORT // if has integer 16-bit support
 const bool_ true_ = bool_(1us), false_ = bool_(0us); 
 const bvec2_ true2_ = true_.xx, false2_ = false_.xx;
 #else
@@ -256,7 +256,7 @@ float fmix(in float a, in float b, in float c) { return _FMOP; }
 vec2 fmix(in vec2 a, in vec2 b, in vec2 c) { return _FMOP; }
 vec3 fmix(in vec3 a, in vec3 b, in vec3 c) { return _FMOP; }
 vec4 fmix(in vec4 a, in vec4 b, in vec4 c) { return _FMOP; }
-#ifdef ENABLE_AMD_INSTRUCTION_SET
+#ifdef ENABLE_FP16_SUPPORT
 float16_t fmix(in float16_t a, in float16_t b, in float16_t c) { return _FMOP; }
 f16vec2 fmix(in f16vec2 a, in f16vec2 b, in f16vec2 c) { return _FMOP; }
 f16vec3 fmix(in f16vec3 a, in f16vec3 b, in f16vec3 c) { return _FMOP; }
@@ -303,7 +303,7 @@ vec2 mix(in vec2 a, in vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
 vec4 mix(in vec4 a, in vec4 b, in  bvec4_ c) { return mix(a,b,SSC(c)); }
 
 // 16-bit int/uint
-#ifdef ENABLE_AMD_INT16
+#ifdef ENABLE_INT16_SUPPORT
  int16_t mix(in  int16_t a, in  int16_t b, in  bool_ c) { return mix(a,b,SSC(c)); }
 uint16_t mix(in uint16_t a, in uint16_t b, in  bool_ c) { return mix(a,b,SSC(c)); }
 i16vec2 mix(in i16vec2 a, in i16vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
@@ -311,7 +311,7 @@ u16vec2 mix(in u16vec2 a, in u16vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); 
 #endif
 
 // 16-bit float
-#ifdef ENABLE_AMD_INSTRUCTION_SET
+#ifdef ENABLE_FP16_SUPPORT
 float16_t mix(in float16_t a, in float16_t b, in  bool_ c) { return mix(a,b,SSC(c)); }
 f16vec2 mix(in f16vec2 a, in f16vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
 f16vec4 mix(in f16vec4 a, in f16vec4 b, in  bvec4_ c) { return mix(a,b,SSC(c)); }
@@ -331,7 +331,7 @@ uint64_t fast32swap(in uint64_t b64,   bool_ nswp) {
 
 
 // swap x and y swizzle by funnel shift (AMD half float)
-#ifdef ENABLE_AMD_INSTRUCTION_SET
+#ifdef ENABLE_FP16_SUPPORT
 f16vec2 fast16swap(in f16vec2 b32, in  bool_ nswp) { 
     return mix(b32.yx, b32, nswp.xx); // use swizzle version (some device can be slower)
 }
@@ -343,7 +343,7 @@ vec2 fast32swap(in vec2 b64, in  bool_ nswp) {
 }
 
 
-#ifdef AMD_F16_BVH
+#ifdef USE_F16_BVH
 #define FSWP fast16swap
 #else
 #define FSWP fast32swap
@@ -378,7 +378,7 @@ vec3 dcts(in vec2 hr) {
 
 
 uint p2x_16(in highp uvec2 a) {
-#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+#ifdef ENABLE_INT16_SUPPORT
     return packUint2x16(u16vec2(a));
 #else
     return (a.x&0xFFFFu)|(a.y<<16u);
@@ -386,7 +386,7 @@ uint p2x_16(in highp uvec2 a) {
 }
 
 highp uvec2 up2x_16(in uint a) {
-#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+#ifdef ENABLE_INT16_SUPPORT
     return uvec2(unpackUint2x16(a));
 #else
     return uvec2(a&0xFFFFu, a>>16u);
@@ -394,7 +394,7 @@ highp uvec2 up2x_16(in uint a) {
 }
 
 
-#if defined(ENABLE_AMD_INSTRUCTION_SET) && defined(ENABLE_AMD_INT16)
+#ifdef ENABLE_INT16_SUPPORT
 // it should be 8-bit, but there is no native support
 uint p4x_8(in lowp uvec4 a) {return (a.x<<0)|(a.y<<8)|(a.z<<16)|(a.w<<24);};
 u16vec4 up4x_8(in uint a) {return u16vec4(a>>0,a>>8,a>>16,a>>24)&0xFFus;};

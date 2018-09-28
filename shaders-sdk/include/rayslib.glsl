@@ -38,7 +38,7 @@ layout ( binding = 6, set = 0, std430 ) readonly restrict buffer VT_CANVAS_INFO 
 layout ( binding = 7, set = 0, std430 ) restrict buffer VT_RT_COUNTERS { int vtCounters[8]; };
 
 // on consideration...
-//#ifdef USE_16BIT_ADDRESS_SPACE
+//#ifdef ENABLE_INT16_SUPPORT
 //layout ( binding = 8, set = 0 ) coherent buffer VT_9_LINE { uint16_t ispace[][R_BLOCK_SIZE]; };
 //#define m16i(b,i) (int(ispace[b][i])-1)
 //#define m16s(a,b,i) (ispace[b][i] = uint16_t(a+1))

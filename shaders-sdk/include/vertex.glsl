@@ -272,7 +272,7 @@ bvec2_ intersectCubeDual(inout fvec3_ origin, inout fvec3_ dr, in bvec3_ sgn, in
     [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](min(tMinMax[i][0], tMinMax[i][1]), max(tMinMax[i][0], tMinMax[i][1]));
 
     const 
-#if (!defined(AMD_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
+#if (!defined(USE_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
     mediump
 #endif
     fvec2_

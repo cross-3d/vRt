@@ -7,9 +7,9 @@
 
 
 
-#ifdef ENABLE_AMD_INSTRUCTION_SET
+#ifdef ENABLE_VEGA_INSTRUCTION_SET
 
-#ifdef ENABLE_AMD_INT16 // native 16-bit integer support
+#ifdef ENABLE_INT16_SUPPORT // native 16-bit integer support
 uint16_t M16(in f16samplerBuffer m, in uint i) {
     return float16BitsToUint16(texelFetch(m, int(i>>1)).xy)[i&1u];
 };
@@ -92,7 +92,7 @@ int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 
 
 
-#ifdef ENABLE_AMD_INSTRUCTION_SET
+#ifdef ENABLE_VEGA_INSTRUCTION_SET
 layout ( binding = 0, set = 1 ) uniform f16samplerBuffer bufferSpace[8]; // vertex model v1.4
 #else
 layout ( binding = 0, set = 1 ) uniform highp usamplerBuffer bufferSpace[8]; // vertex model v1.4

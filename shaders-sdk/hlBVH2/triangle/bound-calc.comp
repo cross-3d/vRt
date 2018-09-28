@@ -8,8 +8,8 @@
 #define fpInner 0.f//0.00000011920928955078125f
 
 // force undef fp16
-#ifdef AMD_F16_BVH
-#undef AMD_F16_BVH
+#ifdef USE_F16_BVH
+#undef USE_F16_BVH
 #endif
 
 // force define fp32

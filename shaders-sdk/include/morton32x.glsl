@@ -1,4 +1,4 @@
-#ifdef ENABLE_AMD_INT16
+#ifdef ENABLE_INT16_SUPPORT
     // minimal supported
     #define U8s uint16_t
     #define U8v4 u16vec4

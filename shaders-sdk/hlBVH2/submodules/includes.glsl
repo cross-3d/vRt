@@ -40,7 +40,7 @@ layout ( binding = 8, set = 0, std430 ) restrict buffer CountersB {
 };
 
 struct BTYPE_ {
-#if (defined(USE_F32_BVH) || defined(AMD_F16_BVH))
+#if (defined(USE_F32_BVH) || defined(USE_F16_BVH))
     fvec4_ cbox[3];
 #else
     uvec2 cbox[3];
