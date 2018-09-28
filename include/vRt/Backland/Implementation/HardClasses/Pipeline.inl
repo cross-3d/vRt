@@ -62,8 +62,8 @@ namespace _vt {
         vtRTSet->_device = _vtDevice;
 
         { // planned variable size
-            const auto rayCount = info.maxRays;
-            vtRTSet->_cuniform.maxRayCount = rayCount;
+            const auto rayCount = info.maxRays, hitCount = info.maxHits ? info.maxHits : (rayCount * 2ull);
+            vtRTSet->_cuniform.maxRayCount = rayCount, vtRTSet->_cuniform.maxHitCount = hitCount;
 
             std::shared_ptr<BufferManager> bManager; createBufferManager(_vtDevice, bManager);
 
@@ -73,7 +73,7 @@ namespace _vt {
             
             VtBufferRegionCreateInfo bfi;
 
-            const VkDeviceSize hitCount = rayCount * 2ull;
+            
             { // allocate buffer regions
                 bfi.bufferSize = rayCount * 8ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;

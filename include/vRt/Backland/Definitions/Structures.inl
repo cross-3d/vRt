@@ -71,7 +71,7 @@ namespace vrt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
-        VkDeviceSize maxRays = 1920ull * 1200ull;
+        VkDeviceSize maxRays = 1920ull * 1200ull, maxHits = 0ull;
     };
 
     struct VtRayTracingPipelineCreateInfo {

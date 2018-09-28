@@ -103,8 +103,8 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
 // generated normal mapping
 vec3 getUVH(in vec2 texcoord) { return vec3(texcoord, fetchTexture(material.bumpTexture, texcoord).x); }
 vec3 getNormalMapping(in vec2 texcoordi) {
-     uint tbinding = material.bumpTexture;
-     vec3 tc = validateTexture(tbinding) ? fetchTexture(tbinding, texcoordi).xyz : vec3(0.5f, 0.5f, 1.0f);
+    const uint tbinding = material.bumpTexture;
+    const vec3 tc = validateTexture(tbinding) ? fetchTexture(tbinding, texcoordi).xyz : vec3(0.5f, 0.5f, 1.0f);
 
     vec3 normal = vec3(0.f,0.f,1.f);
     if ( abs(tc.x-tc.y)<1e-4f && abs(tc.x-tc.z)<1e-4f ) {
@@ -113,12 +113,12 @@ vec3 getNormalMapping(in vec2 texcoordi) {
         vec4 tx4 = vec4(-txs.xy, txs.xy)*0.5f;
         vec4 txu = vec4(-1.f,-1.f,1.f,1.f)*0.5f;
 
-         float hsize = 2.f;
+        const float hsize = 2.f;
         vec3 t00 = vec3(txu.xy, getUVH(texcoordi + tx4.xy).z) * vec3(1.f, 1.f, hsize);
         vec3 t01 = vec3(txu.xw, getUVH(texcoordi + tx4.xw).z) * vec3(1.f, 1.f, hsize);
         vec3 t10 = vec3(txu.zy, getUVH(texcoordi + tx4.zy).z) * vec3(1.f, 1.f, hsize);
         vec3 bump = normalize(cross( t01 - t00, t10 - t00 ));
-        normal = faceforward(bump, -bump, normal);
+        normal = faceforward(bump, -normal, bump);
     } else {
         normal = normalize(fmix(vec3(0.0f, 0.0f, 1.0f), fma(tc, vec3(2.0f), vec3(-1.0f)), vec3(1.0f))), normal.y *= -1.f;
     }

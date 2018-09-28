@@ -340,8 +340,9 @@ namespace rnd {
 
         {
             // create ray tracing set
-            VtRayTracingSetCreateInfo rtsi;
+            VtRayTracingSetCreateInfo rtsi = {};
             rtsi.maxRays = canvasWidth * canvasHeight; // prefer that limit
+            rtsi.maxHits = rtsi.maxRays * 2;
             vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &raytracingSet);
         }
     };
