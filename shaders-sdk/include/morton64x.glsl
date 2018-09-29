@@ -1,9 +1,9 @@
-#ifdef ENABLE_INT16_SUPPORT
+#ifdef USE_INT16_FOR_MORTON
     // minimal supported
     #define U8s uint16_t
     #define U8v4 u16vec4
 
-    // no direct support by AMD GPU's
+    // have no direct support...
     //#define U8s uint8_t
     //#define U8v4 u8vec4
 

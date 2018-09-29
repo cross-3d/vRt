@@ -65,6 +65,11 @@
     #extension GL_AMD_gpu_shader_int16 : enable
 #endif
 
+// if int16 no supported, use plain int32
+#ifndef ENABLE_INT16_SUPPORT
+    #undef USE_INT16_FOR_MORTON
+#endif
+
 // enable 16-bit strictly
 #if (defined(ENABLE_FP16_SUPPORT) || defined(ENABLE_INT16_SUPPORT))
 #extension GL_KHX_shader_explicit_arithmetic_types : require
