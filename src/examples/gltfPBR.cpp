@@ -111,15 +111,14 @@ namespace rnd {
         dii.size = { this->canvasWidth, this->canvasHeight, 1 };
         
         // 
-        dii.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        dii.format = VK_FORMAT_R32G32B32A32_UINT;
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outputImage);
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &specularPass);
 
-        dii.format = VK_FORMAT_R32_UINT;
+        dii.format = VK_FORMAT_R32G32_UINT;
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &normalPass);
 
-        dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-        vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &normalPass);
+        dii.format = VK_FORMAT_R32G32B32A32_UINT;
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &originPass);
         
         // dispatch image barrier
@@ -144,7 +143,7 @@ namespace rnd {
         {
             // create env image
             VtDeviceImageCreateInfo dii;
-            dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+            dii.format = VK_FORMAT_R32G32B32A32_UINT;
             dii.familyIndex = deviceQueue->familyIndex;
             dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             dii.layout = VK_IMAGE_LAYOUT_GENERAL;
@@ -160,7 +159,7 @@ namespace rnd {
 
         {
             auto atMatrix = glm::lookAt(eyePos*glm::vec3(scale), (eyePos+viewVector)*glm::vec3(scale), upVector);
-            auto pjMatrix = glm::infinitePerspective(float(M_PI) / 3.f, 16.f / 9.f, 1e-5f);
+            auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 1e-4f, 1e4f);
 
             // set first uniform buffer data
             cameraUniformData.projInv = glm::transpose(glm::inverse(pjMatrix));

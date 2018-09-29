@@ -16,6 +16,7 @@ const float SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
 const float E = 2.7182818284590452353602874713526624977572f;
 const float N_INFINITY = 99999.999f;//INFINITY - IOFF;
 const float INV_PI = 0.3183098861837907f; // TODO: search or calculate more precise version
+const float TWO_INV_PI = 0.6366197723675814f;
 
 const float SFN = 0.00000011920928955078125f, SFO = 1.00000011920928955078125f;
 //const float N1024 = 1024.f;
@@ -358,23 +359,29 @@ int nlz(in uint x) { return 31 - msb(x); }
 int nlz(in int x) { return nlz(uint(x)); }
 
 
-
+#ifdef EXPERIMENTAL_UNORM16_DIRECTION
 #define dirtype_t float
-#define dirtype_t_decode(f) unpackUnorm2x16(floatBitsToUint(f))
-#define dirtype_t_encode(f) uintBitsToFloat(packUnorm2x16(f))
+#define dirtype_t_decode(f) unpackSnorm2x16(floatBitsToUint(f))
+#define dirtype_t_encode(f) uintBitsToFloat(packSnorm2x16(f))
+#else
+#define dirtype_t uvec2
+#define dirtype_t_decode(f) uintBitsToFloat(f)
+#define dirtype_t_encode(f) floatBitsToUint(f)
+#endif
 
 // polar/cartesian coordinates (unorm)
 dirtype_t lcts(in vec3 direct) {
-    //direct.xyz = direct.xzy * vec3(1.f,1.f,-1.f);
     return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),0.5f*INV_PI,0.5f),acos(-direct.y)*INV_PI)); // to unorm
+    //return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),INV_PI,0.0f),fma(acos(-direct.y),TWO_INV_PI,-1.f))); // to unorm
 }
 
 vec3 dcts(in vec2 hr) {
     hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f)); // from unorm
-    return normalize(vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y)));//.xzy * vec3(1.f,-1.f,1.f);
+    return vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y));//.xzy * vec3(1.f,-1.f,1.f);
 }
 
 vec3 dcts(in dirtype_t hr) {
+    //return dcts(fma(dirtype_t_decode(hr),0.5f.xx,0.5f.xx));
     return dcts(dirtype_t_decode(hr));
 }
 
@@ -415,7 +422,7 @@ lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFFu;};
 const ivec2 offsets[4] = {ivec2(0,1), ivec2(1,1), ivec2(1,0), ivec2(0,0)};
 const  vec2 offsetf[4] = { vec2(0,1),  vec2(1,1),  vec2(1,0),  vec2(0,0)}; // float version (for faster accessing)
 vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
-    const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, -0.5f.xx), lp = fract(tx), tl = si*(ceil(tx)-0.5f.xx);
+    const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, (-0.5f+SFN).xx), lp = fract(tx), tl = si*(ceil(tx)+(-0.5f+SFN).xx);
 
     const vec4 coef = vec4(
         fma(-lp.x, lp.y, lp.y),            // (1.f-lp.x) *      lp.y

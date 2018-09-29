@@ -101,4 +101,7 @@
 #define WORK_SIZE_BND WORK_SIZE
 #endif
 
+// packing as unorm16x2 (experimental)
+#define EXPERIMENTAL_UNORM16_DIRECTION
+
 #endif

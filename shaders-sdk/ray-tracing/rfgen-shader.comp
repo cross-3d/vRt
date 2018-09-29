@@ -39,7 +39,11 @@ void main() {
     parameterb(RAY_ACTIVED, ray.dcolor.y, true);
     
     ray.origin  = imageLoad(OriginPass, ivec2(Global_Idx.xy)).xyz;
-    ray.cdirect = imageLoad(NormalPass, ivec2(Global_Idx.xy)).x; // use cheaper method in this example
+#ifdef EXPERIMENTAL_UNORM16_DIRECTION
+    ray.cdirect = imageLoad(NormalPass, ivec2(Global_Idx.xy)).x;
+#else
+    ray.cdirect = floatBitsToUint(imageLoad(NormalPass, ivec2(Global_Idx.xy)).xy); // use cheaper method in this example
+#endif
 
     // filtering off rays by resolution
     [[flatten]] if (xy.x < wh.x && xy.y < wh.y && max3_vec(f16_f32(ray.dcolor).xyz) >= 1e-3f) {

@@ -37,7 +37,12 @@
 // default built-in ray structure
 //struct VtRay { vec4 origin; vec2 cdirect; uvec2 dcolor; };
 struct VtRay { vec4 fdata; uvec4 bitspace; };
+#ifdef EXPERIMENTAL_UNORM16_DIRECTION
 #define cdirect fdata.w
+#else
+#define cdirect bitspace.zw
+#endif
+
 #define origin fdata.xyz
 #define dcolor bitspace.xy // RGB16F
 

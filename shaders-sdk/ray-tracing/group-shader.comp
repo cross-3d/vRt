@@ -83,7 +83,11 @@ void main() {
                 const vec3 rcol = vcolor * reflc.xyz;
 
                 ISTORE(OriginPass, icoord, vec4(orig, 1.f));
-                ISTORE(NormalPass, icoord, lcts(vdir).xxxx);
+#ifdef EXPERIMENTAL_UNORM16_DIRECTION
+                ISTORE(NormalPass, icoord, vec4(lcts(vdir),0.f.xxx));
+#else
+                ISTORE(NormalPass, icoord, vec4(uintBitsToFloat(lcts(vdir)),0.f.xx));
+#endif
                 ISTORE(SpecularPass, icoord, vec4(rcol, reflc.w));
             }
 
