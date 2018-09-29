@@ -45,19 +45,19 @@ struct PrimitiveState {
 shared int localStack[WORK_SIZE][localStackSize];
 #define lstack localStack[Local_Idx]
 
-int loadStack() {
-    [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { 
-        lstack = pages[_cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize; 
+#define sidx traverseState.stackPtr
+void loadStack(inout int rsl) {
+    rsl = (--sidx) >= 0 ? lstack[sidx] : -1; traverseState.stackPtr = max(traverseState.stackPtr, 0);
+    [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { // make store/load deferred 
+        lstack = pages[_cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize;
     };
-    const int idx = --traverseState.stackPtr, rsl = idx >= 0 ? lstack[idx] : -1; traverseState.stackPtr = max(traverseState.stackPtr, 0); return rsl;
 };
 
 void storeStack(in int rsl) {
-    [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) {
+    [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) { // make store/load deferred 
         pages[_cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
-    }
-    const int idx = traverseState.stackPtr++; 
-    [[flatten]] if (idx < localStackSize) lstack[idx] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
+    };
+    [[flatten]] if (sidx < localStackSize) lstack[sidx++] = rsl; traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
 };
 
 
@@ -172,7 +172,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
             }
 
             // if all threads had intersection, or does not given any results, break for processing
-            [[flatten]] if (!_continue) { traverseState.idx = loadStack(); } // load from stack 
+            [[flatten]] if (!_continue) { loadStack(traverseState.idx); } // load from stack 
             [[flatten]] IFANY (traverseState.defTriangleID > 0 || traverseState.idx <= 0) { break; } // 
         }}};
 
