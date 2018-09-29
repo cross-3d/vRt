@@ -49,15 +49,13 @@ namespace NSM
             "VK_EXT_queue_family_foreign",
             "VK_EXT_sampler_filter_minmax",
             "VK_EXT_descriptor_indexing",
-
             "VK_AMD_gpu_shader_int16",
             "VK_AMD_gpu_shader_half_float",
             "VK_AMD_gpu_shader_half_float_fetch",
             "VK_KHR_16bit_storage",
-            "VK_EXT_16bit_storage",
             "VK_KHR_8bit_storage",
+            "VK_EXT_16bit_storage",
             "VK_EXT_8bit_storage",
-
             "VK_AMD_gcn_shader",
             "VK_AMD_buffer_marker",
             "VK_AMD_shader_info",
@@ -65,7 +63,6 @@ namespace NSM
             "VK_AMD_shader_image_load_store_lod",
             "VK_AMD_shader_trinary_minmax",
             "VK_AMD_draw_indirect_count",
-
             "VK_KHR_incremental_present",
             "VK_KHR_push_descriptor",
             "VK_KHR_swapchain",
@@ -80,18 +77,16 @@ namespace NSM
             "VK_KHR_storage_buffer_storage_class",
             "VK_KHR_vulkan_memory_model",
             "VK_KHR_dedicated_allocation",
-
+            "VK_KHR_driver_properties",
             "VK_KHR_get_memory_requirements2",
             "VK_KHR_bind_memory2",
             "VK_KHR_maintenance1",
             "VK_KHR_maintenance2",
             "VK_KHR_maintenance3",
-
             "VK_KHX_shader_explicit_arithmetic_types",
             "VK_KHR_shader_atomic_int64",
             "VK_KHR_shader_float16_int8",
             "VK_KHR_shader_float_controls",
-
             "VK_NVX_raytracing",
             "VK_NV_compute_shader_derivatives",
             "VK_NV_corner_sampled_image",
@@ -104,10 +99,6 @@ namespace NSM
             "VK_LAYER_LUNARG_standard_validation",
             "VK_LAYER_LUNARG_parameter_validation",
             "VK_LAYER_LUNARG_core_validation",
-            //"VK_LAYER_RENDERDOC_Capture",
-            //"VK_LAYER_LUNARG_assistant_layer",
-            //"VK_LAYER_LUNARG_vktrace",
-            //"VK_LAYER_GOOGLE_threading"
         };
 
         // default device layers
