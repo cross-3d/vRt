@@ -20,7 +20,8 @@
 #endif
 
 // 
-#extension GL_ARB_gpu_shader_int64 : require
+//#extension GL_KHR_shader_atomic_int64 : enable
+#extension GL_ARB_gpu_shader_int64 : enable
 #extension GL_EXT_shader_8bit_storage : enable
 #extension GL_EXT_control_flow_attributes : enable
 #extension GL_EXT_shader_image_load_formatted : enable
@@ -51,6 +52,7 @@
     #define ENABLE_INT16_SUPPORT
     #define ENABLE_FP16_SUPPORT
     #extension GL_NV_shader_subgroup_partitioned : require // volta and above should support it
+    #extension GL_NV_shader_atomic_int64 : enable // unknown status
 #endif
 
 // enable fp16 support
