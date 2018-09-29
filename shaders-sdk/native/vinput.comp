@@ -38,7 +38,7 @@ void main() {
                 vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = rofft * VCOUNT + i;
                 readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
                 readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
-                storePosition(ivec2(wofft, i), vec4(vertice.xyz, 1.f));
+                storePosition(ivec2(wofft, i), point4(vertice));
             };
 
             // load attrib data

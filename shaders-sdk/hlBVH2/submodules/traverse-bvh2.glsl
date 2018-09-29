@@ -105,7 +105,7 @@ void initTraversing(in bool valid, in int eht, in vec3 orig, in dirtype_t pdir) 
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const   vec3 interm = fma(fpInner.xxx, 2.f.xxx / (bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f.xxx);
+    const   vec3 interm = fma(fpInner.xxxx, 2.f / (bvhBlock.sceneMax - bvhBlock.sceneMin), 1.f.xxxx).xyz;
     const   vec2 bside2 = vec2(-fpOne, fpOne);
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
 

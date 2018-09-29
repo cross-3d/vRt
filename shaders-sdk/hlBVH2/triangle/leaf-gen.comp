@@ -30,13 +30,13 @@ void main() {
         const uint tri = bvhBlock.primitiveOffset+clamp(to, 0, bvhBlock.primitiveCount-1);
 
         // incarnated mode 
-        mat3x4 triverts = mat3x4(TLOAD(lvtx, int(tri*3+0)).xyzw, TLOAD(lvtx, int(tri*3+1)).xyzw, TLOAD(lvtx, int(tri*3+2)).xyzw);
+        mat3x4 triverts = mat3x4(TLOAD(lvtx, int(tri*3+0)), TLOAD(lvtx, int(tri*3+1)), TLOAD(lvtx, int(tri*3+2)));
         triverts[0] = uniteBox(triverts[0]), triverts[1] = uniteBox(triverts[1]), triverts[2] = uniteBox(triverts[2]);
         
         {
 #ifndef VRT_USE_FAST_INTERSECTION
             const mat4x3 triverts = transpose(triverts);
-            ISTORE(lvtx, int(tri*3+0), vec4(triverts[0].xyz, 1.f)), ISTORE(lvtx, int(tri*3+1), vec4(triverts[1].xyz, 1.f)), ISTORE(lvtx, int(tri*3+2), vec4(triverts[2].xyz, 1.f));
+            ISTORE(lvtx, int(tri*3+0), point4(triverts[0])), ISTORE(lvtx, int(tri*3+1), point4(triverts[1])), ISTORE(lvtx, int(tri*3+2), point4(triverts[2]));
 #else
 #ifdef VTX_USE_LEGACY_METHOD
             ISTORE(lvtx, int(tri*3+0), triverts[0]), ISTORE(lvtx, int(tri*3+1), triverts[1]), ISTORE(lvtx, int(tri*3+2), triverts[2]);
@@ -47,7 +47,7 @@ void main() {
             
             // triangle elements
             const mat3 vc = mat3(triverts[0].xyz, triverts[1].xyz, triverts[2].xyz);
-            const vec3 e1 = triverts[1].xyz - triverts[0].xyz, e2 = triverts[2].xyz - triverts[0].xyz;
+            const vec3 e1 = (triverts[1] - triverts[0]).xyz, e2 = (triverts[2] - triverts[0]).xyz;
             const vec3 nl = cross(e1, e2), ni = 1.f/nl, na = abs(nl);
             
             // pre-calculate vectors
@@ -88,8 +88,8 @@ void main() {
         bbox_t lbox = calcTriBox(triverts, sceneRes / (bvhBlock.sceneMax - bvhBlock.sceneMin));
         //bbox_t lbox = calcTriBox(triverts);
         
-        vec4 bcenter = vec4((triverts[0] + triverts[1] + triverts[2]).xyz * 0.33333333333333f, 0.f);
-        bcenter.xyz = (bcenter.xyz - sceneMin.xyz) / (sceneRes.xyz), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
+        vec4 bcenter = vector4((triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f);
+        bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
 
 #ifdef USE_MORTON_32
         const uint mortonCode = encodeMorton(packUnorm4x8(bcenter));

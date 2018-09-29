@@ -60,8 +60,8 @@ layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB {
     vec4 sceneMin, sceneMax;
 } bvhBlock;
 
-vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4((bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
-
+//vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4((bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
+vec4 uniteBox(in vec4 glb) { return point4(fma((glb - bvhBlock.sceneMin) / (bvhBlock.sceneMax - bvhBlock.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
 
 
 #define BVH_ENTRY bvhBlock.entryID
@@ -133,7 +133,7 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, in bool _valid) {
     float T = INFINITY;
     IFANY (_valid) {
-        const mat3 ABC = mat3(TLOAD(lvtx, tri*3+0).xyz+orig.xxx, TLOAD(lvtx, tri*3+1).xyz+orig.yyy, TLOAD(lvtx, tri*3+2).xyz+orig.zzz)*M;
+        const mat3 ABC = mat3((TLOAD(lvtx, tri*3+0)+orig.x).xyz, (TLOAD(lvtx, tri*3+1)+orig.y).xyz, (TLOAD(lvtx, tri*3+2)+orig.z).xyz)*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf

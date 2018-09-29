@@ -93,7 +93,7 @@ int atomicIncAttribCount() {return atomicIncVtCounters(7);}
 
 
 int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayID) {
-    [[flatten]] if (max3_vec(f16_f32(ray.dcolor).xyz) >= 1e-3f) {
+    [[flatten]] if (max3_vec(f16_f32(ray.dcolor)) >= 1e-3f) {
         parameteri(RAY_TYPE, ray.dcolor.y, int(type));
         
         const int rID = atomicIncRayCount();

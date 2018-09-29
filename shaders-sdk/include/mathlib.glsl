@@ -179,6 +179,10 @@ vec3 mult4(in mat3x4 tmat, in vec4 vec) { return vec * tmat; };
 vec3 mult4(in vec4 vec, in mat4x3 tmat) { return tmat * vec; };
 vec4 mult4(in mat4x3 tmat, in vec3 vec) { return vec * tmat; };
 
+const vec2 swiz01 = vec2(0.f,1.f);
+vec4 point4(in vec4 p) {return p*swiz01.yyyx+swiz01.xxxy;};
+vec4 point4(in vec4 p, in float w) {return p*swiz01.yyyx+w*swiz01.xxxy;};
+vec4 vector4(in vec4 p) {return p*swiz01.yyyx;};
 
 // 64-bit packing
 #define U2P unpackUint2x32
@@ -252,7 +256,7 @@ uint BFI_HW(in uint base, in uint inserts, in int offset, in int bits) { return 
  int tiled(in  int x, in  int y) {return x/y + int(x%y != 0); }
 uint tiled(in uint x, in uint y) {return x/y + int(x%y != 0); }
 
-
+/*
 // precise optimized mix/lerp
 #define _FMOP fma(b,c,fma(a,-c,a)) // fma based mix/lerp
 float fmix(in float a, in float b, in float c) { return _FMOP; }
@@ -265,7 +269,7 @@ f16vec2 fmix(in f16vec2 a, in f16vec2 b, in f16vec2 c) { return _FMOP; }
 f16vec3 fmix(in f16vec3 a, in f16vec3 b, in f16vec3 c) { return _FMOP; }
 f16vec4 fmix(in f16vec4 a, in f16vec4 b, in f16vec4 c) { return _FMOP; }
 #endif
-
+*/
 
 
 

@@ -55,7 +55,7 @@ void main() {
         // add support for multi-passing
         [[flatten]] if (!overflow && rayID >= 0) {
             // reflection prior (early stage)
-            const vec4 rcolor = vec4(f16_f32(ray.dcolor).xyz, 1.f), bcolor = imageLoad(ColorOutput, icoord);
+            const vec4 rcolor = point4(f16_f32(ray.dcolor)), bcolor = imageLoad(ColorOutput, icoord);
             const vec3 orgdir = dcts(ray.cdirect);
             const vec3 normal = hitp.normalHeight.xyz;
 
@@ -76,7 +76,7 @@ void main() {
             }
             
             // create data for reflection rays
-            const vec3 vcolor = rcolor.xyz * alph.xxx; // visible ray color energy
+            const vec3 vcolor = rcolor.xyz * alph; // visible ray color energy
             {
                 const vec3 vdir = reflect(orgdir, hitp.normalHeight.xyz), shift = vdir;
                 const vec3 orig = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
@@ -92,7 +92,7 @@ void main() {
             }
 
             { // output color
-                const vec3 outcolor = vcolor * (1.f.xxx - reflc.xyz);
+                const vec3 outcolor = vcolor * (1.f - reflc.xyz);
                 ISTORE(ColorOutput, icoord, vec4(fma(diffuse.xyz, outcolor.xyz, bcolor.xyz), 1.f));
             }
         }

@@ -114,7 +114,7 @@ void main() {
             mat3 tbn = transpose(mat3(tangent.xyz, bitang.xyz, normal.xyz));
 
             // get textured data
-            textured.bump.xyz = getNormalMapping(texcoord);
+            textured.bump = getNormalMapping(texcoord);
             textured.diffuse  = toLinear(fetchDiffuse(texcoord));
             textured.specular = toLinear(fetchSpecular(texcoord));
             textured.emissive = toLinear(fetchEmission(texcoord));
