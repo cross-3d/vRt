@@ -83,7 +83,7 @@ void main() {
                 const vec3 rcol = vcolor * reflc.xyz;
 
                 ISTORE(OriginPass, icoord, vec4(orig, 1.f));
-                ISTORE(NormalPass, icoord, vec4(vdir, 0.f));
+                ISTORE(NormalPass, icoord, lcts(vdir).xxxx);
                 ISTORE(SpecularPass, icoord, vec4(rcol, reflc.w));
             }
 

@@ -34,16 +34,12 @@ shared VtRay lrays[64];
 void main() {
     ivec2 wh = stageUniform.size.xy, xy = ivec2(Global_Idx.xy);
 
-    vec4 orig = imageLoad(OriginPass, ivec2(Global_Idx.xy));
-    vec4 dirn = imageLoad(NormalPass, ivec2(Global_Idx.xy)); // use cheaper method in this example
-    vec4 spcr = imageLoad(SpecularPass, ivec2(Global_Idx.xy));
-
     ray.dcolor = uvec2(0u.xx);
     writeColor(ray.dcolor, imageLoad(SpecularPass, ivec2(Global_Idx.xy)));
     parameterb(RAY_ACTIVED, ray.dcolor.y, true);
     
-    ray.origin.xyz = orig.xyz;
-    ray.cdirect = lcts(dirn.xyz);
+    ray.origin  = imageLoad(OriginPass, ivec2(Global_Idx.xy)).xyz;
+    ray.cdirect = imageLoad(NormalPass, ivec2(Global_Idx.xy)).x; // use cheaper method in this example
 
     // filtering off rays by resolution
     [[flatten]] if (xy.x < wh.x && xy.y < wh.y && max3_vec(f16_f32(ray.dcolor).xyz) >= 1e-3f) {

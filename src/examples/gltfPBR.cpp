@@ -115,6 +115,9 @@ namespace rnd {
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outputImage);
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &specularPass);
 
+        dii.format = VK_FORMAT_R32_UINT;
+        vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &normalPass);
+
         dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &normalPass);
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &originPass);
