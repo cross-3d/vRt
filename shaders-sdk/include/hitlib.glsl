@@ -67,7 +67,7 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
 
     float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0, 0, 1), V)));
     float layerHeight = 1.0f / numLayers;
-    vec2 dtex = parallaxScale * V.xy / precIssue(V.z) * layerHeight;
+    vec2 dtex = parallaxScale * V.xy / (V.z) * layerHeight;
     vec3 chv = vec3(-dtex, layerHeight);
     
     // start pos
@@ -92,7 +92,7 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
     float prevH = (1.f-fetchTexture(tbinding, chd_a.xy).z) - chd_a.z;
 
     float dvh = (nextH - prevH);
-    float weight = nextH / precIssue(dvh);
+    float weight = nextH / (dvh);
     
     parallaxHeight = chd_b.z+mix(nextH, prevH, weight);
     return mix(chd_b.xy, chd_a.xy, weight);

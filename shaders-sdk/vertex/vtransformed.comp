@@ -69,7 +69,7 @@ void calculateTBN(in int rofft, in int trip, in mat3x4 transformNrm) {
     const ivec2 BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
     [[unroll]] for (int i=0;i<3;i++) {
         // calc raw TBN 
-        float idet = 1.f/precIssue(determinant(mat2(dlts[1],dlts[2]))); // inv determinant
+        float idet = 1.f/(determinant(mat2(dlts[1],dlts[2]))); // inv determinant
         vec3 t = fma(dlts[2].yyy, dlps[1], -dlts[1].y * dlps[2]), b = fma(dlts[1].xxx, dlps[2], -dlts[2].x * dlps[1]), n = gnormal.xyz;//normals[i].xyz; // pre-tbn
 
         // if texcoord not found or incorrect, calculate by axis

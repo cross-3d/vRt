@@ -60,7 +60,7 @@ layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB {
     vec4 sceneMin, sceneMax;
 } bvhBlock;
 
-vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4(precIssue(bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
+vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4((bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
 
 
 
@@ -136,7 +136,7 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
         // http://jcgt.org/published/0002/01/05/paper.pdf
         vec3 UVW_ = uvwMap[axis] * inverse(ABC);
         IFANY ((all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx))) && _valid) {
-            UVW_ /= precIssue(dot(UVW_, 1.f.xxx));
+            UVW_ /= (dot(UVW_, 1.f.xxx));
             UV = vec2(UVW_.yz), UVW_ *= ABC; // calculate axis distances
             T = mix(mix(UVW_.z, UVW_.y, axis == 1), UVW_.x, axis == 0);
             [[flatten]] if ( T < (-SFN) || T >= N_INFINITY ) _valid = false;
@@ -161,7 +161,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         [[flatten]] if (abs(a) <= 0.f) { _valid = false; };
         IFANY (_valid) {
             const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1);
-            const vec3 uvt = vec3(dot(s,h),dot(dir.xyz,q), dot(e2,q))/precIssue(a);
+            const vec3 uvt = vec3(dot(s,h),dot(dir.xyz,q), dot(e2,q))/(a);
             uv = uvt.xy, T = uvt.z;
             [[flatten]] if (any(lessThan(uv, -SFN.xx)) || (uv.x+uv.y) > (SFO)) { _valid = false; };
             [[flatten]] if ( T >= N_INFINITY || T > cdist || T < (-SFN) ) { _valid = false; };
@@ -170,7 +170,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         // intersect triangle by transform
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
         const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
-        const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/precIssue(dz);
+        const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/(dz);
         [[flatten]] if ( T >= N_INFINITY || T > cdist || T < (-SFN) ) { _valid = false; };
         IFANY (_valid) {
             const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));

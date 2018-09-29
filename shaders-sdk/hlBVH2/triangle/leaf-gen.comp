@@ -85,11 +85,11 @@ void main() {
         // unit mode 
         //vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax, sceneRes = sceneMax - sceneMin;
         vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx, sceneRes = sceneMax - sceneMin;
-        bbox_t lbox = calcTriBox(triverts, sceneRes / precIssue(bvhBlock.sceneMax - bvhBlock.sceneMin));
+        bbox_t lbox = calcTriBox(triverts, sceneRes / (bvhBlock.sceneMax - bvhBlock.sceneMin));
         //bbox_t lbox = calcTriBox(triverts);
         
         vec4 bcenter = vec4((triverts[0] + triverts[1] + triverts[2]).xyz * 0.33333333333333f, 0.f);
-        bcenter.xyz = (bcenter.xyz - sceneMin.xyz) / precIssue(sceneRes.xyz), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
+        bcenter.xyz = (bcenter.xyz - sceneMin.xyz) / (sceneRes.xyz), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
 
 #ifdef USE_MORTON_32
         const uint mortonCode = encodeMorton(packUnorm4x8(bcenter));
