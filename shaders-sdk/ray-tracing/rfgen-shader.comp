@@ -40,7 +40,7 @@ void main() {
 
     ray.dcolor = uvec2(0u.xx);
     writeColor(ray.dcolor, imageLoad(SpecularPass, ivec2(Global_Idx.xy)));
-    parameterb(RAY_ACTIVED, ray.dcolor.y, true_);
+    parameterb(RAY_ACTIVED, ray.dcolor.y, true);
     
     ray.origin.xyz = orig.xyz;
     ray.cdirect = lcts(dirn.xyz);

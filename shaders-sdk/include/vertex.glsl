@@ -213,19 +213,10 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
 
             vec4 attrib = 0.f.xxxx;
-            [[unroll]] for (int j=0;j<3;j++){attrib=fma(vs[j].xxxx,textureLod(attrib_texture,fma(sz,offsetf[j],trig),0),attrib);}; // using accumulation sequence
-            //[[unroll]] for (int j=0;j<4;j++) { attrib[j] = dot(vs, SGATHER(attrib_texture, trig, j)._SWIZV); }; // constant-time issues with textureGather
-             //attrib[0] = dot(vs, SGATHER(attrib_texture, trig, 0)._SWIZV);
-             //attrib[1] = dot(vs, SGATHER(attrib_texture, trig, 1)._SWIZV);
-             //attrib[2] = dot(vs, SGATHER(attrib_texture, trig, 2)._SWIZV);
-             //attrib[3] = dot(vs, SGATHER(attrib_texture, trig, 3)._SWIZV);
+              [[unroll]] for (int j=0;j<3;j++) {attrib=fma(vs[j].xxxx,textureLod(attrib_texture,fma(sz,offsetf[j],trig),0),attrib);}; // using accumulation sequence
+            //[[unroll]] for (int j=0;j<4;j++) {attrib[j]=dot(vs,SGATHER(attrib_texture,trig,j)._SWIZV);}; // constant-time issues with textureGather
+
             ISTORE(attributes, makeAttribID(ht.attribID, i), attrib);
-            /*ISTORE(attributes, makeAttribID(ht.attribID, i), vs * mat4x3(
-                SGATHER(attrib_texture, trig, 0)._SWIZV,
-                SGATHER(attrib_texture, trig, 1)._SWIZV,
-                SGATHER(attrib_texture, trig, 2)._SWIZV,
-                SGATHER(attrib_texture, trig, 3)._SWIZV
-            ));*/
 #endif
         }
     }
@@ -240,7 +231,7 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
 
-bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec3_ sgn, in mat3x2 tMinMax, inout vec4 nfe) 
+bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec4 sgn, in mat3x2 tMinMax, inout vec4 nfe) 
 { nfe = INFINITY.xxxx; // indefined distance
 
     // calculate intersection
@@ -264,7 +255,7 @@ bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec3_ sgn, in mat3x2
 // also, optimized for RPM (Rapid Packed Math) https://radeon.com/_downloads/vega-whitepaper-11.6.17.pdf
 // compatible with NVidia GPU too
 
-bvec2_ intersectCubeDual(inout fvec3_ origin, inout fvec3_ dr, in bvec3_ sgn, in fvec2_[3][2] tMinMax, inout vec4 nfe2)
+bvec2_ intersectCubeDual(inout fvec3_ origin, inout fvec3_ dr, in bvec4 sgn, in fvec2_[3][2] tMinMax, inout vec4 nfe2)
 { nfe2 = INFINITY.xxxx; // indefined distance
 
     // calculate intersection
@@ -284,7 +275,7 @@ bvec2_ intersectCubeDual(inout fvec3_ origin, inout fvec3_ dr, in bvec3_ sgn, in
         bvec2_(greaterThanEqual(tFar, fvec2_(-SFN))) & 
         bvec2_(lessThan(tNear, fvec2_(N_INFINITY)));
 
-    nfe2 = mix(nfe2, vec4(tNear, tFar), bvec4(isCube, isCube));
+    nfe2 = mix(nfe2, vec4(tNear, tFar), SSC(bvec4_(isCube, isCube)));
     return isCube;
 };
 

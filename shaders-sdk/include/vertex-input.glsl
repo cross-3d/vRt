@@ -11,11 +11,11 @@
 
 #ifdef ENABLE_INT16_SUPPORT // native 16-bit integer support
 uint16_t M16(in f16samplerBuffer m, in uint i) {
-    return float16BitsToUint16(texelFetch(m, int(i>>1)).xy)[i&1u];
+    return float16BitsToUint16(texelFetch(m, int(i>>1u)).xy)[i&1u];
 };
 #else
 highp uint M16(in f16samplerBuffer m, in uint i) {
-    return bitfieldExtract(packFloat2x16(texelFetch(m, int(i>>1)).xy), int(i&1)<<4, 16); // unified sentence of uint16_t values
+    return bitfieldExtract(packFloat2x16(texelFetch(m, int(i>>1u)).xy), int(i&1u)<<4, 16); // unified sentence of uint16_t values
 };
 #endif
 
@@ -25,26 +25,14 @@ uint M32(in f16samplerBuffer m, in uint i) {
 #endif
 
 highp uint M16(in highp usamplerBuffer m, in uint i) {
-    return texelFetch(m, int(i>>1))[i&1];
+    return texelFetch(m, int(i>>1u))[i&1u];
 };
 
 uint M32(in highp usamplerBuffer m, in uint i) {
     const highp uvec2 mpc = texelFetch(m, int(i)).xy;
-    return ((mpc.y<<16u)|mpc.x);
+    return (mpc.x|(mpc.y<<16u));
 };
 
-/*
-highp uint M16(in mediump samplerBuffer m, in uint i) {
-    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i>>1)).xy);
-    return floatBitsToUint(texelFetch(m, int(i>>1)).xy)[i&1];
-}
-
-uint M32(in mediump samplerBuffer m, in uint i) {
-    //return packHalf2x16(texelFetch(m, int(i)).xy); // inaccurate 
-    const highp uvec2 mpc = floatBitsToUint(texelFetch(m, int(i)).xy);
-    return ((mpc.y<<16u)|mpc.x);
-}
-*/
 
 // buffer region
 struct VtBufferRegion {

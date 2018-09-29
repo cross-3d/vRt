@@ -351,6 +351,7 @@ namespace _vt {
         "VK_KHX_shader_explicit_arithmetic_types",
         "VK_KHR_dedicated_allocation",
         "VK_KHR_driver_properties",
+        "VK_KHR_vulkan_memory_model",
         "VK_NVX_raytracing",
         "VK_NV_compute_shader_derivatives",
         "VK_NV_corner_sampled_image",

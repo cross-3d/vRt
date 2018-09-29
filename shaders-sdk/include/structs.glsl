@@ -81,19 +81,22 @@ const lowp ivec2 VTX_BACK_FACE = ivec2(3, 1); // 0 is enabled, 1 is disabled
 
 
 // getters 
-void  parameteri( in lowp ivec2 parameter, inout uint bitfield, in int value) { bitfield = BFI_HW(bitfield, uint(value), parameter.x, parameter.y); };
-bool_ parameterb( in lowp ivec2 parameter, in  uint bitfield) { return bool_(BFE_HW(bitfield, parameter.x, 1)); };
-bool_ parameterb( in lowp ivec2 parameter, in float bitfield) { return parameterb(parameter, floatBitsToUint(bitfield)); };
+bool  parameterb( in lowp ivec2 parameter, in  uint bitfield) { return bool(BFE_HW(bitfield, parameter.x, 1)); };
+bool  parameterb( in lowp ivec2 parameter, in float bitfield) { return parameterb(parameter, floatBitsToUint(bitfield)); };
 uint  parameteri( in lowp ivec2 parameter, in  uint bitfield) { return BFE_HW(bitfield, parameter.x, parameter.y); };
 uint  parameteri( in lowp ivec2 parameter, in float bitfield) { return parameteri(parameter, floatBitsToUint(bitfield)); };
 
 // setters
 void parameteri( in lowp ivec2 parameter, inout  uint bitfield, in uint  value) { bitfield = BFI_HW(bitfield, value, parameter.x, parameter.y); };
-void parameterb( in lowp ivec2 parameter, inout  uint bitfield, in bool_ value) { bitfield = bool_(BFI_HW(bitfield, value, parameter.x, 1)); };
 void parameteri( in lowp ivec2 parameter, inout float bitfield, in uint  value) { bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), value, parameter.x, parameter.y)); };
-void parameteri( in lowp ivec2 parameter, inout float bitfield, in  int  value) { parameteri(parameter, bitfield, uint(value)); };
-void parameterb( in lowp ivec2 parameter, inout float bitfield, in bool_ value) { bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), uint(value), parameter.x, 1));};
 
+// boolean based
+void parameterb( in lowp ivec2 parameter, inout  uint bitfield, in bool  value) { bitfield = BFI_HW(bitfield, uint(value), parameter.x, 1); };
+void parameterb( in lowp ivec2 parameter, inout float bitfield, in bool  value) { bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), uint(value), parameter.x, 1));};
+
+// integer based
+void parameteri( in lowp ivec2 parameter, inout  uint bitfield, in  int  value) { parameteri(parameter, bitfield, uint(value)); };
+void parameteri( in lowp ivec2 parameter, inout float bitfield, in  int  value) { parameteri(parameter, bitfield, uint(value)); };
 
 struct bbox_t { vec4 mn, mx; };
 struct leaf_t { bbox_t lbox; ivec4 pdata; };

@@ -87,7 +87,7 @@ void doIntersection(in bool isvalid, in float dlen) {
 };
 
 // corrections of box intersection
-const bvec3_ bsgn = false_.xxx;
+const bvec4 bsgn = false.xxxx;
 const float dirlen = 1.f, invlen = 1.f, bsize = 1.f;
 
 // BVH traversing itself 
@@ -143,7 +143,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
             else { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
                 #define bbox2x bvhNode.cbox // use same memory
-                 bvec2_ childIntersect = bool_(cnode.x&1) & bool_(cnode.x>0) & intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
+                 bvec2_ childIntersect = bool_(cnode.x&1).xx & bool_(cnode.x>0).xx & bvec2_(intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe));
 
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 
@@ -151,10 +151,10 @@ void traverseBVH2( in bool reset, in bool valid ) {
                 childIntersect &= bvec2_(lessThanEqual(nfe.xy, fma(primitiveState.lastIntersection.z,fpOne,fpInner).xx)); // it increase FPS by filtering nodes by first triangle intersection
 
                 // 
-                bool_ fmask = bool_((childIntersect.y<<1u)|childIntersect.x);
+                bool_ fmask = bool_((childIntersect.y<<true_)|childIntersect.x);
                 [[flatten]] if (fmask > 0) {
                     int primary = -1, secondary = -1;
-                    [[flatten]] if (fmask == 3) { fmask &= bool_(1u)<<bool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
+                    [[flatten]] if (fmask == 3) { fmask &= true_<<bool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
                     primary = cnode.x^int(fmask&1u);
 
                     // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse

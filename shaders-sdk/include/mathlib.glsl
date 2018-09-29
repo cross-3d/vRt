@@ -99,6 +99,7 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 }
 #endif
 
+
 #ifdef ENABLE_INT16_SUPPORT
 #define bvec4_ u16vec4
 #define bvec3_ u16vec3
@@ -111,14 +112,9 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 #define bool_ uint
 #endif
 
-
-#ifdef ENABLE_INT16_SUPPORT // if has integer 16-bit support
-const bool_ true_ = bool_(1us), false_ = bool_(0us); 
-const bvec2_ true2_ = true_.xx, false2_ = false_.xx;
-#else
-const lowp bool_ true_ = bool_(1u), false_ = bool_(0u); 
-const lowp bvec2_ true2_ = true_.xx, false2_ = false_.xx;
-#endif
+// 
+const bool_ true_ = bool_(1u), false_ = bool_(0u); 
+const bvec2_ true2_ = bvec2_(true_.xx), false2_ = bvec2_(false_.xx);
 
 
 // null of indexing in float representation
@@ -275,9 +271,9 @@ vec4 fromLinear(in vec4 linearRGB) { return vec4(fromLinear(linearRGB.xyz), line
 vec4 toLinear(in vec4 sRGB) { return vec4(toLinear(sRGB.xyz), sRGB.w); }
 
 // boolean binary compatibility
-bool SSC(in bool_ b) {return bool(b);}
-bvec2 SSC(in bvec2_ b) {return bvec2(b);}
-bvec4 SSC(in bvec4_ b) {return bvec4(b);}
+bool SSC(in bool_ b) {return b==true_;}
+bvec2 SSC(in bvec2_ b) {return equal(b,true_.xx);}
+bvec4 SSC(in bvec4_ b) {return equal(b,true_.xxxx);}
 
 bool SSC(in bool b) {return b;}
 bvec2 SSC(in bvec2 b) {return b;}
@@ -292,7 +288,7 @@ bvec4 SSC(in bvec4 b) {return b;}
 
 
 
-
+/*
 // select by boolean
 int mix(in int a, in int b, in  bool_ c) { return mix(a,b,SSC(c)); }
 uint mix(in uint a, in uint b, in  bool_ c) { return mix(a,b,SSC(c)); }
@@ -316,6 +312,7 @@ float16_t mix(in float16_t a, in float16_t b, in  bool_ c) { return mix(a,b,SSC(
 f16vec2 mix(in f16vec2 a, in f16vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
 f16vec4 mix(in f16vec4 a, in f16vec4 b, in  bvec4_ c) { return mix(a,b,SSC(c)); }
 #endif
+*/
 
 
 // swap of 16-bits by funnel shifts and mapping 
@@ -329,7 +326,7 @@ uint64_t fast32swap(in uint64_t b64,   bool_ nswp) {
     return (b64 << (vrc)) | (b64 >> (64ul-vrc));
 }
 
-
+/*
 // swap x and y swizzle by funnel shift (AMD half float)
 #ifdef ENABLE_FP16_SUPPORT
 f16vec2 fast16swap(in f16vec2 b32, in  bool_ nswp) { 
@@ -342,13 +339,12 @@ vec2 fast32swap(in vec2 b64, in  bool_ nswp) {
     return mix(b64.yx, b64, nswp.xx); // use swizzle version (some device can be slower)
 }
 
-
 #ifdef USE_F16_BVH
 #define FSWP fast16swap
 #else
 #define FSWP fast32swap
 #endif
-
+*/
 
 
 
@@ -412,17 +408,6 @@ const ivec2 offsets[4] = {ivec2(0,1), ivec2(1,1), ivec2(1,0), ivec2(0,0)};
 const  vec2 offsetf[4] = { vec2(0,1),  vec2(1,1),  vec2(1,0),  vec2(0,0)}; // float version (for faster accessing)
 vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, -0.5f.xx), lp = fract(tx), tl = si*(ceil(tx)-0.5f.xx);
-    //const mat4 mtr = mat4(
-    //    textureLodOffset(SMP, tl, LOD, ivec2(0,0)), textureLodOffset(SMP, tl, LOD, ivec2(1,0)),
-    //    textureLodOffset(SMP, tl, LOD, ivec2(0,1)), textureLodOffset(SMP, tl, LOD, ivec2(1,1))
-    //);
-
-    //const vec4 coef = vec4(
-    //    fma( lp.x, lp.y, (1.f-lp.y-lp.x)), // (1.f-lp.x) * (1.f-lp.y)
-    //    fma( lp.x,-lp.y, lp.x),            //      lp.x  * (1.f-lp.y)
-    //    fma(-lp.x, lp.y, lp.y),            // (1.f-lp.x) *      lp.y
-    //    lp.x*lp.y                          //      lp.x  *      lp.y
-    //);
 
     const vec4 coef = vec4(
         fma(-lp.x, lp.y, lp.y),            // (1.f-lp.x) *      lp.y
@@ -433,12 +418,9 @@ vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
 
     // linear interpolation by dot products
     vec4 fcolor = 0.f.xxxx;
-    [[unroll]] for (int j=0;j<4;j++){fcolor=fma(coef[j].xxxx,textureLod(SMP,fma(si,offsetf[j],tl),LOD),fcolor);}; // compile-time issues with textureLodOffset
+      [[unroll]] for (int j=0;j<4;j++){fcolor=fma(coef[j].xxxx,textureLod(SMP,fma(si,offsetf[j],tl),LOD),fcolor);}; // compile-time issues with textureLodOffset
     //[[unroll]] for (int j=0;j<4;j++){fcolor[j]=dot(coef,textureGather(SMP,tl,j));}; // compile-time issues with textureGather
-    //fcolor[0] = dot(coef,textureGather(SMP,tl,0));
-    //fcolor[1] = dot(coef,textureGather(SMP,tl,1));
-    //fcolor[2] = dot(coef,textureGather(SMP,tl,2));
-    //fcolor[3] = dot(coef,textureGather(SMP,tl,3));
+
     return fcolor;
 };
 

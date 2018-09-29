@@ -8,8 +8,8 @@ namespace vrt { // store in official namespace
     // in general that is conversion
     struct VtInstanceConversionInfo;
     struct VtArtificalDeviceExtension;
-    struct VtDeviceConversionInfo;
-    struct VtPhysicalDeviceConversionInfo;
+    //struct VtDeviceConversionInfo;
+    //struct VtPhysicalDeviceConversionInfo;
     struct VtRayTracingPipelineCreateInfo;
 
     // use immutables in accelerator inputs

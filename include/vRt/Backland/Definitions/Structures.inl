@@ -54,17 +54,17 @@ namespace vrt { // store in official namespace
         VkBool32 enableAdvancedAcceleration = false; // such as RTX, in current moment have no any support 
     };
 
-    struct VtDeviceConversionInfo {
-        VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_CONVERSION_INFO;
-        const void* pNext = nullptr;
-        VtPhysicalDevice physicalDevice;
-    };
+    //struct VtDeviceConversionInfo {
+    //    VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_CONVERSION_INFO;
+    //    const void* pNext = nullptr;
+    //    VtPhysicalDevice physicalDevice;
+    //};
 
-    struct VtPhysicalDeviceConversionInfo {
-        VtStructureType sType = VT_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONVERSION_INFO;
-        const void* pNext = nullptr;
-        VtInstance instance;
-    };
+    //struct VtPhysicalDeviceConversionInfo {
+    //    VtStructureType sType = VT_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONVERSION_INFO;
+    //    const void* pNext = nullptr;
+    //    VtInstance instance;
+    //};
 
     struct VtRayTracingSetCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_SET_CREATE_INFO;

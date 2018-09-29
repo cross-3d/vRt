@@ -55,7 +55,7 @@
 
 // consist of 4 uint16 as is (packed uvec2)
 uvec2 encodeMorton(in uvec2 a) {
-#ifdef ENABLE_INT16_SUPPORT
+#ifdef USE_INT16_FOR_MORTON
     return encodeMorton(u16vec4(unpackUint2x16(a.x), unpackUint2x16(a.y))); // fast packing of RX Vega
 #else
     return encodeMorton(uvec4(bitfieldExtract(a.x, 0, 16), bitfieldExtract(a.x, 16, 16), bitfieldExtract(a.y, 0, 16), bitfieldExtract(a.y, 16, 16))); // fallback method
