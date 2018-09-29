@@ -1,4 +1,4 @@
-# vRt (WIP)
+# vRt ray tracing for Vulkan API 1.1
 
 <a href="https://gitter.im/world8th/vRt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank" title="Gitter"><img src="https://badges.gitter.im/world8th/vRt.svg" alt="Donate ETH" height="20px"/></a>
 <a href="https://etherdonation.com/d?to=0x9b8e811c6095ce1265fb8bd7d4927156ac89532e" target="_blank" title="Donate ETH"><img src="https://etherdonation.com/i/btn/donate-btn.png" alt="Donate ETH" height="20px"/></a>
@@ -39,25 +39,30 @@
 - RX Vega 56 and Raven Ridge
 - RX 580, 480 (optimizations ready only for RX Vega 64 and that series)
 
-## Current API
-
-You can see here current API of library:
-
-- https://github.com/world8th/vRt/blob/master/include/vRt/Parts/API.inl
-- https://github.com/world8th/vRt/blob/master/include/vRt/Parts/StructuresDef.inl
-- https://github.com/world8th/vRt/blob/master/include/vRt/Parts/Enums.inl
-- https://github.com/world8th/vRt/blob/master/include/vRt/Backland/Definitions/Structures.inl
-
 ## Roadmaps
 
-### Indefinite Term
+ **October 2018**
 
-- Unit tests
+- Support for RTX graphics cards (RTX 2070, 2080, etc.)
+- Begin of development for OpenGL, OpenCL and CUDA interoperability
+
+ **November 2018**
+
+- Support of RTX acceleration
+- Support of extensions (which with RTX)
+
+ **December 2018** (or beyond)
+
 - Coming to alpha stage
 - Advanced ray-tracing API
-- First implementations in bigger framework and engines
+- Support for Vulkan API 1.2
+
+ **Indefinite Term**
+
+- Unit tests
+- First implementations for games, engines, applications, blockchains
 - Make custom GLSL/HLSL compiler for unified compatibility
-- Support of Nvidia RTX, PowerVR Wizard Ray Tracing, Intel Larrabee 2019
+- Support of PowerVR Wizard Ray Tracing, Intel Larrabee 2019
 
 ## Direct Donation (ETH)
 
