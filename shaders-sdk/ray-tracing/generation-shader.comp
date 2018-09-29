@@ -30,15 +30,16 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 // UNUSED: https://developer.oculus.com/blog/tech-note-mask-based-foveated-rendering-with-unreal-engine-4-/ (sort of... been in past)
 //   USED: sorts of VK_EXT_sample_locations or GL_NV_sample_locations
 
-const float almostRange = 0.5f-SFN;
+const float center_p = 0.5f-SFN;
 shared VtRay lrays[64];
 #define ray lrays[Local_Idx]
 
 // planned ray generation shader example
 void main() {
     const ivec2 wh = stageUniform.size.xy, xy = ivec2(Global_Idx.xy);
-    const vec2 rnd = SFN.xx;//unorm2Construct(hash(uvec2(p2x_16(Global_Idx.xy), 1u)))-0.5f;
-    const vec2 coord = vec2(vec2(xy) + 0.5f + clamp(rnd, -almostRange.xx, almostRange.xx)) / vec2(wh);
+    const vec2 rnd = center_p.xx;
+    //const vec2 rnd = unorm2Construct(hash(uvec2(p2x_16(Global_Idx.xy), 1u)));
+    const vec2 coord = vec2(vec2(xy)+clamp01(rnd))/vec2(wh);
 
     vec4 dir = vec4(0.f), orig = mult4(cameraUniform.camInv, vec4(vec3(0.0f), 1.0f)), eye = orig;
     //IFANY (cameraUniform.enable360 == 1) {
@@ -57,7 +58,7 @@ void main() {
     ray.cdirect = lcts(normalize(dir.xyz));
 
     // filtering off rays by resolution
-    [[flatten]] if (xy.x < wh.x && xy.y < wh.y) {
+    [[flatten]] if (all(greaterThanEqual(xy,(0).xx)) && all(lessThan(xy,wh))) {
         ISTORE(ColorOutput, ivec2(Global_Idx.xy), vec4(0.f.xxx, 1.f));
         ISTORE(NormalPass, ivec2(Global_Idx.xy), vec4(0.f.xxx, 0.f));
         ISTORE(OriginPass, ivec2(Global_Idx.xy), vec4(0.f.xxx, 1.f));

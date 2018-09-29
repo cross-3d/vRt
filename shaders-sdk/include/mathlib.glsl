@@ -17,6 +17,7 @@ const float E = 2.7182818284590452353602874713526624977572f;
 const float N_INFINITY = 9999.999f;
 const float INV_PI = 0.3183098861837907f; // TODO: search or calculate more precise version
 const float TWO_INV_PI = 0.6366197723675814f;
+const float INV_TWO_PI = 0.15915494309189535f;
 
 const float SFN = 0.00000011920928955078125f, SFO = 1.00000011920928955078125f;
 //const float N1024 = 1024.f;
@@ -376,17 +377,15 @@ int nlz(in int x) { return nlz(uint(x)); }
 
 // polar/cartesian coordinates (unorm)
 dirtype_t lcts(in vec3 direct) {
-    return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),0.5f*INV_PI,0.5f),acos(-direct.y)*INV_PI)); // to unorm
-    //return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),INV_PI,0.0f),fma(acos(-direct.y),TWO_INV_PI,-1.f))); // to unorm
+    return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),INV_TWO_PI,0.5f),acos(-direct.y)*INV_PI)); // to unorm
 }
 
 vec3 dcts(in vec2 hr) {
-    hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f)); // from unorm
-    return vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y));//.xzy * vec3(1.f,-1.f,1.f);
+    hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f));
+    return vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y));
 }
 
 vec3 dcts(in dirtype_t hr) {
-    //return dcts(fma(dirtype_t_decode(hr),0.5f.xx,0.5f.xx));
     return dcts(dirtype_t_decode(hr));
 }
 

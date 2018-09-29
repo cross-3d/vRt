@@ -174,7 +174,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
         const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
         const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/(dz);
-        [[flatten]] if ( T >= N_INFINITY || T > cdist || T < (-0.f) ) { _valid = false; };
+        [[flatten]] if ( T >= N_INFINITY || T > cdist || T < (-0.f) || abs(dz) <= 0.f ) { _valid = false; };
         IFANY (_valid) {
             const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
             [[flatten]] if (any(lessThan(uv, -0.f.xx)) || (uv.x+uv.y) > (1.f)) { _valid = false; };
