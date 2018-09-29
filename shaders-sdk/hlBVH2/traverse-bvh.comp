@@ -50,7 +50,7 @@ void main() {
             VtHitData hit;
 #endif
 
-            initTraversing(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect.xy);
+            initTraversing(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect);
             
             // traversing from front layer to back layers
             [[unroll]] for (int i=0;i<1;i++) {

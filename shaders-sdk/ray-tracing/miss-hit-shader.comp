@@ -40,7 +40,7 @@ void main() {
 #endif
 
         [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0 && (imageLoad(rayLink,rayID<<1).x-1) == hitID) { // if hit is valid
-            const vec3 viewVec = dcts(cray.cdirect.xy);
+            const vec3 viewVec = dcts(cray.cdirect);
             const vec3 rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;
 

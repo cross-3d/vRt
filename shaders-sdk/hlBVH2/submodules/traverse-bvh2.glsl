@@ -93,10 +93,10 @@ const float dirlen = 1.f, invlen = 1.f, bsize = 1.f;
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
 void resetEntry(in bool valid) { traverseState.idx = (valid ? BVH_ENTRY : -1), traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0; };
-void initTraversing(in bool valid, in int eht, in vec3 orig, in vec2 pdir) {
+void initTraversing(in bool valid, in int eht, in vec3 orig, in dirtype_t pdir) {
     
     // relative origin and vector
-    vec4 torig = -divW(mult4( bvhBlock.projection, vec4(orig, 1.0f))), torigTo = divW(mult4( bvhBlock.projection, vec4(orig, 1.0f) + vec4(dcts(pdir.xy), 0.f))), tdir = torigTo+torig;
+    vec4 torig = -divW(mult4( bvhBlock.projection, vec4(orig, 1.0f))), torigTo = divW(mult4( bvhBlock.projection, vec4(orig, 1.0f) + vec4(dcts(pdir), 0.f))), tdir = torigTo+torig;
     torig = -uniteBox(-torig), torigTo = uniteBox(torigTo), tdir = torigTo+torig;
 
     // different length of box space and global space

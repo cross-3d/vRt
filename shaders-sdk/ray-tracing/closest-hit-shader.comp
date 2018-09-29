@@ -104,7 +104,7 @@ void main() {
 
             matID = floatBitsToInt(hit.uvt.w);
             const bool overflow = overflow || rayID < 0;
-            const vec3 rdirect = dcts(cray.cdirect.xy);
+            const vec3 rdirect = dcts(cray.cdirect);
 
             // AMD not supported per-lane texture data loading, if texture index is not constant
             vec2 texcoord = imageLoad(attributes, makeAttribID(hit.attribID, TEXCOORD_TID)).xy;

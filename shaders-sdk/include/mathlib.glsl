@@ -359,15 +359,23 @@ int nlz(in int x) { return nlz(uint(x)); }
 
 
 
+#define dirtype_t float
+#define dirtype_t_decode(f) unpackUnorm2x16(floatBitsToUint(f))
+#define dirtype_t_encode(f) uintBitsToFloat(packUnorm2x16(f))
+
 // polar/cartesian coordinates (unorm)
-vec2 lcts(in vec3 direct) {
+dirtype_t lcts(in vec3 direct) {
     //direct.xyz = direct.xzy * vec3(1.f,1.f,-1.f);
-    return vec2(fma(atan(direct.z,direct.x),0.5f*INV_PI,0.5f),acos(-direct.y)*INV_PI); // to unorm
+    return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),0.5f*INV_PI,0.5f),acos(-direct.y)*INV_PI)); // to unorm
 }
 
 vec3 dcts(in vec2 hr) {
     hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f)); // from unorm
     return normalize(vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y)));//.xzy * vec3(1.f,-1.f,1.f);
+}
+
+vec3 dcts(in dirtype_t hr) {
+    return dcts(dirtype_t_decode(hr));
 }
 
 

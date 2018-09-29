@@ -35,7 +35,12 @@
 
 
 // default built-in ray structure
-struct VtRay { vec4 origin; vec2 cdirect; uvec2 dcolor; };
+//struct VtRay { vec4 origin; vec2 cdirect; uvec2 dcolor; };
+struct VtRay { vec4 fdata; uvec4 bitspace; };
+#define cdirect fdata.w
+#define origin fdata.xyz
+#define dcolor bitspace.xy // RGB16F
+
 
 // write color, but don't write (save) last element
 uvec2 writeColor(inout uvec2 rwby, in vec4 color) {

@@ -231,11 +231,11 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
 // some ideas been used from http://www.cs.utah.edu/~thiago/papers/robustBVH-v2.pdf
 // compatible with AMD radeon min3 and max3
 
-bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec4 sgn, in mat3x2 tMinMax, inout vec4 nfe) 
+bool intersectCubeF32Single(in vec3 orig, in vec3 dr, in bvec4 sgn, in mat3x2 tMinMax, inout vec4 nfe) 
 { nfe = INFINITY.xxxx; // indefined distance
 
     // calculate intersection
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec2(fma(tMinMax[i], dr[i].xx, origin[i].xx));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec2(fma(tMinMax[i], dr[i].xx, orig[i].xx));
     [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec2(min(tMinMax[i].x, tMinMax[i].y), max(tMinMax[i].x, tMinMax[i].y));
 
     const float 
@@ -255,11 +255,11 @@ bool intersectCubeF32Single(in vec3 origin, in vec3 dr, in bvec4 sgn, in mat3x2 
 // also, optimized for RPM (Rapid Packed Math) https://radeon.com/_downloads/vega-whitepaper-11.6.17.pdf
 // compatible with NVidia GPU too
 
-bvec2_ intersectCubeDual(inout fvec3_ origin, inout fvec3_ dr, in bvec4 sgn, in fvec2_[3][2] tMinMax, inout vec4 nfe2)
+bvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in fvec2_[3][2] tMinMax, inout vec4 nfe2)
 { nfe2 = INFINITY.xxxx; // indefined distance
 
     // calculate intersection
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](fvec2_(vec2(fma(tMinMax[i][0],dr[i].xx,origin[i].xx))),fvec2_(vec2(fma(tMinMax[i][1],dr[i].xx,origin[i].xx))));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](fvec2_(vec2(fma(tMinMax[i][0],dr[i].xx,orig[i].xx))),fvec2_(vec2(fma(tMinMax[i][1],dr[i].xx,orig[i].xx))));
     [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](min(tMinMax[i][0], tMinMax[i][1]), max(tMinMax[i][0], tMinMax[i][1]));
 
     const 
