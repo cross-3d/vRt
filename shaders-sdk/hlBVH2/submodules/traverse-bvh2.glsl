@@ -143,7 +143,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
             else { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
                 #define bbox2x bvhNode.cbox // use same memory
-                 bvec2_ childIntersect = bool_(cnode.x&1).xx & bool_(cnode.x>0).xx & bvec2_(intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe));
+                bvec2_ childIntersect = (bool(cnode.x&1) && cnode.x>0 && traverseState.idx>=0) ? bvec2_(intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe)) : false_.xx;
 
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 
@@ -151,7 +151,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
                 childIntersect &= bvec2_(lessThanEqual(nfe.xy, fma(primitiveState.lastIntersection.z,fpOne,fpInner).xx)); // it increase FPS by filtering nodes by first triangle intersection
 
                 // 
-                bool_ fmask = bool_((childIntersect.y<<true_)|childIntersect.x);
+                bool_ fmask = childIntersect.x|(childIntersect.y<<true_);
                 [[flatten]] if (fmask > 0) {
                     int primary = -1, secondary = -1;
                     [[flatten]] if (fmask == 3) { fmask &= true_<<bool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
@@ -169,10 +169,10 @@ void traverseBVH2( in bool reset, in bool valid ) {
                     // set traversing node id
                     traverseState.idx = primary, _continue = true;
                 }
-            }
+            };
 
             // if all threads had intersection, or does not given any results, break for processing
-            [[flatten]] if (!_continue) { loadStack(traverseState.idx); } // load from stack 
+            [[flatten]] if (!_continue && traverseState.idx > 0) { loadStack(traverseState.idx); } // load from stack 
             [[flatten]] IFANY (traverseState.defTriangleID > 0 || traverseState.idx <= 0) { break; } // 
         }}};
 
