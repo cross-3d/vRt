@@ -37,7 +37,8 @@ shared VtRay lrays[64];
 // planned ray generation shader example
 void main() {
     const ivec2 wh = stageUniform.size.xy, xy = ivec2(Global_Idx.xy);
-    vec2 rnd = unorm2Construct(hash(uvec2(p2x_16(Global_Idx.xy), 1u)))-0.5f, coord = (vec2(xy) + 0.5f + clamp(rnd, -almostRange.xx, almostRange.xx)) / vec2(wh);
+    const vec2 rnd = SFN.xx;//unorm2Construct(hash(uvec2(p2x_16(Global_Idx.xy), 1u)))-0.5f;
+    const vec2 coord = vec2(vec2(xy) + 0.5f + clamp(rnd, -almostRange.xx, almostRange.xx)) / vec2(wh);
 
     vec4 dir = vec4(0.f), orig = mult4(cameraUniform.camInv, vec4(vec3(0.0f), 1.0f)), eye = orig;
     //IFANY (cameraUniform.enable360 == 1) {
