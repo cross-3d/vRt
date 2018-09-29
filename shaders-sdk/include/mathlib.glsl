@@ -191,6 +191,11 @@ u64vec2 P4U(in uvec4 pckg) { return u64vec2(uint64_t(P2U(pckg.xy)), uint64_t(P2U
 uvec2 packHalf4x16(in vec4 floats) { return uvec2(packHalf2x16(floats.xy), packHalf2x16(floats.zw)); }
 vec4 unpackHalf4x16(in uvec2 hilo) { return vec4(unpackHalf2x16(hilo.x), unpackHalf2x16(hilo.y)); }
 
+uvec2 packSnorm4x16(in vec4 floats) { return uvec2(packSnorm2x16(floats.xy), packSnorm2x16(floats.zw)); }
+vec4 unpackSnorm4x16(in uvec2 hilo) { return vec4(unpackSnorm2x16(hilo.x), unpackSnorm2x16(hilo.y)); }
+
+uvec2 packUnorm4x16(in vec4 floats) { return uvec2(packUnorm2x16(floats.xy), packUnorm2x16(floats.zw)); }
+vec4 unpackUnorm4x16(in uvec2 hilo) { return vec4(unpackUnorm2x16(hilo.x), unpackUnorm2x16(hilo.y)); }
 
 // bit utils
 int lsb(in uint vlc) { return findLSB(vlc); }

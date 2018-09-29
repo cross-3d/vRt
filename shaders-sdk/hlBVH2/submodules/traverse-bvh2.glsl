@@ -61,9 +61,8 @@ void storeStack(in int rsl) {
 };
 
 
-//const float fpInner = 128.f*SFN, fpOne = 1.f;//SFO;
 #ifndef fpInner
-const float fpInner = 0.0000152587890625, fpOne = SFO;
+const float fpInner = 0.0000152587890625f, fpOne = 1.f;
 #endif
 
 // triangle intersection, when it found
@@ -135,14 +134,23 @@ void traverseBVH2( in bool reset, in bool valid ) {
         [[flatten]] if (traverseState.idx >= 0 && traverseState.defTriangleID <= 0) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) { bool _continue = false;
             //const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
-            #define bvhNode bvhNodes[traverseState.idx] // ref directly
-            //#define cnode (bvhNode.meta.xy) // reuse already got
+            #define bvhNode bvhNodes[traverseState.idx]
 
             const ivec2 cnode = traverseState.idx >= 0 ? bvhNode.meta.xy : (0).xx;
             [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
+
+#ifdef EXPERIMENTAL_UNORM16_BVH
+                #define bbox2x fvec2_[3][2](\
+                    fvec2_[2](fvec2_(unpackSnorm2x16(bvhNode.cbox[0][0])),fvec2_(unpackSnorm2x16(bvhNode.cbox[0][1]))),\
+                    fvec2_[2](fvec2_(unpackSnorm2x16(bvhNode.cbox[1][0])),fvec2_(unpackSnorm2x16(bvhNode.cbox[1][1]))),\
+                    fvec2_[2](fvec2_(unpackSnorm2x16(bvhNode.cbox[2][0])),fvec2_(unpackSnorm2x16(bvhNode.cbox[2][1])))\
+                )
+#else
                 #define bbox2x bvhNode.cbox // use same memory
+#endif
+
                 bvec2_ childIntersect = (bool(cnode.x&1) && cnode.x>0 && traverseState.idx>=0) ? bvec2_(intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe)) : false_.xx;
 
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf

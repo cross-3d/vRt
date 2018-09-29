@@ -40,7 +40,7 @@ layout ( binding = 8, set = 0, std430 ) restrict buffer CountersB {
 };
 
 struct BTYPE_ {
-#if (defined(USE_F32_BVH) || defined(USE_F16_BVH))
+#if (defined(USE_F32_BVH) || defined(USE_F16_BVH)) && !defined(EXPERIMENTAL_UNORM16_BVH)
     fvec4_ cbox[3];
 #else
     uvec2 cbox[3];
@@ -52,12 +52,10 @@ layout ( binding = 2, set = 1, std430 ) restrict buffer bvhBoxesResultingB { BTY
 
 // precision control of boxes
 #ifndef fpInner
-//#define fpInner 128.f*SFN // as operation 
-//#define fpInner 0.0000152587890625
-const float fpInner = 0.0000152587890625f;
+const float fpInner = InZero;
 #endif
 
-#define fpCorrect InZero
+#define fpCorrect 0.0000152587890625f
 
 bbox_t calcTriBox(in mat3x4 triverts) {
     bbox_t result;

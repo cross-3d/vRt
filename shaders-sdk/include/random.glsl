@@ -15,6 +15,12 @@ mediump vec2 half2Construct ( in uint m ) {
 #endif
 }
 
+// more precise and faster method with unorm
+vec2 unorm2Construct( in uint m ){
+    return clamp01(unpackUnorm2x16(m));
+}
+
+
 // seeds hashers
 uint hash ( in uint a ) {
    a = (a+0x7ed55d16) + (a<<12);

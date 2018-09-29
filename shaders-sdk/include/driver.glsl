@@ -103,5 +103,6 @@
 
 // packing as unorm16x2 (experimental)
 #define EXPERIMENTAL_UNORM16_DIRECTION
+#define EXPERIMENTAL_UNORM16_BVH
 
 #endif

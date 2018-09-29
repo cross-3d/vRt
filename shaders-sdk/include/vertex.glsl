@@ -71,13 +71,16 @@ vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f))
 // BVH Zone in ray tracing system
 #if (defined(ENABLE_VSTORAGE_DATA) && !defined(BVH_CREATION) && !defined(VERTEX_FILLING))
 struct NTYPE_ {
+#ifdef EXPERIMENTAL_UNORM16_BVH
+      uvec2 cbox[3];
+#else
 #ifdef USE_F32_BVH
-     vec2 cbox[3][2];
-    ivec4 meta;
+       vec2 cbox[3][2];
 #else
     f16vec2 cbox[3][2];
-      ivec4 meta;
 #endif
+#endif
+    ivec4 meta;
 };
 
 layout ( binding = 2, set = 1, std430 ) readonly coherent buffer bvhBoxesB { NTYPE_ bvhNodes[]; };

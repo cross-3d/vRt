@@ -25,10 +25,14 @@ void unifyNodeBox(inout int idx) {
         // transposed save
         const fvec4_ f4Correct = fvec4_(-(fpCorrect).xx, (fpCorrect).xx);
         lrbox = transpose(lrbox), bvhNodes[idx].cbox = 
+#ifdef EXPERIMENTAL_UNORM16_BVH
+            uvec2[3](packSnorm4x16(lrbox[0]+f4Correct), packSnorm4x16(lrbox[1]+f4Correct), packSnorm4x16(lrbox[2]+f4Correct));
+#else
 #if (defined(USE_F32_BVH)||defined(USE_F16_BVH))
             fvec4_[3](fvec4_(lrbox[0])+f4Correct, fvec4_(lrbox[1])+f4Correct, fvec4_(lrbox[2])+f4Correct);
 #else
-            uvec2[3](packHalf4x16(lrbox[0]), packHalf4x16(lrbox[1]), packHalf4x16(lrbox[2]));
+            uvec2[3](packHalf4x16(lrbox[0]+f4Correct), packHalf4x16(lrbox[1]+f4Correct), packHalf4x16(lrbox[2]+f4Correct));
+#endif
 #endif
     }
 }

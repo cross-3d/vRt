@@ -323,7 +323,7 @@ namespace rnd {
         glm::vec3 eyePos = glm::vec3(-3.5f, 10.5f, -50.6f).zyx();
         glm::vec3 viewVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
         glm::vec3 moveVector = glm::vec3(1e-4f, 1e-4f, 1.f).zyx();
-        glm::vec3 upVector = glm::vec3(1e-5f, 1.f, 1e-5f);
+        glm::vec3 upVector = glm::vec3(0.f, 1.f, 0.f);
 
         // precision correction for boxes
         glm::vec4 optDensity = glm::vec4(glm::vec3(1.f) / glm::vec3(1.f), 1.f);
