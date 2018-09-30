@@ -55,7 +55,8 @@ layout ( binding = 2, set = 1, std430 ) restrict buffer bvhBoxesResultingB { BTY
 const float fpInner = InZero;
 #endif
 
-#define fpCorrect 0.0000152587890625f
+//#define fpCorrect 0.0000152587890625f
+const float fpCorrect = 0.0000152587890625f;
 
 bbox_t calcTriBox(in mat3x4 triverts) {
     bbox_t result;

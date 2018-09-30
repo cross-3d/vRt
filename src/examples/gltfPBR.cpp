@@ -159,7 +159,7 @@ namespace rnd {
 
         {
             auto atMatrix = glm::lookAt(eyePos*glm::vec3(scale), (eyePos+viewVector)*glm::vec3(scale), upVector);
-            auto pjMatrix = glm::perspective(float(M_PI) / 3.f, 16.f / 9.f, 1e-4f, 1e4f);
+            auto pjMatrix = glm::infinitePerspective(glm::radians(60.f), float(canvasWidth) / float(canvasHeight), 1e-5f);
 
             // set first uniform buffer data
             cameraUniformData.projInv = glm::transpose(glm::inverse(pjMatrix));

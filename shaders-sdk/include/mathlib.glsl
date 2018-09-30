@@ -379,14 +379,15 @@ int nlz(in int x) { return nlz(uint(x)); }
 #define dirtype_t_encode(f) floatBitsToUint(f)
 #endif
 
-// polar/cartesian coordinates (unorm)
+
 dirtype_t lcts(in vec3 direct) {
+    direct = normalize(direct); // normalize before
     return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),INV_TWO_PI,0.5f),acos(-direct.y)*INV_PI)); // to unorm
 }
 
 vec3 dcts(in vec2 hr) {
     hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f));
-    return vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y));
+    return normalize(vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y)));
 }
 
 vec3 dcts(in dirtype_t hr) {
@@ -426,25 +427,7 @@ lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFFu;};
 #define f32_f16 packHalf4x16
 #define f16_f32 unpackHalf4x16
 
-// improved generic bilinear interpolation
-const ivec2 offsets[4] = {ivec2(0,1), ivec2(1,1), ivec2(1,0), ivec2(0,0)};
-const  vec2 offsetf[4] = { vec2(0,1),  vec2(1,1),  vec2(1,0),  vec2(0,0)}; // float version (for faster accessing)
-vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
-    const vec2 sz = textureSize(SMP, LOD), si = 1.f.xx/sz, tx = fma(sz, TXL, (-0.5f+SFN).xx), lp = fract(tx), tl = si*(ceil(tx)+(-0.5f+SFN).xx);
-
-    const vec4 coef = vec4(
-        fma(-lp.x, lp.y, lp.y),            // (1.f-lp.x) *      lp.y
-        lp.x*lp.y,                         //      lp.x  *      lp.y
-        fma( lp.x,-lp.y, lp.x),            //      lp.x  * (1.f-lp.y)
-        fma( lp.x, lp.y, (1.f-lp.y-lp.x))  // (1.f-lp.x) * (1.f-lp.y)
-    );
-
-    // linear interpolation by dot products
-    vec4 fcolor = 0.f.xxxx;
-      [[unroll]] for (int j=0;j<4;j++){fcolor=fma(coef[j].xxxx,textureLod(SMP,fma(si,offsetf[j],tl),LOD),fcolor);}; // compile-time issues with textureLodOffset
-    //[[unroll]] for (int j=0;j<4;j++){fcolor[j]=dot(coef,textureGather(SMP,tl,j));}; // compile-time issues with textureGather
-
-    return fcolor;
-};
+const vec2 offsetf[4] = { vec2(0,1), vec2(1,1), vec2(1,0), vec2(0,0) };
+vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD);  // TODO: better implementation
 
 #endif
