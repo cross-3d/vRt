@@ -427,7 +427,15 @@ lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFFu;};
 #define f32_f16 packHalf4x16
 #define f16_f32 unpackHalf4x16
 
+// bilinear interpolation remedy 
 const vec2 offsetf[4] = { vec2(0,1), vec2(1,1), vec2(1,0), vec2(0,0) };
-vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD);  // TODO: better implementation
+vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
+    const vec2 sz = textureSize(SMP,LOD), is = 1.f/sz, tc = fma(TXL,sz,-0.5f.xx), tm = (floor(tc+SFN)+0.5f)*is;
+    const vec4 il = vec4(fract(tc),1.f-fract(tc)), cf = vec4(il.z*il.y,il.x*il.y,il.x*il.w,il.z*il.w);
+
+    vec4 fcol = 0.f.xxxx;
+    [[unroll]] for (int i=0;i<4;i++) fcol=fma(textureLod(SMP,fma(offsetf[i],is,tm),LOD),cf[i].xxxx,fcol);
+    return fcol;
+};
 
 #endif
