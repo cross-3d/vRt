@@ -142,7 +142,7 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
             UVW_ /= (dot(UVW_, 1.f.xxx));
             UV = vec2(UVW_.yz), UVW_ *= ABC; // calculate axis distances
             T = mix(mix(UVW_.z, UVW_.y, axis == 1), UVW_.x, axis == 0);
-            [[flatten]] if ( T < (-0.f) || T >= N_INFINITY ) _valid = false;
+            [[flatten]] if ( T < (-SFN) || T >= N_INFINITY ) _valid = false;
         }
     }
     return (_valid ? T : INFINITY);
@@ -166,18 +166,18 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
             const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1);
             const vec3 uvt = vec3(dot(s,h),dot(dir.xyz,q), dot(e2,q))/(a);
             uv = uvt.xy, T = uvt.z;
-            [[flatten]] if (any(lessThan(uv, -0.f.xx)) || (uv.x+uv.y) > (1.f)) { _valid = false; };
-            [[flatten]] if ( T >= N_INFINITY || T > cdist || T < (-0.f) ) { _valid = false; };
+            [[flatten]] if (any(lessThan(uv, -SFN.xx)) || (uv.x+uv.y) > (SFO)) { _valid = false; };
+            [[flatten]] if ( T >= N_INFINITY || T > cdist || T < (-SFN) ) { _valid = false; };
         }
 #else
         // intersect triangle by transform
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
         const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
         const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/(dz);
-        [[flatten]] if ( T >= N_INFINITY || T > cdist || T < (-0.f) || abs(dz) <= 0.f ) { _valid = false; };
+        [[flatten]] if ( T >= N_INFINITY || T > cdist || T < (-SFN) || abs(dz) <= 0.f ) { _valid = false; };
         IFANY (_valid) {
             const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
-            [[flatten]] if (any(lessThan(uv, -0.f.xx)) || (uv.x+uv.y) > (1.f)) { _valid = false; };
+            [[flatten]] if (any(lessThan(uv, -SFN.xx)) || (uv.x+uv.y) > (SFO)) { _valid = false; };
         }
 #endif
     }
@@ -246,7 +246,7 @@ bool intersectCubeF32Single(in vec3 orig, in vec3 dr, in bvec4 sgn, in mat3x2 tM
         tFar  = min3_wrap(tMinMax[0].y, tMinMax[1].y, tMinMax[2].y) * InOne;
 
     // resolve hit
-    const bool isCube = tFar>=tNear && tFar >= -0.f && tNear < N_INFINITY;
+    const bool isCube = tFar>=tNear && tFar >= -SFN && tNear < N_INFINITY;
     [[flatten]] if (isCube) nfe.xz = vec2(tNear, tFar);
     return isCube;
 };
@@ -275,7 +275,7 @@ bvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in fv
         
     const bvec2_ isCube = 
         bvec2_(greaterThanEqual(tFar, tNear)) & 
-        bvec2_(greaterThanEqual(tFar, fvec2_(-0.f))) & 
+        bvec2_(greaterThanEqual(tFar, fvec2_(-SFN))) & 
         bvec2_(lessThan(tNear, fvec2_(N_INFINITY)));
 
     nfe2 = mix(nfe2, vec4(tNear, tFar), SSC(bvec4_(isCube, isCube)));

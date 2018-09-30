@@ -8,13 +8,13 @@
 // NEXT standard consts in current
 // Ray tracing NEXT capable shader standard development planned begin in 2019 year
 const float PHI = 1.6180339887498948482f;
-const float INFINITY = 1e+4f;
+const float INFINITY = 1e+5f;
 
 const float PI = 3.1415926535897932384626422832795028841971f;
 const float TWO_PI = 6.2831853071795864769252867665590057683943f;
 const float SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
 const float E = 2.7182818284590452353602874713526624977572f;
-const float N_INFINITY = 9999.999f;
+const float N_INFINITY = 99999.999f;
 const float INV_PI = 0.3183098861837907f; // TODO: search or calculate more precise version
 const float TWO_INV_PI = 0.6366197723675814f;
 const float INV_TWO_PI = 0.15915494309189535f;
@@ -381,13 +381,14 @@ int nlz(in int x) { return nlz(uint(x)); }
 
 
 dirtype_t lcts(in vec3 direct) {
-    direct = normalize(direct); // normalize before
+    //direct = normalize(direct); // normalize before
     return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),INV_TWO_PI,0.5f),acos(-direct.y)*INV_PI)); // to unorm
 }
 
 vec3 dcts(in vec2 hr) {
     hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f));
-    return normalize(vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y)));
+    return //normalize
+        (vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y)));
 }
 
 vec3 dcts(in dirtype_t hr) {
