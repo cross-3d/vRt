@@ -43,11 +43,13 @@
 
  **October 2018**
 
-- Support for RTX graphics cards (RTX 2070, 2080, etc.)
+- De-vendorize possible features
+- HLSL shaders for non-core functionality
 - Begin of development for OpenGL, OpenCL and CUDA interoperability
 
  **November 2018**
 
+- Support for RTX graphics cards (RTX 2070, 2080, etc.)
 - Support of RTX acceleration
 - Support of extensions (which with RTX)
 

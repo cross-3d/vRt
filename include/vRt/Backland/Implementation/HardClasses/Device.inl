@@ -231,7 +231,7 @@ namespace _vt {
 
         // create radix sort tool
         createRadixSort(vtDevice, vtExtension, vtDevice->_radixSort);
-        createVertexAssemblyPipeline(vtDevice, simfo, vtDevice->_vertexAssembler);
+        createVertexAssemblyPipeline(vtDevice, simfo, vtDevice->_nativeVertexAssembler);
         createAcceleratorHLBVH2(vtDevice, vtExtension, vtDevice->_acceleratorBuilder);
 
         // create dull barrier pipeline

@@ -26,7 +26,7 @@ const int VCOUNT = 3;
 bool nvlda(in vec4 a) { return dot(a,a)<=SFN; };
 bool nvlda(in vec3 a) { return dot(a,a)<=SFN; };
 bool nvlda(in vec2 a) { return dot(a,a)<=SFN; };
-void calculateTBN(in int rofft, in int trip, in mat3x4 transformNrm) {
+void calculateAttributes(in int rofft, in int trip, in mat3x4 transformNrm) {
 
     // alloc arrays
     vec4 normals[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
@@ -44,7 +44,6 @@ void calculateTBN(in int rofft, in int trip, in mat3x4 transformNrm) {
     // calculate geometrical normal
     mat3x3 dlps = mat3x3(vertice[0].xyz, vertice[1].xyz, vertice[2].xyz); dlps[1] -= dlps[0], dlps[2] -= dlps[0];
     const vec4 gnormal = vec4(cross(dlps[1], dlps[2]), 0.f);
-    ISTORE(lnrm, trip, vec4(normalize(mult4(transformNrm, gnormal).xyz), uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[trip])))));
 
     // load attrib data
     for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
@@ -64,9 +63,9 @@ void calculateTBN(in int rofft, in int trip, in mat3x4 transformNrm) {
     // getting tangents and bitangents
     mat3x2 dlts = mat3x2(texcoord[0].xy, texcoord[1].xy, texcoord[2].xy); dlts[1] -= dlts[0], dlts[2] -= dlts[0];
 
-    const ivec2    NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID));
-    const ivec2   TANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TANGENT_TID));
-    const ivec2 BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
+    const ivec2    NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID)),
+                  TANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TANGENT_TID)),
+                BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
     [[unroll]] for (int i=0;i<3;i++) {
         // calc raw TBN 
         float idet = 1.f/(determinant(mat2(dlts[1],dlts[2]))); // inv determinant
@@ -89,9 +88,9 @@ void calculateTBN(in int rofft, in int trip, in mat3x4 transformNrm) {
         if (nvlda(tangent[i].xyz)) { tangent[i].xyz = (idet*t); };
 
         // transform and store TBN
-        ISTORE(attrib_texture_out, mosaicIdc(BITANGENT_, i), vec4(normalize(mult4(transformNrm, vec4(normalize(idet*b),0.f))), 0.0f));
-        ISTORE(attrib_texture_out, mosaicIdc(  TANGENT_, i), vec4(normalize(mult4(transformNrm, tangent[i])), 0.0f));
         ISTORE(attrib_texture_out, mosaicIdc(   NORMAL_, i), vec4(normalize(mult4(transformNrm, normals[i])), 0.0f));
+        ISTORE(attrib_texture_out, mosaicIdc(  TANGENT_, i), vec4(normalize(mult4(transformNrm, tangent[i])), 0.0f));
+        ISTORE(attrib_texture_out, mosaicIdc(BITANGENT_, i), vec4(normalize(mult4(transformNrm, vec4(normalize(idet*b),0.f))), 0.0f));
     }
 }
 
@@ -108,39 +107,10 @@ void main() {
         const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (globalID >= wsize) break;
         [[flatten]] if (globalID < wsize && globalID >= 0) {
 
-            // constant material ID from vertex instance
+            // read pointer to required 
             const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
-
-            // read material accessor
             uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
-
-            // planned to support quad based geometry
-            vmaterials[wofft] = int(matID);
-            vbitfields[wofft] = vertexBlock.bitfield;
-            
-            // load vertex data
-            
-            [[unroll]] for (int i=0;i<3;i++) {
-                vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = rofft * VCOUNT + i;
-                readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
-                readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice);
-                storePosition(ivec2(wofft, i), vertice);
-            };
-
-            // load attrib data
-            for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
-                const int ai = attributes[a].attributeID;
-                [[unroll]] for (int i=0;i<3;i++) {
-                    vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
-                    readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
-                    readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-                    storeAttribute(ivec3(wofft, ai, i), attribValue);
-                };
-                storeAttribute(ivec3(wofft, ai, 3), 0.f.xxxx);
-            };
-
-            // 
-            calculateTBN(int(rofft), int(wofft), transformNrm);
+            calculateAttributes(int(rofft), int(wofft), transformNrm); // attributes calculation 
         }
     }
 }

@@ -462,12 +462,12 @@ namespace rnd {
         };
     };
 
-    // 
+     // 
      void Renderer::InitRayTracingPipeline(){
         {
             // create ray tracing pipeline
             VtVertexAssemblyPipelineCreateInfo vtpi = {};
-            vtpi.vertexAssemblyModule = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "vertex/vtransformed.comp.spv"));
+            vtpi.vertexAssemblyModule = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "vertex/vattributes.comp.spv"));
             vtpi.pipelineLayout = rtVPipelineLayout;
             vtCreateVertexAssemblyPipeline(deviceQueue->device->rtDev, &vtpi, &vtxPipeline);
         }

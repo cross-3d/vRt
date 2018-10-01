@@ -60,26 +60,21 @@ namespace _vt {
         if (cmdBuf->_vertexInputs.size() <= 0) return result;
 
         auto device = cmdBuf->_parent();
-        auto vertbd = device->_vertexAssembler;
+        auto natvab = device->_nativeVertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
         vertx->_vertexInputs = cmdBuf->_vertexInputs;
 
         // update constants
         imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
-        for (auto iV_ : cmdBuf->_vertexInputs) {
+        for (auto iV : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
-            auto& iV = iV_;
 
             //iV->_uniformBlock.updateOnly = false;
             iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount;
             if (cb) { cb(*cmdBuf, int(_bnd), iV->_uniformBlock); };
-            if (iV->_uniformBlockBuffer) {
-                cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
-            };
-            if (iV->_inlineTransformBuffer) {
-                cmdUpdateBuffer(*cmdBuf, iV->_inlineTransformBuffer->_bufferRegion, 0ull, sizeof(IdentifyMat4), &IdentifyMat4);
-            };
+            if (iV->_uniformBlockBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock); };
+            if (iV->_inlineTransformBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_inlineTransformBuffer->_bufferRegion, 0ull, sizeof(IdentifyMat4), &IdentifyMat4); };
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
         updateCommandBarrier(*cmdBuf);
@@ -90,32 +85,34 @@ namespace _vt {
             auto& iV = cmdBuf->_vertexInputs[_bnd];
 
             // native descriptor sets
-            auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
 
             // user defined descriptor sets
             auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
-            for (auto &s : _bsets) { _sets.push_back(s); }
+            for (auto &s : _bsets) { _sets.push_back(s); };
 
-            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
-            vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
-            cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, VX_INTENSIVITY, _szi, 1);
+            const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
+            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *pLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
+            vkCmdPushConstants(*cmdBuf, *pLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
+            cmdDispatch(*cmdBuf, natvab->_vkPipeline, VX_INTENSIVITY, _szi, 1, false);
+            if (iV->_attributeVertexAssembly) cmdDispatch(*cmdBuf, iV->_attributeVertexAssembly->_vkPipeline, VX_INTENSIVITY, _szi, 1, false);
         } else {
-            for (auto iV_ : cmdBuf->_vertexInputs) {
+            for (auto iV : cmdBuf->_vertexInputs) {
                 uint32_t _bnd = _bndc++;
-                auto& iV = iV_;
 
                 // native descriptor sets
-                auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
                 std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
 
                 // user defined descriptor sets
                 auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
-                for (auto &s : _bsets) { _sets.push_back(s); }
+                for (auto &s : _bsets) { _sets.push_back(s); };
 
-                vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
-                vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
-                cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, VX_INTENSIVITY, 1, 1, false);
+                // execute vertex assembly
+                const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
+                vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *pLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
+                vkCmdPushConstants(*cmdBuf, *pLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
+                cmdDispatch(*cmdBuf, natvab->_vkPipeline, VX_INTENSIVITY, 1, 1, false);
+                if (iV->_attributeVertexAssembly) cmdDispatch(*cmdBuf, iV->_attributeVertexAssembly->_vkPipeline, VX_INTENSIVITY, 1, 1, false);
             }
             commandBarrier(*cmdBuf);
         }
@@ -131,25 +128,20 @@ namespace _vt {
         if (cmdBuf->_vertexInputs.size() <= 0) return result;
 
         auto device = cmdBuf->_parent();
-        auto vertbd = device->_vertexAssembler;
+        auto natvab = device->_nativeVertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
         vertx->_vertexInputs = cmdBuf->_vertexInputs;
 
         // update constants
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
-        for (auto iV_ : cmdBuf->_vertexInputs) {
+        for (auto iV : cmdBuf->_vertexInputs) {
             uint32_t _bnd = _bndc++;
-            auto& iV = iV_;
 
             //iV->_uniformBlock.updateOnly = true;
             iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount; // every requires newer offset 
             if (cb) { cb(*cmdBuf, int(_bnd), iV->_uniformBlock); };
-            if (iV->_uniformBlockBuffer) {
-                cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock);
-            };
-            if (iV->_inlineTransformBuffer) {
-                cmdUpdateBuffer(*cmdBuf, iV->_inlineTransformBuffer->_bufferRegion, 0ull, sizeof(IdentifyMat4), &IdentifyMat4);
-            };
+            if (iV->_uniformBlockBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock); };
+            if (iV->_inlineTransformBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_inlineTransformBuffer->_bufferRegion, 0ull, sizeof(IdentifyMat4), &IdentifyMat4); };
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
         updateCommandBarrier(*cmdBuf);
@@ -160,33 +152,36 @@ namespace _vt {
             auto& iV = cmdBuf->_vertexInputs[_bnd];
 
             // native descriptor sets
-            auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
+            const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
+            //auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
 
             // user defined descriptor sets
             auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
             for (auto &s : _bsets) { _sets.push_back(s); }
 
-            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
-            vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
-            cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, VX_INTENSIVITY, multiple ? _szi : 1, 1);
+            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *pLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
+            vkCmdPushConstants(*cmdBuf, *pLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
+            cmdDispatch(*cmdBuf, natvab->_vkPipeline, VX_INTENSIVITY, multiple ? _szi : 1, 1, false);
+            if (iV->_attributeVertexAssembly) cmdDispatch(*cmdBuf, iV->_attributeVertexAssembly->_vkPipeline, VX_INTENSIVITY, multiple ? _szi : 1, 1, false);
         } else {
-            for (auto iV_ : cmdBuf->_vertexInputs) {
+            for (auto iV : cmdBuf->_vertexInputs) {
                 uint32_t _bnd = _bndc++;
                 if (_bnd >= inputSet) {
-                    auto& iV = iV_;
 
                     // native descriptor sets
-                    auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
+                    const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
+                    //auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
                     std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
 
                     // user defined descriptor sets
                     auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
                     for (auto &s : _bsets) { _sets.push_back(s); }
 
-                    vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *vertb->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
-                    vkCmdPushConstants(*cmdBuf, *vertb->_pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
-                    cmdDispatch(*cmdBuf, vertb->_vertexAssemblyPipeline, VX_INTENSIVITY, 1, 1, false);
+                    vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *pLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
+                    vkCmdPushConstants(*cmdBuf, *pLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
+                    cmdDispatch(*cmdBuf, natvab->_vkPipeline, VX_INTENSIVITY, 1, false);
+                    if (iV->_attributeVertexAssembly) cmdDispatch(*cmdBuf, iV->_attributeVertexAssembly->_vkPipeline, VX_INTENSIVITY, 1, false);
                 }
             }
             commandBarrier(*cmdBuf);

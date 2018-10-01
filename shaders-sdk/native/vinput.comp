@@ -14,31 +14,55 @@
 
 LOCAL_SIZE_LAYOUT;
 
+
 const int VCOUNT = 3;
+
+void precalculateNormals(in int rofft, in int trip, in mat3x4 transformNrm) {
+    vec4 vertice[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
+    
+    // get vertices by accessor
+    [[unroll]] for (int i=0;i<3;i++) {
+        uint indiceID = rofft * VCOUNT + i;
+        readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
+        readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice[i]);
+    };
+
+    // calculate geometrical normal
+    mat3x3 dlps = mat3x3(vertice[0].xyz, vertice[1].xyz, vertice[2].xyz); dlps[1] -= dlps[0], dlps[2] -= dlps[0];
+    const vec4 gnormal = vec4(cross(dlps[1], dlps[2]), 0.f);
+    ISTORE(lnrm, trip, vec4(normalize(mult4(transformNrm, gnormal).xyz), uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[trip])))));
+}
+
+//struct Transforms { mat3x4 transform, transformNrm; };
+//layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { mat3x4 vTransforms[]; };
 
 #define wsize vertexBlock.primitiveCount
 
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
+    const mat3x4 transformNrm = mat3x4(transpose(inverse(mat4(vTransforms[inputID]))));
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (globalID >= wsize) break;
         [[flatten]] if (globalID < wsize && globalID >= 0) {
+
             // constant material ID from vertex instance
             const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
 
             // read material accessor
-            uint matID = 0u; readByAccessorIndice(int(vertexBlock.materialAccessor), rofft, matID); matID += uint(vertexBlock.materialID);
+            uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
 
             // planned to support quad based geometry
             vmaterials[wofft] = int(matID);
             vbitfields[wofft] = vertexBlock.bitfield;
-
+            
             // load vertex data
+            
             [[unroll]] for (int i=0;i<3;i++) {
                 vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = rofft * VCOUNT + i;
-                readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
-                readByAccessor(int(vertexBlock.verticeAccessor), indiceID, vertice);
-                storePosition(ivec2(wofft, i), point4(vertice));
+                readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
+                readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice);
+                storePosition(ivec2(wofft, i), vertice);
             };
 
             // load attrib data
@@ -46,17 +70,15 @@ void main() {
                 const int ai = attributes[a].attributeID;
                 [[unroll]] for (int i=0;i<3;i++) {
                     vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
-                    readByAccessorIndice(int(vertexBlock.indiceAccessor), indiceID, indiceID);
+                    readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
                     readByAccessor(attributes[a].accessorID, indiceID, attribValue);
                     storeAttribute(ivec3(wofft, ai, i), attribValue);
-                }
+                };
                 storeAttribute(ivec3(wofft, ai, 3), 0.f.xxxx);
             };
 
-            { // pre-compute normals
-                const vec3 v0 = TLOAD(lvtxIn, int(wofft)*3+0).xyz;
-                ISTORE(lnrm, int(wofft), vec4(normalize(cross(TLOAD(lvtxIn, int(wofft)*3+1).xyz-v0, TLOAD(lvtxIn, int(wofft)*3+2).xyz-v0)), uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[wofft])))));
-            };
+            // 
+            precalculateNormals(int(rofft), int(wofft), transformNrm);
         }
     }
 }
