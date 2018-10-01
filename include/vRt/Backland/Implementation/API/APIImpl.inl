@@ -122,7 +122,7 @@ namespace vrt {
 
     // planned to merge into dedicated implementation
     VtResult vtCmdBindRayTracingSet(VtCommandBuffer commandBuffer, VtRayTracingSet rtset) {
-        commandBuffer->_rayTracingSet = rtset; return VK_SUCCESS;
+        commandBuffer->_rayTracingSet = std::shared_ptr<_vt::RayTracingSet>(rtset); return VK_SUCCESS;
     };
 
     VtResult vtConvertPhysicalDevice(VtInstance vtInstance, VkPhysicalDevice vkPhysicalDevice, VtPhysicalDevice * vtPhysicalDevice) {

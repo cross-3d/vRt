@@ -12,10 +12,10 @@ namespace _vt {
     RoledBufferBase::~RoledBufferBase() {
         std::async([=]() {
 #ifdef VRT_ENABLE_VEZ_INTEROP
-            vezDestroyBuffer(_device->_device, _buffer);
+            if (_buffer) vezDestroyBuffer(_device->_device, _buffer);
 #else
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-            vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
+            if (_buffer) vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
 #endif
 #endif
         });
@@ -191,10 +191,10 @@ namespace _vt {
     DeviceImage::~DeviceImage() {
         std::async([=]() {
 #ifdef VRT_ENABLE_VEZ_INTEROP
-            vezDestroyImage(_device->_device, _image);
+            if (_image) vezDestroyImage(_device->_device, _image);
 #else
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-            vmaDestroyImage(_device->_allocator, _image, _allocation);
+            if (_image) vmaDestroyImage(_device->_allocator, _image, _allocation);
 #endif
 #endif
         });
