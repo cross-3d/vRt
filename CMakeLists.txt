@@ -10,7 +10,7 @@ endif()
 # Import modules 
 set (DEP_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set (CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${DEP_DIR}" "${DEP_DIR}/lib/cmake/")
-find_package (Vulkan REQUIRED)
+find_package (Vulkan QUIET)
 find_package (glfw3  REQUIRED)
 
 # Set source directories
@@ -76,14 +76,20 @@ endif()
 
 # set libs and include dirs of projects
 set (LIB_DIR "${DEP_DIR}/lib")
-set (INC_DIR ${Vulkan_INCLUDE_DIR}
+set (INC_DIR 
     "${DEP_DIR}/include" 
     "${DEP_DIR}/src/" 
     "${DEP_DIR}/src/base/" 
     "${DEP_DIR}")
+set (LIBS glfw3) # set required libs
+    
+if (Vulkan_INCLUDE_DIR)
+    set (INC_DIR ${INC_DIR} ${Vulkan_INCLUDE_DIR})
+endif()
 
-# set required libs
-set (LIBS glfw3 ${Vulkan_LIBRARY})
+if (Vulkan_LIBRARY)
+    set (LIBS ${LIBS} ${Vulkan_LIBRARY})
+endif()
 
 # set GCC8 (Linux) libs
 # MingW-W64 TODO
