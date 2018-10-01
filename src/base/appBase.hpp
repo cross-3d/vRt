@@ -636,7 +636,7 @@ namespace NSM
             allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
             VmaAllocation _allocation = {};
-            vmaCreateImage(queue->device->rtDev, &imageInfoVK, &allocCreateInfo, &depthImage, &_allocation, nullptr); // allocators planned structs
+            vmaCreateImage(*(VmaAllocator*)queue->device->rtDev._getAllocator(), &imageInfoVK, &allocCreateInfo, &depthImage, &_allocation, nullptr); // allocators planned structs
 #endif
 
             // image view for usage

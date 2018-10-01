@@ -1,10 +1,20 @@
 #pragma once
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include "appBase.hpp"
 #include <tinygltf/tiny_gltf.h>
 
 namespace rnd {
-
     using namespace vrt;
+    using namespace vte;
+
+
+
+
+
 
     struct VtAppMaterial {
         glm::vec4 diffuse = glm::vec4(0.f);
@@ -82,18 +92,18 @@ namespace rnd {
     };
 
 
-/*  // no support by GCC compilers
-    template<class T>
-    inline auto readFromBuffer(vte::Queue deviceQueue, const std::shared_ptr<_vt::BufferRegion>& dBuffer, std::vector<T>& vctr, VkDeviceSize byteOffset = 0) {
-        VkResult result = VK_SUCCESS;
-        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
-            VkBufferCopy bfc = { dBuffer->_offset + byteOffset, 0ull, vte::strided<T>(vctr.size()) };
-            vrt::vtCmdCopyDeviceBufferToHost(cmdBuf, vrt::VtDeviceBuffer{ dBuffer->_boundBuffer }, deviceQueue->device->rtDev, 1, &bfc);
-        });
-        vrt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
-        return result;
-    };
-    */
+    /*  // no support by GCC compilers
+        template<class T>
+        inline auto readFromBuffer(vte::Queue deviceQueue, const std::shared_ptr<_vt::BufferRegion>& dBuffer, std::vector<T>& vctr, VkDeviceSize byteOffset = 0) {
+            VkResult result = VK_SUCCESS;
+            vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
+                VkBufferCopy bfc = { dBuffer->_offset + byteOffset, 0ull, vte::strided<T>(vctr.size()) };
+                vrt::vtCmdCopyDeviceBufferToHost(cmdBuf, vrt::VtDeviceBuffer{ dBuffer->_boundBuffer }, deviceQueue->device->rtDev, 1, &bfc);
+            });
+            vrt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
+            return result;
+        };
+        */
 
     inline auto createBufferFast(vte::Queue deviceQueue, vrt::VtDeviceBuffer& dBuffer, VkDeviceSize byteSize = 1024 * 16) {
         vrt::VtDeviceBufferCreateInfo dbs;
@@ -103,6 +113,12 @@ namespace rnd {
         dbs.format = VK_FORMAT_R16G16_UINT;
         vrt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
     };
+
+
+
+
+
+
 
     inline auto getShaderDir(const uint32_t& vendorID) {
         std::string shaderDir = "./universal/";

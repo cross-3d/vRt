@@ -6,7 +6,6 @@
 
 #include "../base/appRenderer.hpp"
 
-
 namespace rnd {
 
     using namespace vrt;

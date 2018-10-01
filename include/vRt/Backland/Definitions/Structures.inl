@@ -50,7 +50,11 @@ namespace vrt { // store in official namespace
 #else
         std::string shaderPath = "./";
 #endif
-        VmaAllocator allocator = nullptr;
+#ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
+        const void* allocator = nullptr;
+#else
+        const VmaAllocator* allocator = nullptr;
+#endif
         VkBool32 enableAdvancedAcceleration = false; // such as RTX, in current moment have no any support 
     };
 

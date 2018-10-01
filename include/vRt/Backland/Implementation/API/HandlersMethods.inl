@@ -25,7 +25,13 @@ namespace vrt { // store in official namespace
      VtDevice::operator VkDevice() const { return *_vtHandle; };
      VtDevice::operator VkPipelineCache() const { return *_vtHandle; };
      VtDevice::operator VkDescriptorPool() const { return *_vtHandle; };
-     VtDevice::operator VmaAllocator() const { return *_vtHandle; };
+
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
+     VtDevice::operator VmaAllocator() const { return _vtHandle->_allocator; };
+     const void* VtDevice::_getAllocator() const { return &_vtHandle->_allocator; };
+#else
+     const void* VtDevice::_getAllocator() const { return nullptr; };
+#endif
 
      VtDevice::operator VtHostToDeviceBuffer() const { return VtHostToDeviceBuffer{ _vtHandle->_bufferTraffic->_uploadBuffer }; };
      VtDevice::operator VtDeviceToHostBuffer() const { return VtDeviceToHostBuffer{ _vtHandle->_bufferTraffic->_downloadBuffer }; };

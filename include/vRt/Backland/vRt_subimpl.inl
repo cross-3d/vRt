@@ -4,6 +4,10 @@
 #define VMA_IMPLEMENTATION // implement VMA there
 #endif
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 // Lowest sublevel of implementations for implementators
 #include "../vRt.h"
 #include "Utilities/VkUtils.hpp"
@@ -14,5 +18,3 @@
 #else
 #include "Utilities/SpvPaths.hpp"
 #endif
-
-#include "Definitions/Handlers.inl"

@@ -37,14 +37,13 @@
 #define NSM vte
 #endif
 
+
+
 // include ray tracing library
 #include "vRt/vRt.h"
 
 // include extensions
 #include "vRt/vRtX/RTXAcceleratorExtension.hpp"
-
-// include VMA for compatibility
-#include <vulkan/vk_mem_alloc.h>
 
 // include inner utils from library (for development purpose)
 #include "vRt/Backland/Utilities/VkUtils.hpp"
@@ -52,9 +51,12 @@
 // also need include these headers
 #include "vRt/Backland/Implementation/Utils.hpp"
 
+
+// include VMA for compatibility
+//#include <vulkan/vk_mem_alloc.h>
+
+
 // inner utils of application
 namespace NSM {
-
-    
-
+    using namespace vrt;
 };

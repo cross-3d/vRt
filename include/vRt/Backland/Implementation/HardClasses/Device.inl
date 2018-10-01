@@ -27,11 +27,11 @@ namespace _vt {
         vtDevice->_device = device;
         vtDevice->_vendorName = getVendorName(gpu.getProperties().vendorID);
 
-        VtResult result = VK_SUCCESS;
 
+        VtResult result = VK_SUCCESS;
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         if (vtExtension.allocator) {
-            vtDevice->_allocator = vtExtension.allocator; result = VK_SUCCESS;
+            vtDevice->_allocator = *(const VmaAllocator*)vtExtension.allocator; result = VK_SUCCESS;
         } else {
             VmaAllocatorCreateInfo allocatorInfo = {};
             allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice);

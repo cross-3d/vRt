@@ -12,17 +12,17 @@ namespace _vt { // store in undercover namespace
     extern VtResult convertPhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, std::shared_ptr<PhysicalDevice>& _vtPhysicalDevice);
     extern VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& _vtDevice);
 
-    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    template<VtMemoryUsage U = VT_MEMORY_USAGE_GPU_ONLY>
     extern VtResult createBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<RoledBuffer<U>>& _vtBuffer);
 
     // artifical function type
-    template<VmaMemoryUsage U>
+    template<VtMemoryUsage U>
     using _createBuffer_T = VtResult(*)(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<RoledBuffer<U>> &_vtBuffer);
 
     // aliased calls
-    constexpr const static inline _createBuffer_T<VMA_MEMORY_USAGE_GPU_ONLY> createDeviceBuffer = &createBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
-    constexpr const static inline _createBuffer_T<VMA_MEMORY_USAGE_CPU_TO_GPU> createHostToDeviceBuffer = &createBuffer<VMA_MEMORY_USAGE_CPU_TO_GPU>;
-    constexpr const static inline _createBuffer_T<VMA_MEMORY_USAGE_GPU_TO_CPU> createDeviceToHostBuffer = &createBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
+    constexpr const static inline _createBuffer_T<VT_MEMORY_USAGE_GPU_ONLY> createDeviceBuffer = &createBuffer<VT_MEMORY_USAGE_GPU_ONLY>;
+    constexpr const static inline _createBuffer_T<VT_MEMORY_USAGE_CPU_TO_GPU> createHostToDeviceBuffer = &createBuffer<VT_MEMORY_USAGE_CPU_TO_GPU>;
+    constexpr const static inline _createBuffer_T<VT_MEMORY_USAGE_GPU_TO_CPU> createDeviceToHostBuffer = &createBuffer<VT_MEMORY_USAGE_GPU_TO_CPU>;
     extern VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, std::shared_ptr<DeviceImage>& _vtImage);
     extern VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, std::shared_ptr<DeviceBuffer>& gBuffer, VtDeviceBufferCreateInfo cinfo = {});
     extern VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, VtDeviceBufferCreateInfo cinfo = {});

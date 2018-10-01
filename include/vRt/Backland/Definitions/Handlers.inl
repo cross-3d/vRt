@@ -1,6 +1,7 @@
 #pragma once
 
 // implementable
+#include "vRt/vRt.h"
 #include "../../Parts/HandlersDef.inl" // no, shouldn't 
 #include "HardClassesDef.inl" // no, shouldn't 
 
@@ -79,7 +80,7 @@ namespace vrt { // store in official namespace
 
 
     // handlers can't have base classes
-    template<VmaMemoryUsage U>
+    template<VtMemoryUsage U>
     class VtRoledBuffer : public VtHandle<_vt::RoledBuffer<U>> {
     private: using P = VtHandle<_vt::RoledBuffer<U>>;
     public:
@@ -91,10 +92,10 @@ namespace vrt { // store in official namespace
     };
 
     // templated implementations
-    template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBuffer() const { return *P::_vtHandle; };
-    template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBuffer&() { return *P::_vtHandle; };
-    template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView() const { return *P::_vtHandle; };
-    template<VmaMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView&() { return *P::_vtHandle; };
+    template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBuffer() const { return *P::_vtHandle; };
+    template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBuffer&() { return *P::_vtHandle; };
+    template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView() const { return *P::_vtHandle; };
+    template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView&() { return *P::_vtHandle; };
 
 
 
@@ -113,8 +114,11 @@ namespace vrt { // store in official namespace
         operator VkDescriptorPool() const; //{ return *_vtHandle; };
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-        operator VmaAllocator() const; //{ return *_vtHandle; }
+        explicit operator VmaAllocator() const; //{ return *_vtHandle; }
 #endif
+
+        const void* _getAllocator() const;
+
         // casting operators with traffic buffers
         operator VtHostToDeviceBuffer() const; //{ return VtHostToDeviceBuffer{ _vtHandle->_bufferTraffic->_uploadBuffer }; };
         operator VtDeviceToHostBuffer() const; //{ return VtDeviceToHostBuffer{ _vtHandle->_bufferTraffic->_downloadBuffer }; };

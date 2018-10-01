@@ -1,10 +1,10 @@
 #pragma once
 
 // implementables
-#include "../vRt_subimpl.inl"
+//#include "../vRt_subimpl.inl"
 
 // requirements
-#include "../Definitions/Initializers.inl"
+//#include "../Definitions/Initializers.inl"
 #include "../Definitions/HardClasses.inl"
 //#include "../../Definitions/Structures.inl"
 
@@ -177,45 +177,45 @@ namespace _vt { // store in undercover namespace
 
     // copy buffer to image (from gpu or host)
     // you can't use it for form long command buffer from host
-    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_CPU_TO_GPU>
+    template<VtMemoryUsage U = VT_MEMORY_USAGE_CPU_TO_GPU>
     inline void cmdCopyBufferToImage(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> srcBuffer, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::BufferImageCopy>& regions) {
         vk::CommandBuffer(cmd).copyBufferToImage(srcBuffer->_buffer, dstImage->_image, vk::ImageLayout(dstImage->_layout), regions);
 
-        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
-            if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }
+        if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
+            if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }
         }
     };
 
     // copy image to buffer (to gpu or host)
     // you can't use it for form long command buffer to host
-    template<VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
+    template<VtMemoryUsage U = VT_MEMORY_USAGE_GPU_TO_CPU>
     inline void cmdCopyImageToBuffer(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> srcImage, std::shared_ptr<RoledBuffer<U>> dstBuffer, const std::vector<vk::BufferImageCopy>& regions) {
         vk::CommandBuffer(cmd).copyImageToBuffer((vk::Image&)(*srcImage), vk::ImageLayout(srcImage->_layout), (vk::Buffer&)(*dstBuffer), regions);
 
-        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
-            if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }
+        if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
+            if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }
         }
     };
 
 
-    template<VmaMemoryUsage U>
+    template<VtMemoryUsage U>
     using cmdCopyImageToBuffer_T = void(*)(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> srcImage, std::shared_ptr<RoledBuffer<U>> dstBuffer, const std::vector<vk::BufferImageCopy>& regions);
 
-    template<VmaMemoryUsage U>
+    template<VtMemoryUsage U>
     using cmdCopyBufferToImage_T = void(*)(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> srcBuffer, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::BufferImageCopy>& regions);
 
     // aliased low level calls
-    constexpr const  cmdCopyBufferToImage_T<VMA_MEMORY_USAGE_GPU_ONLY> copyDeviceBufferToImage = &cmdCopyBufferToImage<VMA_MEMORY_USAGE_GPU_ONLY>;
-    constexpr const  cmdCopyImageToBuffer_T<VMA_MEMORY_USAGE_GPU_ONLY> copyImageToDeviceBuffer = &cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_ONLY>;
-    constexpr const  cmdCopyBufferToImage_T<VMA_MEMORY_USAGE_CPU_TO_GPU> copyHostBufferToImage = &cmdCopyBufferToImage<VMA_MEMORY_USAGE_CPU_TO_GPU>;
-    constexpr const  cmdCopyImageToBuffer_T<VMA_MEMORY_USAGE_GPU_TO_CPU> copyImageToHostBuffer = &cmdCopyImageToBuffer<VMA_MEMORY_USAGE_GPU_TO_CPU>;
+    constexpr const  cmdCopyBufferToImage_T<VT_MEMORY_USAGE_GPU_ONLY> copyDeviceBufferToImage = &cmdCopyBufferToImage<VT_MEMORY_USAGE_GPU_ONLY>;
+    constexpr const  cmdCopyImageToBuffer_T<VT_MEMORY_USAGE_GPU_ONLY> copyImageToDeviceBuffer = &cmdCopyImageToBuffer<VT_MEMORY_USAGE_GPU_ONLY>;
+    constexpr const  cmdCopyBufferToImage_T<VT_MEMORY_USAGE_CPU_TO_GPU> copyHostBufferToImage = &cmdCopyBufferToImage<VT_MEMORY_USAGE_CPU_TO_GPU>;
+    constexpr const  cmdCopyImageToBuffer_T<VT_MEMORY_USAGE_GPU_TO_CPU> copyImageToHostBuffer = &cmdCopyImageToBuffer<VT_MEMORY_USAGE_GPU_TO_CPU>;
 
 
 
     // direct state commands for loading data
 
     // set buffer data function (defaultly from HostToDevice)
-    template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_CPU_TO_GPU>
+    template <class T, VtMemoryUsage U = VT_MEMORY_USAGE_CPU_TO_GPU>
     inline void setBufferSubData(const std::vector<T> &hostdata, std::shared_ptr<RoledBuffer<U>> buffer, intptr_t offset = 0) {
         const VkDeviceSize bufferSize = hostdata.size() * sizeof(T);
 #ifdef VRT_ENABLE_VEZ_INTEROP
@@ -232,12 +232,14 @@ namespace _vt { // store in undercover namespace
             vezUnmapBuffer(*buffer->_device, buffer->_buffer);
         }
 #else
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         if (bufferSize > 0) memcpy((uint8_t *)buffer->_hostMapped() + offset, hostdata.data(), bufferSize);
+#endif
 #endif
     }
 
     // get buffer data function (defaultly from DeviceToHost)
-    template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
+    template <class T, VtMemoryUsage U = VT_MEMORY_USAGE_GPU_TO_CPU>
     inline void getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, std::vector<T> &hostdata, intptr_t offset = 0) {
         const VkDeviceSize bufferSize = hostdata.size() * sizeof(T);
 #ifdef VRT_ENABLE_VEZ_INTEROP
@@ -254,12 +256,14 @@ namespace _vt { // store in undercover namespace
             vezUnmapBuffer(*buffer->_device, buffer->_buffer);
         }
 #else
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         if (hostdata.size() > 0) memcpy(hostdata.data(), (const uint8_t *)buffer->_hostMapped() + offset, bufferSize);
+#endif
 #endif
     }
 
     // get buffer data function (defaultly from DeviceToHost)
-    template <class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_TO_CPU>
+    template <class T, VtMemoryUsage U = VT_MEMORY_USAGE_GPU_TO_CPU>
     inline auto getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, VkDeviceSize count = 1, intptr_t offset = 0) {
         std::vector<T> hostdata(count);
         getBufferSubData(buffer, hostdata, 0);
@@ -283,13 +287,13 @@ namespace _vt { // store in undercover namespace
     };
 
     // short data set with command buffer (alike push constant)
-    template<class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    template<class T, VtMemoryUsage U = VT_MEMORY_USAGE_GPU_ONLY>
     static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> dstBuffer, VkDeviceSize offset, const std::vector<T>& data) {
         return cmdUpdateBuffer<T>(cmd, *dstBuffer, offset, data);
     };
 
     // short data set with command buffer (alike push constant)
-    template<class T, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    template<class T, VtMemoryUsage U = VT_MEMORY_USAGE_GPU_ONLY>
     static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> dstBuffer, VkDeviceSize offset, const VkDeviceSize& size, const T*data) {
         return cmdUpdateBuffer<T>(cmd, *dstBuffer, offset, size, data);
     };
@@ -308,7 +312,7 @@ namespace _vt { // store in undercover namespace
 
 
 
-    template<uint32_t Rv, VmaMemoryUsage U = VMA_MEMORY_USAGE_GPU_ONLY>
+    template<uint32_t Rv, VtMemoryUsage U = VT_MEMORY_USAGE_GPU_ONLY>
     static inline VkResult cmdFillBuffer(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
         return cmdFillBuffer<Rv>(cmd, *dstBuffer, std::min(dstBuffer->_size(), size), offset);
     };
@@ -326,16 +330,16 @@ namespace _vt { // store in undercover namespace
 namespace vrt {
     template <class T>
     inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, VkDeviceSize offset) {
-        _vt::setBufferSubData<T, VMA_MEMORY_USAGE_CPU_TO_GPU>(hostdata, buffer, offset); return VK_SUCCESS;
+        _vt::setBufferSubData<T, VT_MEMORY_USAGE_CPU_TO_GPU>(hostdata, buffer, offset); return VK_SUCCESS;
     };
 
     template <class T>
     inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, VkDeviceSize offset) {
-        _vt::getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, hostdata, offset); return VK_SUCCESS;
+        _vt::getBufferSubData<T, VT_MEMORY_USAGE_GPU_TO_CPU>(buffer, hostdata, offset); return VK_SUCCESS;
     };
 
     template <class T>
     inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, VkDeviceSize count, VkDeviceSize offset) {
-        return _vt::getBufferSubData<T, VMA_MEMORY_USAGE_GPU_TO_CPU>(buffer, count, offset);
+        return _vt::getBufferSubData<T, VT_MEMORY_USAGE_GPU_TO_CPU>(buffer, count, offset);
     };
 };

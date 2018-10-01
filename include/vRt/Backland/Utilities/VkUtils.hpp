@@ -1,22 +1,29 @@
 #pragma once
 
-// Include headers
-//#include "../../vRt.h"
+// include headers
+#include "vRt/vRt.h"
+
+// include VEZ for interop
+#ifdef VRT_ENABLE_VEZ_INTEROP
+#ifndef VEZ_H
+#include <VEZ/VEZ.h>
+#endif
+#endif
 
 // Vulkan API for C++
 #include <vulkan/vulkan.hpp>
 
 // include STL
-#include <fstream>
-#include <future>
-#include <iostream>
-#include <stdexcept>
 #include <array>
+#include <future>
 #include <random>
-#include <algorithm>
+#include <fstream>
+#include <iostream>
 #include <iterator>
-#include <map>
+#include <stdexcept>
+#include <algorithm>
 
+// 
 #ifdef VRT_ENABLE_EXECUTION_POLICY
 #include <execution>
 #define VRT_ASYNC(F) std::async(std::launch::async|std::launch::deferred,F);

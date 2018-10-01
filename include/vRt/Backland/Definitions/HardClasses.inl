@@ -77,6 +77,7 @@ namespace _vt { // store in undercover namespace
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         VmaAllocator _allocator = {};
+        explicit operator VmaAllocator() const { return _allocator; };
 #endif
 
         VkPipelineCache _pipelineCache = VK_NULL_HANDLE; // store native pipeline cache
@@ -96,10 +97,6 @@ namespace _vt { // store in undercover namespace
         operator VkDevice() const { return _device; };
         operator VkPipelineCache() const { return _pipelineCache; };
         operator VkDescriptorPool() const { return _descriptorPool; };
-
-#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-        operator VmaAllocator() const { return _allocator; };
-#endif
 
         operator std::shared_ptr<HostToDeviceBuffer>() const { return _bufferTraffic->_uploadBuffer; };
         operator std::shared_ptr<DeviceToHostBuffer>() const { return _bufferTraffic->_downloadBuffer; };
@@ -313,7 +310,7 @@ namespace _vt { // store in undercover namespace
     };
 
     // this is wrapped advanced buffer class
-    template<VmaMemoryUsage U>
+    template<VtMemoryUsage U>
     class RoledBuffer : public RoledBufferBase, std::enable_shared_from_this<RoledBuffer<U>> {
     public:
         //~RoledBuffer();

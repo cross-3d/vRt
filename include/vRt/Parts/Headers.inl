@@ -14,9 +14,14 @@
 #define VK_USE_PLATFORM_XLIB_KHR
 #endif
 
-// if vulkan header included, make compatible with volk.h
+// 
 #ifdef VULKAN_H_
 #define VK_NO_PROTOTYPES
+#endif
+
+// if VEZ header detected, mark interop automatically
+#ifdef VEZ_H
+#define VRT_ENABLE_VEZ_INTEROP
 #endif
 
 // include volk.h when possible
@@ -28,16 +33,9 @@
 #endif
 #endif
 
-// include VEZ for interop
-#ifdef VRT_ENABLE_VEZ_INTEROP
-#ifndef VEZ_H
-#include <VEZ/VEZ.h>
-#endif
-#endif
-
+// include VMA when possible
 // if no defined VEZ, and not included VMA, include it
-//#if (!defined(AMD_VULKAN_MEMORY_ALLOCATOR_H) && !defined(VRT_ENABLE_VEZ_INTEROP))
-#ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
+#if (!defined(AMD_VULKAN_MEMORY_ALLOCATOR_H) && !defined(VRT_ENABLE_VEZ_INTEROP))
 #include <vulkan/vk_mem_alloc.h>
 #endif
 
@@ -55,5 +53,5 @@
 #include <string_view>
 #endif
 
-// define namespace for some cases
+// empty namespace 
 namespace vrt {};

@@ -77,4 +77,14 @@ namespace vrt { // store in official namespace
     typedef enum VtAccelerationName : uint32_t {
         VT_ACCELERAION_NAME_UNKNOWN = 0,
     } VtAccelerationName;
+
+    // VMA compatible
+    typedef enum VtMemoryUsage : uint32_t {
+        VT_MEMORY_USAGE_UNKNOWN = 0,
+        VT_MEMORY_USAGE_GPU_ONLY = 1,
+        VT_EMORY_USAGE_CPU_ONLY = 2,
+        VT_MEMORY_USAGE_CPU_TO_GPU = 3,
+        VT_MEMORY_USAGE_GPU_TO_CPU = 4,
+        VT_MEMORY_USAGE_MAX_ENUM = 0x7FFFFFFF
+    } VtMemoryUsage;
 };

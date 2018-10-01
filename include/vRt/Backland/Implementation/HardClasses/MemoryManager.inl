@@ -14,7 +14,9 @@ namespace _vt {
 #ifdef VRT_ENABLE_VEZ_INTEROP
             vezDestroyBuffer(_device->_device, _buffer);
 #else
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
             vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
+#endif
 #endif
         });
     };
@@ -54,7 +56,7 @@ namespace _vt {
     };
 
 
-    template<VmaMemoryUsage U>
+    template<VtMemoryUsage U>
     VtResult createBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<RoledBuffer<U>>& vtDeviceBuffer) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
@@ -63,13 +65,13 @@ namespace _vt {
         vtDeviceBuffer->_device = device; // delegate device by weak_ptr
 
         VmaAllocationCreateInfo allocCreateInfo = {};
-        allocCreateInfo.usage = U;
+        allocCreateInfo.usage = VmaMemoryUsage(U); // TODO: stable conversion
 
         // make memory usages 
         auto usageFlagCstr = 0u;
-        if constexpr (U != VMA_MEMORY_USAGE_GPU_ONLY) { allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT; }
-        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; } else {
-            if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; } else {
+        if constexpr (U != VT_MEMORY_USAGE_GPU_ONLY) { allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT; }
+        if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; } else {
+            if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; } else {
                 usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             };
         };
@@ -80,9 +82,9 @@ namespace _vt {
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
         VezMemoryFlags mem = VEZ_MEMORY_GPU_ONLY;
-        if constexpr (U == VMA_MEMORY_USAGE_CPU_TO_GPU) mem = VEZ_MEMORY_CPU_TO_GPU;
-        if constexpr (U == VMA_MEMORY_USAGE_GPU_TO_CPU) mem = VEZ_MEMORY_GPU_TO_CPU;
-        if constexpr (U == VMA_MEMORY_USAGE_CPU_ONLY) mem = VEZ_MEMORY_CPU_ONLY;
+        if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) mem = VEZ_MEMORY_CPU_TO_GPU;
+        if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) mem = VEZ_MEMORY_GPU_TO_CPU;
+        if constexpr (U == VT_MEMORY_USAGE_CPU_ONLY) mem = VEZ_MEMORY_CPU_ONLY;
 
         auto binfo = VezBufferCreateInfo{};
         binfo.pNext = nullptr;
@@ -103,7 +105,7 @@ namespace _vt {
 #endif
 
         // if format is known, make bufferView
-        if constexpr (U == VMA_MEMORY_USAGE_GPU_ONLY) {
+        if constexpr (U == VT_MEMORY_USAGE_GPU_ONLY) {
             VtBufferRegionCreateInfo rbc = {};
             rbc.offset = 0, rbc.bufferSize = cinfo.bufferSize, rbc.format = cinfo.format;
             createBufferRegion(vtDeviceBuffer, rbc, vtDeviceBuffer->_bufferRegion);
@@ -191,7 +193,9 @@ namespace _vt {
 #ifdef VRT_ENABLE_VEZ_INTEROP
             vezDestroyImage(_device->_device, _image);
 #else
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
             vmaDestroyImage(_device->_allocator, _image, _allocation);
+#endif
 #endif
         });
     };
