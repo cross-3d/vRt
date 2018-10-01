@@ -1,1 +1,1 @@
-/home/helixd/vRt/shaders-sdk/upcoming/build-for-amd.ps1
+C:/home/helixd/vRt/shaders-sdk/upcoming/build-for-amd.ps1
