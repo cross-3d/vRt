@@ -14,11 +14,10 @@ namespace vrt {
     class VtAccelerator;
     class VtMaterialSet;
     class VtVertexInputSet;
-    class VtVertexAssemblyPipeline;
-    class VtRayTracingSet;
+    class VtAttributePipeline;
     class VtVertexAssemblySet;
     class VtAcceleratorSet;
-
+    class VtRayTracingSet;
 
     // advanced class (buffer)
     class VtRoledBufferBase; // 

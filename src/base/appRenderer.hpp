@@ -358,7 +358,7 @@ namespace rnd {
         VtRayTracingSet raytracingSet;
         VtPipelineLayout rtPipelineLayout, rtVPipelineLayout;
         VtPipeline rtPipeline, rfPipeline;
-        VtVertexAssemblyPipeline vtxPipeline;
+        VtAttributePipeline vtxPipeline;
         VtAcceleratorSet accelerator;
         VtVertexAssemblySet vertexAssembly;
         VkCommandBuffer bCmdBuf, rtCmdBuf, vxCmdBuf, vxuCmdBuf;

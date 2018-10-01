@@ -28,7 +28,7 @@ namespace vrt { // store in official namespace
 
     class VtPipeline : public VtHandle<_vt::Pipeline> {};
     class VtAcceleratorHLBVH2 : public VtHandle<_vt::AcceleratorHLBVH2> {};
-    class VtVertexAssemblyPipeline : public VtHandle<_vt::VertexAssemblyPipeline> {};
+    class VtAttributePipeline : public VtHandle<_vt::AssemblyPipeline> {};
 
     class VtInstance : public VtHandle<_vt::Instance> {
     public:

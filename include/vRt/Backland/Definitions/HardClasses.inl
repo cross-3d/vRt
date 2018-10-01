@@ -84,7 +84,7 @@ namespace _vt { // store in undercover namespace
 
         std::shared_ptr<RadixSort> _radixSort;
         std::shared_ptr<AcceleratorHLBVH2> _acceleratorBuilder; // planned to rename
-        std::shared_ptr<VertexAssemblyPipeline> _nativeVertexAssembler;
+        std::shared_ptr<AssemblyPipeline> _nativeVertexAssembler;
         std::shared_ptr<BufferTraffic> _bufferTraffic;
         VkPipeline _dullBarrier;
         //std::shared_ptr<CopyProgram> _copyProgram;
@@ -215,7 +215,7 @@ namespace _vt { // store in undercover namespace
     };
 
     // vertex assembly program
-    class VertexAssemblyPipeline : public std::enable_shared_from_this<VertexAssemblyPipeline> {
+    class AssemblyPipeline : public std::enable_shared_from_this<AssemblyPipeline> {
     public:
         friend Device;
         VkPipeline _vkPipeline = VK_NULL_HANDLE; // protect from stupid casting
@@ -483,7 +483,7 @@ namespace _vt { // store in undercover namespace
 
         // vertex assembly pipeline bound
         std::shared_ptr<DeviceBuffer> _uniformBlockBuffer; // binding of uniform arrays
-        std::shared_ptr<VertexAssemblyPipeline> _attributeVertexAssembly; // 
+        std::shared_ptr<AssemblyPipeline> _attributeVertexAssembly; // 
         std::shared_ptr<DeviceBuffer> _inlineTransformBuffer; // if have no required
 
         // TODO: RTX capable buffers 

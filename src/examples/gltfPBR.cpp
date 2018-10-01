@@ -337,7 +337,7 @@ namespace rnd {
             VtPipelineLayoutCreateInfo vpti;
             vpti.pGeneralPipelineLayout = &vpi;
 
-            vtCreateVertexAssemblyPipelineLayout(deviceQueue->device->rtDev, &vpti, &rtVPipelineLayout);
+            vtCreateAssemblyPipelineLayout(deviceQueue->device->rtDev, &vpti, &rtVPipelineLayout);
         }
 
         {
@@ -466,10 +466,10 @@ namespace rnd {
      void Renderer::InitRayTracingPipeline(){
         {
             // create ray tracing pipeline
-            VtVertexAssemblyPipelineCreateInfo vtpi = {};
-            vtpi.vertexAssemblyModule = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "vertex/vattributes.comp.spv"));
+            VtAttributePipelineCreateInfo vtpi = {};
+            vtpi.assemblyModule = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "vertex/vattributes.comp.spv"));
             vtpi.pipelineLayout = rtVPipelineLayout;
-            vtCreateVertexAssemblyPipeline(deviceQueue->device->rtDev, &vtpi, &vtxPipeline);
+            vtCreateAttributePipeline(deviceQueue->device->rtDev, &vtpi, &vtxPipeline);
         }
         
         auto closestShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/closest-hit-shader.comp.spv"));
@@ -724,7 +724,7 @@ namespace rnd {
                     vtii.attributeOffset = attribOffset;
                     vtii.bBufferRegionBindings = VBufferRegions;
                     vtii.bBufferViews = VBufferView;
-                    vtii.vertexAssemblyPipeline = vtxPipeline;
+                    vtii.attributePipeline = vtxPipeline;
                     vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &primitive);
                     primitives.push_back(primitive);
                 }

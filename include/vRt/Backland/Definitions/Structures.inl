@@ -104,7 +104,7 @@ namespace vrt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_INPUT_CREATE_INFO;
         const void* pNext = nullptr;
 
-        VtVertexAssemblyPipeline vertexAssemblyPipeline;
+        VtAttributePipeline attributePipeline;
         VtTopologyType topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
 
         // original block
@@ -182,13 +182,13 @@ namespace vrt { // store in official namespace
     };
 
     // 
-    struct VtVertexAssemblyPipelineCreateInfo {
-        VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_PIPELINE_CREATE_INFO;
+    struct VtAttributePipelineCreateInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_ATTRIBUTE_PIPELINE_CREATE_INFO;
         const void* pNext = nullptr;
 
         //size_t maxPrimitives = 1024u * 256u;
         VtPipelineLayout pipelineLayout;
-        VkPipelineShaderStageCreateInfo vertexAssemblyModule;
+        VkPipelineShaderStageCreateInfo assemblyModule;
     };
 
     // 

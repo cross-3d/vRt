@@ -22,10 +22,10 @@ namespace vrt { // store in official namespace
     extern VtResult vtCreateRayTracingPipelineLayout(VtDevice device, const VtPipelineLayoutCreateInfo * vtRayTracingPipelineLayoutCreateInfo, VtPipelineLayout * vtPipelineLayout);
 
     // create vertex assembly pipeline
-    extern VtResult vtCreateVertexAssemblyPipeline(VtDevice device, const VtVertexAssemblyPipelineCreateInfo * vtVertexAssemblyPipelineCreateInfo, VtVertexAssemblyPipeline * vertexAssemblyPipeline);
+    extern VtResult vtCreateAttributePipeline(VtDevice device, const VtAttributePipelineCreateInfo * vtAssemblyPipelineCreateInfo, VtAttributePipeline * vertexAssemblyPipeline);
 
     // create vertex assembly pipelineLayout
-    extern VtResult vtCreateVertexAssemblyPipelineLayout(VtDevice device, const VtPipelineLayoutCreateInfo * vtRayTracingPipelineLayoutCreateInfo, VtPipelineLayout * vtPipelineLayout);
+    extern VtResult vtCreateAssemblyPipelineLayout(VtDevice device, const VtPipelineLayoutCreateInfo * vtRayTracingPipelineLayoutCreateInfo, VtPipelineLayout * vtPipelineLayout);
 
     // create ray tracing storage
     extern VtResult vtCreateRayTracingSet(VtDevice device, const VtRayTracingSetCreateInfo * vtSetCreateInfo, VtRayTracingSet * vtSet);
@@ -37,7 +37,7 @@ namespace vrt { // store in official namespace
     extern VtResult vtCreateAccelerator(VtDevice device, const VtAcceleratorSetCreateInfo * vtAcceleratorCreateInfo, VtAcceleratorSet * accelerator);
 
     // create ray tracing accelerator structure
-    extern VtResult vtCreateVertexAssembly(VtDevice device, const VtVertexAssemblySetCreateInfo * vtVertexAssemblyCreateInfo, VtVertexAssemblySet * vertexAssembly);
+    extern VtResult vtCreateVertexAssembly(VtDevice device, const VtVertexAssemblySetCreateInfo * assemblyPipelineCreateInfo, VtVertexAssemblySet * vertexAssembly);
 
     // make descriptor input 
     extern VtResult vtCreateMaterialSet(VtDevice device, const VtMaterialSetCreateInfo * vtMaterialsCreateInfo, VtMaterialSet * materialsInput);

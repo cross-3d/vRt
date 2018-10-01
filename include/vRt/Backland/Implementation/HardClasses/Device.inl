@@ -219,11 +219,11 @@ namespace _vt {
         }
 
         // 
-        auto simfo = VtVertexAssemblyPipelineCreateInfo{};
+        auto simfo = VtAttributePipelineCreateInfo{};
 #ifdef VRT_ENABLE_HARDCODED_SPV_CORE
-        simfo.vertexAssemblyModule = makeComputePipelineStageInfo(*vtDevice, natives::vertexAssembly.at(vendorName));
+        simfo.assemblyModule = makeComputePipelineStageInfo(*vtDevice, natives::vertexAssembly.at(vendorName));
 #else
-        simfo.vertexAssemblyModule = makeComputePipelineStageInfo(*vtDevice, _vt::readBinary(natives::vertexAssembly.at(vendorName)));
+        simfo.assemblyModule = makeComputePipelineStageInfo(*vtDevice, _vt::readBinary(natives::vertexAssembly.at(vendorName)));
 #endif
 
         auto vtpl = VtPipelineLayoutCreateInfo{};
@@ -231,7 +231,7 @@ namespace _vt {
 
         // create radix sort tool
         createRadixSort(vtDevice, vtExtension, vtDevice->_radixSort);
-        createVertexAssemblyPipeline(vtDevice, simfo, vtDevice->_nativeVertexAssembler);
+        createAssemblyPipeline(vtDevice, simfo, vtDevice->_nativeVertexAssembler, true);
         createAcceleratorHLBVH2(vtDevice, vtExtension, vtDevice->_acceleratorBuilder);
 
         // create dull barrier pipeline

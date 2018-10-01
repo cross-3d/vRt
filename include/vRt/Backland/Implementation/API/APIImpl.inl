@@ -28,7 +28,7 @@ namespace vrt {
         return _vt::createPipelineLayout(device, *vtRayTracingPipelineLayoutCreateInfo, *vtPipelineLayout, VT_PIPELINE_LAYOUT_TYPE_RAYTRACING);
     };
 
-    VtResult vtCreateVertexAssemblyPipelineLayout(VtDevice device, const VtPipelineLayoutCreateInfo * vtRayTracingPipelineLayoutCreateInfo, VtPipelineLayout * vtPipelineLayout) {
+    VtResult vtCreateAssemblyPipelineLayout(VtDevice device, const VtPipelineLayoutCreateInfo * vtRayTracingPipelineLayoutCreateInfo, VtPipelineLayout * vtPipelineLayout) {
         return _vt::createPipelineLayout(device, *vtRayTracingPipelineLayoutCreateInfo, *vtPipelineLayout, VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT);
     };
 
@@ -44,12 +44,12 @@ namespace vrt {
         return _vt::createAcceleratorSet(device, *vtAcceleratorCreateInfo, *accelerator);
     };
 
-    VtResult vtCreateVertexAssembly(VtDevice device, const VtVertexAssemblySetCreateInfo * vtVertexAssemblyCreateInfo, VtVertexAssemblySet * vertexAssembly) {
-        return _vt::createVertexAssemblySet(device, *vtVertexAssemblyCreateInfo, *vertexAssembly);
+    VtResult vtCreateVertexAssembly(VtDevice device, const VtVertexAssemblySetCreateInfo * assemblyPipelineCreateInfo, VtVertexAssemblySet * vertexAssembly) {
+        return _vt::createVertexAssemblySet(device, *assemblyPipelineCreateInfo, *vertexAssembly);
     };
 
-    VtResult vtCreateVertexAssemblyPipeline(VtDevice device, const VtVertexAssemblyPipelineCreateInfo * vtVertexAssemblyPipelineCreateInfo, VtVertexAssemblyPipeline * vertexAssemblyPipeline) {
-        return _vt::createVertexAssemblyPipeline(device, *vtVertexAssemblyPipelineCreateInfo, *vertexAssemblyPipeline);
+    VtResult vtCreateAttributePipeline(VtDevice device, const VtAttributePipelineCreateInfo * vtAssemblyPipelineCreateInfo, VtAttributePipeline * vertexAssemblyPipeline) {
+        return _vt::createAssemblyPipeline(device, *vtAssemblyPipelineCreateInfo, *vertexAssemblyPipeline);
     };
 
     VtResult vtCreateMaterialSet(VtDevice device, const VtMaterialSetCreateInfo * vtMaterialsCreateInfo, VtMaterialSet * materialsInput) {

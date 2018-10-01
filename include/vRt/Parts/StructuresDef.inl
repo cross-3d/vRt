@@ -25,7 +25,7 @@ namespace vrt { // store in official namespace
     struct VtDeviceImageCreateInfo;
     struct VtBufferRegionCreateInfo;
     struct VtPipelineLayoutCreateInfo;
-    struct VtVertexAssemblyPipelineCreateInfo;
+    struct VtAttributePipelineCreateInfo;
     struct VtRayTracingSetCreateInfo;
     struct VtVertexAssemblySetCreateInfo;
 

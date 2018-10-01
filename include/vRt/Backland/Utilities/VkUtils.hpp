@@ -15,7 +15,7 @@
 #include <random>
 #include <algorithm>
 #include <iterator>
-
+#include <map>
 
 #ifdef VRT_ENABLE_EXECUTION_POLICY
 #include <execution>

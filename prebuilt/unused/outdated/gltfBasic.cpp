@@ -277,7 +277,7 @@ int main() {
     VtRayTracingSet raytracingSet;
     VtPipelineLayout rtPipelineLayout, rtVPipelineLayout;
     VtPipeline rtPipeline, rfPipeline;
-    VtVertexAssemblyPipeline vtxPipeline;
+    VtAssemblyPipeline vtxPipeline;
     VtAcceleratorSet accelerator;
     VtVertexAssemblySet vertexAssembly;
     //VtVertexInputSet vertexInput, vertexInput2; // arrayed
@@ -538,15 +538,15 @@ int main() {
         VtPipelineLayoutCreateInfo vpti;
         vpti.pGeneralPipelineLayout = (VkPipelineLayoutCreateInfo*)&vpi;
 
-        vtCreateVertexAssemblyPipelineLayout(deviceQueue->device->rtDev, &vpti, &rtVPipelineLayout);
+        vtCreateAssemblyPipelineLayout(deviceQueue->device->rtDev, &vpti, &rtVPipelineLayout);
     }
 
     {
         // create ray tracing pipeline
-        VtVertexAssemblyPipelineCreateInfo vtpi;
+        VtAttributePipelineCreateInfo vtpi;
         vtpi.vertexAssemblyModule = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "vertex/vtransformed.comp.spv"));
         vtpi.pipelineLayout = rtVPipelineLayout;
-        vtCreateVertexAssemblyPipeline(deviceQueue->device->rtDev, &vtpi, &vtxPipeline);
+        vtCreateAssemblyPipeline(deviceQueue->device->rtDev, &vtpi, &vtxPipeline);
     }
 
 
