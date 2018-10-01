@@ -114,8 +114,8 @@ namespace _vt {
                 cmdDispatch(*cmdBuf, natvab->_vkPipeline, VX_INTENSIVITY, 1, 1, false);
                 if (iV->_attributeVertexAssembly) cmdDispatch(*cmdBuf, iV->_attributeVertexAssembly->_vkPipeline, VX_INTENSIVITY, 1, 1, false);
             }
-            commandBarrier(*cmdBuf);
         }
+        commandBarrier(*cmdBuf);
 
         return result;
     };
@@ -184,8 +184,8 @@ namespace _vt {
                     if (iV->_attributeVertexAssembly) cmdDispatch(*cmdBuf, iV->_attributeVertexAssembly->_vkPipeline, VX_INTENSIVITY, 1, false);
                 }
             }
-            commandBarrier(*cmdBuf);
         }
+        commandBarrier(*cmdBuf);
         
         return result;
     };
