@@ -15,7 +15,7 @@ namespace _vt {
         auto vkDevice = _vtDevice->_device;
         vtVertexInput = std::make_shared<VertexInputSet>();
         vtVertexInput->_device = _vtDevice;
-        vtVertexInput->_attributeVertexAssembly = info.attributePipeline;
+        vtVertexInput->_attributeVertexAssembly = std::shared_ptr<AssemblyPipeline>(VtVertexInputCreateInfo(info).attributePipeline);
 
         // 
         VtDeviceBufferCreateInfo bfi;

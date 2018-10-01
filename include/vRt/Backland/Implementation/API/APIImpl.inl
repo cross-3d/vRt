@@ -99,8 +99,9 @@ namespace vrt {
     VtResult vtCmdBindVertexInputSets(VtCommandBuffer commandBuffer, uint32_t setCount, const VtVertexInputSet * sets) {
         std::vector<std::shared_ptr<_vt::VertexInputSet>> inputSets;
         for (uint32_t i = 0; i < setCount;i++) {
-            inputSets.push_back(sets[i]);
-        }
+            std::shared_ptr<_vt::VertexInputSet> vSet = sets[i];
+            inputSets.push_back(vSet);
+        };
         return _vt::bindVertexInputs(commandBuffer, inputSets);
     };
 

@@ -11,10 +11,9 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         auto vkDevice = _vtDevice->_device;
         auto vkPipelineCache = _vtDevice->_pipelineCache;
-        //auto assemblyPipeline = (_assemblyPipeline = std::make_shared<AssemblyPipeline>());
         assemblyPipeline = std::make_shared<AssemblyPipeline>();
         assemblyPipeline->_device = _vtDevice;
-        assemblyPipeline->_pipelineLayout = std::shared_ptr<PipelineLayout>(info.pipelineLayout);
+        assemblyPipeline->_pipelineLayout = std::shared_ptr<PipelineLayout>(VtAttributePipelineCreateInfo(info).pipelineLayout);
         assemblyPipeline->_vkPipeline = createCompute(vkDevice, info.assemblyModule, *assemblyPipeline->_pipelineLayout, vkPipelineCache);
         return result;
     };
