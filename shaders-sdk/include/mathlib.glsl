@@ -103,6 +103,8 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 
 
 // TODO: new boolean system (with partition of int32 support)
+
+/*
 #ifdef ENABLE_INT16_SUPPORT
 #define bvec4_ u16vec4
 #define bvec3_ u16vec3
@@ -114,8 +116,10 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 #define bvec2_ uvec2
 #define bool_ uint
 #endif
+*/
 
 // 
+/*
 #ifdef ENABLE_INT16_SUPPORT
 const bool_ true_ = 1us, false_ = 0us; 
 const bvec2_ true2_ = true_.xx, false2_ = false_.xx;
@@ -123,6 +127,75 @@ const bvec2_ true2_ = true_.xx, false2_ = false_.xx;
 lowp const bool_ true_ = 1u, false_ = 0u; 
 lowp const bvec2_ true2_ = true_.xx, false2_ = false_.xx;
 #endif
+*/
+
+
+// experimental new paired logic system
+#ifdef ENABLE_INT16_BOOL_PAIR
+//#define pbvec4_ u16vec4
+//#define pbvec3_ u16vec3
+#define pbvec2_ u16vec2
+#define pbool_ uint16_t
+#else
+//#define pbvec4_ uvec4
+//#define pbvec3_ uvec3
+#define pbvec2_ uint
+#define pbool_ uint
+#endif
+
+
+#ifdef ENABLE_INT16_BOOL_PAIR
+const pbool_ true_ = 1us, false_ = 0us; 
+const pbvec2_ true2_ = 1us.xx, false2_ = 0us.xx;
+#else
+const pbool_ true_ = 1u, false_ = 0u; 
+const pbvec2_ true2_ = 0x00010001u, false2_ = 0x00000000u;
+#endif
+
+pbvec2_ binarize(in bvec2 tbl){
+#ifdef ENABLE_INT16_BOOL_PAIR
+    return pbvec2_(tbl);
+#else
+    return pbool_(tbl.x)|(pbool_(tbl.y)<<16u);
+#endif
+};
+
+//pbvec2_ binarize(in pbvec2_ tbl){
+//    return tbl;
+//};
+
+pbvec2_ binarize(in bool tbl){
+#ifdef ENABLE_INT16_BOOL_PAIR
+    return pbvec2_(tbl.xx);
+#else
+    return pbool_(tbl)|(pbool_(tbl)<<16u);
+#endif
+};
+
+pbvec2_ binarize(in pbool_ tbl){
+#ifdef ENABLE_INT16_BOOL_PAIR
+    return pbvec2_(tbl.xx);
+#else
+    return tbl|(tbl<<16u);
+#endif
+};
+
+pbool_ pl_x(in pbvec2_ tbl){
+#ifdef ENABLE_INT16_BOOL_PAIR
+    return tbl.x;
+#else
+    return tbl&1u;
+#endif
+};
+
+pbool_ pl_y(in pbvec2_ tbl){
+#ifdef ENABLE_INT16_BOOL_PAIR
+    return tbl.y;
+#else
+    return tbl>>16u;
+#endif
+};
+
 
 // null of indexing in float representation
 const uint UINT_ZERO = 0x0u, UINT_NULL = 0xFFFFFFFFu;
@@ -286,6 +359,7 @@ vec3 toLinear(in vec3 sRGB) { return mix(pow((sRGB + vec3(0.055))/vec3(1.055), v
 vec4 fromLinear(in vec4 linearRGB) { return vec4(fromLinear(linearRGB.xyz), linearRGB.w); }
 vec4 toLinear(in vec4 sRGB) { return vec4(toLinear(sRGB.xyz), sRGB.w); }
 
+/*
 // boolean binary compatibility
 bool SSC(in bool_ b) {return b==true_;};
 bvec2 SSC(in bvec2_ b) {return equal(b,true_.xx);};
@@ -294,12 +368,21 @@ bvec4 SSC(in bvec4_ b) {return equal(b,true_.xxxx);};
 bool SSC(in bool b) {return b;};
 bvec2 SSC(in bvec2 b) {return b;};
 bvec4 SSC(in bvec4 b) {return b;};
+*/
 
- bool_ any(in bvec2_ b) {return b.x|b.y;};
- bool_ all(in bvec2_ b) {return b.x&b.y;};
+bool SSC(in bool b) {return b;};
+bvec2 SSC(in bvec2 b) {return b;};
+bvec4 SSC(in bvec4 b) {return b;};
 
-  bool_ not(in  bool_ b) {return true_ ^b;};
- bvec2_ not(in bvec2_ b) {return true2_^b;};
+bool SSC(in pbool_ b) {return b==true_;};
+//bvec2 SSC(in bvec2_ b) {return equal(b,true_.xx);};
+//bvec4 SSC(in bvec4_ b) {return equal(b,true_.xxxx);};
+
+pbool_ any(in pbvec2_ b) {return pl_x(b)|pl_y(b);};
+pbool_ all(in pbvec2_ b) {return pl_x(b)&pl_y(b);};
+
+// pbool_ not(in  pbool_ b) {return true_ ^b;};
+//pbvec2_ not(in pbvec2_ b) {return true2_^b;};
 
 #define IF(b)if(SSC(b))
 
@@ -331,7 +414,7 @@ f16vec4 mix(in f16vec4 a, in f16vec4 b, in  bvec4_ c) { return mix(a,b,SSC(c)); 
 #endif
 */
 
-
+/*
 // swap of 16-bits by funnel shifts and mapping 
 uint fast16swap(in uint b32,   bool_ nswp) {
     const uint vrc = 16u - uint(nswp) * 16u;
@@ -341,7 +424,7 @@ uint fast16swap(in uint b32,   bool_ nswp) {
 uint64_t fast32swap(in uint64_t b64,   bool_ nswp) {
     const uint64_t vrc = 32ul - uint64_t(nswp) * 32ul;
     return (b64 << (vrc)) | (b64 >> (64ul-vrc));
-}
+}*/
 
 /*
 // swap x and y swizzle by funnel shift (AMD half float)

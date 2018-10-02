@@ -105,4 +105,8 @@
 #define EXPERIMENTAL_UNORM16_DIRECTION
 #define EXPERIMENTAL_UNORM16_BVH
 
+#ifdef ENABLE_INT16_SUPPORT
+//#define ENABLE_INT16_BOOL_PAIR // use RPM based booleans
+#endif
+
 #endif

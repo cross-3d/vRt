@@ -152,18 +152,18 @@ void traverseBVH2( in bool reset, in bool valid ) {
                 #define bbox2x bvhNode.cbox // use same memory
 #endif
 
-                bvec2_ childIntersect = (bool(cnode.x&1) && cnode.x>0 && traverseState.idx>=0) ? bvec2_(intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe)) : false_.xx;
+                pbvec2_ childIntersect = (bool(cnode.x&1) && cnode.x>0 && traverseState.idx>=0) ? intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe) : false2_;
 
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 
                 // also, they uses hit queue, but it can very overload stacks, so saving only indices...
-                childIntersect &= bvec2_(lessThanEqual(nfe.xy, fma(primitiveState.lastIntersection.z,fpOne,fpInner).xx)); // it increase FPS by filtering nodes by first triangle intersection
+                childIntersect &= binarize(lessThanEqual(nfe.xy, fma(primitiveState.lastIntersection.z,fpOne,fpInner).xx)); // it increase FPS by filtering nodes by first triangle intersection
 
                 // 
-                bool_ fmask = childIntersect.x|(childIntersect.y<<true_);
+                pbool_ fmask = pl_x(childIntersect)|(pl_y(childIntersect)<<true_);
                 [[flatten]] if (fmask > 0) {
                     int primary = -1, secondary = -1;
-                    [[flatten]] if (fmask == 3) { fmask &= true_<<bool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
+                    [[flatten]] if (fmask == 3) { fmask &= true_<<pbool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
                     primary = cnode.x^int(fmask&1u);
 
                     // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse

@@ -109,8 +109,8 @@ bool allInvoc(in bool bc) { return subgroupAll(bc); }
 bool anyInvoc(in bool bc) { return subgroupAny(bc); }
 
 // aliases
-bool allInvoc(in  bool_ bc) { return allInvoc(SSC(bc)); }
-bool anyInvoc(in  bool_ bc) { return anyInvoc(SSC(bc)); }
+bool allInvoc(in pbool_ bc) { return allInvoc(SSC(bc)); }
+bool anyInvoc(in pbool_ bc) { return anyInvoc(SSC(bc)); }
 
 //#define IFALL(b) [[flatten]]if(allInvoc(b))
 #define IFALL(b) [[flatten]]if(allInvoc(b))
