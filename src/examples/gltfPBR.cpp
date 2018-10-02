@@ -531,7 +531,7 @@ namespace rnd {
 
         // load gltf buffers to device
         for (auto&b : model.buffers) {
-            VtDeviceBuffer buf;
+            VtDeviceBuffer buf = {};
             createBufferFast(deviceQueue, buf, b.data.size());
             if (b.data.size() > 0) writeIntoBuffer(deviceQueue, b.data, buf);
             VDataSpace.push_back(buf);

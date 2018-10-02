@@ -86,7 +86,7 @@
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
     #define WORK_SIZE 512u
 #else
-    #define WORK_SIZE 768u
+    #define WORK_SIZE 256u
 #endif
 #endif
 

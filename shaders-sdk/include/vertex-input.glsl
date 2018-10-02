@@ -7,7 +7,7 @@
 
 
 
-#ifdef ENABLE_VEGA_INSTRUCTION_SET
+#if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SUPPORT)
 
 #ifdef ENABLE_INT16_SUPPORT // native 16-bit integer support
 uint16_t M16(in f16samplerBuffer m, in uint i) {
@@ -22,6 +22,7 @@ highp uint M16(in f16samplerBuffer m, in uint i) {
 uint M32(in f16samplerBuffer m, in uint i) { 
     return packFloat2x16(texelFetch(m, int(i)).xy);
 };
+
 #endif
 
 highp uint M16(in highp usamplerBuffer m, in uint i) {
@@ -80,7 +81,7 @@ int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 
 
 
-#ifdef ENABLE_VEGA_INSTRUCTION_SET
+#if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SUPPORT)
 layout ( binding = 0, set = 1 ) uniform f16samplerBuffer bufferSpace[8]; // vertex model v1.4
 #else
 layout ( binding = 0, set = 1 ) uniform highp usamplerBuffer bufferSpace[8]; // vertex model v1.4
