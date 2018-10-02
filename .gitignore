@@ -38,3 +38,4 @@ cmake-build*/
 #*/glm/
 */gli/
 */models/
+lib/libglfw3.a
