@@ -109,4 +109,17 @@
 //#define ENABLE_INT16_BOOL_PAIR // use RPM based booleans
 #endif
 
+// uint32_t
+#define uint32_t uint
+#define u32vec2 uvec2
+#define u32vec3 uvec3
+#define u32vec4 uvec4
+
+// int32_t
+#define int32_t uint
+#define i32vec2 ivec2
+#define i32vec3 ivec3
+#define i32vec4 ivec4
+
+
 #endif
