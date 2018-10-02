@@ -325,7 +325,7 @@ namespace _vt { // store in undercover namespace
         ~DeviceImage();
 
         friend Device;
-        VkImage _image = VK_NULL_HANDLE; VkImageView _imageView = {};
+        VkImage _image = VK_NULL_HANDLE; VkImageView _imageView = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
@@ -357,7 +357,7 @@ namespace _vt { // store in undercover namespace
     class BufferRegion : public std::enable_shared_from_this<BufferRegion> {
     public:
         friend Device;
-        VkBufferView _sBufferView = {};
+        VkBufferView _sBufferView = VK_NULL_HANDLE;
         std::shared_ptr<Device> _device;
 
         std::weak_ptr<RoledBufferBase> _boundBuffer;

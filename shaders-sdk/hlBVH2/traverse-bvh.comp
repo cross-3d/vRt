@@ -50,18 +50,19 @@ void main() {
             VtHitData hit;
 #endif
 
+            const dirtype_t _direction = rays[rayID].cdirect;
+            const vec3 _position = rays[rayID].origin.xyz;
             initTraversing(!overflow, hid, rays[rayID].origin.xyz, rays[rayID].cdirect);
             
             // traversing from front layer to back layers
             [[unroll]] for (int i=0;i<1;i++) {
                 int ftrID = -1; // current found triangle
+                const bool notfirst = i > 0;
 
                 // traversing triangles
                 [[flatten]] if (traverseState.maxTriangles > 0) {
-                    //traverseBVH2(i > 0, !overflow);
-                    traverseBVH2(i > 0, true);
+                    traverseBVH2(notfirst, !overflow);
                     ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxTriangles = min(traverseState.maxTriangles, ftrID);
-                    //triID = max(ftrID, triID), 
                 }; //else IFALL (true) { break; };
                 found = found || ftrID >= 0;
 

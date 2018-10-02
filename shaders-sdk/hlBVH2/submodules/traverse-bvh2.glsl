@@ -93,7 +93,7 @@ float dirlen = 1.f, invlen = 1.f, bsize = 1.f;
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
 void resetEntry(in bool valid) { traverseState.idx = (valid ? BVH_ENTRY : -1), traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0; };
-void initTraversing(in bool valid, in int eht, in vec3 orig, in dirtype_t pdir) {
+void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir ) {
     
     // relative origin and vector
     vec4 torig = -divW(mult4( bvhBlock.projection, vec4(orig, 1.0f))), torigTo = divW(mult4( bvhBlock.projection, vec4(orig, 1.0f) + vec4(dcts(pdir), 0.f))), tdir = torigTo+torig;
@@ -143,10 +143,10 @@ void traverseBVH2( in bool reset, in bool valid ) {
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
 
 #ifdef EXPERIMENTAL_UNORM16_BVH
-                #define bbox2x fvec2_[3][2](\
-                    fvec2_[2](fvec2_(unpackSnorm2x16(bvhNode.cbox[0][0])),fvec2_(unpackSnorm2x16(bvhNode.cbox[0][1]))),\
-                    fvec2_[2](fvec2_(unpackSnorm2x16(bvhNode.cbox[1][0])),fvec2_(unpackSnorm2x16(bvhNode.cbox[1][1]))),\
-                    fvec2_[2](fvec2_(unpackSnorm2x16(bvhNode.cbox[2][0])),fvec2_(unpackSnorm2x16(bvhNode.cbox[2][1])))\
+                #define bbox2x fvec4_[3](\
+                    fvec4_(unpackSnorm4x16(bvhNode.cbox[0])),\
+                    fvec4_(unpackSnorm4x16(bvhNode.cbox[1])),\
+                    fvec4_(unpackSnorm4x16(bvhNode.cbox[2]))\
                 )
 #else
                 #define bbox2x bvhNode.cbox // use same memory

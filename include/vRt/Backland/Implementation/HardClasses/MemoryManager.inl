@@ -18,6 +18,7 @@ namespace _vt {
             if (_buffer) vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
 #endif
 #endif
+            _buffer = VK_NULL_HANDLE;
         //});
     };
 
@@ -197,6 +198,7 @@ namespace _vt {
             if (_image) vmaDestroyImage(_device->_allocator, _image, _allocation);
 #endif
 #endif
+            _image = VK_NULL_HANDLE;
         //});
     };
 

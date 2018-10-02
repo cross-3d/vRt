@@ -75,9 +75,9 @@ struct NTYPE_ {
       uvec2 cbox[3];
 #else
 #ifdef USE_F32_BVH
-       vec2 cbox[3][2];
+       vec4 cbox[3];
 #else
-    f16vec2 cbox[3][2];
+    f16vec4 cbox[3];
 #endif
 #endif
     ivec4 meta;
@@ -258,27 +258,27 @@ bool intersectCubeF32Single(in vec3 orig, in vec3 dr, in bvec4 sgn, in mat3x2 tM
 // also, optimized for RPM (Rapid Packed Math) https://radeon.com/_downloads/vega-whitepaper-11.6.17.pdf
 // compatible with NVidia GPU too
 
-bvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in fvec2_[3][2] tMinMax, inout vec4 nfe2)
+bvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in fvec4_[3] tMinMax, inout vec4 nfe2)
 { nfe2 = INFINITY.xxxx; // indefined distance
 
     // calculate intersection
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](fvec2_(vec2(fma(tMinMax[i][0],dr[i].xx,orig[i].xx))),fvec2_(vec2(fma(tMinMax[i][1],dr[i].xx,orig[i].xx))));
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec2_[2](min(tMinMax[i][0], tMinMax[i][1]), max(tMinMax[i][0], tMinMax[i][1]));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec4_(vec4(fma(tMinMax[i],dr[i].xxxx,orig[i].xxxx)));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec4_(min(tMinMax[i].xy, tMinMax[i].zw), max(tMinMax[i].xy, tMinMax[i].zw));
 
     const 
 #if (!defined(USE_F16_BVH) && !defined(USE_F32_BVH)) // identify as mediump
     mediump
 #endif
     fvec2_
-        tNear = max3_wrap(tMinMax[0][0], tMinMax[1][0], tMinMax[2][0]), 
-        tFar  = min3_wrap(tMinMax[0][1], tMinMax[1][1], tMinMax[2][1]) * InOne;
+        tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy), 
+        tFar  = min3_wrap(tMinMax[0].zw, tMinMax[1].zw, tMinMax[2].zw) * InOne;
         
     const bvec2_ isCube = 
         bvec2_(greaterThanEqual(tFar, tNear)) & 
         bvec2_(greaterThanEqual(tFar, fvec2_(-SFN))) & 
         bvec2_(lessThan(tNear, fvec2_(N_INFINITY)));
 
-    nfe2 = mix(nfe2, vec4(tNear, tFar), SSC(bvec4_(isCube, isCube)));
+    nfe2 = mix(nfe2, vec4(tNear, tFar), bvec4(isCube, isCube));
     return isCube;
 };
 

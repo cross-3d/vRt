@@ -102,6 +102,7 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 #endif
 
 
+// TODO: new boolean system (with partition of int32 support)
 #ifdef ENABLE_INT16_SUPPORT
 #define bvec4_ u16vec4
 #define bvec3_ u16vec3
@@ -115,9 +116,13 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 #endif
 
 // 
-const bool_ true_ = bool_(1u), false_ = bool_(0u); 
-const bvec2_ true2_ = bvec2_(true_.xx), false2_ = bvec2_(false_.xx);
-
+#ifdef ENABLE_INT16_SUPPORT
+const bool_ true_ = 1us, false_ = 0us; 
+const bvec2_ true2_ = true_.xx, false2_ = false_.xx;
+#else
+lowp const bool_ true_ = 1u, false_ = 0u; 
+lowp const bvec2_ true2_ = true_.xx, false2_ = false_.xx;
+#endif
 
 // null of indexing in float representation
 const uint UINT_ZERO = 0x0u, UINT_NULL = 0xFFFFFFFFu;
@@ -282,18 +287,19 @@ vec4 fromLinear(in vec4 linearRGB) { return vec4(fromLinear(linearRGB.xyz), line
 vec4 toLinear(in vec4 sRGB) { return vec4(toLinear(sRGB.xyz), sRGB.w); }
 
 // boolean binary compatibility
-bool SSC(in bool_ b) {return b==true_;}
-bvec2 SSC(in bvec2_ b) {return equal(b,true_.xx);}
-bvec4 SSC(in bvec4_ b) {return equal(b,true_.xxxx);}
+bool SSC(in bool_ b) {return b==true_;};
+bvec2 SSC(in bvec2_ b) {return equal(b,true_.xx);};
+bvec4 SSC(in bvec4_ b) {return equal(b,true_.xxxx);};
 
-bool SSC(in bool b) {return b;}
-bvec2 SSC(in bvec2 b) {return b;}
-bvec4 SSC(in bvec4 b) {return b;}
+bool SSC(in bool b) {return b;};
+bvec2 SSC(in bvec2 b) {return b;};
+bvec4 SSC(in bvec4 b) {return b;};
 
- bool_ any(in bvec2_ b) {return b.x|b.y;}
- bool_ all(in bvec2_ b) {return b.x&b.y;}
- bool_ not(in bool_ b) {return true_^b;}
- bvec2_ not(in bvec2_ b) {return true2_^b;}
+ bool_ any(in bvec2_ b) {return b.x|b.y;};
+ bool_ all(in bvec2_ b) {return b.x&b.y;};
+
+  bool_ not(in  bool_ b) {return true_ ^b;};
+ bvec2_ not(in bvec2_ b) {return true2_^b;};
 
 #define IF(b)if(SSC(b))
 
