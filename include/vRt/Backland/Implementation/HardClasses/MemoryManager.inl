@@ -10,7 +10,7 @@ namespace _vt {
 
     // destructor of advanced buffer
     RoledBufferBase::~RoledBufferBase() {
-        std::async([=]() {
+        //std::async([=]() {
 #ifdef VRT_ENABLE_VEZ_INTEROP
             if (_buffer) vezDestroyBuffer(_device->_device, _buffer);
 #else
@@ -18,7 +18,7 @@ namespace _vt {
             if (_buffer) vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
 #endif
 #endif
-        });
+        //});
     };
 
     VtResult createBufferView(std::shared_ptr<BufferRegion> bRegion) {
@@ -189,7 +189,7 @@ namespace _vt {
     
     // destructor of DeviceImage
     DeviceImage::~DeviceImage() {
-        std::async([=]() {
+        //std::async([=]() {
 #ifdef VRT_ENABLE_VEZ_INTEROP
             if (_image) vezDestroyImage(_device->_device, _image);
 #else
@@ -197,7 +197,7 @@ namespace _vt {
             if (_image) vmaDestroyImage(_device->_allocator, _image, _allocation);
 #endif
 #endif
-        });
+        //});
     };
 
     VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, std::shared_ptr<DeviceImage>& vtDeviceImage) {

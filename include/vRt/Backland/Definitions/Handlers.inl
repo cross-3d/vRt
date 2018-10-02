@@ -19,8 +19,8 @@ namespace vrt { // store in official namespace
         auto* operator->() const { return _vtHandle.get(); };
         operator T() const { return *_vtHandle; };
         operator bool() const { return !!_vtHandle; };
-        operator std::weak_ptr<T>&&() const { return _vtHandle; };
-        operator std::shared_ptr<T>() const { return _vtHandle; };
+        //operator std::weak_ptr<T>&&() const { return _vtHandle; }; // may be ambiguous
+        explicit operator std::shared_ptr<T>() const { return _vtHandle; }; // experimental explicit casting
         operator std::shared_ptr<T>&() { return _vtHandle; };
         //operator T&() { return *_vtHandle; };
     };

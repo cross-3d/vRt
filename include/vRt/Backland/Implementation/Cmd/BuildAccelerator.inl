@@ -25,20 +25,20 @@ namespace _vt {
     }
 
 
-    VtResult bindAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet>& accSet) {
+    VtResult bindAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> accSet) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_acceleratorSet = accSet;
         return result;
     }
 
     // bind vertex assembly (also, do imageBarrier)
-    VtResult bindVertexAssembly(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<VertexAssemblySet>& vasSet) {
+    VtResult bindVertexAssembly(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<VertexAssemblySet> vasSet) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexSet = vasSet;
         return result;
     }
 
-    VtResult cmdVertexAssemblyBarrier(VkCommandBuffer cmdBuf, std::shared_ptr<VertexAssemblySet>& vasSet) {
+    VtResult cmdVertexAssemblyBarrier(VkCommandBuffer cmdBuf, std::shared_ptr<VertexAssemblySet> vasSet) {
         VtResult result = VK_SUCCESS;
         imageBarrier(cmdBuf, vasSet->_attributeTexelBuffer);
         return result;

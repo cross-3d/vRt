@@ -512,10 +512,10 @@ namespace rnd {
         }
     };
 
-    // loading mesh (support only one)
+     // loading mesh (support only one)
      void Renderer::Preload(const std::string& modelInput){
-        std::string err, input_filename = modelInput!="" ? modelInput : this->modelInput;
-        bool ret = loader.LoadASCIIFromFile(&model, &err, input_filename);
+        std::string err = "", warn = "", input_filename = modelInput!="" ? modelInput : this->modelInput;
+        const bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, input_filename);
         
 
         {
