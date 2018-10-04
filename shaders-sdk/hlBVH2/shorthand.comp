@@ -12,12 +12,15 @@
 #include "../include/morton.glsl"
 
 // bvh uniform unified
-layout ( binding = 0, set = 1, std430 ) buffer bvhBlockB { 
+struct BvhBlockT {
     mat4x4  transform,  transformInv;
     mat4x4 projection, projectionInv;
     int leafCount, primitiveCount, entryID, primitiveOffset;
     vec4 sceneMin, sceneMax;
-} bvhBlock;
+};
+
+layout ( binding = 0, set = 1, std430 ) restrict buffer bvhBlockB { BvhBlockT bvhBlock_[]; };
+#define bvhBlock bvhBlock_[0]
 
 layout ( binding = 9, set = 0, std430 ) readonly buffer minmaxB { vec4 minmax[]; };
 
@@ -37,6 +40,7 @@ void main() {
     // these operations calculating only on one ALU, so can be used more precised point
     // also, it no require so much free registers
     [[flatten]] if (electedInvoc()) {
+    //[[flatten]] if (Lane_Idx == 0) {
         const mat4 inversedpj = inverse(mat4(transpose(bvhBlock.projection))); // set inversed version of projection
         bvhBlock.projectionInv = transpose(mat4(inversedpj)), bvhBlock.sceneMin = gmn, bvhBlock.sceneMax = gmx;
         //bvhBlock.sceneMin.xyz = min3_vec(bvhBlock.sceneMin.xyz).xxx, bvhBlock.sceneMax.xyz = max3_vec(bvhBlock.sceneMax.xyz).xxx;

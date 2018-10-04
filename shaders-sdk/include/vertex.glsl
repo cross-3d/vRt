@@ -53,12 +53,15 @@
 
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION))
 // bvh uniform unified
-layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { 
+struct BvhBlockT {
     mat4x4  transform,  transformInv;
     mat4x4 projection, projectionInv;
     int leafCount, primitiveCount, entryID, primitiveOffset;
     vec4 sceneMin, sceneMax;
-} bvhBlock;
+};
+
+layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { BvhBlockT bvhBlock_[]; };
+#define bvhBlock bvhBlock_[0]
 
 //vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4((bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
 vec4 uniteBox(in vec4 glb) { return point4(fma((glb - bvhBlock.sceneMin) / (bvhBlock.sceneMax - bvhBlock.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };

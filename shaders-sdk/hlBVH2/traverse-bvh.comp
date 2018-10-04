@@ -71,6 +71,7 @@ void main() {
                     if (hid < 0) hid = i*int(wsize) + rayID;//atomicIncHitCount(); // if required new
                     hit.payloadID = 0, hit.rayID = rayID+1;
                     hit.uvt = primitiveState.lastIntersection;
+                    hit.vdat = 0.f.xxxx;
                     hit.attribID = vtVerifyClosestHit(hid,-1)+1;
                     //imageStore(rayLink,r2ID,max(imageLoad(rayLink,r2ID),hid+1));hid=-1;
                     imageAtomicMax(rayLink,r2ID,(hid+1).x);hid=-1;
@@ -84,6 +85,7 @@ void main() {
                 if (hid < 0) hid = rayID;//atomicIncHitCount(); // if required new
                 hit.payloadID = 0, hit.rayID = rayID+1;
                 hit.uvt = primitiveState.lastIntersection;
+                hit.vdat = 0.f.xxxx;
                 hit.attribID = 0; vtVerifyMissedHit(hid, 0);
                 //imageStore(rayLink,r2ID,max(imageLoad(rayLink,r2ID),hid+1));
                 imageAtomicMax(rayLink,r2ID,(hid+1).x);

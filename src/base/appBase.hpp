@@ -99,6 +99,7 @@ namespace NSM
             "VK_LAYER_LUNARG_standard_validation",
             "VK_LAYER_LUNARG_parameter_validation",
             "VK_LAYER_LUNARG_core_validation",
+            //"VK_LAYER_RENDERDOC_Capture"
         };
 
         // default device layers

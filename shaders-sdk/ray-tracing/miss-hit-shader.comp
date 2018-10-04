@@ -50,9 +50,9 @@ void main() {
             //EnvironmentShader(hitp.emission, cray);
             
             // ray direction debug emission
-            //hitp.emission = vec4(viewVec*0.5f+0.5f, 1.f);
+            hitp.emission = vec4((viewVec*0.5f+0.5f)*0.5f, 1.f); // debugging
             //hitp.emission = vec4(toLinear(vec3(0.05f, 0.05f, 0.2f)), 1.f);
-            hitp.emission = vec4(toLinear(vec3(153, 204, 255)/255.f.xxx)*0.5f, 1.f);
+            //hitp.emission = vec4(toLinear(vec3(153, 204, 255)/255.f.xxx)*0.5f, 1.f);
             //hitp.emission = vec4(toLinear(vec3(0.01f, 0.015f, 0.12f)), 1.f);
 
             hitp.albedo = hitp.emission+vec4(0.f.xxx, 0.f);
