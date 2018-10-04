@@ -39,7 +39,7 @@ void unifyNodeBox(inout int idx) {
 
 //layout ( local_size_x = WORK_SIZE_BND ) in;
 LOCAL_SIZE_LAYOUT;
-#define lID Local_Idx
+#define lID gl_LocalInvocationID.x
 #define gS gl_WorkGroupSize.x
 #define wsize bvhBlock.leafCount
 
