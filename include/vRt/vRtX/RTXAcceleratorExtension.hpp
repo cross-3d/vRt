@@ -1,6 +1,5 @@
 #pragma once
 #include "../vRt_internal.hpp"
-
 // planned after RTX 2070 or after 2019 year
 
 
@@ -23,7 +22,6 @@ namespace vrt {
 
 // lower level hard classes (WIP)
 #include "vRt/Backland/Definitions/HardClasses.inl"
-
 namespace _vt {
 
     class RTXAcceleratorSetExtensionData : public AcceleratorSetExtensionDataBase, std::enable_shared_from_this<RTXAcceleratorSetExtensionData> {
@@ -67,6 +65,8 @@ namespace _vt {
 
 };
 
+
+#include "vRt/Backland/Definitions/Structures.inl" // required structures for this part
 namespace vrt {
     // passing structure
     class VtRTXAccelerationExtension : public VtDeviceAdvancedAccelerationExtension {
