@@ -117,12 +117,14 @@ namespace _vt {
 
 
     // create shared buffer, buffer views and resolve descriptor info (with externalization support)
-    inline VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, std::shared_ptr<DeviceBuffer>& gBuffer, VtDeviceBufferCreateInfo cinfo) {
+    inline VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<DeviceBuffer>& gBuffer) {
         cinfo.bufferSize = bManager->_size; createDeviceBuffer(bManager->_device, cinfo, bManager->_bufferStore); gBuffer = bManager->_bufferStore;
 
         // complete descriptors and buffer-views
+        bManager->_bufferStore->_sharedRegions = bManager->_bufferRegions; // link regions with buffer
+        auto wptr = std::weak_ptr(bManager->_bufferStore);
         for (auto f : bManager->_bufferRegions) {
-            f->_descriptorInfo().buffer = *(f->_boundBuffer = std::weak_ptr(bManager->_bufferStore)).lock(); createBufferView(f);
+            f->_descriptorInfo().buffer = *(f->_boundBuffer = wptr).lock(); createBufferView(f);
         }
 
         // return result (TODO: handling)
@@ -135,8 +137,10 @@ namespace _vt {
         cinfo.bufferSize = bManager->_size; createDeviceBuffer(bManager->_device, cinfo, bManager->_bufferStore);
 
         // complete descriptors and buffer-views
+        bManager->_bufferStore->_sharedRegions = bManager->_bufferRegions; // link regions with buffer
+        auto wptr = std::weak_ptr(bManager->_bufferStore);
         for (auto f : bManager->_bufferRegions) {
-            f->_descriptorInfo().buffer = *(f->_boundBuffer = std::weak_ptr(bManager->_bufferStore)).lock(); createBufferView(f);
+            f->_descriptorInfo().buffer = *(f->_boundBuffer = wptr).lock(); createBufferView(f);
         }
 
         // return result (TODO: handling)
@@ -161,6 +165,7 @@ namespace _vt {
         bRegion->_descriptorInfo().range = correctedSize;
         bRegion->_descriptorInfo().offset = bri.offset;
         bRegion->_descriptorInfo().buffer = *(bRegion->_boundBuffer = std::weak_ptr(gBuffer)).lock(); createBufferView(bRegion);
+        gBuffer->_sharedRegions.push_back(bRegion); // add shared buffer region
         return VK_SUCCESS;
     };
 

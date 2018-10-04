@@ -153,7 +153,7 @@ namespace _vt {
 
 
                 // build final shared buffer for this class
-                createSharedBuffer(bManager, vtRTSet->_sharedBuffer, bfic);
+                createSharedBuffer(bManager, bfic, vtRTSet->_sharedBuffer);
             };
 
             {

@@ -53,7 +53,7 @@ namespace _vt {
         }
 
         { // build final shared buffer for this class
-            createSharedBuffer(bManager, vtRadix->_sharedBuffer, bfic);
+            createSharedBuffer(bManager, bfic, vtRadix->_sharedBuffer);
         }
 
 

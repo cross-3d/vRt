@@ -25,8 +25,8 @@ namespace _vt { // store in undercover namespace
     constexpr const static inline _createBuffer_T<VT_MEMORY_USAGE_CPU_TO_GPU> createHostToDeviceBuffer = &createBuffer<VT_MEMORY_USAGE_CPU_TO_GPU>;
     constexpr const static inline _createBuffer_T<VT_MEMORY_USAGE_GPU_TO_CPU> createDeviceToHostBuffer = &createBuffer<VT_MEMORY_USAGE_GPU_TO_CPU>;
     extern VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, std::shared_ptr<DeviceImage>& _vtImage);
-    extern VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, std::shared_ptr<DeviceBuffer>& gBuffer, VtDeviceBufferCreateInfo cinfo = {});
-    extern VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, VtDeviceBufferCreateInfo cinfo = {});
+    extern VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<DeviceBuffer>& gBuffer);
+    extern VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, VtDeviceBufferCreateInfo cinfo);
     extern VtResult createBufferManager(std::shared_ptr<Device> gDevice, std::shared_ptr<BufferManager>& bManager);
     extern VtResult createBufferRegion(std::shared_ptr<DeviceBuffer> gBuffer, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion);
     extern VtResult createBufferRegion(std::shared_ptr<BufferManager> bManager, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion);

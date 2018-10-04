@@ -91,19 +91,19 @@ void main() {
         vec4 bcenter = vector4((triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f);
         bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
 
-#ifdef USE_MORTON_32
-        const uint mortonCode = encodeMorton(packUnorm4x8(bcenter));
-#else
-        const uvec2 mortonCode = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
-#endif
-
         // store leaf data
         [[flatten]] if (to < wsize && to >= 0) {
             // re-arrange box
             Leafs[to].lbox = lbox;
             
             // save morton codes 
-            Mortoncodes[to] = mortonCode, MortoncodesIndices[to] = int(to+1);
+#ifdef USE_MORTON_32
+            Mortoncodes[to] = encodeMorton(packUnorm4x8(bcenter));
+#else
+            Mortoncodes[to] = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
+#endif
+
+            MortoncodesIndices[to] = int(to+1);
         }
     }
 }

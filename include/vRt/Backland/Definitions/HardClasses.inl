@@ -117,6 +117,7 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<AcceleratorSet> _acceleratorSet;
         std::weak_ptr<VertexAssemblySet> _vertexSet;
         std::weak_ptr<Pipeline> _rayTracingPipeline;
+        
         std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs; // bound vertex input sets 
         std::vector<VkDescriptorSet> _boundDescriptorSets;
         std::vector<VkDescriptorSet> _boundVIDescriptorSets;
@@ -307,6 +308,8 @@ namespace _vt { // store in undercover namespace
         VmaAllocationInfo _allocationInfo = {};
         auto _hostMapped() const { return _allocationInfo.pMappedData; };
 #endif
+
+        std::vector<std::shared_ptr<BufferRegion>> _sharedRegions = {};
     };
 
     // this is wrapped advanced buffer class

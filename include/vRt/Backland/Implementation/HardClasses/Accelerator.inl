@@ -83,7 +83,7 @@ namespace _vt {
             createBufferRegion(bManager, bfi, vtAccelerator->_mortonIndicesBuffer);
 
             bfi.bufferSize = maxPrimitives * sizeof(uint64_t);
-            bfi.format = VK_FORMAT_R32G32_UINT;
+            bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_mortonCodesBuffer);
 
             bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull;
@@ -112,7 +112,7 @@ namespace _vt {
         };
 
         { // build final shared buffer for this class
-            createSharedBuffer(bManager, vtAccelerator->_sharedBuffer, bfic);
+            createSharedBuffer(bManager, bfic, vtAccelerator->_sharedBuffer);
         };
 
         {
@@ -198,7 +198,7 @@ namespace _vt {
         };
 
         { // build final shared buffer for this class
-            createSharedBuffer(bManager, vtAccelerator->_sharedBuffer, bfic);
+            createSharedBuffer(bManager, bfic, vtAccelerator->_sharedBuffer);
         };
 
         { // build BVH builder program
