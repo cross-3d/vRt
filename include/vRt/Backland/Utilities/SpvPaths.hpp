@@ -1,7 +1,6 @@
 #pragma once
 
 #include "VkUtils.hpp"
-#include "../../Parts/Enums.inl"
 
 namespace _vt {
     using namespace vrt;

@@ -3,13 +3,10 @@
 // implementables
 #include "../../vRt_subimpl.inl"
 
-// initializers (that will implemented)
-#include "../../Definitions/Initializers.inl"
-
 // implementations of processing
+#include "../Cmd/RadixSort.inl"
 #include "../Cmd/BuildAccelerator.inl"
 #include "../Cmd/RayTracing.inl"
-#include "../Cmd/RadixSort.inl"
 
 
 namespace vrt {

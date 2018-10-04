@@ -78,13 +78,13 @@ namespace _vt {
             bfi.format = VK_FORMAT_UNDEFINED;
             createBufferRegion(bManager, bfi, vtAccelerator->_leafBuffer);
 
-            bfi.bufferSize = maxPrimitives * sizeof(uint64_t);
-            bfi.format = VK_FORMAT_R32G32_UINT;
-            createBufferRegion(bManager, bfi, vtAccelerator->_mortonCodesBuffer);
-
             bfi.bufferSize = maxPrimitives * sizeof(uint32_t);
             bfi.format = VK_FORMAT_R32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_mortonIndicesBuffer);
+
+            bfi.bufferSize = maxPrimitives * sizeof(uint64_t);
+            bfi.format = VK_FORMAT_R32G32_UINT;
+            createBufferRegion(bManager, bfi, vtAccelerator->_mortonCodesBuffer);
 
             bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull;
             bfi.format = VK_FORMAT_R32G32B32A32_UINT;

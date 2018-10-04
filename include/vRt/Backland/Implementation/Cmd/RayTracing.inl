@@ -64,7 +64,7 @@ namespace _vt {
             _rtSets.push_back(matrl->_descriptorSet); // make material set not necesssary
             cmdUpdateBuffer(*cmdBuf, matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
         };
-        for (auto &s : cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
+        for (auto s : cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
 
         // cleaning indices and counters
         auto cmdClean = [&](){

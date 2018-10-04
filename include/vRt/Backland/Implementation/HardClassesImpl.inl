@@ -2,6 +2,8 @@
 
 // implementables
 #include "../vRt_subimpl.inl"
+#include "Utils.hpp"
+
 
 // implementation of initializers
 #include "HardClasses/MemoryManager.inl"

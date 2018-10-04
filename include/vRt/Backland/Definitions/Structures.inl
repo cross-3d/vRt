@@ -3,7 +3,6 @@
 // implementable
 #include "Handlers.inl"
 
-
 namespace vrt { // store in official namespace
     // Description structs for make vRt objects
     // Note: structures already have default headers for identifying

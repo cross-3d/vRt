@@ -18,3 +18,5 @@
 #else
 #include "Utilities/SpvPaths.hpp"
 #endif
+
+#include "Definitions/Initializers.inl"

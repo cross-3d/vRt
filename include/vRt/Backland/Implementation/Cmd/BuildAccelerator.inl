@@ -2,7 +2,7 @@
 
 #include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
-#include "RadixSort.inl"
+#include "RadixSort.inl" // TODO: dedicated implementation
 
 namespace _vt {
     using namespace vrt;
@@ -68,7 +68,7 @@ namespace _vt {
         imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto iV : cmdBuf->_vertexInputs) {
-            uint32_t _bnd = _bndc++;
+            const uint32_t _bnd = _bndc++;
 
             //iV->_uniformBlock.updateOnly = false;
             iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount;
@@ -81,15 +81,15 @@ namespace _vt {
 
         vertx->_calculatedPrimitiveCount = calculatedPrimitiveCount;
         if (useInstance) {
-            uint32_t _bnd = 0, _szi = cmdBuf->_vertexInputs.size();
-            auto& iV = cmdBuf->_vertexInputs[_bnd];
+            const uint32_t _bnd = 0, _szi = cmdBuf->_vertexInputs.size();
+            auto iV = cmdBuf->_vertexInputs[_bnd];
 
             // native descriptor sets
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
 
             // user defined descriptor sets
             auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
-            for (auto &s : _bsets) { _sets.push_back(s); };
+            for (auto s : _bsets) { _sets.push_back(s); };
 
             const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *pLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
@@ -98,14 +98,14 @@ namespace _vt {
             if (iV->_attributeVertexAssembly) cmdDispatch(*cmdBuf, iV->_attributeVertexAssembly->_vkPipeline, VX_INTENSIVITY, _szi, 1, false);
         } else {
             for (auto iV : cmdBuf->_vertexInputs) {
-                uint32_t _bnd = _bndc++;
+                const uint32_t _bnd = _bndc++;
 
                 // native descriptor sets
                 std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
 
                 // user defined descriptor sets
                 auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
-                for (auto &s : _bsets) { _sets.push_back(s); };
+                for (auto s : _bsets) { _sets.push_back(s); };
 
                 // execute vertex assembly
                 const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
@@ -135,7 +135,7 @@ namespace _vt {
         // update constants
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
         for (auto iV : cmdBuf->_vertexInputs) {
-            uint32_t _bnd = _bndc++;
+            const uint32_t _bnd = _bndc++;
 
             //iV->_uniformBlock.updateOnly = true;
             iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount; // every requires newer offset 
@@ -147,9 +147,9 @@ namespace _vt {
         updateCommandBarrier(*cmdBuf);
         
         if (useInstance || !multiple) {
-            uint32_t _bnd = inputSet;
-            uint32_t _szi = cmdBuf->_vertexInputs.size() - inputSet;
-            auto& iV = cmdBuf->_vertexInputs[_bnd];
+            const uint32_t _bnd = inputSet;
+            const uint32_t _szi = cmdBuf->_vertexInputs.size() - inputSet;
+            auto iV = cmdBuf->_vertexInputs[_bnd];
 
             // native descriptor sets
             const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
@@ -158,7 +158,7 @@ namespace _vt {
 
             // user defined descriptor sets
             auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
-            for (auto &s : _bsets) { _sets.push_back(s); }
+            for (auto s : _bsets) { _sets.push_back(s); }
 
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *pLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
             vkCmdPushConstants(*cmdBuf, *pLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
@@ -166,7 +166,7 @@ namespace _vt {
             if (iV->_attributeVertexAssembly) cmdDispatch(*cmdBuf, iV->_attributeVertexAssembly->_vkPipeline, VX_INTENSIVITY, multiple ? _szi : 1, 1, false);
         } else {
             for (auto iV : cmdBuf->_vertexInputs) {
-                uint32_t _bnd = _bndc++;
+                const uint32_t _bnd = _bndc++;
                 if (_bnd >= inputSet) {
 
                     // native descriptor sets
@@ -176,7 +176,7 @@ namespace _vt {
 
                     // user defined descriptor sets
                     auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
-                    for (auto &s : _bsets) { _sets.push_back(s); }
+                    for (auto s : _bsets) { _sets.push_back(s); }
 
                     vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *pLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
                     vkCmdPushConstants(*cmdBuf, *pLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
@@ -209,6 +209,7 @@ namespace _vt {
         accel->_bvhBlockData.transform = IdentifyMat4;
         accel->_bvhBlockData.transformInv = IdentifyMat4;
         cmdUpdateBuffer(*cmdBuf, accel->_bvhBlockUniform, 0, sizeof(accel->_bvhBlockData), &accel->_bvhBlockData);
+        
 
         // if has advanced accelerator
         if (device->_advancedAccelerator) {
@@ -220,8 +221,10 @@ namespace _vt {
             // planned to use secondary buffer for radix sorting
             auto bounder = accel;
             cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, acclb->_mortonCodesBuffer);
+            cmdFillBuffer<0u>(*cmdBuf, acclb->_mortonIndicesBuffer);
             cmdFillBuffer<0u>(*cmdBuf, acclb->_countersBuffer); // reset counters
             cmdFillBuffer<0u>(*cmdBuf, acclb->_fitStatusBuffer);
+            cmdFillBuffer<0u>(*cmdBuf, accel->_bvhBoxBuffer);
             updateCommandBarrier(*cmdBuf);
 
             const auto workGroupSize = 16u;
@@ -231,8 +234,8 @@ namespace _vt {
             cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH
             cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
             cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes
-            radixSort(cmdBuf, acclb->_sortDescriptorSet, accel->_bvhBlockData.leafCount);
-            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+            //radixSort(cmdBuf, acclb->_sortDescriptorSet, accel->_bvhBlockData.leafCount);
+            //vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
             cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
             cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs

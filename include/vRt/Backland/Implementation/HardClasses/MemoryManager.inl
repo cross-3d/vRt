@@ -121,7 +121,7 @@ namespace _vt {
         cinfo.bufferSize = bManager->_size; createDeviceBuffer(bManager->_device, cinfo, bManager->_bufferStore); gBuffer = bManager->_bufferStore;
 
         // complete descriptors and buffer-views
-        for (auto&f : bManager->_bufferRegions) {
+        for (auto f : bManager->_bufferRegions) {
             f->_descriptorInfo().buffer = *(f->_boundBuffer = std::weak_ptr(bManager->_bufferStore)).lock(); createBufferView(f);
         }
 
@@ -135,7 +135,7 @@ namespace _vt {
         cinfo.bufferSize = bManager->_size; createDeviceBuffer(bManager->_device, cinfo, bManager->_bufferStore);
 
         // complete descriptors and buffer-views
-        for (auto&f : bManager->_bufferRegions) {
+        for (auto f : bManager->_bufferRegions) {
             f->_descriptorInfo().buffer = *(f->_boundBuffer = std::weak_ptr(bManager->_bufferStore)).lock(); createBufferView(f);
         }
 

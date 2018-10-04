@@ -58,14 +58,14 @@ namespace rnd {
         glfwSetWindowSize(this->window, this->realWidth, this->realHeight); // set real size of window
 
         // create vulkan and ray tracing instance
-        appBase = std::make_shared<vte::ApplicationBase>(); auto& appfw = appBase;
+        appBase = std::make_shared<vte::ApplicationBase>();
         cameraController = std::make_shared<CameraController>();
         cameraController->canvasSize = (glm::uvec2*)&this->windowWidth;
         cameraController->eyePos = &this->eyePos;
         cameraController->upVector = &this->upVector;
         cameraController->viewVector = &this->viewVector;
 
-        instance = appfw->createInstance();
+        instance = appBase->createInstance();
         if (!instance) { glfwTerminate(); exit(EXIT_FAILURE); }
 
         // get physical devices
@@ -77,8 +77,8 @@ namespace rnd {
         if (gpuID < 0 || gpuID == -1) gpuID = 0;
 
         // create surface and get format by physical device
-        appfw->createWindowSurface(this->window, this->realWidth, this->realHeight, title);
-        appfw->format(appfw->getSurfaceFormat(gpu = physicalDevices[gpuID]));
+        appBase->createWindowSurface(this->window, this->realWidth, this->realHeight, title);
+        appBase->format(appBase->getSurfaceFormat(gpu = physicalDevices[gpuID]));
 
         // set GLFW callbacks
         glfwSetMouseButtonCallback(this->window, &Shared::MouseButtonCallback);
@@ -93,8 +93,8 @@ namespace rnd {
 
         // create combined device object
         shaderPack = shaderPrefix + getShaderDir(devProperties.vendorID);
-        deviceQueue = appfw->createDeviceQueue(gpu, false, shaderPack); // create default graphical device
-        renderpass = appfw->createRenderpass(deviceQueue);
+        deviceQueue = appBase->createDeviceQueue(gpu, false, shaderPack); // create default graphical device
+        renderpass = appBase->createRenderpass(deviceQueue);
         
         // create image output
         const double SuperSampling = 2.0; // super sampling image

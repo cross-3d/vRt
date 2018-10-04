@@ -1,7 +1,7 @@
 #pragma once
 
 // include headers
-#include "vRt/vRt.h"
+#include "../../../vRt/vRt.h"
 
 // include VEZ for interop
 #ifdef VRT_ENABLE_VEZ_INTEROP
