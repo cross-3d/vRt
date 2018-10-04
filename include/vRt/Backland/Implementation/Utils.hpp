@@ -1,9 +1,9 @@
 #pragma once
 
 // implementables
-#include "../../../vRt/vRt.h"
+#include "../../../vRt/vRt_internal.hpp"
 #include "../Definitions/HardClasses.inl"
-
+//#include "../Definitions/Structures.inl" // reserved 
 
 // C++ internal initializers for hard classes
 namespace _vt { // store in undercover namespace

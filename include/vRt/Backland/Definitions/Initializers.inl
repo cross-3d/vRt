@@ -2,6 +2,7 @@
 
 // implementable, used for describe types
 #include "HardClassesDef.inl"
+#include "Structures.inl"
 
 // C++ internal initializers for hard classes
 namespace _vt { // store in undercover namespace

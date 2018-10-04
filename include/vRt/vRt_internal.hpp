@@ -8,9 +8,6 @@
 #include "Parts/HandlersDef.inl"
 #include "Parts/API.inl"
 
-// implement basic handlers and structures
-#include "Backland/Definitions/Structures.inl"
-
 // notify compilers or IDE about Vulkan API ray tracing (vRt) library connection
 #define VRT_API_ENABLED VK_TRUE
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "vRt/vRt.h"
+#include "../vRt_internal.hpp"
 
 // planned after RTX 2070 or after 2019 year
 

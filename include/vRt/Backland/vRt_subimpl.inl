@@ -9,7 +9,7 @@
 #endif
 
 // Lowest sublevel of implementations for implementators
-#include "../vRt.h"
+//#include "../vRt_internal.hpp"
 #include "Utilities/VkUtils.hpp"
 
 // implement these
@@ -20,3 +20,4 @@
 #endif
 
 #include "Definitions/Initializers.inl"
+#include "Definitions/Structures.inl"

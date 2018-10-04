@@ -40,7 +40,7 @@
 
 
 // include ray tracing library
-#include "vRt/vRt.h"
+#include "vRt/vRt.hpp"
 
 // include extensions
 #include "vRt/vRtX/RTXAcceleratorExtension.hpp"

@@ -4,7 +4,7 @@
 #ifndef VMA_IMPLEMENTATION
 #define VMA_IMPLEMENTATION // require to implement VMA 
 #endif
-#include "vRt.h"
+#include "vRt_internal.hpp"
 
 // dedicated implementators 
 #ifndef VRT_IMPLEMENTATION

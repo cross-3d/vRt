@@ -1,7 +1,7 @@
 #pragma once
 
 // implementable
-#include "../../../vRt/vRt.h"
+#include "../../../vRt/vRt_internal.hpp"
 //
 
 // C++ hard interfaces (which will storing)
