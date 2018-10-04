@@ -1,5 +1,10 @@
 #pragma once
 
+// for correct VMA
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 // unimplemented header 
 #ifndef VMA_IMPLEMENTATION
 #define VMA_IMPLEMENTATION // require to implement VMA 

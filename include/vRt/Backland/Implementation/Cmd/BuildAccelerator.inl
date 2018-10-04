@@ -220,11 +220,16 @@ namespace _vt {
             // building hlBVH2 process
             // planned to use secondary buffer for radix sorting
             auto bounder = accel;
-            cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, acclb->_mortonCodesBuffer);
-            cmdFillBuffer<0u>(*cmdBuf, acclb->_mortonIndicesBuffer);
+
+            // incorrect sorting defence
+            //cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, acclb->_mortonCodesBuffer);
+
+            // only for debug
+            //cmdFillBuffer<0u>(*cmdBuf, acclb->_mortonIndicesBuffer);
+            //cmdFillBuffer<0u>(*cmdBuf, accel->_bvhBoxBuffer);
+
             cmdFillBuffer<0u>(*cmdBuf, acclb->_countersBuffer); // reset counters
             cmdFillBuffer<0u>(*cmdBuf, acclb->_fitStatusBuffer);
-            cmdFillBuffer<0u>(*cmdBuf, accel->_bvhBoxBuffer);
             updateCommandBarrier(*cmdBuf);
 
             const auto workGroupSize = 16u;
@@ -234,8 +239,8 @@ namespace _vt {
             cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH
             cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
             cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes
-            //radixSort(cmdBuf, acclb->_sortDescriptorSet, accel->_bvhBlockData.leafCount);
-            //vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+            radixSort(cmdBuf, acclb->_sortDescriptorSet, accel->_bvhBlockData.leafCount);
+            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
             cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
             cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
