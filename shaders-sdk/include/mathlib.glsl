@@ -161,7 +161,8 @@ pbvec2_ binarize(in bvec2 tbl){
 };
 
 #ifdef ENABLE_INT16_BOOL_PAIR
-pbvec2_ binarize(in pbvec2_ tbl){ return tbl; }; // accepts u32vec4
+pbvec2_ binarize(in lowp uvec2 tbl){ return pbvec2_(tbl); }; // accepts u32vec2
+pbvec2_ binarize(in pbvec2_ tbl){ return tbl; }; // accepts u16vec2
 #else
 pbvec2_ binarize(in lowp uvec2 tbl){ return pbvec2_(tbl.x|(tbl.y<<16u)); }; // accepts u32vec2
 #endif
