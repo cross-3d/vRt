@@ -60,10 +60,14 @@
     #extension GL_NV_shader_atomic_int64 : enable // unknown status
 #endif
 
+// sampler f16 support
+#ifdef ENABLE_FP16_SAMPLER_HACK
+    #extension GL_AMD_gpu_shader_half_float_fetch : enable
+#endif
+
 // enable fp16 support
 #ifdef ENABLE_FP16_SUPPORT
     #extension GL_AMD_gpu_shader_half_float : enable
-    #extension GL_AMD_gpu_shader_half_float_fetch : enable
     //#extension GL_KHR_gpu_shader_float16 : enable // unknown status
 #endif
 
