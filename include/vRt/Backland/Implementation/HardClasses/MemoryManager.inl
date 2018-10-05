@@ -10,16 +10,22 @@ namespace _vt {
 
     // destructor of advanced buffer
     RoledBufferBase::~RoledBufferBase() {
-        //std::async([=]() {
-#ifdef VRT_ENABLE_VEZ_INTEROP
-            if (_buffer) vezDestroyBuffer(_device->_device, _buffer);
-#else
-#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-            if (_buffer) vmaDestroyBuffer(_device->_allocator, _buffer, _allocation);
-#endif
-#endif
-            _buffer = VK_NULL_HANDLE;
-        //});
+        //
+        auto $device = this->_device; this->_device = {};
+        auto $buffer = this->_buffer; this->_buffer = VK_NULL_HANDLE;
+        auto $allocation = this->_allocation; this->_allocation = {};
+        std::async([=]() {
+            if ($device && $buffer) {
+                vk::Device(VkDevice(*$device)).waitIdle();
+    #ifdef VRT_ENABLE_VEZ_INTEROP
+                if ($buffer) vezDestroyBuffer($device->_device, $buffer);
+    #else
+    #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
+                if ($buffer) vmaDestroyBuffer($device->_allocator, $buffer, $allocation);
+    #endif
+    #endif
+            };
+        });
     };
 
     VtResult createBufferView(std::shared_ptr<BufferRegion> bRegion) {
@@ -195,16 +201,22 @@ namespace _vt {
     
     // destructor of DeviceImage
     DeviceImage::~DeviceImage() {
-        //std::async([=]() {
-#ifdef VRT_ENABLE_VEZ_INTEROP
-            if (_image) vezDestroyImage(_device->_device, _image);
-#else
-#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-            if (_image) vmaDestroyImage(_device->_allocator, _image, _allocation);
-#endif
-#endif
-            _image = VK_NULL_HANDLE;
-        //});
+        //
+        auto $device = this->_device; this->_device = {};
+        auto $image  = this->_image ; this->_image  = VK_NULL_HANDLE;
+        auto $allocation = this->_allocation; this->_allocation = {};
+        std::async([=]() {
+            if ($device && $image) {
+                vk::Device(VkDevice(*$device)).waitIdle();
+    #ifdef VRT_ENABLE_VEZ_INTEROP
+                if ($image) vezDestroyImage($device->_device, $image);
+    #else
+    #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
+                if ($image) vmaDestroyImage($device->_allocator, $image, $allocation);
+    #endif
+    #endif
+            };
+        });
     };
 
     VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, std::shared_ptr<DeviceImage>& vtDeviceImage) {
