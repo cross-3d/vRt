@@ -12,7 +12,7 @@ namespace vrt { // store in official namespace
     protected:
         std::shared_ptr<T> _vtHandle = nullptr;
     public:
-        VtHandle(const std::shared_ptr<T>& _H = nullptr) { _vtHandle = _H; }; // constructor
+        VtHandle(std::shared_ptr<T> _H = nullptr) : _vtHandle(_H) {}; // constructor
         auto* operator->() { return _vtHandle.get(); };
         auto* operator->() const { return _vtHandle.get(); };
         operator T() const { return *_vtHandle; };

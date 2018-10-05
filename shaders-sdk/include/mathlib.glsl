@@ -472,18 +472,18 @@ int nlz(in int x) { return nlz(uint(x)); }
 #endif
 
 
-dirtype_t lcts(in vec3 direct) {
+dirtype_t lcts(in highp vec3 direct) {
     //direct = normalize(direct); // normalize before
     return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),INV_TWO_PI,0.5f),acos(-direct.y)*INV_PI)); // to unorm
 }
 
-vec3 dcts(in vec2 hr) {
+highp vec3 dcts(in highp vec2 hr) {
     hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f));
     return //normalize
         (vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y)));
 }
 
-vec3 dcts(in dirtype_t hr) {
+highp vec3 dcts(in dirtype_t hr) {
     return dcts(dirtype_t_decode(hr));
 }
 

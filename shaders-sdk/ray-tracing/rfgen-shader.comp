@@ -54,5 +54,5 @@ void main() {
         vtReuseRays(ray, Global_Idx.xy, 0, xy.y * wh.x + xy.x); // prefer strict layout
     }
 
-    LGROUP_BARRIER;
+    //LGROUP_BARRIER;
 }

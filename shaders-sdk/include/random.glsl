@@ -4,19 +4,19 @@
 uint randomClocks = 1, globalInvocationSMP = 1, subHash = 1;
 
 
-float floatConstruct( in uint m ) { return clamp01(fract(1.f + uintBitsToFloat((m & 0x007FFFFFu) | 0x3F800000u))); }
-vec2 float2Construct( in uvec2 m ) { return clamp01(vec2(floatConstruct(m.x), floatConstruct(m.y))); }
+float floatConstruct( in uint m ) { return fract(1.f + uintBitsToFloat((m & 0x007FFFFFu) | 0x3F800000u)); }
+ vec2 floatConstruct( in uvec2 m ) { return vec2(floatConstruct(m.x), floatConstruct(m.y)); }
 
-mediump vec2 half2Construct ( in uint m ) {
+mediump vec2 halfConstruct ( in uint m ) {
 #ifdef ENABLE_FP16_SUPPORT
-    return clamp01(vec2(fract(1.hf.xx + unpackFloat2x16((m & 0x03FF03FFu) | (0x3C003C00u)))));
+    return vec2(fract(1.hf.xx + unpackFloat2x16((m & 0x03FF03FFu) | (0x3C003C00u))));
 #else
-    return clamp01(fract(1.f.xx + unpackHalf2x16((m & 0x03FF03FFu) | (0x3C003C00u))));
+    return fract(1.f.xx + unpackHalf2x16((m & 0x03FF03FFu) | (0x3C003C00u)));
 #endif
 }
 
 // more precise and faster method with unorm
-vec2 unorm2Construct( in uint m ){
+highp vec2 unorm16x2Construct( in uint m ){
     return clamp01(unpackUnorm2x16(m));
 }
 
@@ -57,7 +57,7 @@ float random( in uvec2 superseed ) {
 vec2 randf2x( in uvec2 superseed ) {
     uint hclk = ++randomClocks;
     uint comb = hash(uvec3(hclk, subHash, uint(globalInvocationSMP)));
-    return half2Construct(hash(uvec3(comb, superseed)));
+    return halfConstruct(hash(uvec3(comb, superseed)));
 }
 
 // 2D random generators from superseed 
