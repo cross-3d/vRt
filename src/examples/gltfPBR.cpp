@@ -111,14 +111,14 @@ namespace rnd {
         dii.size = { this->canvasWidth, this->canvasHeight, 1 };
         
         // 
-        dii.format = VK_FORMAT_R32G32B32A32_UINT;
+        dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &outputImage);
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &specularPass);
 
-        dii.format = VK_FORMAT_R32G32_UINT;
+        dii.format = VK_FORMAT_R32G32_SFLOAT;
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &normalPass);
 
-        dii.format = VK_FORMAT_R32G32B32A32_UINT;
+        dii.format = VK_FORMAT_R32G32B32A32_SFLOAT;
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &originPass);
         
         // dispatch image barrier

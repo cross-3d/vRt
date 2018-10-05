@@ -148,7 +148,7 @@ namespace _vt {
 
 
                 bfi.bufferSize = hitCount * 4ull * ATTRIB_EXTENT * sizeof(uint32_t);
-                bfi.format = VK_FORMAT_R32G32B32A32_UINT;
+                bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 createBufferRegion(bManager, bfi, vtRTSet->_attribBuffer);
 
 

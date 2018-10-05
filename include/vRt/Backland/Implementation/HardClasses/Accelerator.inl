@@ -87,7 +87,7 @@ namespace _vt {
             createBufferRegion(bManager, bfi, vtAccelerator->_mortonCodesBuffer);
 
             bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull;
-            bfi.format = VK_FORMAT_R32G32B32A32_UINT;
+            bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createBufferRegion(bManager, bfi, vtAccelerator->_onWorkBoxes);
 
             bfi.bufferSize = (maxPrimitives + 4ull) * sizeof(uint32_t) * 16ull * 4ull; // denends by work group counts 
@@ -107,7 +107,7 @@ namespace _vt {
             createBufferRegion(bManager, bfi, vtAccelerator->_countersBuffer);
 
             bfi.bufferSize = sizeof(float) * 16ull * 256ull;
-            bfi.format = VK_FORMAT_R32G32B32A32_UINT;
+            bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createBufferRegion(bManager, bfi, vtAccelerator->_generalBoundaryResultBuffer);
         };
 
@@ -181,13 +181,13 @@ namespace _vt {
         // UNUSED
         if (!info.bvhMetaBuffer) {
             bfi.bufferSize = sizeof(uint32_t) * 32ull;
-            bfi.format = VK_FORMAT_R32_UINT;
+            bfi.format = VK_FORMAT_R32G32B32A32_UINT;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhMetaBuffer);
         };
 
         if (!info.bvhBoxBuffer) {
             bfi.bufferSize = sizeof(uint32_t) * maxPrimitives * 32ull;
-            bfi.format = VK_FORMAT_R32G32B32A32_UINT;
+            bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer);
         };
 

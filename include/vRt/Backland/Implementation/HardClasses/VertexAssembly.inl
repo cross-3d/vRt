@@ -45,15 +45,15 @@ namespace _vt {
 
             // accelerate normal calculation by storing of
             bfi.bufferSize = maxPrimitives * sizeof(float) * 4ull;
-            bfi.format = VK_FORMAT_R32G32B32A32_UINT;
+            bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, assemblyPipeline->_normalBuffer);
 
             bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull;
-            bfi.format = VK_FORMAT_R32G32B32A32_UINT;
+            bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, assemblyPipeline->_verticeBuffer);
 
             bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull;
-            bfi.format = VK_FORMAT_R32G32B32A32_UINT;
+            bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             createDeviceBuffer(_vtDevice, bfi, assemblyPipeline->_verticeBufferSide);
 
             bfi.bufferSize = sizeof(uint32_t) * 8ull;
@@ -64,7 +64,7 @@ namespace _vt {
             VtDeviceImageCreateInfo tfi = {};
             tfi.familyIndex = _vtDevice->_mainFamilyIndex;
             tfi.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-            tfi.format = VK_FORMAT_R32G32B32A32_UINT;
+            tfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
             tfi.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             tfi.layout = VK_IMAGE_LAYOUT_GENERAL;
             tfi.mipLevels = 1;
