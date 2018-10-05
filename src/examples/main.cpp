@@ -1,5 +1,6 @@
-#pragma once
-#include "base/appRenderer.hpp"
+//#pragma once
+
+#include "../base/appRenderer.hpp"
 
 // initial renderer
 const uint32_t canvasWidth = 640, canvasHeight = 360; // without accounting super-sampling
