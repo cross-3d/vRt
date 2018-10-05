@@ -1,10 +1,7 @@
 #ifndef _VERTEX_INPUT_H
 #define _VERTEX_INPUT_H
 
-
-
-
-
+#include "../include/vertex.glsl"
 
 
 #if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SUPPORT)

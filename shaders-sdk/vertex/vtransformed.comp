@@ -9,7 +9,7 @@
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
-#include "../include/vertex.glsl"
+//#include "../include/vertex.glsl"
 #include "../include/vertex-input.glsl"
 
 LOCAL_SIZE_LAYOUT;
