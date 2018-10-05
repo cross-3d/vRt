@@ -4,7 +4,7 @@
 #include "../include/vertex.glsl"
 
 
-#if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SUPPORT)
+#if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SAMPLER_HACK) && defined(ENABLE_FP16_SUPPORT)
 
 #ifdef ENABLE_INT16_SUPPORT // native 16-bit integer support
 uint16_t M16(in f16samplerBuffer m, in uint i) {
@@ -72,13 +72,14 @@ int aNormalized(in uint bitfield) { return int(parameteri(NORMALIZED, bitfield))
 int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 
 
-
-
+#ifdef ENABLE_NON_UNIFORM_SAMPLER
 #define BFS bufferSpace[nonuniformEXT(bufferID)]
+#else
+#define BFS bufferSpace[bufferID]
+#endif
 
 
-
-#if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SUPPORT)
+#if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SUPPORT) && defined(ENABLE_FP16_SAMPLER_HACK)
 layout ( binding = 0, set = 1 ) uniform f16samplerBuffer bufferSpace[8]; // vertex model v1.4
 #else
 layout ( binding = 0, set = 1 ) uniform highp usamplerBuffer bufferSpace[8]; // vertex model v1.4

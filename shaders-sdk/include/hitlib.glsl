@@ -27,8 +27,15 @@ bool validateTexture(in uint tbinding) { return tbinding > 0u && tbinding != -1u
 // also fixes AMD Vega texturing issues with nonuniformEXT
 //#define sampler2Dv(m) sampler2D(images[vtexures[m].x-1], samplers[vtexures[m].y-1])
 //#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(nonuniformEXT(tbinding-1)), tcoord, 0)
+
+
+#ifdef ENABLE_NON_UNIFORM_SAMPLER
 #define sampler2Dv(m) sampler2D(images[nonuniformEXT(vtexures[m].x-1)],samplers[nonuniformEXT(vtexures[m].y-1)]) // TODO: replace by native combinations
 #define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(nonuniformEXT(tbinding-1)),tcoord,0)
+#else
+#define sampler2Dv(m) sampler2D(images[vtexures[m].x-1],samplers[vtexures[m].y-1]) // TODO: replace by native combinations
+#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(tbinding-1),tcoord,0)
+#endif
 
 
 vec4 fetchDiffuse(in vec2 texcoord) {

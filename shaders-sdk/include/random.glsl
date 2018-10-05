@@ -8,11 +8,11 @@ float floatConstruct( in uint m ) { return fract(1.f + uintBitsToFloat((m & 0x00
  vec2 floatConstruct( in uvec2 m ) { return vec2(floatConstruct(m.x), floatConstruct(m.y)); }
 
 mediump vec2 halfConstruct ( in uint m ) {
-#ifdef ENABLE_FP16_SUPPORT
-    return vec2(fract(1.hf.xx + unpackFloat2x16((m & 0x03FF03FFu) | (0x3C003C00u))));
-#else
+//#ifdef ENABLE_FP16_SUPPORT
+//    return vec2(fract(1.hf.xx + unpackFloat2x16((m & 0x03FF03FFu) | (0x3C003C00u))));
+//#else
     return fract(1.f.xx + unpackHalf2x16((m & 0x03FF03FFu) | (0x3C003C00u)));
-#endif
+//#endif
 }
 
 // more precise and faster method with unorm

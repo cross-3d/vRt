@@ -25,7 +25,7 @@
 #extension GL_EXT_shader_8bit_storage : enable
 #extension GL_EXT_control_flow_attributes : enable
 #extension GL_EXT_shader_image_load_formatted : enable
-#extension GL_KHR_memory_scope_semantics : enable
+//#extension GL_KHR_memory_scope_semantics : enable // no actual support
 
 // subgroup operations
 #extension GL_KHR_shader_subgroup_basic            : require
@@ -37,7 +37,6 @@
 #extension GL_KHR_shader_subgroup_clustered        : enable
 
 // 
-#extension GL_EXT_nonuniform_qualifier : enable
 #extension GL_EXT_samplerless_texture_functions : enable
 //#extension GL_EXT_subgroupuniform_qualifier : enable
 
@@ -45,6 +44,12 @@
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
     #define ENABLE_INT16_SUPPORT
     #define ENABLE_FP16_SUPPORT
+    #define ENABLE_NON_UNIFORM_SAMPLER
+    //#define ENABLE_FP16_SAMPLER_HACK
+#endif
+
+#ifdef ENABLE_NON_UNIFORM_SAMPLER
+#extension GL_EXT_nonuniform_qualifier : enable
 #endif
 
 // if Turing specific

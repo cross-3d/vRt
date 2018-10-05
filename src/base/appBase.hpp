@@ -77,7 +77,7 @@ namespace NSM
             "VK_KHR_storage_buffer_storage_class",
             "VK_KHR_vulkan_memory_model",
             "VK_KHR_dedicated_allocation",
-            "VK_KHR_driver_properties",
+            //"VK_KHR_driver_properties",
             "VK_KHR_get_memory_requirements2",
             "VK_KHR_bind_memory2",
             "VK_KHR_maintenance1",
