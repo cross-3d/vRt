@@ -55,8 +55,7 @@ namespace rnd {
 
         // get DPI
         glfwGetWindowContentScale(this->window, &guiScale, nullptr);
-        this->realWidth = windowWidth * guiScale, this->realHeight = windowHeight * guiScale;
-        glfwSetWindowSize(this->window, this->realWidth, this->realHeight); // set real size of window
+        glfwSetWindowSize(this->window, this->realWidth = windowWidth * guiScale, this->realHeight = windowHeight * guiScale); // set real size of window
 
         // create vulkan and ray tracing instance
         appBase = std::make_shared<vte::ApplicationBase>();

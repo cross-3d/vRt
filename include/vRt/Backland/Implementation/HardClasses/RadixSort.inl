@@ -25,13 +25,13 @@ namespace _vt {
 
 
 
-        std::shared_ptr<BufferManager> bManager; createBufferManager(_vtDevice, bManager);
+        std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
 
-        VtDeviceBufferCreateInfo bfic;
+        VtDeviceBufferCreateInfo bfic = {};
         bfic.familyIndex = _vtDevice->_mainFamilyIndex;
         bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
-        VtBufferRegionCreateInfo bfi;
+        VtBufferRegionCreateInfo bfi = {};
         {
             bfi.format = VK_FORMAT_R32_UINT;
             bfi.bufferSize = vtExtension.maxPrimitives * sizeof(uint64_t);

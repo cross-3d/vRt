@@ -43,7 +43,7 @@ namespace _vt {
 
 #ifdef VOLK_H_
             // load API calls for mapping
-            VolkDeviceTable vktable;
+            VolkDeviceTable vktable = {};
             volkLoadDeviceTable(&vktable, vtDevice->_device);
 
             // mapping volk with VMA functions
@@ -96,7 +96,7 @@ namespace _vt {
         vtDevice->_shadersPath = vtExtension.shaderPath;
 
         // make traffic buffers 
-        VtDeviceBufferCreateInfo dbfi;
+        VtDeviceBufferCreateInfo dbfi = {};
         dbfi.bufferSize = strided<uint32_t>(vtExtension.sharedCacheSize);
         dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
         dbfi.familyIndex = vtExtension.mainQueueFamily;
@@ -244,14 +244,14 @@ namespace _vt {
 
     inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo vdvi, std::shared_ptr<Device>& _vtDevice) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
-        VtArtificalDeviceExtension vtExtension; // default structure values
+        VtArtificalDeviceExtension vtExtension = {}; // default structure values
         auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);
         if (vtExtensionPtr) { // if found, getting some info
             vtExtension = (VtArtificalDeviceExtension&)*vtExtensionPtr;
         }
 
         // be occurate with "VkDeviceCreateInfo", because after creation device, all "vt" extended structures will destoyed
-        VkDevice vkDevice;
+        VkDevice vkDevice = {};
         if (vkCreateDevice(*physicalDevice, (const VkDeviceCreateInfo*)vtExplodeArtificals(vdvi), nullptr, &vkDevice) == VK_SUCCESS) { result = VK_SUCCESS; };
 
         // manually convert device

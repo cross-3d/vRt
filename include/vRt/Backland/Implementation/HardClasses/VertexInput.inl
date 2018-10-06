@@ -17,7 +17,7 @@ namespace _vt {
         vtVertexInput->_attributeVertexAssembly = std::shared_ptr<AssemblyPipeline>(VtVertexInputCreateInfo(info).attributePipeline);
 
         // 
-        VtDeviceBufferCreateInfo bfi;
+        VtDeviceBufferCreateInfo bfi = {};
         bfi.familyIndex = _vtDevice->_mainFamilyIndex;
         bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
         bfi.bufferSize = strided<uint32_t>(12);
@@ -39,7 +39,7 @@ namespace _vt {
         const auto vendorName = _vtDevice->_vendorName;
         //const auto inputCount = vendorName == VT_VENDOR_INTEL ? 1u : 8u;
         const auto inputCount = 8u;
-        std::vector<vk::BufferView> sourceBuffers;
+        std::vector<vk::BufferView> sourceBuffers = {};
         const auto sourceBufferCount = std::min(info.sourceBufferCount, inputCount);
         for (uint32_t i = 0; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }
         for (uint32_t i = sourceBufferCount; i < inputCount; i++) { sourceBuffers.push_back(sourceBuffers[sourceBufferCount-1]); }

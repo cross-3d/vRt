@@ -43,7 +43,7 @@ namespace _vt {
     template <typename T>
     static inline auto sgn(T val) { return (T(0) < val) - (val < T(0)); }
 
-    template<class T = uint32_t>
+    template<class T = uint64_t>
     static inline T tiled(T sz, T gmaxtile) {
         // return (int32_t)ceil((double)sz / (double)gmaxtile);
         return sz <= 0 ? 0 : (sz / gmaxtile + sgn(sz % gmaxtile));
@@ -56,18 +56,18 @@ namespace _vt {
             .count() /
             1000000.0;
         return millis;
-    }
+    };
 
     template <class T>
-    static inline size_t strided(size_t sizeo) { return sizeof(T) * sizeo; }
+    static inline uint64_t strided(uint64_t sizeo) { return sizeof(T) * sizeo; }
 
     // read binary (for SPIR-V)
-    static inline auto readBinary(std::string filePath) {
+    static inline auto readBinary( std::string filePath ) {
         std::ifstream file(filePath, std::ios::in | std::ios::binary | std::ios::ate);
         std::vector<uint32_t> data;
         if (file.is_open()) {
             std::streampos size = file.tellg();
-            data.resize(tiled(size_t(size), sizeof(uint32_t)));
+            data.resize(tiled(uint64_t(size), uint64_t(sizeof(uint32_t))));
             file.seekg(0, std::ios::beg);
             file.read((char *)data.data(), size);
             file.close();
@@ -78,7 +78,7 @@ namespace _vt {
     };
 
     // read source (unused)
-    static inline auto readSource(const std::string &filePath, const bool &lineDirective = false) {
+    static inline auto readSource( std::string filePath,  bool lineDirective = false ) {
         std::string content = "";
         std::ifstream fileStream(filePath, std::ios::in);
         if (!fileStream.is_open()) {
@@ -97,13 +97,13 @@ namespace _vt {
     // general command buffer barrier
     static inline void commandBarrier(VkCommandBuffer cmdBuffer) {
         VkMemoryBarrier memoryBarrier = vk::MemoryBarrier{};
-        memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
-        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+        memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT  | VK_ACCESS_MEMORY_READ_BIT  | VK_ACCESS_TRANSFER_READ_BIT  | VK_ACCESS_UNIFORM_READ_BIT | VK_ACCESS_INDEX_READ_BIT;
         vkCmdPipelineBarrier(
             cmdBuffer, 
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-            VK_DEPENDENCY_BY_REGION_BIT,
+            {},
             1, &memoryBarrier,
             0, nullptr,
             0, nullptr);
@@ -176,7 +176,7 @@ namespace _vt {
     };
 
     // create compute pipelines
-    static inline auto createCompute(VkDevice device, const VkPipelineShaderStageCreateInfo& spi, VkPipelineLayout layout, VkPipelineCache cache) {
+    static inline auto createCompute(VkDevice device, VkPipelineShaderStageCreateInfo spi, VkPipelineLayout layout, VkPipelineCache cache) {
         VkComputePipelineCreateInfo cmpi = vk::ComputePipelineCreateInfo{};
         cmpi.flags = {};
         cmpi.layout = layout;
@@ -221,7 +221,7 @@ namespace _vt {
     };
 
     // low level copy command between (prefer for host and device)
-    static inline VkResult cmdCopyBufferL(VkCommandBuffer cmd, VkBuffer srcBuffer, VkBuffer dstBuffer, const std::vector<vk::BufferCopy>& regions, const std::function<void(VkCommandBuffer)>& barrierFn = commandBarrier) {
+    static inline VkResult cmdCopyBufferL(VkCommandBuffer cmd, VkBuffer srcBuffer, VkBuffer dstBuffer, const std::vector<vk::BufferCopy>& regions, std::function<void(VkCommandBuffer)> barrierFn = commandBarrier) {
         vk::CommandBuffer(cmd).copyBuffer(srcBuffer, dstBuffer, regions);
         barrierFn(cmd); // put copy barrier
         return VK_SUCCESS;
@@ -238,7 +238,7 @@ namespace _vt {
 
     // short data set with command buffer (alike push constant)
     template<class T>
-    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, VkBuffer dstBuffer, VkDeviceSize offset, const VkDeviceSize& size, const T*data) {
+    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, VkBuffer dstBuffer, VkDeviceSize offset, VkDeviceSize size, const T*data) {
         vk::CommandBuffer(cmd).updateBuffer(dstBuffer, offset, size, data);
         //updateCommandBarrier(cmd);
         return VK_SUCCESS;
@@ -248,14 +248,14 @@ namespace _vt {
     // template function for fill buffer by constant value
     // use for create repeat variant
     template<uint32_t Rv>
-    static inline VkResult cmdFillBuffer(VkCommandBuffer cmd, VkBuffer dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
+    static inline VkResult cmdFillBuffer(VkCommandBuffer cmd, VkBuffer dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
         vk::CommandBuffer(cmd).fillBuffer(vk::Buffer(dstBuffer), offset, size, Rv);
         //updateCommandBarrier(cmd);
         return VK_SUCCESS;
     };
 
     // make whole size buffer descriptor info
-    static inline auto bufferDescriptorInfo(VkBuffer buffer, vk::DeviceSize offset = 0, vk::DeviceSize size = VK_WHOLE_SIZE) {
+    static inline auto bufferDescriptorInfo(VkBuffer buffer, VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE) {
         return vk::DescriptorBufferInfo(buffer, offset, size);
     };
 

@@ -13,12 +13,12 @@ namespace _vt { // store in undercover namespace
     struct VkShortHead {
         //uint32_t sublevel : 24, identifier : 12;
         uint32_t identifier : 12, sublevel : 24; // I don't know ordering of bits
-        uintptr_t pNext = 0ull; // pull of C++20 raw pointers
+        uint64_t pNext = 0u; // pull of C++20 raw pointers
     };
 
     struct VkFullHead {
         uint32_t sType;
-        uintptr_t pNext = 0ull; // pull of C++20 raw pointers
+        uint64_t pNext = 0u; // pull of C++20 raw pointers
     };
 
 
@@ -45,7 +45,7 @@ namespace _vt { // store in undercover namespace
             if (!head) break;
             if (head->identifier != VtIdentifier) {
                 if (lastVkStructure) {
-                    lastVkStructure->pNext = (uintptr_t)head;
+                    lastVkStructure->pNext = (uint64_t)head;
                 } else {
                     firstVkStructure = head;
                 }
@@ -212,7 +212,7 @@ namespace _vt { // store in undercover namespace
 
     // set buffer data function (defaultly from HostToDevice)
     template <class T, VtMemoryUsage U = VT_MEMORY_USAGE_CPU_TO_GPU>
-    inline void setBufferSubData(const std::vector<T> &hostdata, std::shared_ptr<RoledBuffer<U>> buffer, intptr_t offset = 0) {
+    inline void setBufferSubData(const std::vector<T> &hostdata, std::shared_ptr<RoledBuffer<U>> buffer, VkDeviceSize offset = 0) {
         const VkDeviceSize bufferSize = hostdata.size() * sizeof(T);
 #ifdef VRT_ENABLE_VEZ_INTEROP
         if (bufferSize > 0) {
@@ -236,7 +236,7 @@ namespace _vt { // store in undercover namespace
 
     // get buffer data function (defaultly from DeviceToHost)
     template <class T, VtMemoryUsage U = VT_MEMORY_USAGE_GPU_TO_CPU>
-    inline void getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, std::vector<T> &hostdata, intptr_t offset = 0) {
+    inline void getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, std::vector<T> &hostdata, VkDeviceSize offset = 0) {
         const VkDeviceSize bufferSize = hostdata.size() * sizeof(T);
 #ifdef VRT_ENABLE_VEZ_INTEROP
         if (bufferSize > 0) {
@@ -260,13 +260,13 @@ namespace _vt { // store in undercover namespace
 
     // get buffer data function (defaultly from DeviceToHost)
     template <class T, VtMemoryUsage U = VT_MEMORY_USAGE_GPU_TO_CPU>
-    inline auto getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, VkDeviceSize count = 1, intptr_t offset = 0) {
+    inline auto getBufferSubData(std::shared_ptr<RoledBuffer<U>> buffer, VkDeviceSize count = 1, VkDeviceSize offset = 0) {
         std::vector<T> hostdata(count);
         getBufferSubData(buffer, hostdata, 0);
         return hostdata; // in return will copying, C++ does not made mechanism for zero-copy of anything
     };
 
-    inline auto getVendorName(const uint32_t& vendorID) {
+    inline auto getVendorName( uint32_t vendorID ) {
         auto shaderDir = VT_VENDOR_UNIVERSAL;
         switch (vendorID) {
         case 4318:
@@ -309,12 +309,12 @@ namespace _vt { // store in undercover namespace
 
 
     template<uint32_t Rv, VtMemoryUsage U = VT_MEMORY_USAGE_GPU_ONLY>
-    static inline VkResult cmdFillBuffer(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
+    static inline VkResult cmdFillBuffer(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
         return cmdFillBuffer<Rv>(cmd, *dstBuffer, std::min(dstBuffer->_size(), size), offset);
     };
 
     template<uint32_t Rv>
-    static inline VkResult cmdFillBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, intptr_t offset = 0) {
+    static inline VkResult cmdFillBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> dstBuffer, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
         return cmdFillBuffer<Rv>(cmd, *dstBuffer, std::min(dstBuffer->_size(), size), offset + dstBuffer->_offset());
     };
 

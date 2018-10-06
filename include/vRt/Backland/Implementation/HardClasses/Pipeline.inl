@@ -64,13 +64,13 @@ namespace _vt {
             const auto rayCount = info.maxRays, hitCount = info.maxHits ? info.maxHits : rayCount;
             vtRTSet->_cuniform.maxRayCount = rayCount, vtRTSet->_cuniform.maxHitCount = hitCount;
 
-            std::shared_ptr<BufferManager> bManager; createBufferManager(_vtDevice, bManager);
+            std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
 
-            VtDeviceBufferCreateInfo bfic;
+            VtDeviceBufferCreateInfo bfic = {};
             bfic.familyIndex = _vtDevice->_mainFamilyIndex;
             bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
             
-            VtBufferRegionCreateInfo bfi;
+            VtBufferRegionCreateInfo bfi = {};
 
             
             { // allocate buffer regions

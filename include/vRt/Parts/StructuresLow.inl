@@ -10,7 +10,7 @@ namespace vrt {
     struct VtVec3 { float x = 0.f, y = 0.f, z = 0.f; };
     struct VtVec2 { float x = 0.f, y = 0.f; };
     struct VtUVec2 { uint32_t x = 0u, y = 0u; };
-    struct VtMat4 { VtVec4 m0, m1, m2, m3; };
+    struct VtMat4 { VtVec4 m0 = {}, m1 = {}, m2 = {}, m3 = {}; };
 
     // identified matrix 
     constexpr inline static const VtMat4 IdentifyMat4 = {
@@ -24,11 +24,11 @@ namespace vrt {
     // in future planned custom ray structures support
     // in current moment we will using 32-byte standard structuring
     struct VtRay {
-        VtVec3 origin; // position state (in 3D)
-        int32_t hitID; // id of intersection hit (-1 is missing)
-        VtVec2 cdirect; // polar direction
-        uint32_t _indice; // reserved for indice in another ray system
-        uint16_t hf_r, hf_g, hf_b, bitfield;
+        VtVec3 origin = {}; // position state (in 3D)
+        int32_t hitID = 0; // id of intersection hit (-1 is missing)
+        VtVec2 cdirect = {}; // polar direction
+        uint32_t _indice = 0; // reserved for indice in another ray system
+        uint16_t hf_r = 0, hf_g = 0, hf_b = 0, bitfield = 0;
     };
 
     struct VtPrimitiveBitfield { uint32_t hitGroup : 2, frontFace : 1, backFace : 1, secondary: 1; };
@@ -63,7 +63,7 @@ namespace vrt {
         VtMat4 projection = IdentifyMat4;
         VtMat4 projectionInv = IdentifyMat4;
         int leafCount = 0, primitiveCount = 0, entryID = 0, primitiveOffset = 0;
-        VtVec4 sceneMin, sceneMax;
+        VtVec4 sceneMin = {}, sceneMax = {};
     };
 
 };
