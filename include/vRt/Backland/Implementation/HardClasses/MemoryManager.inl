@@ -3,30 +3,30 @@
 #include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
 
-
 namespace _vt {
     using namespace vrt;
 
 
-    // destructor of advanced buffer
-    RoledBufferBase::~RoledBufferBase() {
-        //
-        auto $device = this->_device; this->_device = {};
-        auto $buffer = this->_buffer; this->_buffer = VK_NULL_HANDLE;
-        auto $allocation = this->_allocation; this->_allocation = {};
-        std::async([=]() {
-            if ($device && $buffer) {
-                vk::Device(VkDevice(*$device)).waitIdle();
-    #ifdef VRT_ENABLE_VEZ_INTEROP
-                if ($buffer) vezDestroyBuffer($device->_device, $buffer);
-    #else
-    #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-                if ($buffer) vmaDestroyBuffer($device->_allocator, $buffer, $allocation);
-    #endif
-    #endif
-            };
+    // destructor of roled buffer
+    template<VtMemoryUsage U>
+    RoledBuffer<U>::~RoledBuffer() {
+        auto buffer = this->_buffer; this->_buffer = {};
+        auto device = this->_device; this->_device = {};
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
+        auto allocation = this->_allocation; this->_allocation = {};
+#endif
+        std::async([=](){
+            if (buffer && device)
+#ifdef VRT_ENABLE_VEZ_INTEROP
+                vezDestroyBuffer(device->_device, buffer);
+#else
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
+                vmaDestroyBuffer(device->_allocator, buffer, allocation);
+#endif
+#endif
         });
     };
+
 
     VtResult createBufferView(std::shared_ptr<BufferRegion> bRegion) {
         auto device = bRegion->_device;
@@ -194,28 +194,22 @@ namespace _vt {
 
 
 
-
-
-
-
-    
     // destructor of DeviceImage
     DeviceImage::~DeviceImage() {
-        //
-        auto $device = this->_device; this->_device = {};
-        auto $image  = this->_image ; this->_image  = VK_NULL_HANDLE;
-        auto $allocation = this->_allocation; this->_allocation = {};
-        std::async([=]() {
-            if ($device && $image) {
-                vk::Device(VkDevice(*$device)).waitIdle();
-    #ifdef VRT_ENABLE_VEZ_INTEROP
-                if ($image) vezDestroyImage($device->_device, $image);
-    #else
-    #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-                if ($image) vmaDestroyImage($device->_allocator, $image, $allocation);
-    #endif
-    #endif
-            };
+        auto  image = this->_image ; this->_image  = {};
+        auto device = this->_device; this->_device = {};
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
+        auto allocation = this->_allocation; this->_allocation = {};
+#endif
+        std::async([=](){
+            if (image && device)
+#ifdef VRT_ENABLE_VEZ_INTEROP
+                vezDestroyImage(device->_device, image);
+#else
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
+                vmaDestroyImage(device->_allocator, image, allocation);
+#endif
+#endif
         });
     };
 

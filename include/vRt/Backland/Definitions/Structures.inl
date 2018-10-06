@@ -36,6 +36,7 @@ namespace vrt { // store in official namespace
         
     };
 
+
     struct VtArtificalDeviceExtension {
         VtStructureType sType = VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION;
         const void* pNext = nullptr;
@@ -57,11 +58,13 @@ namespace vrt { // store in official namespace
         VkBool32 enableAdvancedAcceleration = false; // such as RTX, in current moment have no any support 
     };
 
+
     //struct VtDeviceConversionInfo {
     //    VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_CONVERSION_INFO;
     //    const void* pNext = nullptr;
     //    VtPhysicalDevice physicalDevice;
     //};
+
 
     //struct VtPhysicalDeviceConversionInfo {
     //    VtStructureType sType = VT_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONVERSION_INFO;
@@ -69,12 +72,14 @@ namespace vrt { // store in official namespace
     //    VtInstance instance;
     //};
 
+
     struct VtRayTracingSetCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
         VkDeviceSize maxRays = 1920ull * 1200ull, maxHits = 0ull;
     };
+
 
     struct VtRayTracingPipelineCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO;
@@ -93,6 +98,7 @@ namespace vrt { // store in official namespace
         uint32_t groupModuleCount = 0;
         VkExtent2D tiling = {8u, 8u};
     };
+
 
     struct VtPipelineLayoutCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

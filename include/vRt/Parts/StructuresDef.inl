@@ -2,7 +2,6 @@
 
 #include "StructuresLow.inl"
 
-
 namespace vrt { // store in official namespace
 
     // in general that is conversion

@@ -26,30 +26,30 @@ namespace NSM {
 
     struct DevQueueType : public std::enable_shared_from_this<DevQueueType> {
         uint32_t familyIndex = 0;
-        vk::Queue queue = nullptr;
+        vk::Queue queue = {};
     };
 
     struct DeviceType : public std::enable_shared_from_this<DeviceType> {
-        vrt::VtDevice rtDev;
-        vk::Device logical = nullptr;
-        vk::PhysicalDevice physical = nullptr;
+        vrt::VtDevice rtDev = {};
+        vk::Device logical = {};
+        vk::PhysicalDevice physical = {};
 
         //vk::DescriptorPool descriptorPool = nullptr;
         //vk::PipelineCache pipelineCache = nullptr;
         vk::DispatchLoaderDynamic dldid = {};
         //VmaAllocator allocator;
 
-        std::vector<DevQueue> queues;
+        std::vector<DevQueue> queues = {};
         operator vk::Device() const { return logical; }
         operator vrt::VtDevice() const { return rtDev; }
     };
 
     // combined device, command pool and queue
     struct QueueType : public std::enable_shared_from_this<QueueType> {
-        Device device;
-        vk::CommandPool commandPool = nullptr;
-        vk::Queue queue = nullptr;
-        vk::Fence fence = nullptr;
+        Device device = {};
+        vk::CommandPool commandPool = {};
+        vk::Queue queue = {};
+        vk::Fence fence = {};
         uint32_t familyIndex = 0;
 
         operator Device() const { return device; }
@@ -70,28 +70,28 @@ namespace NSM {
 
     // framebuffer with command buffer and fence
     struct Framebuffer : public std::enable_shared_from_this<Framebuffer> {
-        vk::Framebuffer frameBuffer = nullptr;
-        vk::CommandBuffer commandBuffer = nullptr; // terminal command (barrier)
-        vk::Fence waitFence = nullptr;
-        vk::Semaphore semaphore = nullptr;
+        vk::Framebuffer frameBuffer = {};
+        vk::CommandBuffer commandBuffer = {}; // terminal command (barrier)
+        vk::Fence waitFence = {};
+        vk::Semaphore semaphore = {};
     };
 
     // vertex layout
     struct VertexLayout : public std::enable_shared_from_this<VertexLayout> {
-        std::vector<vk::VertexInputBindingDescription> inputBindings;
-        std::vector<vk::VertexInputAttributeDescription> inputAttributes;
+        std::vector<vk::VertexInputBindingDescription> inputBindings = {};
+        std::vector<vk::VertexInputAttributeDescription> inputAttributes = {};
     };
 
     // context for rendering (can be switched)
     struct GraphicsContext : public std::enable_shared_from_this<GraphicsContext> {
-        Queue queue;                                   // used device by context
-        vk::SwapchainKHR swapchain = nullptr;          // swapchain state
-        vk::Pipeline pipeline = nullptr;               // current pipeline
-        vk::PipelineLayout pipelineLayout = nullptr;
-        vk::PipelineCache pipelineCache = nullptr;
-        vk::DescriptorPool descriptorPool = nullptr;   // current descriptor pool
-        vk::RenderPass renderpass = nullptr;
-        std::vector<vk::DescriptorSet> descriptorSets; // descriptor sets
-        std::vector<Framebuffer> framebuffers;         // swapchain framebuffers
+        Queue queue = {};                                   // used device by context
+        vk::SwapchainKHR swapchain = {};          // swapchain state
+        vk::Pipeline pipeline = {};               // current pipeline
+        vk::PipelineLayout pipelineLayout = {};
+        vk::PipelineCache pipelineCache = {};
+        vk::DescriptorPool descriptorPool = {};   // current descriptor pool
+        vk::RenderPass renderpass = {};
+        std::vector<vk::DescriptorSet> descriptorSets = {}; // descriptor sets
+        std::vector<Framebuffer> framebuffers = {};         // swapchain framebuffers
     };
 };

@@ -24,7 +24,6 @@ namespace _vt {
         return result;
     }
 
-
     VtResult bindAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> accSet) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_acceleratorSet = accSet;
@@ -50,9 +49,7 @@ namespace _vt {
         return VK_SUCCESS;
     }
 
-
     
-
     VtResult buildVertexSet(std::shared_ptr<CommandBuffer> cmdBuf, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
         VtResult result = VK_SUCCESS;
 

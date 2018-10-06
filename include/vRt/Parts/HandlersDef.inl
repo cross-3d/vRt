@@ -2,7 +2,6 @@
 
 #include "StructuresDef.inl"
 
-
 // store in official namespace
 namespace vrt {
     class VtInstance;

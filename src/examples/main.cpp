@@ -24,11 +24,11 @@ int main(int argc, char** argv) {
     renderer->Preload();
     //renderer->CreateFbo();
     renderer->InitCommands();
-    
+
     // looping rendering
     while (!glfwWindowShouldClose(renderer->window)) {
         glfwPollEvents();
-        renderer->Precompute();
+        renderer->PreCompute();
         renderer->ComputeRayTracing();
         renderer->Draw();
         renderer->HandleData();

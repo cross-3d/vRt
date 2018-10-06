@@ -8,7 +8,6 @@
 #include "../Cmd/BuildAccelerator.inl"
 #include "../Cmd/RayTracing.inl"
 
-
 namespace vrt {
     //using namespace _vt;
 

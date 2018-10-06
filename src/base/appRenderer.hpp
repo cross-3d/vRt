@@ -13,9 +13,6 @@ namespace rnd {
 
 
 
-
-
-
     struct VtAppMaterial {
         glm::vec4 diffuse = glm::vec4(0.f);
         glm::vec4 specular = glm::vec4(0.f);
@@ -51,9 +48,9 @@ namespace rnd {
     };
 
     struct VtLeafDebug {
-        glm::vec4 boxMn;
-        glm::vec4 boxMx;
-        glm::ivec4 pdata;
+        glm::vec4 boxMn = {};
+        glm::vec4 boxMx = {};
+        glm::ivec4 pdata = {};
     };
 
 
@@ -91,22 +88,20 @@ namespace rnd {
         return result;
     };
 
-
-    /*  // no support by GCC compilers
-        template<class T>
-        inline auto readFromBuffer(vte::Queue deviceQueue, const std::shared_ptr<_vt::BufferRegion>& dBuffer, std::vector<T>& vctr, VkDeviceSize byteOffset = 0) {
-            VkResult result = VK_SUCCESS;
-            vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
-                VkBufferCopy bfc = { dBuffer->_offset + byteOffset, 0ull, vte::strided<T>(vctr.size()) };
-                vrt::vtCmdCopyDeviceBufferToHost(cmdBuf, vrt::VtDeviceBuffer{ dBuffer->_boundBuffer }, deviceQueue->device->rtDev, 1, &bfc);
-            });
-            vrt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
-            return result;
-        };
-        */
+    // no support by GCC compilers
+    template<class T>
+    inline auto readFromBuffer(vte::Queue deviceQueue, const std::shared_ptr<_vt::BufferRegion>& dBuffer, std::vector<T>& vctr, VkDeviceSize byteOffset = 0) {
+        VkResult result = VK_SUCCESS;
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
+            VkBufferCopy bfc = { dBuffer->_offset() + byteOffset, 0ull, vte::strided<T>(vctr.size()) };
+            vrt::vtCmdCopyDeviceBufferToHost(cmdBuf, vrt::VtDeviceBuffer{ std::dynamic_pointer_cast<_vt::DeviceBuffer>(dBuffer->_boundBuffer.lock()) }, deviceQueue->device->rtDev, 1, &bfc);
+        });
+        vrt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
+        return result;
+    };
 
     inline auto createBufferFast(vte::Queue deviceQueue, vrt::VtDeviceBuffer& dBuffer, VkDeviceSize byteSize = 1024 * 16) {
-        vrt::VtDeviceBufferCreateInfo dbs;
+        vrt::VtDeviceBufferCreateInfo dbs = {};
         dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
         dbs.bufferSize = byteSize;
         dbs.familyIndex = deviceQueue->familyIndex;
@@ -180,8 +175,8 @@ namespace rnd {
 
     class Shared : public std::enable_shared_from_this<Shared> {
         public: 
-        static Active active; // shared properties
-        static GLFWwindow* window; // in-bound GLFW window
+        static Active active ; // shared properties
+        static GLFWwindow* window ; // in-bound GLFW window
         friend Renderer;
         
         static void TimeCallback(double milliseconds = 1e-5) {
@@ -332,7 +327,7 @@ namespace rnd {
         
         // timings
         double modelScale = 1.0, tPastFramerateStreamF = 60.0, tPast = 1e-5; int32_t reflectionLevel = 0, transparencyLevel = 0;
-        std::chrono::high_resolution_clock::time_point tStart; // starting time
+        std::chrono::high_resolution_clock::time_point tStart = {}; // starting time
 
         // camera position 
         const glm::vec3 scale = glm::vec3(1.f); // correction for precisions
@@ -352,37 +347,37 @@ namespace rnd {
 
 
         // ray tracing objects
-        std::vector<VtDeviceBuffer> VDataSpace;
-        std::vector<VkBufferView> bviews;
+        std::vector<VtDeviceBuffer> VDataSpace = {};
+        std::vector<VkBufferView> bviews = {};
         std::vector<VtVertexAccessor> accessors = {};
         std::vector<VtVertexBufferView> bufferViews = {};
-        std::vector<std::vector<VtVertexInputSet>> vertexInputs;
-        std::vector<VtVertexInputSet> inputs;
-        std::vector<glm::mat3x4> transforms;
-        std::vector<vk::DescriptorSetLayout> customedLayouts;
-        std::vector<vk::DescriptorSet> drawDescriptorSets;
+        std::vector<std::vector<VtVertexInputSet>> vertexInputs = {};
+        std::vector<VtVertexInputSet> inputs = {};
+        std::vector<glm::mat3x4> transforms = {};
+        std::vector<vk::DescriptorSetLayout> customedLayouts= {};
+        std::vector<vk::DescriptorSet> drawDescriptorSets = {};
 
         VtDeviceImage envImage = {};
         VkSampler dullSampler = {};
-        std::vector<VtDeviceImage> mImages;
-        std::vector<VkSampler> mSamplers;
+        std::vector<VtDeviceImage> mImages = {};
+        std::vector<VkSampler> mSamplers = {};
 
-        VtDeviceBuffer materialDescs;
-        VtDeviceBuffer materialCombImages;
-        VkDescriptorSet usrDescSet, vtxDescSet;
-        VtMaterialSet materialSet;
-        VtRayTracingSet raytracingSet;
-        VtPipelineLayout rtPipelineLayout, rtVPipelineLayout;
-        VtPipeline rtPipeline, rfPipeline;
-        VtAttributePipeline vtxPipeline;
-        VtAcceleratorSet accelerator;
-        VtVertexAssemblySet vertexAssembly;
-        VkCommandBuffer bCmdBuf, rtCmdBuf, vxCmdBuf, vxuCmdBuf;
-        VtDeviceBuffer rtUniformBuffer;
-        VtCameraUniform cameraUniformData;
+        VtDeviceBuffer materialDescs = {};
+        VtDeviceBuffer materialCombImages = {};
+        VkDescriptorSet usrDescSet, vtxDescSet = {};
+        VtMaterialSet materialSet = {};
+        VtRayTracingSet raytracingSet = {};
+        VtPipelineLayout rtPipelineLayout = {}, rtVPipelineLayout = {};
+        VtPipeline rtPipeline, rfPipeline = {};
+        VtAttributePipeline vtxPipeline = {};
+        VtAcceleratorSet accelerator = {};
+        VtVertexAssemblySet vertexAssembly = {};
+        VkCommandBuffer bCmdBuf = {}, rtCmdBuf = {}, vxCmdBuf = {}, vxuCmdBuf = {};
+        VtDeviceBuffer rtUniformBuffer = {};
+        VtCameraUniform cameraUniformData = {};
 
         // vertex input buffer objects
-        VtDeviceBuffer VBufferRegions, VBufferView, VAccessorSet, VAttributes, VTransforms;
+        VtDeviceBuffer VBufferRegions = {}, VBufferView = {}, VAccessorSet = {}, VAttributes = {}, VTransforms = {};
         tinygltf::Model model = {}; tinygltf::TinyGLTF loader = {};
 
         // attribute bindings
@@ -399,7 +394,7 @@ namespace rnd {
         void InitPipeline();
         void InitCommands();
         void Preload(const std::string& modelName = "");
-        void Precompute();
+        void PreCompute();
         void ComputeRayTracing();
         void Draw();
         void InitRayTracingPipeline();

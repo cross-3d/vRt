@@ -777,7 +777,7 @@ namespace rnd {
     };
 
 
-     void Renderer::Precompute(){
+     void Renderer::PreCompute(){
         // get time difference
         auto tNow = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - tStart).count();
         auto tDiff = tNow - tPast; tPast = tNow; Shared::TimeCallback(tNow);
@@ -855,6 +855,7 @@ namespace rnd {
         ));
     };
 
+
      void Renderer::HandleData(){
         auto& tDiff = Shared::active.tDiff; // get computed time difference
 
@@ -869,11 +870,6 @@ namespace rnd {
         auto wTitle = "vRt : " + tDiffStream.str() + "ms / " + tFramerateStream.str() + "Hz";
         glfwSetWindowTitle(window, wTitle.c_str());
     };
-
-
-
-
-
 
 
      void Renderer::CreateFbo() {
@@ -1025,7 +1021,7 @@ namespace rnd {
         dvi.aspect = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
         vtCreateDeviceImage(deviceQueue->device->rtDev, &dvi, &depthImage);
 
-        // create renderpass
+        // create render pass
         firstGenRenderpass = deviceQueue->device->logical.createRenderPass(vk::RenderPassCreateInfo(vk::RenderPassCreateFlags(), attachmentDescriptions.size(), attachmentDescriptions.data(), subpasses.size(), subpasses.data(), dependencies.size(), dependencies.data()));
         std::array<vk::ImageView, 5> views = { outputImage->_imageView, normalPass->_imageView, originPass->_imageView, specularPass->_imageView, depthImage->_imageView }; // predeclare views
         firstGenFramebuffer = deviceQueue->device->logical.createFramebuffer(vk::FramebufferCreateInfo{ {}, firstGenRenderpass, uint32_t(views.size()), views.data(), canvasWidth, canvasHeight, 1 });

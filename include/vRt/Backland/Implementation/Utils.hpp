@@ -1,9 +1,8 @@
 #pragma once
 
 // implementables
-#include "../../../vRt/vRt_internal.hpp"
+#include "../../../vRt/Backland/vRt_subimpl.inl"
 #include "../Definitions/HardClasses.inl"
-//#include "../Definitions/Structures.inl" // reserved 
 
 // C++ internal initializers for hard classes
 namespace _vt { // store in undercover namespace
@@ -73,11 +72,11 @@ namespace _vt { // store in undercover namespace
         imageMemoryBarriers.subresourceRange = image->_subresourceRange;
 
         // Put barrier on top
-        vk::PipelineStageFlags srcStageMask{ vk::PipelineStageFlagBits::eBottomOfPipe };
-        vk::PipelineStageFlags dstStageMask{ vk::PipelineStageFlagBits::eTopOfPipe };
-        vk::DependencyFlags dependencyFlags{};
-        vk::AccessFlags srcMask{};
-        vk::AccessFlags dstMask{};
+        auto srcStageMask = vk::PipelineStageFlags{ vk::PipelineStageFlagBits::eBottomOfPipe };
+        auto dstStageMask = vk::PipelineStageFlags{ vk::PipelineStageFlagBits::eTopOfPipe };
+        auto dependencyFlags = vk::DependencyFlags{};
+        auto srcMask = vk::AccessFlags{};
+        auto dstMask = vk::AccessFlags{};
 
         typedef vk::ImageLayout il;
         typedef vk::AccessFlagBits afb;

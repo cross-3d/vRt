@@ -28,7 +28,7 @@ namespace NSM
         vk::Instance instance = {};
 
         // cached Vulkan API data
-        std::vector<Queue> devices;
+        std::vector<Queue> devices = {};
 
         // instance extensions
         std::vector<const char *> wantedExtensions = {
@@ -193,7 +193,7 @@ namespace NSM
 #ifdef VRT_ENABLE_VEZ_INTEROP
             vezCreateInstance(&cinstanceinfo, (VkInstance*)&instance);
 #else
-            instance = vk::createInstance(vk::InstanceCreateInfo(cinstanceinfo));
+            vkCreateInstance(&cinstanceinfo, {}, (VkInstance*)&instance);
 #endif
 
 #ifdef VOLK_H_
@@ -250,7 +250,7 @@ namespace NSM
             auto gpuQueueProps = gpu.getQueueFamilyProperties();
 
             // queue family initial
-            std::vector<DevQueue> queues;
+            std::vector<DevQueue> queues = {};
             float priority = 1.0f;
             uint32_t computeFamilyIndex = -1, graphicsFamilyIndex = -1;
             auto queueCreateInfos = std::vector<vk::DeviceQueueCreateInfo>();
@@ -389,14 +389,14 @@ namespace NSM
 
 
             { // create ray tracing instances and devices
-                vrt::VtInstanceConversionInfo cinfo;
-                vrt::VtInstance cinstance;
+                vrt::VtInstanceConversionInfo cinfo = {};
+                vrt::VtInstance cinstance = {};
                 vrt::vtConvertInstance(instance, &cinfo, &cinstance);
 
-                vrt::VtPhysicalDevice pdevice;
+                vrt::VtPhysicalDevice pdevice = {};
                 vrt::vtConvertPhysicalDevice(cinstance, gpu, &pdevice);
 
-                vrt::VtArtificalDeviceExtension dbi;
+                vrt::VtArtificalDeviceExtension dbi = {};
                 dbi.mainQueueFamily = deviceQueuePtr->familyIndex;
                 dbi.shaderPath = shaderPath;
                 dbi.sharedCacheSize = 4096ull * 4096ull * 4ull;
@@ -473,8 +473,7 @@ namespace NSM
             uint32_t surfaceFormatID = 0;
             for (int i = 0; i < preferredFormats.size(); i++)
             {
-                if (surfaceFormatFound)
-                    break;
+                if (surfaceFormatFound) break;
                 for (int f = 0; f < surfaceFormats.size(); f++)
                 {
                     if (surfaceFormats[f].format == preferredFormats[i])
@@ -488,8 +487,7 @@ namespace NSM
 
             // get supported color format
             surfaceColorFormat = surfaceFormats[surfaceFormatID].format;
-            vk::ColorSpaceKHR surfaceColorSpace =
-                surfaceFormats[surfaceFormatID].colorSpace;
+            vk::ColorSpaceKHR surfaceColorSpace = surfaceFormats[surfaceFormatID].colorSpace;
 
             // get format properties?
             auto formatProperties = gpu.getFormatProperties(surfaceColorFormat);
@@ -514,7 +512,7 @@ namespace NSM
             }
 
             // return format result
-            SurfaceFormat sfd;
+            SurfaceFormat sfd = {};
             sfd.colorSpace = surfaceColorSpace;
             sfd.colorFormat = surfaceColorFormat;
             sfd.depthFormat = surfaceDepthFormat;
@@ -668,7 +666,7 @@ namespace NSM
             for (int i = 0; i < swapchainImages.size(); i++)
             { // create framebuffers
                 vk::Image image = swapchainImages[i]; // prelink images
-                std::array<vk::ImageView, 2> views; // predeclare views
+                std::array<vk::ImageView, 2> views = {}; // predeclare views
                 views[0] = queue->device->logical.createImageView(vk::ImageViewCreateInfo{ {}, image, vk::ImageViewType::e2D, formats.colorFormat, vk::ComponentMapping(), vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1} }); // color view
                 views[1] = depthImageView; // depth view
                 swapchainBuffers[i].frameBuffer = queue->device->logical.createFramebuffer(vk::FramebufferCreateInfo{ {}, renderpass, uint32_t(views.size()), views.data(), applicationWindow.surfaceSize.width, applicationWindow.surfaceSize.height, 1 });
@@ -677,7 +675,7 @@ namespace NSM
 
         inline std::vector<Framebuffer> createSwapchainFramebuffer(Queue queue, vk::SwapchainKHR swapchain, vk::RenderPass renderpass) {
             // framebuffers vector
-            std::vector<Framebuffer> swapchainBuffers;
+            std::vector<Framebuffer> swapchainBuffers = {};
             updateSwapchainFramebuffer(queue, swapchain, renderpass, swapchainBuffers);
             for (int i = 0; i < swapchainBuffers.size(); i++)
             { // create semaphore

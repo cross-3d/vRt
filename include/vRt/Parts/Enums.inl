@@ -2,7 +2,6 @@
 
 #include "StructuresDef.inl"
 
-
 namespace vrt { // store in official namespace
     // for not confusing with Vulkan API enums
     // use 0x11E for VtResult

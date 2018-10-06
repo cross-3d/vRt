@@ -45,7 +45,6 @@ namespace vrt { // store in official namespace
     // make vertex input set
     extern VtResult vtCreateVertexInputSet(VtDevice device, const VtVertexInputCreateInfo * vtVertexInputCreateInfo, VtVertexInputSet * vertexInputSet);
 
-
     // make command buffer capable with ray tracing factory (VtCommandBuffer)
     extern VtResult vtQueryCommandInterface(VtDevice device, VkCommandBuffer commandBuffer, VtCommandBuffer * vtCommandBuffer);
 

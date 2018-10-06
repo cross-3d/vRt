@@ -2,6 +2,7 @@
 
 // implementable
 #include "HardClassesDef.inl"
+//#include "HardClasses.inl"
 
 // implement of handlers
 namespace vrt { // store in official namespace
@@ -10,9 +11,10 @@ namespace vrt { // store in official namespace
     template<class T>
     class VtHandle {
     protected:
-        std::shared_ptr<T> _vtHandle = nullptr;
+        std::shared_ptr<T> _vtHandle = {};
     public:
-        VtHandle(std::shared_ptr<T> _H = nullptr) : _vtHandle(_H) {}; // constructor
+        VtHandle(std::shared_ptr<T> _H = {}) : _vtHandle(_H) {}; // constructor
+        VtHandle(const std::shared_ptr<_vt::BufferRegion>& _H) : _vtHandle(_H) {}
         auto* operator->() { return _vtHandle.get(); };
         auto* operator->() const { return _vtHandle.get(); };
         operator T() const { return *_vtHandle; };
@@ -80,7 +82,9 @@ namespace vrt { // store in official namespace
     // handlers can't have base classes
     template<VtMemoryUsage U>
     class VtRoledBuffer : public VtHandle<_vt::RoledBuffer<U>> {
-    private: using P = VtHandle<_vt::RoledBuffer<U>>;
+    private:
+        using P = VtHandle<_vt::RoledBuffer<U>>;
+        using T = std::shared_ptr<_vt::RoledBuffer<U>>;
     public:
         operator VkBuffer() const;
         operator VkBuffer&();
@@ -94,7 +98,6 @@ namespace vrt { // store in official namespace
     template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBuffer&() { return *P::_vtHandle; };
     template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView() const { return *P::_vtHandle; };
     template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView&() { return *P::_vtHandle; };
-
 
 
     class VtDeviceImage : public VtHandle<_vt::DeviceImage> {

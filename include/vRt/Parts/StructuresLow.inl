@@ -2,7 +2,6 @@
 
 #include "Headers.inl"
 
-
 // store in official namespace
 namespace vrt {
 
