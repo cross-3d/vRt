@@ -216,7 +216,7 @@ namespace _vt {
 
             // building hlBVH2 process
             // planned to use secondary buffer for radix sorting
-            auto bounder = accel;
+            //auto bounder = accel;
 
             // incorrect sorting defence
             //cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, acclb->_mortonCodesBuffer);
@@ -246,5 +246,4 @@ namespace _vt {
 
         return result;
     };
-
 };

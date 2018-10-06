@@ -212,7 +212,7 @@ namespace _vt { // store in undercover namespace
     // set buffer data function (defaultly from HostToDevice)
     template <class T, VtMemoryUsage U = VT_MEMORY_USAGE_CPU_TO_GPU>
     inline void setBufferSubData(const std::vector<T> &hostdata, std::shared_ptr<RoledBuffer<U>> buffer, VkDeviceSize offset = 0) {
-        const VkDeviceSize bufferSize = hostdata.size() * sizeof(T);
+        const auto bufferSize = hostdata.size() * sizeof(T);
 #ifdef VRT_ENABLE_VEZ_INTEROP
         if (bufferSize > 0) {
             uint8_t * uPtr = nullptr;

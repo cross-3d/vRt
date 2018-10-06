@@ -180,7 +180,7 @@ namespace vrt { // store in official namespace
         uint32_t samplerCount = 0;
 
         // virtual combined textures with samplers (better use in buffers)
-        const uint64_t* pImageSamplerCombinations = nullptr; // uint32 for images and next uint32 for sampler ID's 
+        const void* pImageSamplerCombinations = nullptr; // uint32 for images and next uint32 for sampler ID's 
         VkBuffer bImageSamplerCombinations = nullptr;
         uint32_t imageSamplerCount = 0;
 

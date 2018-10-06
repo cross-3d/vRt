@@ -55,15 +55,15 @@ namespace _vt {
     };
 
     template <class T>
-    static inline uint64_t strided(uint64_t sizeo) { return sizeof(T) * sizeo; }
+    static inline auto strided(size_t sizeo) { return sizeof(T) * sizeo; }
 
     // read binary (for SPIR-V)
     static inline auto readBinary( std::string filePath ) {
         std::ifstream file(filePath, std::ios::in | std::ios::binary | std::ios::ate);
-        std::vector<uint32_t> data;
+        std::vector<uint32_t> data = {};
         if (file.is_open()) {
             std::streampos size = file.tellg();
-            data.resize(tiled(uint64_t(size), uint64_t(sizeof(uint32_t))));
+            data.resize(tiled(size_t(size), sizeof(uint32_t)));
             file.seekg(0, std::ios::beg);
             file.read((char *)data.data(), size);
             file.close();
@@ -83,8 +83,7 @@ namespace _vt {
         std::string line = "";
         while (!fileStream.eof()) {
             std::getline(fileStream, line);
-            if (lineDirective || line.find("#line") == std::string::npos)
-                content.append(line + "\n");
+            if (lineDirective || line.find("#line") == std::string::npos) content.append(line + "\n");
         }
         fileStream.close();
         return content;
@@ -273,8 +272,7 @@ namespace _vt {
     // once submit command buffer
     static inline void submitOnce(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, vk::SubmitInfo smbi = {}) {
         auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf); vkEndCommandBuffer(cmdBuf);
-        submitCmd(device, queue, { cmdBuf });
-        vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer
+        submitCmd(device, queue, { cmdBuf }); vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer
     };
 
     // submit command (with async wait)
