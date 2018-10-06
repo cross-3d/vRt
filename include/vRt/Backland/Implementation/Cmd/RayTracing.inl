@@ -82,7 +82,7 @@ namespace _vt {
         };
 
         // ray trace command
-        for (uint32_t it = 0; it < B; it++) {
+        for (auto it = 0u; it < B; it++) {
             // update uniform buffer of ray tracing steps
             rtset->_cuniform.iteration = it;
             cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
@@ -135,7 +135,7 @@ namespace _vt {
             if (hasGroupShaders) cmdFillBuffer<0u>(*cmdBuf, rtset->_countersBuffer);
 
             // use resolve shader for resolve ray output or pushing secondaries
-            for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_groupPipelines.size()); i++) {
+            for (auto i = 0u; i < std::min(std::size_t(4ull), rtppl->_groupPipelines.size()); i++) {
                 if (rtppl->_groupPipelines[i]) {
                     rtset->_cuniform.currentGroup = i;
                     cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);

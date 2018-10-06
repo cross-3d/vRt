@@ -158,7 +158,7 @@ namespace _vt {
             {
                 std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]), };
                 const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-                vtRTSet->_descriptorSet = dsc[0];
+                vtRTSet->_descriptorSet = std::move(dsc[0]);
 
                 // write descriptors
                 const auto writeTmpl = vk::WriteDescriptorSet(vtRTSet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);

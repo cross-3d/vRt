@@ -80,7 +80,7 @@ namespace _vt {
                 vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
             };
             const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-            assemblyPipeline->_descriptorSet = dsc[0];
+            assemblyPipeline->_descriptorSet = std::move(dsc[0]);
 
 
             vk::Sampler attributeSampler = vk::Device(vkDevice).createSampler(vk::SamplerCreateInfo()

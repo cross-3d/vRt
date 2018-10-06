@@ -73,7 +73,7 @@ namespace _vt {
         vtRadix->_copyhackPipeline = createComputeHC(vkDevice, qradix::copyhack.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
 
         const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-        vtRadix->_descriptorSet = dsc[0];
+        vtRadix->_descriptorSet = std::move(dsc[0]);
 
         // write radix sort descriptor sets
         const auto writeTmpl = vk::WriteDescriptorSet(vtRadix->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);

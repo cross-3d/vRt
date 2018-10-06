@@ -17,10 +17,7 @@ namespace _vt {
 
     VtResult bindVertexInputs(std::shared_ptr<CommandBuffer> cmdBuf, const std::vector<std::shared_ptr<VertexInputSet>>& sets) {
         VtResult result = VK_SUCCESS;
-        cmdBuf->_vertexInputs.resize(0);
-        for (auto s : sets) { // update buffers by pushing constants
-            cmdBuf->_vertexInputs.push_back(s);
-        };
+        cmdBuf->_vertexInputs = sets;
         return result;
     }
 
@@ -124,9 +121,10 @@ namespace _vt {
         // useless to updating
         if (cmdBuf->_vertexInputs.size() <= 0) return result;
 
+        // ptr's 
         auto device = cmdBuf->_parent();
-        auto natvab = device->_nativeVertexAssembler;
         auto vertx = cmdBuf->_vertexSet.lock();
+        auto natvab = device->_nativeVertexAssembler;
         vertx->_vertexInputs = cmdBuf->_vertexInputs;
 
         // update constants

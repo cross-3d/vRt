@@ -41,8 +41,8 @@ namespace _vt {
         const auto inputCount = 8u;
         std::vector<vk::BufferView> sourceBuffers = {};
         const auto sourceBufferCount = std::min(info.sourceBufferCount, inputCount);
-        for (uint32_t i = 0; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }
-        for (uint32_t i = sourceBufferCount; i < inputCount; i++) { sourceBuffers.push_back(sourceBuffers[sourceBufferCount-1]); }
+        for (auto i = 0u; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }
+        for (auto i = sourceBufferCount; i < inputCount; i++) { sourceBuffers.push_back(sourceBuffers[sourceBufferCount-1]); }
 
 
         if (!info.bitfieldDetail.secondary) {
@@ -50,7 +50,7 @@ namespace _vt {
             // create descriptor sets
             std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
             const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-            vtVertexInput->_descriptorSet = dsc[0];
+            vtVertexInput->_descriptorSet = std::move(dsc[0]);
 
             // write descriptors
              auto d1 = vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset);

@@ -34,18 +34,18 @@ namespace _vt {
                     vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["materialSet"]),
                 };
                 const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-                vtMaterialSet->_descriptorSet = dsc[0];
+                vtMaterialSet->_descriptorSet = std::move(dsc[0]);
 
                 std::vector<vk::DescriptorImageInfo> _samplers = {}, _images = {};
                 const auto samplerCount = std::min(info.samplerCount, uint32_t(VRT_MAX_SAMPLERS)), imageCount = std::min(info.imageCount, uint32_t(VRT_MAX_IMAGES));
 
                 // fill as many as possible
-                for (uint32_t i = 0; i < samplerCount; i++) { _samplers.push_back(vk::DescriptorImageInfo().setSampler(info.pSamplers[i])); }
-                for (uint32_t i = 0; i < imageCount; i++) { _images.push_back(vk::DescriptorImageInfo(info.pImages[i])); }
+                for (auto i = 0u; i < samplerCount; i++) { _samplers.push_back(vk::DescriptorImageInfo().setSampler(info.pSamplers[i])); }
+                for (auto i = 0u; i < imageCount; i++) { _images.push_back(vk::DescriptorImageInfo(info.pImages[i])); }
 
                 // autofill for avoid validation errors
-                for (uint32_t i = samplerCount; i < VRT_MAX_SAMPLERS; i++) { _samplers.push_back(vk::DescriptorImageInfo().setSampler(info.pSamplers[samplerCount-1])); }
-                for (uint32_t i = imageCount; i < VRT_MAX_IMAGES; i++) { _images.push_back(vk::DescriptorImageInfo(info.pImages[imageCount-1])); }
+                for (auto i = samplerCount; i < VRT_MAX_SAMPLERS; i++) { _samplers.push_back(vk::DescriptorImageInfo().setSampler(info.pSamplers[samplerCount-1])); }
+                for (auto i = imageCount; i < VRT_MAX_IMAGES; i++) { _images.push_back(vk::DescriptorImageInfo(info.pImages[imageCount-1])); }
 
                 
                 const auto matDescBuf = bufferDescriptorInfo(info.bMaterialDescriptionsBuffer), imgCompBuf = bufferDescriptorInfo(info.bImageSamplerCombinations);

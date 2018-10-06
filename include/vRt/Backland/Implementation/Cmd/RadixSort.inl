@@ -19,7 +19,7 @@ namespace _vt {
         std::vector<VkDescriptorSet> _sets = { radix->_descriptorSet, inputSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, radix->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         //updateCommandBarrier(*cmdBuf);
-        for (uint32_t i = 0; i < STEPS; i++) {
+        for (auto i = 0u; i < STEPS; i++) {
             std::vector<uint32_t> _values = { primCount, i };
             vkCmdPushConstants(*cmdBuf, radix->_pipelineLayout, VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t) * _values.size(), _values.data());
             

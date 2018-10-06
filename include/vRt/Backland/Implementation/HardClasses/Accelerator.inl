@@ -206,7 +206,7 @@ namespace _vt {
 
             // create descriptor set
             const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-            vtAccelerator->_descriptorSet = dsc[0];
+            vtAccelerator->_descriptorSet = std::move(dsc[0]);
         };
 
         {

@@ -244,11 +244,13 @@ namespace _vt {
 
     inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo vdvi, std::shared_ptr<Device>& _vtDevice) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
-        VtArtificalDeviceExtension vtExtension = {}; // default structure values
+
+        // default structure values
+        VtArtificalDeviceExtension vtExtension = {};
         auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);
-        if (vtExtensionPtr) { // if found, getting some info
-            vtExtension = (VtArtificalDeviceExtension&)*vtExtensionPtr;
-        }
+
+        // if found, getting some info
+        if (vtExtensionPtr) vtExtension = (VtArtificalDeviceExtension&)*vtExtensionPtr;
 
         // be occurate with "VkDeviceCreateInfo", because after creation device, all "vt" extended structures will destoyed
         VkDevice vkDevice = {};

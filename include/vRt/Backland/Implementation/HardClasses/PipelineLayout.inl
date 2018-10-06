@@ -29,7 +29,7 @@ namespace _vt {
             dsLayouts.push_back(_vtDevice->_descriptorLayoutMap["materialSet"]);
         }
 
-        for (uint32_t i = 0; i < vkPipelineLayout.setLayoutCount; i++) {
+        for (auto i = 0; i < vkPipelineLayout.setLayoutCount; i++) {
             dsLayouts.push_back(vkPipelineLayout.pSetLayouts[i]);
         }
 
