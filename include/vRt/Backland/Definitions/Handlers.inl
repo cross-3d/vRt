@@ -13,8 +13,11 @@ namespace vrt { // store in official namespace
     protected:
         std::shared_ptr<T> _vtHandle = {};
     public:
-        VtHandle(std::shared_ptr<T> _H = {}) : _vtHandle(_H) {}; // constructor
-        VtHandle(const std::shared_ptr<_vt::BufferRegion>& _H) : _vtHandle(_H) {}
+        //VtHandle(std::shared_ptr<T> _H = {}) : _vtHandle(_H) {}; // constructor
+        //VtHandle(const std::shared_ptr<_vt::BufferRegion>& _H) : _vtHandle(_H) {};
+        VtHandle(std::shared_ptr<T>& _H) : _vtHandle(_H) {}; // reference
+        VtHandle(std::shared_ptr<T>&& _H = {}) : _vtHandle(_H) {}; // initializer
+        VtHandle(const std::shared_ptr<T>& _H) : _vtHandle(_H) {}; // const reference
         auto* operator->() { return _vtHandle.get(); };
         auto* operator->() const { return _vtHandle.get(); };
         operator T() const { return *_vtHandle; };
