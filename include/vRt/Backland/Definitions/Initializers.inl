@@ -9,9 +9,9 @@ namespace _vt { // store in undercover namespace
     using namespace vrt;
 
     // base creation functions 
-    extern VtResult convertInstance(VkInstance vkInstance, const VtInstanceConversionInfo& vtInstanceCreateInfo, std::shared_ptr<Instance>& vtInstance);
+    extern VtResult convertInstance(VkInstance vkInstance, VtInstanceConversionInfo vtInstanceCreateInfo, std::shared_ptr<Instance>& vtInstance);
     extern VtResult convertPhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, std::shared_ptr<PhysicalDevice>& _vtPhysicalDevice);
-    extern VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& _vtDevice);
+    extern VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, VtArtificalDeviceExtension vtExtension, std::shared_ptr<Device>& _vtDevice);
 
     template<VtMemoryUsage U = VT_MEMORY_USAGE_GPU_ONLY>
     extern VtResult createBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<RoledBuffer<U>>& _vtBuffer);
@@ -33,16 +33,16 @@ namespace _vt { // store in undercover namespace
 
     // main inner objects
     extern VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo vdvi, std::shared_ptr<Device>& _vtDevice);
-    extern VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<AcceleratorHLBVH2>& _vtAccelerator);
-    extern VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator);
-    extern VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<RadixSort>& _vtRadix);
-    extern VtResult createAssemblyPipeline(std::shared_ptr<Device> _vtDevice, const VtAttributePipelineCreateInfo& info, std::shared_ptr<AssemblyPipeline>& _assemblyPipeline, const bool& native = false);
-    extern VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblySetCreateInfo &info, std::shared_ptr<VertexAssemblySet>& _assemblyPipeline);
-    extern VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, const VtVertexInputCreateInfo& info, std::shared_ptr<VertexInputSet>& _vtVertexInput);
+    extern VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, VtArtificalDeviceExtension info, std::shared_ptr<AcceleratorHLBVH2>& _vtAccelerator);
+    extern VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, VtAcceleratorSetCreateInfo info, std::shared_ptr<AcceleratorSet>& _vtAccelerator);
+    extern VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, VtArtificalDeviceExtension info, std::shared_ptr<RadixSort>& _vtRadix);
+    extern VtResult createAssemblyPipeline(std::shared_ptr<Device> _vtDevice, VtAttributePipelineCreateInfo info, std::shared_ptr<AssemblyPipeline>& _assemblyPipeline, bool native = false);
+    extern VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, VtVertexAssemblySetCreateInfo info, std::shared_ptr<VertexAssemblySet>& _assemblyPipeline);
+    extern VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& _vtVertexInput);
     extern VtResult createPipelineLayout(std::shared_ptr<Device> _vtDevice, VtPipelineLayoutCreateInfo vtPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& _vtPipelineLayout, VtPipelineLayoutType type = VT_PIPELINE_LAYOUT_TYPE_RAYTRACING);
-    extern VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice, const VtMaterialSetCreateInfo& info, std::shared_ptr<MaterialSet>& _vtMaterialSet);
-    extern VtResult createRayTracingPipeline(std::shared_ptr<Device> _vtDevice, const VtRayTracingPipelineCreateInfo& info, std::shared_ptr<Pipeline>& _vtPipeline);
-    extern VtResult createRayTracingSet(std::shared_ptr<Device> _vtDevice, const VtRayTracingSetCreateInfo& info, std::shared_ptr<RayTracingSet>& _vtRTSet);
+    extern VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice, VtMaterialSetCreateInfo info, std::shared_ptr<MaterialSet>& _vtMaterialSet);
+    extern VtResult createRayTracingPipeline(std::shared_ptr<Device> _vtDevice, VtRayTracingPipelineCreateInfo info, std::shared_ptr<Pipeline>& _vtPipeline);
+    extern VtResult createRayTracingSet(std::shared_ptr<Device> _vtDevice, VtRayTracingSetCreateInfo info, std::shared_ptr<RayTracingSet>& _vtRTSet);
 
     // create wrapped command buffer
     extern VtResult queryCommandBuffer(std::shared_ptr<Device> _vtDevice, VkCommandBuffer cmdBuf, std::shared_ptr<CommandBuffer>& vtCmdBuf);

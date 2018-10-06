@@ -1,23 +1,23 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+//#include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
 
 namespace _vt {
     using namespace vrt;
 
-    VtResult createAssemblyPipeline(std::shared_ptr<Device> _vtDevice, const VtAttributePipelineCreateInfo& info, std::shared_ptr<AssemblyPipeline>& assemblyPipeline, const bool& native) {
+    VtResult createAssemblyPipeline(std::shared_ptr<Device> _vtDevice, VtAttributePipelineCreateInfo info, std::shared_ptr<AssemblyPipeline>& assemblyPipeline, const bool native) {
         VtResult result = VK_SUCCESS;
         auto vkDevice = _vtDevice->_device;
         auto vkPipelineCache = _vtDevice->_pipelineCache;
         assemblyPipeline = std::make_shared<AssemblyPipeline>();
         assemblyPipeline->_device = _vtDevice;
-        assemblyPipeline->_pipelineLayout = std::shared_ptr<PipelineLayout>(VtAttributePipelineCreateInfo(info).pipelineLayout);
+        assemblyPipeline->_pipelineLayout = info.pipelineLayout;
         assemblyPipeline->_vkPipeline = createCompute(vkDevice, info.assemblyModule, *assemblyPipeline->_pipelineLayout, vkPipelineCache);
         return result;
     };
 
-    VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, const VtVertexAssemblySetCreateInfo &info, std::shared_ptr<VertexAssemblySet>& assemblyPipeline) {
+    VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, VtVertexAssemblySetCreateInfo info, std::shared_ptr<VertexAssemblySet>& assemblyPipeline) {
         VtResult result = VK_SUCCESS;
         //auto assemblyPipeline = (_assemblyPipeline = std::make_shared<VertexAssemblySet>());
         auto vkDevice = _vtDevice->_device;
@@ -79,7 +79,7 @@ namespace _vt {
                 vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
                 vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
             };
-            auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+            const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
             assemblyPipeline->_descriptorSet = dsc[0];
 
 
@@ -88,8 +88,8 @@ namespace _vt {
                 .setMagFilter(vk::Filter::eNearest).setMinFilter(vk::Filter::eNearest).setAddressModeU(vk::SamplerAddressMode::eRepeat)
                 //.setMagFilter(vk::Filter::eLinear ).setMinFilter(vk::Filter::eLinear ).setAddressModeU(vk::SamplerAddressMode::eClampToEdge).setUnnormalizedCoordinates(VK_TRUE)
             );
-            auto writeTmpl = vk::WriteDescriptorSet(assemblyPipeline->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
-            auto attrbView = vk::DescriptorImageInfo(assemblyPipeline->_attributeTexelBuffer->_descriptorInfo()).setSampler(attributeSampler);
+            const auto writeTmpl = vk::WriteDescriptorSet(assemblyPipeline->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+            const auto attrbView = vk::DescriptorImageInfo(assemblyPipeline->_attributeTexelBuffer->_descriptorInfo()).setSampler(attributeSampler);
 
             std::vector<vk::WriteDescriptorSet> writes = {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)&assemblyPipeline->_countersBuffer->_descriptorInfo()),

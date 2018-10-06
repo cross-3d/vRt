@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+//#include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
 
 namespace _vt {
@@ -8,7 +8,7 @@ namespace _vt {
 
     // ray tracing pipeline
     // planned to add support of entry points
-    VtResult createRayTracingPipeline(std::shared_ptr<Device> _vtDevice, const VtRayTracingPipelineCreateInfo& info, std::shared_ptr<Pipeline>& vtPipeline) {
+    VtResult createRayTracingPipeline(std::shared_ptr<Device> _vtDevice,  VtRayTracingPipelineCreateInfo info, std::shared_ptr<Pipeline>& vtPipeline) {
         VtResult result = VK_SUCCESS;
 
         auto vkDevice = _vtDevice->_device;
@@ -18,7 +18,7 @@ namespace _vt {
         vtPipeline = std::make_shared<Pipeline>();
         vtPipeline->_device = _vtDevice;
         vtPipeline->_tiling = info.tiling; // fixed 15.09.2018
-        vtPipeline->_pipelineLayout = std::shared_ptr<PipelineLayout>(VtRayTracingPipelineCreateInfo(info).pipelineLayout);
+        vtPipeline->_pipelineLayout = std::shared_ptr<PipelineLayout>(info.pipelineLayout);
         const auto vendorName = _vtDevice->_vendorName;
 
         // generation shaders
@@ -53,7 +53,7 @@ namespace _vt {
     };
 
     // ray tracing set of state
-    VtResult createRayTracingSet(std::shared_ptr<Device> _vtDevice, const VtRayTracingSetCreateInfo& info, std::shared_ptr<RayTracingSet>& _vtRTSet) {
+    VtResult createRayTracingSet(std::shared_ptr<Device> _vtDevice,  VtRayTracingSetCreateInfo info, std::shared_ptr<RayTracingSet>& _vtRTSet) {
         VtResult result = VK_SUCCESS;
 
         auto vkDevice = _vtDevice->_device;
@@ -157,11 +157,11 @@ namespace _vt {
 
             {
                 std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]), };
-                auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtRTSet->_descriptorSet = dsc[0];
 
                 // write descriptors
-                auto writeTmpl = vk::WriteDescriptorSet(vtRTSet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+                const auto writeTmpl = vk::WriteDescriptorSet(vtRTSet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(10).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&vtRTSet->_rayLinkPayload->_bufferView()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(11).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&vtRTSet->_attribBuffer->_bufferView()),

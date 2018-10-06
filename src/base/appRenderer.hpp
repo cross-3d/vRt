@@ -115,7 +115,7 @@ namespace rnd {
 
 
 
-    inline auto getShaderDir(const uint32_t& vendorID) {
+    inline auto getShaderDir(const uint32_t vendorID) {
         std::string shaderDir = "./universal/";
         switch (vendorID) {
             case 4318:
@@ -217,11 +217,11 @@ namespace rnd {
         void handle() {
             //auto mPtr = (glm::dvec2*)&Shared::active.mX, mDiff = *mPtr - mousePosition;
             auto mDiff = glm::dvec2(Shared::active.dX, Shared::active.dY);
-            auto &diff = Shared::active.tDiff;
+            auto tDiff = Shared::active.tDiff;
 
             glm::mat4 viewm = this->project();
             glm::mat4 unviewm = glm::inverse(viewm);
-            glm::vec3 ca = (viewm * glm::vec4(*eyePos, 1.0f)).xyz(), vi = glm::normalize((glm::vec4(*viewVector, 0.0) * unviewm).xyz());
+            glm::vec3 ca = (viewm * glm::vec4(*eyePos, 1.0f)).xyz(), vi = glm::normalize((glm::vec4(*viewVector, 0.0) * unviewm)).xyz();
             bool isFocus = true;
 
             if (Shared::active.mouse.size() > 0 && Shared::active.mouse[GLFW_MOUSE_BUTTON_LEFT] && isFocus)
@@ -232,32 +232,32 @@ namespace rnd {
 
             if (Shared::active.keys.size() > 0 && Shared::active.keys[GLFW_KEY_W] && isFocus)
             {
-                this->forwardBackward(ca, -diff);
+                this->forwardBackward(ca, -tDiff);
             }
 
             if (Shared::active.keys.size() > 0 && Shared::active.keys[GLFW_KEY_S] && isFocus)
             {
-                this->forwardBackward(ca, diff);
+                this->forwardBackward(ca, tDiff);
             }
 
             if (Shared::active.keys.size() > 0 && Shared::active.keys[GLFW_KEY_A] && isFocus)
             {
-                this->leftRight(ca, -diff);
+                this->leftRight(ca, -tDiff);
             }
 
             if (Shared::active.keys.size() > 0 && Shared::active.keys[GLFW_KEY_D] && isFocus)
             {
-                this->leftRight(ca, diff);
+                this->leftRight(ca, tDiff);
             }
 
             if (Shared::active.keys.size() > 0 && (Shared::active.keys[GLFW_KEY_SPACE] || Shared::active.keys[GLFW_KEY_E]) && isFocus)
             {
-                this->topBottom(ca, diff);
+                this->topBottom(ca, tDiff);
             }
 
             if (Shared::active.keys.size() > 0 && (Shared::active.keys[GLFW_KEY_LEFT_SHIFT] || Shared::active.keys[GLFW_KEY_C] || Shared::active.keys[GLFW_KEY_Q]) && isFocus)
             {
-                this->topBottom(ca, -diff);
+                this->topBottom(ca, -tDiff);
             }
 
             *viewVector = glm::normalize((glm::vec4(vi, 0.0) * viewm).xyz());
@@ -378,7 +378,7 @@ namespace rnd {
 
         // vertex input buffer objects
         VtDeviceBuffer VBufferRegions = {}, VBufferView = {}, VAccessorSet = {}, VAttributes = {}, VTransforms = {};
-        tinygltf::Model model = {}; tinygltf::TinyGLTF loader = {};
+        
 
         // attribute bindings
         const uint32_t NORMAL_TID = 0;
@@ -393,7 +393,7 @@ namespace rnd {
         void InitRayTracing();
         void InitPipeline();
         void InitCommands();
-        void Preload(const std::string& modelName = "");
+        void LoadScene(const std::string& modelName = "");
         void PreCompute();
         void ComputeRayTracing();
         void Draw();

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+//#include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
 
 namespace _vt {
     using namespace vrt;
 
-    VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& info, std::shared_ptr<AcceleratorHLBVH2>& vtAccelerator) {
+    VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, VtArtificalDeviceExtension info, std::shared_ptr<AcceleratorHLBVH2>& vtAccelerator) {
         VtResult result = VK_SUCCESS;
         //auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
         vtAccelerator = std::make_shared<AcceleratorHLBVH2>();
@@ -156,7 +156,7 @@ namespace _vt {
 
 
     // planned advanced accelerator construction too
-    VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, const VtAcceleratorSetCreateInfo &info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
+    VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, VtAcceleratorSetCreateInfo info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
         VtResult result = VK_SUCCESS;
         auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
         auto vkDevice = _vtDevice->_device;
@@ -173,7 +173,7 @@ namespace _vt {
 
         VtDeviceBufferCreateInfo bfic = {};
         bfic.familyIndex = _vtDevice->_mainFamilyIndex;
-        bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
+        bfic.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
         VtBufferRegionCreateInfo bfi = {};
 
@@ -205,7 +205,7 @@ namespace _vt {
             std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"]) };
 
             // create descriptor set
-            auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+            const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
             vtAccelerator->_descriptorSet = dsc[0];
         };
 

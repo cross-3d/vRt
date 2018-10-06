@@ -500,12 +500,12 @@ namespace _vt { // store in undercover namespace
         // TODO: RTX capable buffers 
         
 
-        auto _parent() const { return _device; };
+        auto  _parent() const { return _device; };
         auto& _parent() { return _device; };
         operator VkDescriptorSet() const { return _descriptorSet; };
 
         auto& uniform() { return _uniformBlock; };
-        const auto& uniform() const { return _uniformBlock; };
+         auto uniform() const { return _uniformBlock; };
     };
 
 

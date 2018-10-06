@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+//#include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
 
 namespace _vt {
     using namespace vrt;
 
     // planned add hardcodes for radix sorting
-    VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<RadixSort>& vtRadix) {
+    VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, VtArtificalDeviceExtension vtExtension, std::shared_ptr<RadixSort>& vtRadix) {
         //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 4ull : 8ull, WG_COUNT = 64ull, RADICE_AFFINE = 256ull; // 8-bit
         constexpr const auto STEPS = VRT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 16ull; // QLC
         //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 16ull : 32ull, WG_COUNT = 64ull, RADICE_AFFINE = 4ull; // MLC
@@ -25,7 +25,8 @@ namespace _vt {
 
 
 
-        std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
+        std::shared_ptr<BufferManager> bManager = {};
+        createBufferManager(_vtDevice, bManager);
 
         VtDeviceBufferCreateInfo bfic = {};
         bfic.familyIndex = _vtDevice->_mainFamilyIndex;
@@ -71,11 +72,11 @@ namespace _vt {
         vtRadix->_permutePipeline = createComputeHC(vkDevice, qradix::permute.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
         vtRadix->_copyhackPipeline = createComputeHC(vkDevice, qradix::copyhack.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
 
-        auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+        const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
         vtRadix->_descriptorSet = dsc[0];
 
         // write radix sort descriptor sets
-        vk::WriteDescriptorSet writeTmpl = vk::WriteDescriptorSet(vtRadix->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+        const auto writeTmpl = vk::WriteDescriptorSet(vtRadix->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
         std::vector<vk::WriteDescriptorSet> writes = {
             vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRadix->_tmpKeysBuffer->_descriptorInfo()),
             vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRadix->_tmpValuesBuffer->_descriptorInfo()),

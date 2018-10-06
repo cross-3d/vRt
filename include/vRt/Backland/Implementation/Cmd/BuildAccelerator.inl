@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+//#include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
 #include "RadixSort.inl" // TODO: dedicated implementation
 
@@ -88,7 +88,7 @@ namespace _vt {
             auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
             for (auto s : _bsets) { _sets.push_back(s); };
 
-            const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
+            const auto pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *pLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
             vkCmdPushConstants(*cmdBuf, *pLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
             cmdDispatch(*cmdBuf, natvab->_vkPipeline, VX_INTENSIVITY, _szi, 1    );
@@ -105,7 +105,7 @@ namespace _vt {
                 for (auto s : _bsets) { _sets.push_back(s); };
 
                 // execute vertex assembly
-                const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
+                const auto pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, *pLayout, 0, _sets.size(), _sets.data(), 0, nullptr); // bind descriptor sets
                 vkCmdPushConstants(*cmdBuf, *pLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t), &_bnd);
                 cmdDispatch(*cmdBuf, natvab->_vkPipeline, VX_INTENSIVITY, 1, 1    );
@@ -149,7 +149,7 @@ namespace _vt {
             auto iV = cmdBuf->_vertexInputs[_bnd];
 
             // native descriptor sets
-            const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
+            const auto pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
             //auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
             std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
 
@@ -167,7 +167,7 @@ namespace _vt {
                 if (_bnd >= inputSet) {
 
                     // native descriptor sets
-                    const auto& pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
+                    const auto pLayout = (iV->_attributeVertexAssembly ? iV->_attributeVertexAssembly : natvab)->_pipelineLayout;
                     //auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
                     std::vector<VkDescriptorSet> _sets = { vertx->_descriptorSet, iV->_descriptorSet };
 

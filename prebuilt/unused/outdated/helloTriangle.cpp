@@ -90,7 +90,7 @@ inline auto createBufferFast(vte::Queue deviceQueue, vrt::VtDeviceBuffer& dBuffe
     vrt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
 };
 
-inline auto getShaderDir(const uint32_t& vendorID) {
+inline auto getShaderDir( uint32_t vendorID) {
     std::string shaderDir = "./universal/";
     switch (vendorID) {
         case 4318:
@@ -308,8 +308,8 @@ int main() {
 
     { 
         // write ray tracing user defined descriptor set
-        auto writeTmpl = vk::WriteDescriptorSet(usrDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
-        auto imgdi = vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler);
+        const auto writeTmpl = vk::WriteDescriptorSet(usrDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+        const auto imgdi = vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler);
         std::vector<vk::WriteDescriptorSet> writes = {
             vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)(&rtUniformBuffer->_descriptorInfo())),
             vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&imgdi),
@@ -320,11 +320,11 @@ int main() {
 
     {
         // create pipeline layout for ray tracing
-        vk::PipelineLayoutCreateInfo vpi;
+        vk::PipelineLayoutCreateInfo vpi = {};
         vpi.pSetLayouts = customedLayouts.data();
         vpi.setLayoutCount = customedLayouts.size();
 
-        VtPipelineLayoutCreateInfo vpti;
+        VtPipelineLayoutCreateInfo vpti = {};
         vpti.pGeneralPipelineLayout = (VkPipelineLayoutCreateInfo*)&vpi;
 
         vtCreateRayTracingPipelineLayout(deviceQueue->device->rtDev, &vpti, &rtPipelineLayout);
@@ -525,7 +525,7 @@ int main() {
         rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
         vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipeline);
-        vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), materialSet);
+        vtCmdBindMaterialSet(qRtCmdBuf, VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS, materialSet);
         vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
         vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
         vtCmdBindAccelerator(qRtCmdBuf, accelerator);

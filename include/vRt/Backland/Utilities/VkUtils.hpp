@@ -49,13 +49,9 @@ namespace _vt {
         return sz <= 0 ? 0 : (sz / gmaxtile + sgn(sz % gmaxtile));
     }
 
-    static inline double milliseconds() {
-        auto duration = std::chrono::high_resolution_clock::now();
-        double millis = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            duration.time_since_epoch())
-            .count() /
-            1000000.0;
-        return millis;
+    static inline auto milliseconds() {
+        const auto duration = std::chrono::high_resolution_clock::now(); 
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(duration.time_since_epoch()).count() / 1000000.0;
     };
 
     template <class T>
@@ -156,7 +152,7 @@ namespace _vt {
 
     // create shader module
     static inline auto createShaderModuleIntrusive(VkDevice device, const std::vector<uint32_t>& code, VkShaderModule& hndl) {
-        auto shaderModuleInfo = makeShaderModuleInfo(code);
+        const auto shaderModuleInfo = makeShaderModuleInfo(code);
         vkCreateShaderModule(device, &shaderModuleInfo, nullptr, &hndl); return hndl;
     };
 

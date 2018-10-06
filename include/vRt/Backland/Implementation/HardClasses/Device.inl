@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+//#include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
 
 namespace _vt {
     using namespace vrt;
 
 
-    VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, const VtArtificalDeviceExtension& vtExtension, std::shared_ptr<Device>& vtDevice) {
+    VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, VtArtificalDeviceExtension vtExtension, std::shared_ptr<Device>& vtDevice) {
         //auto vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice = std::make_shared<Device>();
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing

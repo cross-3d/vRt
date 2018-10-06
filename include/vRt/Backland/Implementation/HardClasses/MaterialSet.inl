@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+//#include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
 
 namespace _vt {
     using namespace vrt;
 
     // ray tracing set of state
-    VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice, const VtMaterialSetCreateInfo& info, std::shared_ptr<MaterialSet>& vtMaterialSet) {
+    VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice,  VtMaterialSetCreateInfo info, std::shared_ptr<MaterialSet>& vtMaterialSet) {
         VtResult result = VK_SUCCESS;
 
         //auto vtMaterialSet = (_vtMaterialSet = std::make_shared<MaterialSet>());
@@ -33,7 +33,7 @@ namespace _vt {
                 std::vector<vk::DescriptorSetLayout> dsLayouts = {
                     vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["materialSet"]),
                 };
-                auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtMaterialSet->_descriptorSet = dsc[0];
 
                 std::vector<vk::DescriptorImageInfo> _samplers = {}, _images = {};
@@ -48,8 +48,8 @@ namespace _vt {
                 for (uint32_t i = imageCount; i < VRT_MAX_IMAGES; i++) { _images.push_back(vk::DescriptorImageInfo(info.pImages[imageCount-1])); }
 
                 
-                auto matDescBuf = bufferDescriptorInfo(info.bMaterialDescriptionsBuffer), imgCompBuf = bufferDescriptorInfo(info.bImageSamplerCombinations);
-                auto writeTmpl = vk::WriteDescriptorSet(vtMaterialSet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+                const auto matDescBuf = bufferDescriptorInfo(info.bMaterialDescriptionsBuffer), imgCompBuf = bufferDescriptorInfo(info.bImageSamplerCombinations);
+                const auto writeTmpl = vk::WriteDescriptorSet(vtMaterialSet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(_images.size()).setPImageInfo(_images.data()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eSampler).setDescriptorCount(_samplers.size()).setPImageInfo(_samplers.data()),

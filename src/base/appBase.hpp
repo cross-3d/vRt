@@ -139,8 +139,8 @@ namespace NSM
             // get our needed extensions
             auto installedExtensions = vk::enumerateInstanceExtensionProperties();
             auto extensions = std::vector<const char *>();
-            for (auto &w : wantedExtensions) {
-                for (auto &i : installedExtensions)
+            for (auto w : wantedExtensions) {
+                for (auto i : installedExtensions)
                 {
                     if (std::string(i.extensionName).compare(w) == 0)
                     {
@@ -153,8 +153,8 @@ namespace NSM
             // get validation layers
             auto installedLayers = vk::enumerateInstanceLayerProperties();
             auto layers = std::vector<const char *>();
-            for (auto &w : wantedLayers) {
-                for (auto &i : installedLayers)
+            for (auto w : wantedLayers) {
+                for (auto i : installedLayers)
                 {
                     if (std::string(i.layerName).compare(w) == 0)
                     {
@@ -208,8 +208,8 @@ namespace NSM
             // use extensions
             auto deviceExtensions = std::vector<const char *>();
             auto gpuExtensions = gpu.enumerateDeviceExtensionProperties();
-            for (auto &w : wantedDeviceExtensions) {
-                for (auto &i : gpuExtensions) {
+            for (auto w : wantedDeviceExtensions) {
+                for (auto i : gpuExtensions) {
                     if (std::string(i.extensionName).compare(w) == 0) {
                         deviceExtensions.emplace_back(w);
                         break;
@@ -221,8 +221,8 @@ namespace NSM
             auto layers = std::vector<const char *>();
             auto deviceValidationLayers = std::vector<const char *>();
             auto gpuLayers = gpu.enumerateDeviceLayerProperties();
-            for (auto &w : wantedLayers) {
-                for (auto &i : gpuLayers) {
+            for (auto w : wantedLayers) {
+                for (auto i : gpuLayers) {
                     if (std::string(i.layerName).compare(w) == 0) {
                         layers.emplace_back(w);
                         break;
@@ -256,7 +256,7 @@ namespace NSM
             auto queueCreateInfos = std::vector<vk::DeviceQueueCreateInfo>();
 
             // compute/graphics queue family
-            for (auto &queuefamily : gpuQueueProps) {
+            for (auto queuefamily : gpuQueueProps) {
                 computeFamilyIndex++;
                 if (queuefamily.queueFlags & (vk::QueueFlagBits::eCompute)) {
                     queueCreateInfos.push_back(vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags()).setQueueFamilyIndex(computeFamilyIndex).setQueueCount(1).setPQueuePriorities(&priority));
@@ -269,7 +269,7 @@ namespace NSM
             }
 
             // graphics/presentation queue family
-            for (auto &queuefamily : gpuQueueProps) {
+            for (auto queuefamily : gpuQueueProps) {
                 graphicsFamilyIndex++;
                 if (queuefamily.queueFlags & (vk::QueueFlagBits::eGraphics) && gpu.getSurfaceSupportKHR(graphicsFamilyIndex, applicationWindow.surface) && graphicsFamilyIndex != computeFamilyIndex) {
                     queueCreateInfos.push_back(vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags()).setQueueFamilyIndex(computeFamilyIndex).setQueueCount(1).setPQueuePriorities(&priority));
@@ -500,14 +500,10 @@ namespace NSM
 
             // choice supported depth format
             vk::Format surfaceDepthFormat = depthFormats[0];
-            for (auto &format : depthFormats)
-            {
+            for (auto format : depthFormats) {
                 auto depthFormatProperties = gpu.getFormatProperties(format);
-                if (depthFormatProperties.optimalTilingFeatures &
-                    vk::FormatFeatureFlagBits::eDepthStencilAttachment)
-                {
-                    surfaceDepthFormat = format;
-                    break;
+                if (depthFormatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eDepthStencilAttachment) {
+                    surfaceDepthFormat = format; break;
                 }
             }
 
@@ -706,11 +702,8 @@ namespace NSM
             std::vector<vk::PresentModeKHR> priorityModes = { vk::PresentModeKHR::eImmediate, vk::PresentModeKHR::eMailbox, vk::PresentModeKHR::eFifoRelaxed, vk::PresentModeKHR::eFifo };
 
             bool found = false;
-            for (auto &pm : priorityModes) {
-                if (found) break;
-                for (auto &sfm : surfacePresentModes) {
-                    if (pm == sfm) { presentMode = pm; found = true; break; }
-                }
+            for (auto pm : priorityModes) { if (found) break;
+                for (auto sfm : surfacePresentModes) { if (pm == sfm) { presentMode = pm; found = true; break; } }
             }
 
             // swapchain info

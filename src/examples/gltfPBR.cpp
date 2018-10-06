@@ -192,8 +192,8 @@ namespace rnd {
             std::vector<vk::DescriptorImageInfo> passImages = { outputImage->_descriptorInfo(), normalPass->_descriptorInfo(), originPass->_descriptorInfo(), specularPass->_descriptorInfo() };
 
             // write ray tracing user defined descriptor set
-            auto writeTmpl = vk::WriteDescriptorSet(usrDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
-            auto imgdi = vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler);
+            const auto writeTmpl = vk::WriteDescriptorSet(usrDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+            const auto imgdi = vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler);
             std::vector<vk::WriteDescriptorSet> writes = {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)(&rtUniformBuffer->_descriptorInfo())),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&imgdi),
@@ -257,7 +257,7 @@ namespace rnd {
             rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
             
-            vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), materialSet);
+            vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST_BIT | VT_ENTRY_USAGE_MISS_BIT), materialSet);
             vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
             vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
             vtCmdBindAccelerator(qRtCmdBuf, accelerator);
@@ -513,7 +513,8 @@ namespace rnd {
     };
 
      // loading mesh (support only one)
-     void Renderer::Preload(const std::string& modelInput){
+     void Renderer::LoadScene(const std::string& modelInput){
+        tinygltf::Model model = {}; tinygltf::TinyGLTF loader = {};
         std::string err = "", warn = "", input_filename = modelInput!="" ? modelInput : this->modelInput;
         const bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, input_filename);
         
@@ -530,18 +531,18 @@ namespace rnd {
 
 
         // load gltf buffers to device
-        for (auto&b : model.buffers) {
-            VtDeviceBuffer buf = {};
-            createBufferFast(deviceQueue, buf, b.data.size());
-            if (b.data.size() > 0) writeIntoBuffer(deviceQueue, b.data, buf);
+        VtDeviceBuffer buf = {};
+        for (auto B : model.buffers) {
+            createBufferFast(deviceQueue, buf, B.data.size());
+            if (B.data.size() > 0) writeIntoBuffer(deviceQueue, B.data, buf);
             VDataSpace.push_back(buf);
         }
-        for (auto b : VDataSpace) { bviews.push_back(b); };
+        for (auto B : VDataSpace) { bviews.push_back(B); };
 
 
         // create images
         if (model.images.size() > 0) {
-            for (auto& I : model.images)
+            for (auto I : model.images)
             {
                 mImages.push_back(VtDeviceImage{});
                 auto& image = mImages[mImages.size() - 1];
@@ -574,7 +575,7 @@ namespace rnd {
 
         // create samplers
         if (model.samplers.size() > 0) {
-            for (auto& S : model.samplers)
+            for (auto S : model.samplers)
             {
                 mSamplers.push_back(VkSampler{});
                 auto& sampler = mSamplers[mSamplers.size() - 1];
@@ -616,19 +617,16 @@ namespace rnd {
         };
 
         {
-            std::vector<VtVirtualCombinedImage> textures;
-            for (auto& T : model.textures)
-            {
+            std::vector<VtVirtualCombinedImage> textures = {};
+            for (auto T : model.textures) {
                 textures.push_back(VtVirtualCombinedImage{});
                 textures[textures.size() - 1].setTextureID(T.source).setSamplerID(T.sampler != -1 ? T.sampler : 0);
             }
             writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, textures, materialCombImages, 0);
         };
 
-
-
         { // write ray tracing user defined descriptor set
-            auto writeTmpl = vk::WriteDescriptorSet(vtxDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+            const auto writeTmpl = vk::WriteDescriptorSet(vtxDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
             std::vector<vk::WriteDescriptorSet> writes = {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)&VTransforms->_descriptorInfo()),
             };
@@ -638,9 +636,8 @@ namespace rnd {
 
 
         {
-            std::vector<VtAppMaterial> materials;
-            for (auto& M : model.materials)
-            {
+            std::vector<VtAppMaterial> materials = {};
+            for (auto M : model.materials) {
                 materials.push_back(VtAppMaterial{});
                 auto& material = materials[materials.size() - 1];
                 material.diffuse = glm::vec4(1.f);
@@ -660,16 +657,16 @@ namespace rnd {
 
 
         
-        for (auto &acs: model.accessors) { accessors.push_back(VtVertexAccessor{ uint32_t(acs.bufferView), uint32_t(acs.byteOffset), uint32_t(_getFormat(acs)) }); }
-        for (auto &bv : model.bufferViews) { bufferViews.push_back(VtVertexBufferView{ uint32_t(bv.buffer), uint32_t(bv.byteOffset), uint32_t(bv.byteStride), uint32_t(bv.byteLength) }); }
+        for (auto acs: model.accessors) { accessors.push_back(VtVertexAccessor{ uint32_t(acs.bufferView), uint32_t(acs.byteOffset), uint32_t(_getFormat(acs)) }); }
+        for (auto bv : model.bufferViews) { bufferViews.push_back(VtVertexBufferView{ uint32_t(bv.buffer), uint32_t(bv.byteOffset), uint32_t(bv.byteStride), uint32_t(bv.byteLength) }); }
 
 
         {
-            std::vector<VkDescriptorImageInfo> dsi;
-            for (auto& Tr: mImages) { dsi.push_back(Tr->_descriptorInfo()); }
+            std::vector<VkDescriptorImageInfo> dsi = {};
+            for (auto Tr: mImages) { dsi.push_back(Tr->_descriptorInfo()); }
 
             // create material set
-            VtMaterialSetCreateInfo mtsi;
+            VtMaterialSetCreateInfo mtsi = {};
             mtsi.imageCount = dsi.size(); mtsi.pImages = dsi.data();
             mtsi.samplerCount = mSamplers.size(); mtsi.pSamplers = (VkSampler *)mSamplers.data();
             mtsi.bMaterialDescriptionsBuffer = materialDescs;
@@ -680,10 +677,10 @@ namespace rnd {
 
 
         std::vector<VtVertexAttributeBinding> attributes = {};
-        for (auto& msh: model.meshes) {
-            std::vector<VtVertexInputSet> primitives;
-            for (auto& prim : msh.primitives) {
-                VtVertexInputSet primitive;
+        for (auto msh: model.meshes) {
+            std::vector<VtVertexInputSet> primitives = {};
+            for (auto prim : msh.primitives) {
+                VtVertexInputSet primitive = {};
 
                 uint32_t attribOffset = attributes.size();
                 VtVertexInputCreateInfo vtii = {};
@@ -692,7 +689,7 @@ namespace rnd {
                 vtii.topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
                 vtii.bTransformData = VTransforms; // 21.09.2018 
 
-                for (auto& attr: prim.attributes) { //attr
+                for (auto attr: prim.attributes) { //attr
                     if (attr.first.compare("POSITION") == 0) {
                         vtii.verticeAccessor = attr.second;
                     }
@@ -734,13 +731,13 @@ namespace rnd {
         {
             std::shared_ptr<std::function<void(const tinygltf::Node &, glm::dmat4, int)>> vertexLoader = {};
             vertexLoader = std::make_shared<std::function<void(const tinygltf::Node &, glm::dmat4, int)>>([&](const tinygltf::Node & node, glm::dmat4 inTransform, int recursive)->void {
-                glm::dmat4 localTransform(1.0);
+                auto localTransform = glm::dmat4(1.0);
                 localTransform *= glm::dmat4(node.matrix.size() >= 16 ? glm::make_mat4(node.matrix.data()) : glm::dmat4(1.0));
                 localTransform *= glm::dmat4(node.translation.size() >= 3 ? glm::translate(glm::make_vec3(node.translation.data())) : glm::dmat4(1.0));
                 localTransform *= glm::dmat4(node.scale.size() >= 3 ? glm::scale(glm::make_vec3(node.scale.data())) : glm::dmat4(1.0));
                 localTransform *= glm::dmat4((node.rotation.size() >= 4 ? glm::mat4_cast(glm::make_quat(node.rotation.data())) : glm::dmat4(1.0)));
 
-                glm::dmat4 transform = glm::dmat4(inTransform) * glm::dmat4(localTransform);
+                auto transform = glm::dmat4(inTransform) * glm::dmat4(localTransform);
                 if (node.mesh >= 0) {
                     auto mesh = vertexInputs[node.mesh]; // load mesh object (it just vector of primitives)
                     for (auto geom : mesh) {
@@ -856,12 +853,12 @@ namespace rnd {
 
 
      void Renderer::HandleData(){
-        auto& tDiff = Shared::active.tDiff; // get computed time difference
+        auto tDiff = Shared::active.tDiff; // get computed time difference
 
-        std::stringstream tDiffStream;
+        std::stringstream tDiffStream{ "" };
         tDiffStream << std::fixed << std::setprecision(2) << (tDiff);
 
-        std::stringstream tFramerateStream;
+        std::stringstream tFramerateStream{ "" };
         auto tFramerateStreamF = 1e3 / tDiff;
         tPastFramerateStreamF = tPastFramerateStreamF * 0.5 + tFramerateStreamF * 0.5;
         tFramerateStream << std::fixed << std::setprecision(0) << tPastFramerateStreamF;
@@ -1012,7 +1009,7 @@ namespace rnd {
         };
 
         // create device image
-        auto dvi = VtDeviceImageCreateInfo{};
+        VtDeviceImageCreateInfo dvi = {};
         dvi.imageViewType = VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
         dvi.format = VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
         dvi.size = { canvasWidth, canvasHeight, 1 };

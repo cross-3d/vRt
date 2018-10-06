@@ -72,11 +72,10 @@ namespace _vt { // store in undercover namespace
         imageMemoryBarriers.subresourceRange = image->_subresourceRange;
 
         // Put barrier on top
-        auto srcStageMask = vk::PipelineStageFlags{ vk::PipelineStageFlagBits::eBottomOfPipe };
-        auto dstStageMask = vk::PipelineStageFlags{ vk::PipelineStageFlagBits::eTopOfPipe };
-        auto dependencyFlags = vk::DependencyFlags{};
-        auto srcMask = vk::AccessFlags{};
-        auto dstMask = vk::AccessFlags{};
+        const auto  srcStageMask = vk::PipelineStageFlags{ vk::PipelineStageFlagBits::eBottomOfPipe };
+        const auto  dstStageMask = vk::PipelineStageFlags{ vk::PipelineStageFlagBits::eTopOfPipe };
+        const auto  dependencyFlags = vk::DependencyFlags{};
+              auto  srcMask = vk::AccessFlags{}, dstMask = vk::AccessFlags{};
 
         typedef vk::ImageLayout il;
         typedef vk::AccessFlagBits afb;
@@ -220,7 +219,7 @@ namespace _vt { // store in undercover namespace
             vezMapBuffer(*buffer->_device, buffer->_buffer, offset, bufferSize, (void**)&uPtr);
             memcpy(uPtr, hostdata.data(), bufferSize);
 
-            auto region = VezMappedBufferRange{};
+            auto  region = VezMappedBufferRange{};
             region.buffer = buffer->_buffer;
             region.offset = offset;
             region.size = bufferSize;
@@ -290,7 +289,7 @@ namespace _vt { // store in undercover namespace
 
     // short data set with command buffer (alike push constant)
     template<class T, VtMemoryUsage U = VT_MEMORY_USAGE_GPU_ONLY>
-    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> dstBuffer, VkDeviceSize offset, const VkDeviceSize& size, const T*data) {
+    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> dstBuffer, VkDeviceSize offset,  VkDeviceSize size, const T*data) {
         return cmdUpdateBuffer<T>(cmd, *dstBuffer, offset, size, data);
     };
 
@@ -302,7 +301,7 @@ namespace _vt { // store in undercover namespace
 
     // short data set with command buffer (alike push constant)
     template<class T>
-    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> dstBuffer, VkDeviceSize offset, const VkDeviceSize& size, const T*data) {
+    static inline VkResult cmdUpdateBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> dstBuffer, VkDeviceSize offset, VkDeviceSize size, const T*data) {
         return cmdUpdateBuffer<T>(cmd, *dstBuffer, offset + dstBuffer->_offset(), size, data);
     };
 

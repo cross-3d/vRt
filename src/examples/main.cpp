@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     renderer->InitPipeline();
     renderer->InitRayTracing();
     renderer->InitRayTracingPipeline();
-    renderer->Preload();
+    renderer->LoadScene();
     //renderer->CreateFbo();
     renderer->InitCommands();
 

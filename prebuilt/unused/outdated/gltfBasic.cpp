@@ -101,7 +101,7 @@ inline auto createBufferFast(vte::Queue deviceQueue, vrt::VtDeviceBuffer& dBuffe
     vrt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
 };
 
-inline auto getShaderDir(const uint32_t& vendorID) {
+inline auto getShaderDir(const uint32_t vendorID) {
     std::string shaderDir = "./universal/";
     switch (vendorID) {
         case 4318:
@@ -245,8 +245,8 @@ int main() {
 
 
     //model
-    std::vector<VtDeviceBuffer> VDataSpace;
-    for (auto&b : model.buffers) {
+    std::vector<VtDeviceBuffer> VDataSpace = {};
+    for (auto b : model.buffers) {
         VtDeviceBuffer buf;
         createBufferFast(deviceQueue, buf, b.data.size());
         if (b.data.size() > 0) writeIntoBuffer(deviceQueue, b.data, buf);
@@ -302,7 +302,7 @@ int main() {
     }
 
     // create images
-    for (auto& I: model.images) 
+    for (auto I: model.images) 
     {
         mImages.push_back(VtDeviceImage{});
         auto& image = mImages[mImages.size()-1];
@@ -319,7 +319,7 @@ int main() {
 
         // dispatch image barrier
         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
-            for (auto& mI : mImages) { vtCmdImageBarrier(cmdBuf, mI); }
+            for (auto mI : mImages) { vtCmdImageBarrier(cmdBuf, mI); }
         });
 
         writeIntoImage<uint8_t>(deviceQueue, I.image, image, 0);
@@ -329,7 +329,7 @@ int main() {
 
 
     if (model.samplers.size() > 0) {
-        for (auto& S : model.samplers)
+        for (auto S : model.samplers)
         {
             mSamplers.push_back(VkSampler{});
             auto& sampler = mSamplers[mSamplers.size() - 1];
@@ -374,7 +374,7 @@ int main() {
 
     {
         std::vector<VtAppMaterial> materials;
-        for (auto& M : model.materials)
+        for (auto M : model.materials)
         {
             materials.push_back(VtAppMaterial{});
             auto& material = materials[materials.size() - 1];
@@ -398,7 +398,7 @@ int main() {
 
     {
         std::vector<VtVirtualCombinedImage> textures;
-        for (auto& T : model.textures)
+        for (auto T : model.textures)
         {
             textures.push_back(VtVirtualCombinedImage{});
             textures[textures.size() - 1].setTextureID(T.source).setSamplerID(T.sampler != -1 ? T.sampler : 0);
@@ -483,8 +483,8 @@ int main() {
         std::vector<vk::DescriptorImageInfo> passImages = { outputImage->_descriptorInfo(), normalPass->_descriptorInfo(), originPass->_descriptorInfo(), specularPass->_descriptorInfo() };
 
         // write ray tracing user defined descriptor set
-        auto writeTmpl = vk::WriteDescriptorSet(usrDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
-        auto imgdi = vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler);
+        const auto writeTmpl = vk::WriteDescriptorSet(usrDescSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+        const auto imgdi = vk::DescriptorImageInfo(envImage->_descriptorInfo()).setSampler(dullSampler);
         std::vector<vk::WriteDescriptorSet> writes = {
             vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)(&rtUniformBuffer->_descriptorInfo())),
             vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&imgdi),
@@ -564,7 +564,7 @@ int main() {
 
     {
         std::vector<VkDescriptorImageInfo> dsi;
-        for (auto& Tr: mImages) { dsi.push_back(Tr->_descriptorInfo()); }
+        for (auto Tr: mImages) { dsi.push_back(Tr->_descriptorInfo()); }
 
         // create material set
         VtMaterialSetCreateInfo mtsi;
@@ -641,8 +641,8 @@ int main() {
 
     std::vector<VtVertexAccessor> accessors = {};
     std::vector<VtVertexBufferView> bufferViews = {};
-    for (auto &acs: model.accessors) { accessors.push_back(VtVertexAccessor{ uint32_t(acs.bufferView), uint32_t(acs.byteOffset), uint32_t(_getFormat(acs)) }); }
-    for (auto &bv : model.bufferViews) { bufferViews.push_back(VtVertexBufferView{ uint32_t(bv.buffer), uint32_t(bv.byteOffset), uint32_t(bv.byteStride), uint32_t(bv.byteLength) }); }
+    for (auto acs: model.accessors) { accessors.push_back(VtVertexAccessor{ uint32_t(acs.bufferView), uint32_t(acs.byteOffset), uint32_t(_getFormat(acs)) }); }
+    for (auto bv : model.bufferViews) { bufferViews.push_back(VtVertexBufferView{ uint32_t(bv.buffer), uint32_t(bv.byteOffset), uint32_t(bv.byteStride), uint32_t(bv.byteLength) }); }
     
 
 
@@ -653,9 +653,9 @@ int main() {
     const uint32_t VCOLOR_TID = 4;
 
     std::vector<VtVertexAttributeBinding> attributes = {};
-    for (auto& msh: model.meshes) {
+    for (auto msh: model.meshes) {
         std::vector<VtVertexInputSet> primitives;
-        for (auto& prim : msh.primitives) {
+        for (auto prim : msh.primitives) {
             VtVertexInputSet primitive;
 
             uint32_t attribOffset = attributes.size();
@@ -665,7 +665,7 @@ int main() {
             vtii.topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
 
 
-            for (auto& attr: prim.attributes) { //attr
+            for (auto attr: prim.attributes) { //attr
                 if (attr.first.compare("POSITION") == 0) {
                     vtii.verticeAccessor = attr.second;
                 }
@@ -805,7 +805,7 @@ int main() {
         rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
         VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
         
-        vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS), materialSet);
+        vtCmdBindMaterialSet(qRtCmdBuf, VT_ENTRY_USAGE_CLOSEST | VT_ENTRY_USAGE_MISS, materialSet);
         vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
         vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
         vtCmdBindAccelerator(qRtCmdBuf, accelerator);
@@ -842,7 +842,7 @@ int main() {
 
 
     // create pipeline
-    vk::Pipeline trianglePipeline;
+    vk::Pipeline trianglePipeline = {};
     {
         // pipeline stages
         std::vector<vk::PipelineShaderStageCreateInfo> pipelineShaderStages = {
@@ -905,7 +905,7 @@ int main() {
 
 
     { // write descriptors for showing texture
-        vk::SamplerCreateInfo samplerInfo;
+        vk::SamplerCreateInfo samplerInfo = {};
         samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;
         samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;
         samplerInfo.minFilter = vk::Filter::eLinear;
@@ -915,7 +915,7 @@ int main() {
         auto image = outputImage;
 
         // desc texture texture
-        vk::DescriptorImageInfo imageDesc;
+        vk::DescriptorImageInfo imageDesc = {};
         imageDesc.imageLayout = vk::ImageLayout(image->_layout);
         imageDesc.imageView = vk::ImageView(image->_imageView);
         imageDesc.sampler = sampler;

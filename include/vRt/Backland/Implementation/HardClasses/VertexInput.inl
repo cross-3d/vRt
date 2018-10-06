@@ -1,20 +1,20 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+//#include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
 
 namespace _vt {
     using namespace vrt;
 
     // also, planned to add support of offsets in buffers 
-    VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, const VtVertexInputCreateInfo& info, std::shared_ptr<VertexInputSet>& vtVertexInput) {
+    VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice,  VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& vtVertexInput) {
         VtResult result = VK_SUCCESS;
         //auto vtVertexInput = (_vtVertexInput = std::make_shared<VertexInputSet>());
 
         auto vkDevice = _vtDevice->_device;
         vtVertexInput = std::make_shared<VertexInputSet>();
         vtVertexInput->_device = _vtDevice;
-        vtVertexInput->_attributeVertexAssembly = std::shared_ptr<AssemblyPipeline>(VtVertexInputCreateInfo(info).attributePipeline);
+        vtVertexInput->_attributeVertexAssembly = info.attributePipeline;
 
         // 
         VtDeviceBufferCreateInfo bfi = {};
@@ -49,16 +49,16 @@ namespace _vt {
 
             // create descriptor sets
             std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
-            auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+            const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
             vtVertexInput->_descriptorSet = dsc[0];
 
             // write descriptors
-            auto d1 = vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset);
-            auto d2 = vk::DescriptorBufferInfo(info.bBufferViews, 0, VK_WHOLE_SIZE).setOffset(info.bufferViewByteOffset);
-            auto d3 = vk::DescriptorBufferInfo(info.bBufferAccessors, 0, VK_WHOLE_SIZE).setOffset(info.bufferAccessorByteOffset);
-            auto d4 = vk::DescriptorBufferInfo(info.bBufferAttributeBindings, 0, VK_WHOLE_SIZE).setOffset(info.attributeByteOffset);
-            auto d5 = vk::DescriptorBufferInfo(vtVertexInput->_uniformBlockBuffer->_descriptorInfo());
-            auto d6 = vk::DescriptorBufferInfo(info.bTransformData, 0, VK_WHOLE_SIZE).setOffset(info.transformOffset);
+             auto d1 = vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset);
+             auto d2 = vk::DescriptorBufferInfo(info.bBufferViews, 0, VK_WHOLE_SIZE).setOffset(info.bufferViewByteOffset);
+             auto d3 = vk::DescriptorBufferInfo(info.bBufferAccessors, 0, VK_WHOLE_SIZE).setOffset(info.bufferAccessorByteOffset);
+             auto d4 = vk::DescriptorBufferInfo(info.bBufferAttributeBindings, 0, VK_WHOLE_SIZE).setOffset(info.attributeByteOffset);
+             auto d5 = vk::DescriptorBufferInfo(vtVertexInput->_uniformBlockBuffer->_descriptorInfo());
+             auto d6 = vk::DescriptorBufferInfo(info.bTransformData, 0, VK_WHOLE_SIZE).setOffset(info.transformOffset);
 
             // inline transform buffer create
             if (!d6.buffer) {
@@ -69,7 +69,7 @@ namespace _vt {
             };
 
             // 
-            auto writeTmpl = vk::WriteDescriptorSet(vtVertexInput->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+            const auto writeTmpl = vk::WriteDescriptorSet(vtVertexInput->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
             std::vector<vk::WriteDescriptorSet> writes = {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(inputCount).setPTexelBufferView(sourceBuffers.data()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(&d1),

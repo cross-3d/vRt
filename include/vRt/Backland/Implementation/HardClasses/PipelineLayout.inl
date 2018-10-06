@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../vRt_subimpl.inl"
+//#include "../../vRt_subimpl.inl"
 #include "../Utils.hpp"
 
 namespace _vt {
@@ -36,7 +36,7 @@ namespace _vt {
         vkPipelineLayout.setLayoutCount = dsLayouts.size();
         vkPipelineLayout.pSetLayouts = dsLayouts.data();
 
-        auto rng = vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0, strided<uint32_t>(1));
+        const auto rng = vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0, strided<uint32_t>(1));
         if (type != VT_PIPELINE_LAYOUT_TYPE_RAYTRACING) {
             vkPipelineLayout.pPushConstantRanges = &rng;
             vkPipelineLayout.pushConstantRangeCount = 1;
