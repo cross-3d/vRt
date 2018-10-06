@@ -111,8 +111,8 @@ if (MSVC) # Clang in Visual Studio 2017
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest /arch:AVX2 /fp:strict /permissive- /Ot /W3 /NODEFAULTLIB:library") # Native compiler of Visual Studio 2017
     set (CMAKE_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")
 else()
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -lpthread -w -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
-    set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=c1x   -march=skylake -fpermissive -lpthread -w -mfpmath=sse,387 -mpc32 -mavx2 -mrecip=all -msse2avx")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a -march=skylake -fpermissive -w ")
+    set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -std=c1x   -march=skylake -fpermissive -w ")
     if (WIN32)
         set (CMAKE_CXX_FLAGS "${CMAK_CXX_FLAGS} -Wa,-mbig-obj")
         set (CMAKE_C_FLAGS "${CMAK_C_FLAGS} -Wa,-mbig-obj")
