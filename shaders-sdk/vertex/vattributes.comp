@@ -66,9 +66,10 @@ void calculateAttributes(in int rofft, in int trip, in mat3x4 transformNrm) {
                   TANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TANGENT_TID)),
                 BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
     [[unroll]] for (int i=0;i<3;i++) {
-        // calc raw TBN 
-        const float idet = precIssue(1.f/determinant(mat2(dlts[1],dlts[2]))); // inv determinant
-        vec3 t = fma(dlts[2].yyy, dlps[1], -dlts[1].y * dlps[2]), b = fma(dlts[1].xxx, dlps[2], -dlts[2].x * dlps[1]), n = gnormal.xyz;//normals[i].xyz; // pre-tbn
+        // calc raw TBN
+        //normals[i].xyz = normalize(normals[i].xyz);
+        const float idet = 1.f/precIssue(determinant(mat2(dlts[1],dlts[2]))); // inv determinant
+        vec3 t = fma(dlts[2].yyy, dlps[1], -dlts[1].y * dlps[2]), b = fma(dlts[1].xxx, dlps[2], -dlts[2].x * dlps[1]), n = (normals[i].xyz); // pre-tbn
         
         { // orthonormalization process
             t -= n*dot(t,n);
@@ -78,22 +79,25 @@ void calculateAttributes(in int rofft, in int trip, in mat3x4 transformNrm) {
         };
 
         // if none of native tangent, use generated
-        [[flatten]] if (nvlda(tangent[i].xyz)) { tangent[i].xyz = t; } else { b = cross(n,tangent[i].xyz); };
+        [[flatten]] if (nvlda(tangent[i].xyz)) { tangent[i].xyz = t; } else { b = cross(normals[i].xyz,tangent[i].xyz); };
+
+        // if no valid generation 
         [[flatten]] if (nvlda(tangent[i].xyz)) {
             vec3 dirn = vec3(0.f, 0.f, 1.f);
             if (abs(n.x) < SQRT_OF_ONE_THIRD) dirn = vec3(1.f, 0.f, 0.f);
             if (abs(n.y) < SQRT_OF_ONE_THIRD) dirn = vec3(0.f, 1.f, 0.f);
-            tangent[i].xyz = cross(n, dirn), b = cross(n, tangent[i].xyz);
+            tangent[i].xyz = cross(normals[i].xyz, dirn), b = cross(normals[i].xyz, tangent[i].xyz);
         };
 
         // if texcoord not found or incorrect, calculate by axis
-        [[flatten]] if (nvlda(b)) b = cross(n, tangent[i].xyz);
+        [[flatten]] if (nvlda(b)) { b = cross(normals[i].xyz,tangent[i].xyz); };
         [[flatten]] if (abs(tangent[i].w) <= SFN) { tangent[i].w = -1.f; };
 
         // transform and store TBN
-        ISTORE(attrib_texture_out, mosaicIdc(   NORMAL_, i), vec4(normalize(mult4(transformNrm,   point4(normals[i], 0.f))), 0.0f));
-        ISTORE(attrib_texture_out, mosaicIdc(  TANGENT_, i), vec4(normalize(mult4(transformNrm,   point4(tangent[i], 0.f))), 0.0f));
-        ISTORE(attrib_texture_out, mosaicIdc(BITANGENT_, i), vec4(normalize(mult4(transformNrm, tangent[i].w*vec4(b, 0.f))), 0.0f));
+        vec3 fn = normals[i].xyz, ft = (tangent[i].xyz), fb = (b * tangent[i].w);
+        ISTORE(attrib_texture_out, mosaicIdc(   NORMAL_, i), vec4( normalize(mult4(transformNrm, vec4(fn,0.f))), 0.0f));
+        ISTORE(attrib_texture_out, mosaicIdc(  TANGENT_, i), vec4( normalize(mult4(transformNrm, vec4(ft,0.f))), 0.0f));
+        ISTORE(attrib_texture_out, mosaicIdc(BITANGENT_, i), vec4( normalize(mult4(transformNrm, vec4(fb,0.f))), 0.0f));
     }
 }
 
