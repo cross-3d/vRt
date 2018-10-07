@@ -13,9 +13,9 @@ layout ( binding = 0, set = SETS_DESC_SET_ID ) uniform texture2D images[MAX_IMAG
 layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[MAX_SAMPLERS];
 
 // material set (in main descriptor set)
-layout ( binding = 2, set = SETS_DESC_SET_ID, std430 ) readonly buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
-layout ( binding = 3, set = SETS_DESC_SET_ID, std430 ) readonly buffer VT_COMBINED { uvec2 vtexures[]; }; // TODO: replace by native combinations
-layout ( binding = 4, set = SETS_DESC_SET_ID, std430 ) readonly buffer VT_MATERIAL_INFO { uint materialCount, materialOffset; };
+layout ( binding = 2, set = SETS_DESC_SET_ID, std430 ) readonly restrict buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
+layout ( binding = 3, set = SETS_DESC_SET_ID, std430 ) readonly restrict buffer VT_COMBINED { u16vec2 vtexures[]; }; // TODO: replace by native combinations
+layout ( binding = 4, set = SETS_DESC_SET_ID, std430 ) readonly restrict buffer VT_MATERIAL_INFO { uint materialCount, materialOffset; };
 
 
 int matID = -1;

@@ -50,20 +50,21 @@ namespace vrt { // store in official namespace
         constexpr bool getNormalized() const { return _formatDecomp._normalized; };
     };
 
-    struct VtVirtualCombinedImage {
+    // standart 32-bit combined virtual image
+    struct VtVirtualCombinedImageV32 {
         union {
             uint64_t _combined = 0ull;
             struct { uint64_t textureID : 32, samplerID : 32; } _combination;
         };
 
         // per-component constructor
-        VtVirtualCombinedImage(uint32_t textureID = 0u, uint32_t samplerID = 0u) : _combination({ textureID + 1u, samplerID + 1u }) {};
-        VtVirtualCombinedImage(uint64_t combined) : _combined(combined) {};
+        VtVirtualCombinedImageV32(uint32_t textureID = 0u, uint32_t samplerID = 0u) : _combination({ textureID + 1u, samplerID + 1u }) {};
+        VtVirtualCombinedImageV32(uint64_t combined) : _combined(combined) {};
         //VtVirtualCombinedImage() {};
 
         // component setters
-        VtVirtualCombinedImage& setTextureID(uint32_t textureID = 0) { _combination.textureID = textureID + 1u; return *this; }
-        VtVirtualCombinedImage& setSamplerID(uint32_t samplerID = 0) { _combination.samplerID = samplerID + 1u; return *this; }
+        VtVirtualCombinedImageV32& setTextureID(uint32_t textureID = 0) { _combination.textureID = textureID + 1u; return *this; }
+        VtVirtualCombinedImageV32& setSamplerID(uint32_t samplerID = 0) { _combination.samplerID = samplerID + 1u; return *this; }
 
         // component getters
         uint32_t getTextureID() const { return uint32_t(_combination.textureID) - 1u; }
@@ -73,6 +74,32 @@ namespace vrt { // store in official namespace
         operator uint64_t() const { return _combined; };
         operator uint64_t&() { return _combined; };
     };
+
+    // experimental 16-bit indexed virtual image
+    struct VtVirtualCombinedImageV16 {
+        union {
+            uint32_t _combined = 0ull;
+            struct { uint32_t textureID : 16, samplerID : 16; } _combination;
+        };
+
+        // per-component constructor
+        VtVirtualCombinedImageV16(uint16_t textureID = 0u, uint16_t samplerID = 0u) : _combination({ textureID + 1u, samplerID + 1u }) {};
+        VtVirtualCombinedImageV16(uint32_t combined) : _combined(combined) {};
+
+        // component setters
+        VtVirtualCombinedImageV16& setTextureID(uint16_t textureID = 0) { _combination.textureID = textureID + 1u; return *this; }
+        VtVirtualCombinedImageV16& setSamplerID(uint16_t samplerID = 0) { _combination.samplerID = samplerID + 1u; return *this; }
+
+        // component getters
+        uint16_t getTextureID() const { return uint16_t(_combination.textureID) - 1u; };
+        uint16_t getSamplerID() const { return uint16_t(_combination.samplerID) - 1u; };
+
+        // casting operator
+        operator uint32_t() const { return _combined; };
+        operator uint32_t&() { return _combined; };
+    };
+
+
 
     typedef enum VtType : uint32_t {
         VT_TYPE_FLOAT = 0,

@@ -526,7 +526,7 @@ namespace rnd {
             createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024ull * 1024ull);
             createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4x3) * 1024ull * 1024ull);
             createBufferFast(deviceQueue, materialDescs, sizeof(VtAppMaterial) * (1ull+model.materials.size()));
-            createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImage>(256));
+            createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImageV16>(256));
         };
 
 
@@ -617,12 +617,12 @@ namespace rnd {
         };
 
         {
-            std::vector<VtVirtualCombinedImage> textures = {};
+            std::vector<VtVirtualCombinedImageV16> textures = {};
             for (auto T : model.textures) {
-                textures.push_back(VtVirtualCombinedImage{});
+                textures.push_back(VtVirtualCombinedImageV16{});
                 textures[textures.size() - 1].setTextureID(T.source).setSamplerID(T.sampler != -1 ? T.sampler : 0);
             }
-            writeIntoBuffer<VtVirtualCombinedImage>(deviceQueue, textures, materialCombImages, 0);
+            writeIntoBuffer<VtVirtualCombinedImageV16>(deviceQueue, textures, materialCombImages, 0);
         };
 
         { // write ray tracing user defined descriptor set
