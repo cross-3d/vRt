@@ -117,17 +117,18 @@ vec4 getNormalMapping(in vec2 texcoordi) {
     if ( abs(tc.x-tc.y)<1e-4f && abs(tc.x-tc.z)<1e-4f ) {
         //vec2 txs = 1.f/textureSize(sampler2D(images[tbinding], samplers[0]), 0);
         vec2 txs = 1.f/textureSize(images[tbinding], 0);
-        vec4 tx4 = vec4(-txs.xy, txs.xy)*0.5f;
-        vec4 txu = vec4(-1.f,-1.f,1.f,1.f)*0.5f;
+        vec4 tx4 = vec4(-txs, txs)*0.5f;
+        vec4 txu = vec4(-.5f.xx,.5f.xx);
 
         const float hsize = 2.f;
         vec3 t00 = vec3(txu.xy, getUVH(texcoordi + tx4.xy).z) * vec3(1.f, 1.f, hsize);
         vec3 t01 = vec3(txu.xw, getUVH(texcoordi + tx4.xw).z) * vec3(1.f, 1.f, hsize);
         vec3 t10 = vec3(txu.zy, getUVH(texcoordi + tx4.zy).z) * vec3(1.f, 1.f, hsize);
-        vec3 bump = normalize(cross( t01 - t00, t10 - t00 ));
+        vec3 bump = normalize(cross( t01 - t00, t10 - t00 ))*vec3(1.f,-1.f,1.f);
         normal.xyz = faceforward(bump, -normal.xyz, bump);
     } else {
-        normal.xyz = normalize(mix(vec3(0.0f, 0.0f, 1.0f), fma(tc.xyz, vec3(2.0f), vec3(-1.0f)), vec3(1.0f))), normal.y *= -1.f;
+        normal.xyz = normalize(mix(vec3(0.0f, 0.0f, 1.0f), fma(tc.xyz, vec3(2.0f), vec3(-1.0f)), vec3(1.0f)));//, normal.y *= -1.f;
+        //normal.x *= -1.f;
     }
 
     return point4(normal, tc.w);

@@ -81,7 +81,6 @@ void main() {
 #endif
         };
 
-
         // unit mode 
         //vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax, sceneRes = sceneMax - sceneMin;
         vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx, sceneRes = sceneMax - sceneMin;
@@ -104,6 +103,6 @@ void main() {
 #endif
 
             MortoncodesIndices[to] = int(to+1);
-        }
-    }
-}
+        };
+    };
+};

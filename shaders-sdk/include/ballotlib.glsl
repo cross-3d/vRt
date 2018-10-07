@@ -8,7 +8,7 @@
 
 // for constant maners
 #ifndef Wave_Size
-    #ifdef AMD_PLATFORM
+    #if (defined(AMD_PLATFORM) || defined(ENABLE_TURING_INSTRUCTION_SET))
         #define Wave_Size 64u
     #else
         #define Wave_Size 32u

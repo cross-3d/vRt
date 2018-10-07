@@ -1,3 +1,4 @@
+#define EXTEND_LOCAL_GROUPS
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
@@ -43,10 +44,18 @@
     #define U8v4 uvec4
 #endif
 
+// match by default
+#ifndef BLOCK_SIZE
+#define BLOCK_SIZE WORK_SIZE 
+#endif
+
+// default values
+#ifndef BLOCK_SIZE
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
-#define BLOCK_SIZE 512u
+#define BLOCK_SIZE 1024u
 #else
-#define BLOCK_SIZE 256u
+#define BLOCK_SIZE 768u
+#endif
 #endif
 
 #define BLOCK_SIZE_RT (gl_WorkGroupSize.x)

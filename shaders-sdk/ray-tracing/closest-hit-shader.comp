@@ -136,7 +136,7 @@ void main() {
             const vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
             
             // TODO: dynamic light
-            const vec3 lightVector = normalize(vec3(0.1f, 1.f, 0.f)), lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
+            const vec3 lightVector = normalize(vec3(0.2f, 1.f, 0.1f)), lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
             hitp.albedo = (textured.diffuse * vec4(  mix(lightColor*0.1f, lightColor*1.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx), 1.f));
             
             // temporary solution - add emission to albedo

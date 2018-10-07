@@ -1,7 +1,10 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
-#define EXTEND_LOCAL_GROUPS
+#ifndef BLOCK_SIZE
+#define BLOCK_SIZE 256u
+#endif
+
 #include "./includes.glsl"
 
 // current work group size
@@ -28,8 +31,8 @@ void main() {
             const uint workgroup = gp+Lane_Idx, widx = workgroup*RADICES + radice;
             [[flatten]] if (workgroup < WG_COUNT) {
                 PrefixSum[widx] = subgroupExclusiveAdd(Histogram[widx]) + add(radcount, subgroupAdd(Histogram[widx]));
-            }
-        }
+            };
+        };
         [[flatten]] if (electedInvoc()) localHistogram[radice] = radcount; // collect all radice counts
     }
 
@@ -44,7 +47,7 @@ void main() {
             const uint radice = rk + Lane_Idx, widx = workgroup*RADICES + radice;
             [[flatten]] if (radice < RADICES) {
                 PrefixSum[widx] += subgroupExclusiveAdd(localHistogram[radice]) + add(gprefix, subgroupAdd(localHistogram[radice]));
-            }
-        }
-    }
+            };
+        };
+    };
 };

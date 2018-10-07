@@ -41,15 +41,16 @@
 //#extension GL_EXT_subgroupuniform_qualifier : enable
 
 // if Vega 10 specific
+#define ENABLE_NON_UNIFORM_SAMPLER
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
     #define ENABLE_INT16_SUPPORT
     #define ENABLE_FP16_SUPPORT
-    #define ENABLE_NON_UNIFORM_SAMPLER
+    //#define ENABLE_NON_UNIFORM_SAMPLER
     //#define ENABLE_FP16_SAMPLER_HACK
 #endif
 
 #ifdef ENABLE_NON_UNIFORM_SAMPLER
-#extension GL_EXT_nonuniform_qualifier : enable
+    #extension GL_EXT_nonuniform_qualifier : enable
 #endif
 
 // if Turing specific
@@ -91,11 +92,13 @@
 #endif
 
 // platform-oriented compute
+#ifndef WORK_SIZE
 #ifdef EXTEND_LOCAL_GROUPS
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
-    #define WORK_SIZE 512u
+    #define WORK_SIZE 1024u
 #else
-    #define WORK_SIZE 256u
+    #define WORK_SIZE 768u
+#endif
 #endif
 #endif
 
