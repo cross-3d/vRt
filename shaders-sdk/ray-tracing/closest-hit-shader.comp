@@ -98,6 +98,7 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
+        uint ghit = hitID+1u;
         [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0) {
             hitp = hitPayload[hit.payloadID-1];
             globalInvocationSMP = globalID;
@@ -144,11 +145,10 @@ void main() {
 
             // z-fighting by hashing (if fail to alpha test, back layers will still showing)
             [[flatten]] if (hrand(uvec4(imageLoad(rayLink,(rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(vec4(rdirect, 0.f)))) <= hitp.albedo.w) {
-                imageAtomicMin(rayLink,rayID<<1,(hitID+1).x);
+                ghit = imageAtomicMin(rayLink,rayID<<1,(hitID+1).x);
             };
             
-            
-            {
+            [[flatten]] if (ghit >= (hitID+1u)) { // if z-fight solved 
                 int pid = atomicIncPayloadHitCount();
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT

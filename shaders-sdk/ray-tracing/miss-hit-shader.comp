@@ -39,6 +39,7 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
+        uint ghit = hitID+1;
         [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0 && (imageLoad(rayLink,rayID<<1).x-1) == hitID) { // if hit is valid
             const vec3 viewVec = dcts(cray.cdirect);
             const vec3 rorigin = cray.origin.xyz;
@@ -57,10 +58,10 @@ void main() {
 
             hitp.albedo = hitp.emission+vec4(0.f.xxx, 0.f);
             // additional validation of hit (hit point interpolated offset test)
-            {
-                imageAtomicMax(rayLink,rayID<<1,(hid+1).x);
+
+            ghit = imageAtomicMin(rayLink,rayID<<1,(hid+1).x);
+            [[flatten]] if (ghit >= (hitID+1u)) {
                 const int pid = atomicIncPayloadHitCount();
-                
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT
                 hits[hitID] = hit;
