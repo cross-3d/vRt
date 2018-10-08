@@ -71,7 +71,7 @@ void main() {
                 newray.origin.xyz = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
                 writeColor(newray.dcolor, vec4(rcolor.xyz * (1.f - alph).xxx, 1.f));
                 vtReuseRays(newray, ucoord.xy, 0, rayID);
-            }
+            };
             
             // create data for reflection rays
             const vec3 vcolor = rcolor.xyz * alph; // visible ray color energy

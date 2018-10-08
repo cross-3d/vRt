@@ -140,8 +140,8 @@ void main() {
             hitp.albedo = (textured.diffuse * vec4(  mix(lightColor*0.1f, lightColor*1.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx), 1.f));
             
             // temporary solution - add emission to albedo
-            hitp.emission = textured.emissive, hitp.specularGlossiness = specularGlossiness; // set emission and specularity
-            hitp.albedo += vec4(hitp.emission.xyz * hitp.emission.a, 0.f);
+            hitp.emission = textured.emissive * mix(1.f-textured.diffuse,textured.diffuse,vec4(0.f.xxx,1.f)), hitp.specularGlossiness = specularGlossiness; // set emission and specularity
+            hitp.albedo += vec4(hitp.emission.xyz * hitp.emission.a * hitp.albedo.w, 0.f);
 
             // z-fighting by hashing (if fail to alpha test, back layers will still showing)
             [[flatten]] if (hrand(uvec4(imageLoad(rayLink,(rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(vec4(rdirect, 0.f)))) <= hitp.albedo.w) {
