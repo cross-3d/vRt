@@ -27,7 +27,7 @@ void main() {
     }
     [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
     LGROUP_BARRIER
-    IFANY (bcount <= 0) return;
+    [[flatten]] IFANY (bcount <= 0) return;
 
     // calculate blocks
     WPTR1 addr = WPTR1(0)*Wave_Size_RT.x + WPTR1(blocks.offset.x) + WPTR1(Lane_Idx.x);
@@ -42,7 +42,10 @@ void main() {
         [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
              const BOTTLE_TYPE radice = BOTTLE_TYPE(rk + Radice_Idx);
              const bool owned = key.x == radice.x && validAddress;
-             [[flatten]] if (owned) { uint offset = countOffset(radice); ValueTmp[offset.x] = ValueIn[addr.x], KeyTmp[offset.x] = KeyIn[addr.x]; };
+             [[flatten]] if (owned) { 
+                 const uint offset = countOffset(radice); 
+                 ValueTmp[offset.x] = ValueIn[addr.x], KeyTmp[offset.x] = KeyIn[addr.x]; 
+             };
              IFALL ( radice >= RADICES || !validAddress ) break;
         };
         

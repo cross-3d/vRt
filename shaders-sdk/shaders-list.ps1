@@ -64,20 +64,21 @@ function BuildVertex($Name, $InDir = "", $OutDir = "", $AddArg = "") {
 
 function OptimizeMainline($Pfx = "") {
     # optimize accelerator structure (hlBVH2)
-    Optimize "interpolator.comp" "$HRDDIR$HLBV"
+    #Optimize "interpolator.comp" "$HRDDIR$HLBV"
     #Optimize "traverse-bvh.comp" "$HRDDIR$HLBV" 
     Optimize "bvh-build-first.comp" "$HRDDIR$HLBV" 
     Optimize "bvh-build.comp" "$HRDDIR$HLBV" 
     Optimize "bvh-fit.comp" "$HRDDIR$HLBV" 
     Optimize "shorthand.comp" "$HRDDIR$HLBV" 
     Optimize "leaf-link.comp" "$HRDDIR$HLBV" 
+    
     Optimize "/triangle/bound-calc.comp" "$HRDDIR$HLBV" 
     Optimize "/triangle/leaf-gen.comp" "$HRDDIR$HLBV" 
     Optimize "/triangle/box-calc.comp" "$HRDDIR$HLBV" 
     
     # optimize vertex assemblers
-    Optimize "vinput.comp"       "$HRDDIR$NTVE" # native
-    Optimize "vtransformed.comp" "$OUTDIR$VRTX" 
+    #Optimize "vinput.comp"       "$HRDDIR$NTVE" # native
+    #Optimize "vtransformed.comp" "$OUTDIR$VRTX" 
 
     # optimize radix sort
     Optimize "permute.comp"   "$HRDDIR$RDXI"
@@ -137,7 +138,7 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "copyhack.comp"   "$INDIR$RDXI" "$HRDDIR$RDXI"
 
     # optimize built shaders
-    #OptimizeMainline
+    OptimizeMainline
 
     [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
     

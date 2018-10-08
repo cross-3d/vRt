@@ -17,7 +17,7 @@ shared uint_rdc_wave_lcm _data[Wave_Size];
 shared blocks_info blocks;
 #define key _data[Lane_Idx]
 
-initSubgroupIncFunctionTargetQuad(localHistogram[WHERE], countOffset, 1, uint, uvec4)
+initSubgroupIncFunctionTarget(localHistogram[WHERE], countOffset, 1, uint)
 
 #define bcount blocks.count
 
@@ -32,7 +32,7 @@ void main() {
     };
     [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
     LGROUP_BARRIER
-    IFANY (bcount <= 0) return;
+    [[flatten]] IFANY (bcount <= 0) return;
 
     // calculate blocks
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR4(blocks.offset.xxxx) + WPTR4(Lane_Idx.xxxx);
@@ -47,10 +47,10 @@ void main() {
         [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
             const BOTTLE_TYPE radice = BOTTLE_TYPE(rk + Radice_Idx);
             const bvec4 owned = and(equal(BOTTLE_TYPE_VEC(upfunc(key)), radice.xxxx), validAddress);
-            [[flatten]] if (any(owned)) {
-                WPTR4 offset = WPTR4(countOffset(uint(radice), owned));
-                [[unroll]] for (int w=0;w<4;w++) { [[flatten]] if (owned[w]) { ValueTmp[offset[w]] = ValueIn[addr[w]], KeyTmp[offset[w]] = KeyIn[addr[w]]; }; };
-            };
+            [[unroll]] for (int w=0;w<4;w++) { [[flatten]] if (owned[w]) {
+                const uint offset = countOffset(radice); 
+                ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]]; 
+            }};
             IFALL (all(or((radice >= RADICES).xxxx, not(validAddress)))) break;
         };
         addr += ( Wave_Size_RT << 2u );
