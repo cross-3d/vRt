@@ -20,8 +20,8 @@
 #endif
 
 // 
-//#extension GL_KHR_shader_atomic_int64 : enable
 #extension GL_ARB_gpu_shader_int64 : enable
+#extension GL_EXT_shader_atomic_int64 : enable
 #extension GL_EXT_shader_8bit_storage : enable
 #extension GL_EXT_control_flow_attributes : enable
 #extension GL_EXT_shader_image_load_formatted : enable
@@ -39,6 +39,8 @@
 // 
 #extension GL_EXT_samplerless_texture_functions : enable
 //#extension GL_EXT_subgroupuniform_qualifier : enable
+#extension GL_EXT_nonuniform_qualifier : enable
+
 
 // if Vega 10 specific
 #define ENABLE_NON_UNIFORM_SAMPLER
@@ -49,15 +51,12 @@
     //#define ENABLE_FP16_SAMPLER_HACK
 #endif
 
-#ifdef ENABLE_NON_UNIFORM_SAMPLER
-    #extension GL_EXT_nonuniform_qualifier : enable
-#endif
-
 // if Turing specific
 #ifdef ENABLE_TURING_INSTRUCTION_SET
     #define ENABLE_INT16_SUPPORT
     #define ENABLE_FP16_SUPPORT
-    #extension GL_NV_shader_subgroup_partitioned : require // volta and above should support it
+    #extension GL_NV_shader_subgroup_partitioned : enable // volta and above should support it
+    #extension GL_NV_compute_shader_derivatives : enable
     #extension GL_NV_shader_atomic_int64 : enable // unknown status
 #endif
 

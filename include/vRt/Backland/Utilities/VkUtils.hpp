@@ -319,7 +319,6 @@ namespace _vt {
     static inline const std::vector<const char *> raytracingRequiredExtensions = {
         "VK_AMD_gpu_shader_int16",
         "VK_AMD_gpu_shader_half_float",
-        //"VK_AMD_gpu_shader_half_float_fetch",
         "VK_AMD_buffer_marker",
         "VK_AMD_shader_info",
         "VK_AMD_texture_gather_bias_lod",
@@ -340,8 +339,6 @@ namespace _vt {
         "VK_KHR_maintenance1",
         "VK_KHR_maintenance2",
         "VK_KHR_maintenance3",
-        "VK_EXT_8bit_storage",
-        "VK_EXT_16bit_storage",
         "VK_EXT_descriptor_indexing",
         "VK_EXT_sampler_filter_minmax",
         "VK_EXT_conservative_rasterization",
@@ -356,5 +353,6 @@ namespace _vt {
         "VK_NV_compute_shader_derivatives",
         "VK_NV_corner_sampled_image",
         "VK_NV_shader_image_footprint",
+        "VK_NV_shader_subgroup_partitioned",
     };
 };
