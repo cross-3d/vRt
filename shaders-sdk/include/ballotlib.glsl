@@ -80,6 +80,16 @@ T fname(in uint WHERE) {\
 }
 
 // statically multiplied
+#define initSubgroupIncFunctionTarget(mem, fname, by, T)\
+T fname(in uint WHERE) {\
+    const lowp uvec2 pfx = bPrefixSum();\
+    T gadd = 0;\
+    if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));}\
+    return T(pfx.y) * T(by) + readFLane(gadd);\
+}
+
+
+// statically multiplied
 #define initSubgroupIncFunctionTargetDual(mem, fname, by, T, T2)\
 T2 fname(in uint WHERE, in bvec2 a) {\
     const lowp uvec4 pfx2 = uvec4(bPrefixSum(a.x), bPrefixSum(a.y));\

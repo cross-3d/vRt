@@ -1,0 +1,61 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#include "./includes.glsl"
+
+layout (local_size_x = BLOCK_SIZE) in;
+
+shared uint localHistogram[RADICES];
+
+// wide of 128 elements, each element should be in uint16_t, but for compatibility used uint32_t
+shared lowp uint _data[Wave_Size];
+
+shared blocks_info blocks;
+#define key _data[Lane_Idx]
+
+initSubgroupIncFunctionTarget(localHistogram[WHERE], countHistogram, 1, uint)
+
+#define bcount blocks.count
+
+void main() {
+    const lowp uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
+
+    // clear histogram of block (planned distribute threads)
+    [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+        const lowp uint radice = uint(rk + Radice_Idx);
+        [[flatten]] if (radice < RADICES) localHistogram[radice] = 0;
+    };
+    [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
+    LGROUP_BARRIER
+    IFANY (bcount <= 0) return;
+
+    // use SIMD lanes for calculate histograms
+    WPTR1 addr = WPTR1(0)*Wave_Size_RT.x + WPTR1(blocks.offset.x) + WPTR1(Lane_Idx.x);
+    [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
+        LGROUP_BARRIER
+
+        const bool validAddress = addr < blocks.limit.x; IFALL(!validAddress) break;
+        [[flatten]] if (Wave_Idx == 0) { key.x = BFE(validAddress.x ? KeyIn[addr.x] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
+        LGROUP_BARRIER
+
+        // WARP-optimized histogram calculation
+        [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+             const BOTTLE_TYPE radice = BOTTLE_TYPE(rk + Radice_Idx);
+             const bool owned = key.x == radice.x && validAddress;
+             [[flatten]] if (owned) countHistogram(radice);
+             IFALL ( radice >= RADICES || !validAddress ) break;
+        }
+        addr += ( Wave_Size_RT << 0u );
+    }
+
+    // resolve histograms (planned distribute threads) 
+    LGROUP_BARRIER
+
+    [[unroll]] for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
+         const lowp uint radice = uint(rk + Radice_Idx);
+         [[flatten]] if (radice < RADICES) {
+            PrefixSum[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
+            Histogram[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
+        }
+    };
+};

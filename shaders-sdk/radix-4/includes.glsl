@@ -119,3 +119,9 @@ blocks_info get_blocks_info(in uint n) {
     const uint block_offset = gl_WorkGroupID.x * block_tile * block_count;
     return blocks_info(block_count, block_offset, min(block_offset + tiled(block_size, block_tile)*block_tile, n), 0);
 };
+
+#ifdef PREFER_UNPACKED
+#define upfunc(x) (x)
+#else
+#define upfunc(x) up4x_8(x)
+#endif
