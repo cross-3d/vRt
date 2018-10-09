@@ -26,9 +26,9 @@ void main() {
     const uint w = Wave_Idx; // should be reference, not register
 
     // set prefix sum (planned distribute threads) 
-    [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-        const lowp uint radice = uint(rk + Radice_Idx);
-        [[flatten]] if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
+    [[unroll]] for (utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {
+        const utype_t radice = rk + utype_t(Radice_Idx);
+        [[flatten]] if (radice < utype_t(RADICES)) localHistogram[radice+0u] = PrefixSum[gl_WorkGroupID.x * RADICES + radice];
     };
     [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
     LGROUP_BARRIER
@@ -44,13 +44,15 @@ void main() {
         LGROUP_BARRIER
 
         // WARP-optimized histogram calculation
-        [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-            const BOTTLE_TYPE radice = BOTTLE_TYPE(rk + Radice_Idx);
-            const bvec4 owned = and(equal(BOTTLE_TYPE_VEC(upfunc(key)), radice.xxxx), validAddress);
-            [[unroll]] for (int w=0;w<4;w++) { [[flatten]] if (owned[w]) {
-                const uint offset = countOffset(radice); 
-                ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]]; 
-            }};
+        [[unroll]] for (utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {
+            const utype_t radice = rk + utype_t(Radice_Idx);
+            [[flatten]] if (radice < utype_t(RADICES)) {
+                const bvec4 owned = and(equal(utype_v(upfunc(key)), radice.xxxx), validAddress);
+                [[unroll]] for (int w=0;w<4;w++) { [[flatten]] if (owned[w]) {
+                    const uint offset = countOffset(radice); 
+                    ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]]; 
+                }};
+            };
             IFALL (all(or((radice >= RADICES).xxxx, not(validAddress)))) break;
         };
         addr += ( Wave_Size_RT << 2u );

@@ -70,11 +70,11 @@
 
 
 #ifdef ENABLE_INT16_SUPPORT
-#define BOTTLE_TYPE uint16_t
-#define BOTTLE_TYPE_VEC uint16_t
+#define utype_t uint16_t
+#define utype_v u16vec4
 #else
-#define BOTTLE_TYPE uint
-#define BOTTLE_TYPE_VEC uint
+#define utype_t uint
+#define utype_v uvec4
 #endif
 
 

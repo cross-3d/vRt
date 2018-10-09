@@ -21,9 +21,9 @@ void main() {
     const lowp uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
 
     // clear histogram of block (planned distribute threads)
-    [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-        const lowp uint radice = uint(rk + Radice_Idx);
-        [[flatten]] if (radice < RADICES) localHistogram[radice] = 0;
+    [[unroll]] for (utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {
+        const utype_t radice = utype_t(rk) + utype_t(Radice_Idx);
+        [[flatten]] if (radice < RADICES) localHistogram[radice+0u] = 0u;
     };
     [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
     LGROUP_BARRIER
@@ -39,12 +39,12 @@ void main() {
         LGROUP_BARRIER
 
         // WARP-optimized histogram calculation
-        [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-             const BOTTLE_TYPE radice = BOTTLE_TYPE(rk + Radice_Idx);
+        [[unroll]] for (utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {
+             const utype_t radice = utype_t(rk) + utype_t(Radice_Idx);
              const bool owned = key.x == radice.x && validAddress;
              [[flatten]] if (owned) {
                 const uint btc = subgroupBallotBitCount(subgroupBallot(true)); 
-                [[flatten]] if (subgroupElect()) localHistogram[uint(radice)] += btc;
+                [[flatten]] if (subgroupElect()) localHistogram[radice+0u] += btc;
              };
              IFALL ( radice >= RADICES || !validAddress ) break;
         }
@@ -54,11 +54,11 @@ void main() {
     // resolve histograms (planned distribute threads) 
     LGROUP_BARRIER
 
-    [[unroll]] for (uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-         const lowp uint radice = uint(rk + Radice_Idx);
-         [[flatten]] if (radice < RADICES) {
-            PrefixSum[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
-            Histogram[radice + RADICES * gl_WorkGroupID.x] = localHistogram[radice];
-        }
+    [[unroll]] for (utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {
+         const utype_t radice = utype_t(rk) + utype_t(Radice_Idx);
+         [[flatten]] if (radice < utype_t(RADICES)) {
+            PrefixSum[RADICES * gl_WorkGroupID.x + radice] = localHistogram[radice+0u];
+            Histogram[RADICES * gl_WorkGroupID.x + radice] = localHistogram[radice+0u];
+         };
     };
 };

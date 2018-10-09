@@ -21,10 +21,10 @@ void main() {
     const lowp uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
 
     // set prefix sum (planned distribute threads) 
-    [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-        const lowp uint radice = uint(rk + Radice_Idx);
-        [[flatten]] if (radice < RADICES) localHistogram[radice] = PrefixSum[radice + gl_WorkGroupID.x * RADICES];
-    }
+    [[unroll]] for (utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {
+        const utype_t radice = rk + utype_t(Radice_Idx);
+        [[flatten]] if (radice < utype_t(RADICES)) localHistogram[radice+0u] = PrefixSum[gl_WorkGroupID.x * RADICES + radice];
+    };
     [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
     LGROUP_BARRIER
     [[flatten]] IFANY (bcount <= 0) return;
@@ -39,12 +39,14 @@ void main() {
         LGROUP_BARRIER
 
         // WARP-optimized histogram calculation
-        [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=WRK_SIZE_RT) {
-             const BOTTLE_TYPE radice = BOTTLE_TYPE(rk + Radice_Idx);
-             const bool owned = key.x == radice.x && validAddress;
-             [[flatten]] if (owned) { 
-                 const uint offset = countOffset(radice); 
-                 ValueTmp[offset.x] = ValueIn[addr.x], KeyTmp[offset.x] = KeyIn[addr.x]; 
+        [[unroll]] for (utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {
+             const utype_t radice = utype_t(rk) + utype_t(Radice_Idx);
+             [[flatten]] if (radice < utype_t(RADICES)) {
+                const bool owned = key.x == radice.x && validAddress;
+                [[flatten]] if (owned) {
+                    const uint offset = countOffset(radice); 
+                    ValueTmp[offset.x] = ValueIn[addr.x], KeyTmp[offset.x] = KeyIn[addr.x]; 
+                };
              };
              IFALL ( radice >= RADICES || !validAddress ) break;
         };
