@@ -138,12 +138,12 @@ void traverseBVH2( in bool reset, in bool valid ) {
 
 #ifdef EXPERIMENTAL_UNORM16_BVH
                 #define bbox2x fvec4_[3](\
-                    fvec4_(unpackSnorm4x16(bvhNode.cbox[0])),\
-                    fvec4_(unpackSnorm4x16(bvhNode.cbox[1])),\
-                    fvec4_(unpackSnorm4x16(bvhNode.cbox[2]))\
+                    fvec4_(traverseState.idx>=0?unpackSnorm4x16(bvhNode.cbox[0]):0.f.xxxx),\
+                    fvec4_(traverseState.idx>=0?unpackSnorm4x16(bvhNode.cbox[1]):0.f.xxxx),\
+                    fvec4_(traverseState.idx>=0?unpackSnorm4x16(bvhNode.cbox[2]):0.f.xxxx)\
                 )
 #else
-                #define bbox2x bvhNode.cbox // use same memory
+                #define bbox2x (traverseState.idx>=0?bvhNode.cbox:fvec4_[3](0.f.xxxx,0.f.xxxx,0.f.xxxx)) // use same memory
 #endif
 
                 pbvec2_ childIntersect = bool(cnode.x&1) ? intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe) : false2_;

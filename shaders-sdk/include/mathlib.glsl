@@ -102,43 +102,11 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 #endif
 
 
-// TODO: new boolean system (with partition of int32 support)
-
-/*
-#ifdef ENABLE_INT16_SUPPORT
-#define bvec4_ u16vec4
-#define bvec3_ u16vec3
-#define bvec2_ u16vec2
-#define bool_ uint16_t
-#else
-#define bvec4_ uvec4
-#define bvec3_ uvec3
-#define bvec2_ uvec2
-#define bool_ uint
-#endif
-*/
-
-// 
-/*
-#ifdef ENABLE_INT16_SUPPORT
-const bool_ true_ = 1us, false_ = 0us; 
-const bvec2_ true2_ = true_.xx, false2_ = false_.xx;
-#else
-lowp const bool_ true_ = 1u, false_ = 0u; 
-lowp const bvec2_ true2_ = true_.xx, false2_ = false_.xx;
-#endif
-*/
-
-
 // experimental new paired logic system
 #ifdef ENABLE_INT16_BOOL_PAIR
-//#define pbvec4_ u16vec4
-//#define pbvec3_ u16vec3
 #define pbvec2_ u16vec2
 #define pbool_ uint16_t
 #else
-//#define pbvec4_ uvec4
-//#define pbvec3_ uvec3
 #define pbvec2_ uint
 #define pbool_ uint
 #endif
@@ -296,7 +264,8 @@ int lsb(in uvec2 pair) {
 #ifdef AMD_PLATFORM
     return findLSB(P2U(pair));
 #else
-     ivec2 hl = findLSB(pair); return (hl.x >= 0) ? hl.x : (32 + hl.y);
+    const ivec2 hl = findLSB(pair); 
+    return mix(32 + hl.y, hl.x, hl.x >= 0);
 #endif
 }
 
@@ -304,26 +273,10 @@ int msb(in uvec2 pair) {
 #ifdef AMD_PLATFORM
     return findMSB(P2U(pair));
 #else
-     ivec2 hl = findMSB(pair); return (hl.y >= 0) ? (32 + hl.y) : hl.x;
+    const ivec2 hl = findMSB(pair); 
+    return mix(hl.x, 32 + hl.y, hl.y >= 0);
 #endif
 }
-
-int msb(in uint64_t vlc) { 
-#ifdef AMD_PLATFORM
-    return findMSB(vlc);
-#else
-    return msb(U2P(vlc));
-#endif
-}
-
-int lsb(in uint64_t vlc) { 
-#ifdef AMD_PLATFORM
-    return findLSB(vlc);
-#else
-    return lsb(U2P(vlc));
-#endif
-}
-
 
 
 
@@ -337,24 +290,6 @@ uint BFI_HW(in uint base, in uint inserts, in int offset, in int bits) { return 
  int tiled(in  int x, in  int y) {return x/y + int(x%y != 0); }
 uint tiled(in uint x, in uint y) {return x/y + int(x%y != 0); }
 
-/*
-// precise optimized mix/lerp
-#define _FMOP fma(b,c,fma(a,-c,a)) // fma based mix/lerp
-float fmix(in float a, in float b, in float c) { return _FMOP; }
-vec2 fmix(in vec2 a, in vec2 b, in vec2 c) { return _FMOP; }
-vec3 fmix(in vec3 a, in vec3 b, in vec3 c) { return _FMOP; }
-vec4 fmix(in vec4 a, in vec4 b, in vec4 c) { return _FMOP; }
-#ifdef ENABLE_FP16_SUPPORT
-float16_t fmix(in float16_t a, in float16_t b, in float16_t c) { return _FMOP; }
-f16vec2 fmix(in f16vec2 a, in f16vec2 b, in f16vec2 c) { return _FMOP; }
-f16vec3 fmix(in f16vec3 a, in f16vec3 b, in f16vec3 c) { return _FMOP; }
-f16vec4 fmix(in f16vec4 a, in f16vec4 b, in f16vec4 c) { return _FMOP; }
-#endif
-*/
-
-
-
-
 // color space utils
 const float HDR_GAMMA = 2.2f;
 vec3 fromLinear(in vec3 linearRGB) { return mix(vec3(1.055)*pow(linearRGB, vec3(1.0/2.4)) - vec3(0.055), linearRGB * vec3(12.92), lessThan(linearRGB, vec3(0.0031308))); }
@@ -362,100 +297,19 @@ vec3 toLinear(in vec3 sRGB) { return mix(pow((sRGB + vec3(0.055))/vec3(1.055), v
 vec4 fromLinear(in vec4 linearRGB) { return vec4(fromLinear(linearRGB.xyz), linearRGB.w); }
 vec4 toLinear(in vec4 sRGB) { return vec4(toLinear(sRGB.xyz), sRGB.w); }
 
-/*
-// boolean binary compatibility
-bool SSC(in bool_ b) {return b==true_;};
-bvec2 SSC(in bvec2_ b) {return equal(b,true_.xx);};
-bvec4 SSC(in bvec4_ b) {return equal(b,true_.xxxx);};
-
-bool SSC(in bool b) {return b;};
-bvec2 SSC(in bvec2 b) {return b;};
-bvec4 SSC(in bvec4 b) {return b;};
-*/
-
-bool SSC(in bool b) {return b;};
-bvec2 SSC(in bvec2 b) {return b;};
-bvec4 SSC(in bvec4 b) {return b;};
-
-bool SSC(in pbool_ b) {return b==true_;};
-//bvec2 SSC(in bvec2_ b) {return equal(b,true_.xx);};
-//bvec4 SSC(in bvec4_ b) {return equal(b,true_.xxxx);};
-
+ bool  SSC(in pbool_ b) {return b==true_;};
 pbool_ any(in pbvec2_ b) {return pl_x(b)|pl_y(b);};
 pbool_ all(in pbvec2_ b) {return pl_x(b)&pl_y(b);};
-
-// pbool_ not(in  pbool_ b) {return true_ ^b;};
-//pbvec2_ not(in pbvec2_ b) {return true2_^b;};
 
 #define IF(b)if(SSC(b))
 
 
 
-/*
-// select by boolean
-int mix(in int a, in int b, in  bool_ c) { return mix(a,b,SSC(c)); }
-uint mix(in uint a, in uint b, in  bool_ c) { return mix(a,b,SSC(c)); }
-float mix(in float a, in float b, in  bool_ c) { return mix(a,b,SSC(c)); }
-ivec2 mix(in ivec2 a, in ivec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
-uvec2 mix(in uvec2 a, in uvec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
-vec2 mix(in vec2 a, in vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
-vec4 mix(in vec4 a, in vec4 b, in  bvec4_ c) { return mix(a,b,SSC(c)); }
-
-// 16-bit int/uint
-#ifdef ENABLE_INT16_SUPPORT
- int16_t mix(in  int16_t a, in  int16_t b, in  bool_ c) { return mix(a,b,SSC(c)); }
-uint16_t mix(in uint16_t a, in uint16_t b, in  bool_ c) { return mix(a,b,SSC(c)); }
-i16vec2 mix(in i16vec2 a, in i16vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
-u16vec2 mix(in u16vec2 a, in u16vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
-#endif
-
-// 16-bit float
-#ifdef ENABLE_FP16_SUPPORT
-float16_t mix(in float16_t a, in float16_t b, in  bool_ c) { return mix(a,b,SSC(c)); }
-f16vec2 mix(in f16vec2 a, in f16vec2 b, in  bvec2_ c) { return mix(a,b,SSC(c)); }
-f16vec4 mix(in f16vec4 a, in f16vec4 b, in  bvec4_ c) { return mix(a,b,SSC(c)); }
-#endif
-*/
-
-/*
-// swap of 16-bits by funnel shifts and mapping 
-uint fast16swap(in uint b32,   bool_ nswp) {
-    const uint vrc = 16u - uint(nswp) * 16u;
-    return (b32 << (vrc)) | (b32 >> (32u-vrc));
-}
-
-uint64_t fast32swap(in uint64_t b64,   bool_ nswp) {
-    const uint64_t vrc = 32ul - uint64_t(nswp) * 32ul;
-    return (b64 << (vrc)) | (b64 >> (64ul-vrc));
-}*/
-
-/*
-// swap x and y swizzle by funnel shift (AMD half float)
-#ifdef ENABLE_FP16_SUPPORT
-f16vec2 fast16swap(in f16vec2 b32, in  bool_ nswp) { 
-    return mix(b32.yx, b32, nswp.xx); // use swizzle version (some device can be slower)
-}
-#endif
-
-// swap x and y swizzle by funnel shift
-vec2 fast32swap(in vec2 b64, in  bool_ nswp) { 
-    return mix(b64.yx, b64, nswp.xx); // use swizzle version (some device can be slower)
-}
-
-#ifdef USE_F16_BVH
-#define FSWP fast16swap
-#else
-#define FSWP fast32swap
-#endif
-*/
-
-
-
 // BVH utility
-uint64_t bitfieldReverse64(in uint64_t a) {uvec2 p = U2P(a);p=bitfieldReverse(p);return P2U(p.yx);}
+//uint64_t bitfieldReverse64(in uint64_t a) {uvec2 p = U2P(a);p=bitfieldReverse(p);return P2U(p.yx);}
 uvec2 bitfieldReverse64(in uvec2 p) {return bitfieldReverse(p).yx;}
 
-int nlz(in uint64_t x) { return 63 - msb(x); }
+
 int nlz(in uvec2 x) { return 63 - msb(x); }
 int nlz(in uint x) { return 31 - msb(x); }
 int nlz(in int x) { return nlz(uint(x)); }
