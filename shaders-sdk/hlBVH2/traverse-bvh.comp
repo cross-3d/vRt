@@ -37,7 +37,8 @@ void main() {
         const bool overflow = it >= wsize; IFALL(overflow) break;
 
         // do BVH traversing 
-        const int rayID = vtRayIdx(it), r2ID = rayID<<1; int hid = vtFetchHitIdc(rayID);
+        int rayID = vtRayIdx(it), r2ID = rayID<<1, hid = vtFetchHitIdc(rayID); // in task-based traversing "hid" will means as "potential hit index"
+        //const ivec2 taskCode = vtFetchTask(it); int rayID = taskCode.x, hid = taskCode.y; 
         traverseState.maxTriangles = bvhBlock.primitiveCount;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 

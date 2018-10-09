@@ -108,8 +108,9 @@ int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayI
 };
 
 int vtEmitRays(in VtRay ray, in highp uvec2 c2d, in uint type) { return vtReuseRays(ray, c2d, type, -1); };
-int vtFetchHitIdc(in int lidx) { return int(imageAtomicMax(rayLink, lidx<<1, 0u).x)-1; };
-highp uvec2 vtFetchIndex(in int lidx) { return up2x_16(imageLoad(rayLink, (lidx<<1)|1).x); }
+int vtFetchHitIdc(in int lidx) { return int(imageAtomicMax(rayLink, lidx<<1, 0u).x)-1; }; // will be replace in traversing by tasks 
+//ivec2 vtFetchTask(in int lidx) { return ivec2(imageLoad(taskList, lidx).xy)-1; }; // planned in next-gen version (i.e. two-level and traverse tasking based)
+highp uvec2 vtFetchIndex(in int lidx) { return up2x_16(imageLoad(rayLink, (lidx<<1)|1).x); };
 int vtRayIdx(in int lidx) { return rayGroupIndices[lidx]-1; };
 
 int vtVerifyClosestHit(in int closestId, in lowp int g) {

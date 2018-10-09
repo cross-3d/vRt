@@ -99,6 +99,7 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
     [[flatten]] if (eht.x >= 0) primitiveState.lastIntersection = hits[eht].uvt;
 
     // relative origin and vector
+    // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
     const vec4 torig = -uniteBox(divW(mult4( bvhBlock.projection, vec4(orig, 1.0f)))), torigTo = uniteBox(divW(mult4( bvhBlock.projection, vec4(orig, 1.0f) + vec4(dcts(pdir), 0.f)))), tdir = torigTo+torig;
     const vec4 dirct = tdir*invlen, dirproj = 1.f / precIssue(dirct);
     primitiveState.dir = primitiveState.orig = dirct;
