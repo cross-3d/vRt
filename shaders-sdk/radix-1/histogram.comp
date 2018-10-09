@@ -18,7 +18,7 @@ shared blocks_info blocks;
 #define bcount blocks.count
 
 void main() {
-    const lowp uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
+    const utype_t Radice_Idx = utype_t(gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx);
 
     // clear histogram of block (planned distribute threads)
     [[unroll]] for (utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {

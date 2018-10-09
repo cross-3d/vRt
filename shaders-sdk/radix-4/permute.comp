@@ -22,8 +22,8 @@ initSubgroupIncFunctionTarget(localHistogram[WHERE], countOffset, 1, uint)
 #define bcount blocks.count
 
 void main() {
-    const lowp uint Radice_Idx = gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx;
-    const uint w = Wave_Idx; // should be reference, not register
+    const utype_t Radice_Idx = utype_t(gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx);
+    const lowp uint w = Wave_Idx; // should be reference, not register
 
     // set prefix sum (planned distribute threads) 
     [[unroll]] for (utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {
