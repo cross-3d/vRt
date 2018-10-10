@@ -200,12 +200,20 @@ namespace vrt { // store in official namespace
         VkPipelineShaderStageCreateInfo assemblyModule;
     };
 
-    // TODO: Need to deprecate, and give them to dedicated utility 
+    // planned to deprecate 
     struct VtVertexAssemblySetCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
         VkDeviceSize maxPrimitives = 1024ull * 256ull;
+
+        // added in 10.10.2018 
+        VkBuffer sharedVertexCacheBuffer = VK_NULL_HANDLE; VkDeviceSize sharedVertexCacheOffset = 0ull; // before building BVH, will stored into 
+        VkBuffer sharedVertexInUseBuffer = VK_NULL_HANDLE; VkDeviceSize sharedVertexInUseOffset = 0ull; // will converted to traversable format 
+        VkBuffer sharedBitfieldBuffer = VK_NULL_HANDLE; VkDeviceSize sharedBitfieldOffset = 0ull; // bitfields data buffer with pointing offset 
+        VkBuffer sharedMaterialIndexedBuffer = VK_NULL_HANDLE; VkDeviceSize sharedMaterialIndexedOffset = 0ull; // material indices buffer with pointing offset 
+        VkBuffer sharedNormalBuffer = VK_NULL_HANDLE; VkDeviceSize sharedNormalOffset = 0ull; // normals buffer with pointing offset 
+        VkDescriptorImageInfo sharedAttributeImageDescriptor = { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_GENERAL }; // sharing image by descriptor 
     };
 
     // 

@@ -200,8 +200,9 @@ namespace _vt { // store in undercover namespace
         auto& _parent() { return _device; };
     };
 
-    // vertex assembly cache 
-    // TODO: deprecation for externalize these processes or reworking this system 
+    // 
+    // attribute and vertex space productor for single structured instance 
+    // for correct instanced linking require shared buffer for data containing 
     class VertexAssemblySet : public std::enable_shared_from_this<VertexAssemblySet> {
     public:
         friend Device;
@@ -210,9 +211,10 @@ namespace _vt { // store in undercover namespace
 
         // vertex and bvh export 
         std::shared_ptr<DeviceImage> _attributeTexelBuffer = {};
-        std::shared_ptr<DeviceBuffer> _verticeBufferIn = {}, _verticeBufferSide = {}, _materialBuffer = {}, _bitfieldBuffer = {}, _countersBuffer = {}, _normalBuffer = {};
+        std::shared_ptr<BufferRegion> _verticeBufferCached = {}, _verticeBufferInUse = {}, _materialBuffer = {}, _bitfieldBuffer = {}, _countersBuffer = {}, _normalBuffer = {};
+        std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
 
-        // input of vertex source data
+        // input of vertex source data 
         std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs = {};
 
         // primitive count 
@@ -357,10 +359,6 @@ namespace _vt { // store in undercover namespace
     };
 
 
-    //inline RoledBuffer(){};
-
-
-
     // this is wrapped advanced image class
     class DeviceImage : public std::enable_shared_from_this<DeviceImage> {
     public:
@@ -492,25 +490,26 @@ namespace _vt { // store in undercover namespace
         operator VkPipeline() const { return _dullPipeline; };
     };
 
+
+    // may to be deprecated due over-roling 
     class MaterialSet : public std::enable_shared_from_this<MaterialSet> {
     public:
         friend Device;
-        VkDescriptorSet _descriptorSet = {};
+        VkDescriptorSet _descriptorSet = {}; // textures and samplers bound in descriptor set directly
         std::shared_ptr<Device> _device = {};
 
-        // textures and samplers bound in descriptor set directly
-
         // material data buffers
-        //std::shared_ptr<DeviceBuffer> _virtualSamplerCombinedBuffer;
-        //std::shared_ptr<DeviceBuffer> _materialDataBuffer;
         std::shared_ptr<DeviceBuffer> _constBuffer = {};
         uint32_t _materialCount = 0, _materialOffset = 0;
+
 
         auto _parent() const { return _device; };
         auto& _parent() { return _device; };
         operator VkDescriptorSet() const { return _descriptorSet; };
     };
 
+
+    // 
     class VertexInputSet : public std::enable_shared_from_this<VertexInputSet> {
     public:
         friend Device;
@@ -524,17 +523,15 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _inlineTransformBuffer = {}; // if have no required
 
         // TODO: RTX capable buffers 
-        
+        // Will contains of single VkGeometryTrianglesNVX 
 
         auto  _parent() const { return _device; };
         auto& _parent() { return _device; };
         operator VkDescriptorSet() const { return _descriptorSet; };
 
+        auto  uniform() const { return _uniformBlock; };
         auto& uniform() { return _uniformBlock; };
-         auto uniform() const { return _uniformBlock; };
     };
-
-
 
 
     // 

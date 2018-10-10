@@ -178,6 +178,7 @@ namespace _vt {
         };
 
         { // planned to add support of instancing and linking 
+          // TODO: sharing of meta heading 
             bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingBuffer);
         };

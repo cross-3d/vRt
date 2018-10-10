@@ -21,7 +21,7 @@ namespace _vt {
                 vezDestroyBuffer(device->_device, buffer);
 #else
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-                vmaDestroyBuffer(device->_allocator, buffer, allocation);
+                if (allocation) vmaDestroyBuffer(device->_allocator, buffer, allocation);
 #endif
 #endif
         });
@@ -29,12 +29,11 @@ namespace _vt {
 
 
     VtResult createBufferView(std::shared_ptr<BufferRegion> bRegion) {
-        const auto device = bRegion->_device;
         VtResult result = VK_SUCCESS;
 
-        if (bRegion->_size() < sizeof(uint32_t)) return VK_ERROR_INITIALIZATION_FAILED;
-        if (result == VK_SUCCESS && bRegion->_format) {
-            //bRegion->_bufferView = {};
+        if (bRegion->_size() < sizeof(uint32_t)) result = VK_ERROR_INITIALIZATION_FAILED;
+        if (result == VK_SUCCESS && bRegion->_format && bRegion->_device) {
+            const auto device = bRegion->_device;
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
             auto bvi = VezBufferViewCreateInfo{};
@@ -43,7 +42,7 @@ namespace _vt {
             bvi.flags = {};
 #endif
             bvi.pNext = nullptr;
-            bvi.buffer = VkBuffer(*bRegion);
+            bvi.buffer = bRegion->_descriptorInfo().buffer;
             bvi.format = bRegion->_format;
             bvi.offset = bRegion->_offset();
             bvi.range = bRegion->_size();
@@ -147,7 +146,7 @@ namespace _vt {
         const auto wptr = std::weak_ptr(bManager->_bufferStore);
         for (auto f : bManager->_bufferRegions) {
             f->_boundBuffer = wptr, f->_descriptorInfo().buffer = VkBuffer(*bManager->_bufferStore); createBufferView(f);
-        }
+        };
 
         // return result (TODO: handling)
         return VK_SUCCESS;
@@ -161,12 +160,12 @@ namespace _vt {
         return VK_SUCCESS;
     };
 
+
     // create buffer region by exist buffer
     inline VtResult createBufferRegion(std::shared_ptr<DeviceBuffer> gBuffer, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion) {
-        const auto gDevice = gBuffer->_device;
         VkDeviceSize correctedSize = bri.bufferSize;//((bri.bufferSize >> 5ull) << 5ull) + 32ull;
         bRegion = std::make_shared<BufferRegion>();
-        bRegion->_device = gDevice;
+        bRegion->_device = gBuffer->_device;
         bRegion->_format = bri.format;
         bRegion->_descriptorInfo().range = correctedSize;
         bRegion->_descriptorInfo().offset = bri.offset;
@@ -174,6 +173,22 @@ namespace _vt {
         gBuffer->_sharedRegions.push_back(bRegion); // add shared buffer region
         return VK_SUCCESS;
     };
+
+
+    // create buffer region by exist buffer
+    inline VtResult createBufferRegion(VkBuffer vkBuffer, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion, std::shared_ptr<Device> gDevice) {
+        const auto gBuffer = std::make_shared<DeviceBuffer>(); gBuffer->_device = gDevice;
+        VkDeviceSize correctedSize = bri.bufferSize;//((bri.bufferSize >> 5ull) << 5ull) + 32ull;
+        bRegion = std::make_shared<BufferRegion>();
+        bRegion->_device = gDevice;
+        bRegion->_format = bri.format;
+        bRegion->_descriptorInfo().range = correctedSize;
+        bRegion->_descriptorInfo().offset = bri.offset;
+        bRegion->_descriptorInfo().buffer = vkBuffer; createBufferView(bRegion);
+        gBuffer->_sharedRegions.push_back(bRegion); // add shared buffer region
+        return VK_SUCCESS;
+    };
+
 
     // create structuring 
     inline VtResult BufferManager::_prealloc(VtBufferRegionCreateInfo cinfo, std::shared_ptr<BufferRegion>& bRegion) {
@@ -207,7 +222,7 @@ namespace _vt {
                 vezDestroyImage(device->_device, image);
 #else
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-                vmaDestroyImage(device->_allocator, image, allocation);
+                if (allocation) vmaDestroyImage(device->_allocator, image, allocation);
 #endif
 #endif
         });
