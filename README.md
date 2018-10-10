@@ -1,7 +1,7 @@
 # vRt (VK1.1)
 
 <a href="https://gitter.im/world8th/vRt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank" title="Gitter"><img src="https://badges.gitter.im/world8th/vRt.svg" alt="Donate ETH" height="20px"/></a>
-<a href="https://etherdonation.com/d?to=0x9b8e811c6095ce1265fb8bd7d4927156ac89532e" target="_blank" title="Donate ETH"><img src="https://etherdonation.com/i/btn/donate-btn.png" alt="Donate ETH" height="20px"/></a>
+<a href="https://etherdonation.com/d?to=0xd9b022cdf82ee7eab9b17c7d85c3ba005e288383" target="_blank" title="Donate ETH"><img src="https://etherdonation.com/i/btn/donate-btn.png" alt="Donate ETH" height="20px"/></a>
 
 > Unified Vulkan API ray tracing cross-platform library.
 
@@ -72,4 +72,4 @@ For development of RTX back-end, need around 700$ for purchase NVidia RTX 2080 s
 
 In order to avoid charges of fraud, I will say directly ... Yes, I can not guarantee you a refund, I do not guarantee that this product will be useful for you, I do not guarantee any benefits to you, I can not guarantee that I will meet your expectations. By sending us a donation, you take your risk and say goodbye to the amount of money listed for good. Yes, we can still behave a bit boorish. Yes, we can still be very similar to scammers.
 
-( Direct Ethereum Address: [0x9b8e811c6095ce1265fb8bd7d4927156ac89532e](https://etherdonation.com/d?to=0x9b8e811c6095ce1265fb8bd7d4927156ac89532e) )
+( Direct Ethereum Address: [0xd9b022cdf82ee7eab9b17c7d85c3ba005e288383](https://etherdonation.com/d?to=0xd9b022cdf82ee7eab9b17c7d85c3ba005e288383) )
