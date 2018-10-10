@@ -201,6 +201,7 @@ namespace _vt { // store in undercover namespace
     };
 
     // vertex assembly cache 
+    // TODO: deprecation for externalize these processes or reworking this system 
     class VertexAssemblySet : public std::enable_shared_from_this<VertexAssemblySet> {
     public:
         friend Device;
@@ -209,7 +210,7 @@ namespace _vt { // store in undercover namespace
 
         // vertex and bvh export 
         std::shared_ptr<DeviceImage> _attributeTexelBuffer = {};
-        std::shared_ptr<DeviceBuffer> _verticeBuffer = {}, _verticeBufferSide = {}, _verticeBufferIn = {}, _materialBuffer = {}, _bitfieldBuffer = {}, _countersBuffer = {}, _normalBuffer = {};
+        std::shared_ptr<DeviceBuffer> _verticeBufferIn = {}, _verticeBufferSide = {}, _materialBuffer = {}, _bitfieldBuffer = {}, _countersBuffer = {}, _normalBuffer = {};
 
         // input of vertex source data
         std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs = {};
@@ -240,20 +241,45 @@ namespace _vt { // store in undercover namespace
         VkDescriptorSet _descriptorSet = {};
         std::shared_ptr<Device> _device = {};
         std::shared_ptr<AcceleratorSetExtensionBase> _EXtension = {};
-        std::shared_ptr<VertexAssemblySet> _vertexAssemblySet = {}; // in-bound vertex assembly 
-        
+        std::shared_ptr<VertexAssemblySet> _vertexAssemblySet = {}; // in-bound vertex assembly
 
         // vertex and bvh export 
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
-        std::shared_ptr<BufferRegion> _bvhMetaBuffer = {}, _bvhBoxBuffer = {}, _bvhBlockUniform = {};
-        uint32_t _entryID = 0, _primitiveCount = -1, _primitiveOffset = 0;
-        VtBvhBlock _bvhBlockData = {};
+        std::shared_ptr<BufferRegion> _bvhBoxBuffer = {}, _bvhHeadingBuffer = {}; // planned to add support of instancing 
+        uint32_t _entryID = 0, _primitiveCount = -1, _primitiveOffset = 0; // planned to rework building entrying 
+        VtMat4 _coverMatrice = IdentifyMat4;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
 
-        auto _parent() const { return _device; };
+        auto  _parent() const { return _device; };
         auto& _parent() { return _device; };
     };
+
+    // accelerator set for linking accelerator instances 
+    // planned to add top levels 
+    class AcceleratorLinkedSet : public std::enable_shared_from_this<AcceleratorLinkedSet> {
+    public:
+        friend Device;
+        VkDescriptorSet _descriptorSet = {};
+        std::shared_ptr<Device> _device = {};
+        //std::shared_ptr<AcceleratorSetExtensionBase> _EXtension = {};
+        //std::vector<std::shared_ptr<AcceleratorSet>> _usedStructures = {};
+        //std::vector<VtBvhInstance> _acceleratorInstanced = {};
+
+        // vertex and bvh export 
+        std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
+        std::shared_ptr<BufferRegion> _bvhBoxBuffer = {}, _bvhInstanceBuffer = {};
+        uint32_t _entryID = 0, _instanceCount = -1, _instanceOffset = 0;
+        VtBvhBlock _bvhBlockData = {};
+        VtMat4 _coverMatrice = IdentifyMat4;
+
+        operator VkDescriptorSet() const { return _descriptorSet; };
+
+        auto  _parent() const { return _device; };
+        auto& _parent() { return _device; };
+    };
+
+
 
     // ray tracing accelerator structure object
     // planned to merge pipeline programs to device

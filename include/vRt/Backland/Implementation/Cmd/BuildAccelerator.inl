@@ -192,18 +192,23 @@ namespace _vt {
         auto acclb = device->_acceleratorBuilder;
         auto accel = cmdBuf->_acceleratorSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
+        accel->_vertexAssemblySet = vertx; // bind vertex assembly with accelerator structure (planned to deprecate)
 
-        // 
-        accel->_vertexAssemblySet = vertx; // bind vertex assembly with accelerator structure 
-        accel->_bvhBlockData.primitiveOffset = accel->_primitiveOffset;
-        accel->_bvhBlockData.primitiveCount = (accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount;
-        accel->_bvhBlockData.leafCount = accel->_bvhBlockData.primitiveCount;
-        accel->_bvhBlockData.entryID = accel->_entryID;
-        accel->_bvhBlockData.projection = accel->_bvhBlockData.projection;
-        accel->_bvhBlockData.projectionInv = IdentifyMat4;
-        accel->_bvhBlockData.transform = IdentifyMat4;
-        accel->_bvhBlockData.transformInv = IdentifyMat4;
-        cmdUpdateBuffer(*cmdBuf, accel->_bvhBlockUniform, 0, sizeof(accel->_bvhBlockData), &accel->_bvhBlockData);
+        // create BVH instance meta (linking with geometry) 
+        VtBvhBlock _bvhBlockData = {};
+        _bvhBlockData.primitiveOffset = accel->_primitiveOffset; // 
+        _bvhBlockData.primitiveCount = (accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount;
+        _bvhBlockData.leafCount = _bvhBlockData.primitiveCount;
+        _bvhBlockData.entryID = accel->_entryID;
+
+        // planned to merge instance buffer of linked set
+        _bvhBlockData.projection = accel->_coverMatrice;
+        _bvhBlockData.projectionInv = IdentifyMat4;
+        _bvhBlockData.transform = IdentifyMat4;
+        _bvhBlockData.transformInv = IdentifyMat4;
+
+
+        cmdUpdateBuffer(*cmdBuf, accel->_bvhHeadingBuffer, 0, sizeof(_bvhBlockData), &_bvhBlockData);
         
 
         // if has advanced accelerator
@@ -234,7 +239,7 @@ namespace _vt {
             cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH
             cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
             cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes
-            radixSort(cmdBuf, acclb->_sortDescriptorSet, accel->_bvhBlockData.leafCount);
+            radixSort(cmdBuf, acclb->_sortDescriptorSet, _bvhBlockData.leafCount);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
             cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads

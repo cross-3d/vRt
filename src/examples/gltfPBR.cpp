@@ -286,14 +286,13 @@ namespace rnd {
             const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
 
             // create accelerator set
-            VtAcceleratorSetCreateInfo acci;
+            VtAcceleratorSetCreateInfo acci = {};
             acci.coverMat = *((VtMat4*)&optMat);
             acci.maxPrimitives = 1024 * 2048;
-            acci.entryID = 0;
             vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
 
             // create vertex assembly
-            VtVertexAssemblySetCreateInfo vtsi;
+            VtVertexAssemblySetCreateInfo vtsi = {};
             vtsi.maxPrimitives = 1024 * 2048;
             vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 

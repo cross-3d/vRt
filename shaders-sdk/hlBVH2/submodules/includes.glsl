@@ -39,17 +39,6 @@ layout ( binding = 8, set = 0, std430 ) restrict buffer CountersB {
     int vtCounters[6];
 };
 
-struct BTYPE_ {
-#if (defined(USE_F32_BVH) || defined(USE_F16_BVH)) && !defined(EXPERIMENTAL_UNORM16_BVH)
-    fvec4_ cbox[3];
-#else
-    uvec2 cbox[3];
-#endif
-    ivec4 meta;
-};
-
-layout ( binding = 2, set = 1, std430 ) restrict buffer bvhBoxesResultingB { BTYPE_ bvhNodes[]; };
-
 // precision control of boxes
 #ifndef fpInner
 const float fpInner = InZero;

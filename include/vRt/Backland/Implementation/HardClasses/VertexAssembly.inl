@@ -24,7 +24,7 @@ namespace _vt {
         assemblyPipeline = std::make_shared<VertexAssemblySet>();
         assemblyPipeline->_device = _vtDevice;
 
-        const auto maxPrimitives = info.maxPrimitives;
+                  const auto maxPrimitives = info.maxPrimitives;
         constexpr const auto aWidth = 4096ull * 3ull;
 
         // build vertex input assembly program
@@ -49,7 +49,7 @@ namespace _vt {
 
             bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-            createDeviceBuffer(_vtDevice, bfi, assemblyPipeline->_verticeBuffer);
+            createDeviceBuffer(_vtDevice, bfi, assemblyPipeline->_verticeBufferIn);
 
             bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
@@ -95,7 +95,7 @@ namespace _vt {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)&assemblyPipeline->_countersBuffer->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo((vk::DescriptorBufferInfo*)&assemblyPipeline->_materialBuffer->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)&assemblyPipeline->_bitfieldBuffer->_descriptorInfo()),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&assemblyPipeline->_verticeBuffer->_bufferView()),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&assemblyPipeline->_verticeBufferIn->_bufferView()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo((vk::DescriptorImageInfo*)&assemblyPipeline->_attributeTexelBuffer->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&assemblyPipeline->_verticeBufferSide->_bufferView()), // planned to replace
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&attrbView),

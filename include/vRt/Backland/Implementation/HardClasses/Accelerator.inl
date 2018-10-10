@@ -161,44 +161,35 @@ namespace _vt {
         auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
         auto vkDevice = _vtDevice->_device;
         vtAccelerator->_device = _vtDevice;
-        vtAccelerator->_entryID = (info.entryID >> 1u) << 1u; // unpreferred to make entry ID non power of 2
+        vtAccelerator->_coverMatrice = info.coverMat;
 
         // planned import from descriptor
-        const auto maxPrimitives = info.maxPrimitives;
-        vtAccelerator->_primitiveCount = info.primitiveCount;
-        vtAccelerator->_primitiveOffset = info.primitiveOffset;
-        vtAccelerator->_bvhBlockData.projection = info.coverMat;
+        std::shared_ptr<BufferManager> bManager; 
+        createBufferManager(_vtDevice, bManager);
 
-        std::shared_ptr<BufferManager> bManager; createBufferManager(_vtDevice, bManager);
+        
 
-        VtDeviceBufferCreateInfo bfic = {};
-        bfic.familyIndex = _vtDevice->_mainFamilyIndex;
-        bfic.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-
+        // 
         VtBufferRegionCreateInfo bfi = {};
 
-        // UNUSED
-        if (!info.bvhMetaBuffer) {
-            bfi.bufferSize = sizeof(uint32_t) * 32ull;
-            bfi.format = VK_FORMAT_R32G32B32A32_UINT;
-            createBufferRegion(bManager, bfi, vtAccelerator->_bvhMetaBuffer);
-        };
-
-        if (!info.bvhBoxBuffer) {
-            bfi.bufferSize = sizeof(uint32_t) * maxPrimitives * 32ull;
-            bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        if (!info.bvhDataBuffer) { // planned to remove support of native buffers 
+            bfi.bufferSize = sizeof(uint32_t) * info.maxPrimitives * 32ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer);
         };
 
-        {
-            bfi.bufferSize = sizeof(VtBvhBlock) * 4ull;
-            bfi.format = VK_FORMAT_UNDEFINED;
-            createBufferRegion(bManager, bfi, vtAccelerator->_bvhBlockUniform);
+        { // planned to add support of instancing and linking 
+            bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
+            createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingBuffer);
         };
 
         { // build final shared buffer for this class
+            VtDeviceBufferCreateInfo bfic = {};
+            bfic.familyIndex = _vtDevice->_mainFamilyIndex;
+            bfic.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
             createSharedBuffer(bManager, bfic, vtAccelerator->_sharedBuffer);
         };
+
+
 
         { // build BVH builder program
             std::vector<vk::PushConstantRange> constRanges = { vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2)) };
@@ -210,34 +201,11 @@ namespace _vt {
         };
 
         {
-            VkBufferView bvhMetaView = {};
-            if (info.bvhMetaBuffer) {
-                VkBufferViewCreateInfo bvi = {};
-                bvi.pNext = nullptr;
-                bvi.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
-                bvi.flags = {};
-                bvi.buffer = info.bvhMetaBuffer;
-                bvi.format = VK_FORMAT_R32G32B32A32_UINT;
-                bvi.offset = 4ull * sizeof(int32_t) * info.bvhMetaOffset;
-                bvi.range = VK_WHOLE_SIZE;
-                if (vkCreateBufferView(_vtDevice->_device, &bvi, nullptr, &bvhMetaView) == VK_SUCCESS) {
-                    result = VK_SUCCESS;
-                } else {
-                    result = VK_INCOMPLETE;
-                };
-            };
-
-            auto metaView = bvhMetaView ? vk::BufferView(bvhMetaView) : vk::BufferView(vtAccelerator->_bvhMetaBuffer->_bufferView());
-            auto metaBufferDesc = info.bvhMetaBuffer ? vk::DescriptorBufferInfo(info.bvhMetaBuffer, 0, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhMetaBuffer->_descriptorInfo());
-            metaBufferDesc.offset += 4ull * sizeof(int32_t) * info.bvhMetaOffset;
-
-            auto boxBuffer = info.bvhBoxBuffer ? vk::DescriptorBufferInfo(info.bvhBoxBuffer, 16ull * sizeof(int32_t) * info.bvhBoxOffset, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
+            auto boxBuffer = info.bvhDataBuffer ? vk::DescriptorBufferInfo(info.bvhDataBuffer, info.bvhDataOffset, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
             auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
             std::vector<vk::WriteDescriptorSet> writes = {
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView(&metaView),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo(&metaBufferDesc),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo(&boxBuffer),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhBlockUniform->_descriptorInfo())),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingBuffer->_descriptorInfo())), // TODO: dedicated meta buffer
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(&boxBuffer),
             };
             vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };

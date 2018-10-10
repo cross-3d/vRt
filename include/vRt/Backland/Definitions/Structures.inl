@@ -200,7 +200,7 @@ namespace vrt { // store in official namespace
         VkPipelineShaderStageCreateInfo assemblyModule;
     };
 
-    // 
+    // TODO: Need to deprecate, and give them to dedicated utility 
     struct VtVertexAssemblySetCreateInfo {
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_SET_CREATE_INFO;
         const void* pNext = nullptr;
@@ -213,12 +213,13 @@ namespace vrt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_ACCELERATOR_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
-        VkDeviceSize maxPrimitives = 1024ull * 256ull;
-        VkBuffer bvhMetaBuffer = nullptr;
-        VkBuffer bvhBoxBuffer = nullptr;
-        uint32_t entryID = 0, primitiveCount = -1, primitiveOffset = 0;
-        uint32_t bvhMetaOffset = 0, bvhBoxOffset = 0;
-        VkBool32 secondary = false; // used for copying and storing only?
+        // passing a simple meta data for builders
+        VkDeviceSize maxPrimitives = 1024ull * 256ull; VkBool32 secondary = false; // used for copying and storing only?
+
+        // dedicated buffers for reusing 
+          VkBuffer bvhDataBuffer = nullptr; VkDeviceSize bvhDataOffset = 0ull; // external BVH data buffer 
+        //VkBuffer bvhMetaBuffer = nullptr; VkDeviceSize bvhMetaOffset = 0ull; // TODO: usage as dedicated heading in buffer 
+        VtVertexAccessor vertexDataAccess = {}, indexDataAccess = {};  // Reserved for new acceleration model 
 
         // mat4 of optimization
         VtMat4 coverMat = vrt::IdentifyMat4;

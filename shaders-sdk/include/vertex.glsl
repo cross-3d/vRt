@@ -51,8 +51,9 @@
 
 #endif
 
-#if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION))
-// bvh uniform unified
+
+// require 256 bytes per meta block
+
 struct BvhBlockT {
     mat4x4  transform,  transformInv;
     mat4x4 projection, projectionInv;
@@ -60,34 +61,34 @@ struct BvhBlockT {
     vec4 sceneMin, sceneMax;
 };
 
+struct BTYPE_ {
+#if (defined(USE_F32_BVH) || defined(USE_F16_BVH)) && !defined(EXPERIMENTAL_UNORM16_BVH)
+    fvec4_ cbox[3];
+#else
+    uvec2 cbox[3];
+#endif
+    ivec4 meta;
+};
+
 layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { BvhBlockT bvhBlock_[]; };
-#define bvhBlock bvhBlock_[0]
+#if (defined(ENABLE_VSTORAGE_DATA) && !defined(BVH_CREATION) && !defined(VERTEX_FILLING))
+layout ( binding = 1, set = 1, std430 ) readonly restrict buffer bvhBoxesB { BTYPE_ bvhNodes[]; };
+#else
+layout ( binding = 1, set = 1, std430 )          restrict buffer bvhBoxesB { BTYPE_ bvhNodes[]; };
+#endif
+
+#define bvhBlock bvhBlock_[0] 
+#define BVH_ENTRY bvhBlock.entryID
+#define BVH_ENTRY_HALF (bvhBlock.entryID>>1)
+
+
+
 
 //vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4((bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
 vec4 uniteBox(in vec4 glb) { return point4(fma((glb - bvhBlock.sceneMin) / (bvhBlock.sceneMax - bvhBlock.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
 
 
-#define BVH_ENTRY bvhBlock.entryID
-#define BVH_ENTRY_HALF (bvhBlock.entryID>>1)
-#endif
 
-// BVH Zone in ray tracing system
-#if (defined(ENABLE_VSTORAGE_DATA) && !defined(BVH_CREATION) && !defined(VERTEX_FILLING))
-struct NTYPE_ {
-#ifdef EXPERIMENTAL_UNORM16_BVH
-      uvec2 cbox[3];
-#else
-#ifdef USE_F32_BVH
-       vec4 cbox[3];
-#else
-    f16vec4 cbox[3];
-#endif
-#endif
-    ivec4 meta;
-};
-
-layout ( binding = 2, set = 1, std430 ) readonly coherent buffer bvhBoxesB { NTYPE_ bvhNodes[]; };
-#endif
 
 
 
