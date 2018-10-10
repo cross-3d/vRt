@@ -217,8 +217,8 @@ namespace vrt { // store in official namespace
         VkDeviceSize maxPrimitives = 1024ull * 256ull; VkBool32 secondary = false; // used for copying and storing only?
 
         // dedicated buffers for reusing 
-          VkBuffer bvhDataBuffer = nullptr; VkDeviceSize bvhDataOffset = 0ull; // external BVH data buffer 
-        //VkBuffer bvhMetaBuffer = nullptr; VkDeviceSize bvhMetaOffset = 0ull; // TODO: usage as dedicated heading in buffer 
+          VkBuffer bvhDataBuffer = VK_NULL_HANDLE; VkDeviceSize bvhDataOffset = 0ull; // external BVH data buffer 
+        //VkBuffer bvhMetaBuffer = VK_NULL_HANDLE; VkDeviceSize bvhMetaOffset = 0ull; // TODO: usage as dedicated heading in buffer 
         VtVertexAccessor vertexDataAccess = {}, indexDataAccess = {};  // Reserved for new acceleration model 
 
         // mat4 of optimization
