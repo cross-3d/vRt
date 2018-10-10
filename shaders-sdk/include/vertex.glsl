@@ -207,7 +207,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 
 // barycentric map (for corrections tangents in POM)
 void interpolateMeshData(inout VtHitData ht, in int tri) {
-    const vec3 vs = vec3(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy);
+    const vec4 vs = vec4(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy, 0.f); // added additional component for shared computing capable production 
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
     [[flatten]] if (ht.attribID > 0) {
         //[[unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
@@ -219,8 +219,8 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
 
             vec4 attrib = 0.f.xxxx;
-              [[unroll]] for (int j=0;j<3;j++) {attrib=fma(vs[j].xxxx,textureLod(attrib_texture,fma(sz,offsetf[j],trig),0),attrib);}; // using accumulation sequence
-            //[[unroll]] for (int j=0;j<4;j++) {attrib[j]=dot(vs,SGATHER(attrib_texture,trig,j)._SWIZV);}; // constant-time issues with textureGather
+            //[[unroll]] for (int j=0;j<3;j++) {attrib=fma(vs[j].xxxx,textureLod(attrib_texture,fma(sz,offsetf[j],trig),0),attrib);}; // using accumulation sequence
+            [[unroll]] for (int j=0;j<4;j++) {attrib[j]=dot(vs,sifonGather(attrib_texture,trig,j));}; // tensor capable production 
 
             ISTORE(attributes, makeAttribID(ht.attribID, i), attrib);
 #endif

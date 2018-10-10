@@ -374,6 +374,19 @@ lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFFu;};
 #define f32_f16 packHalf4x16
 #define f16_f32 unpackHalf4x16
 
+// issue compatible gather (may haven't optimization itself)
+vec4 sifonGather(in sampler2D SMP, in vec2 TXL, in const int CMP) {
+    //vec4 result = vec4(0.f);
+    //[[ flatten ]] if (CMP == 3) { result = textureGather(SMP, TXL, 3); } else 
+    //[[ flatten ]] if (CMP == 2) { result = textureGather(SMP, TXL, 2); } else 
+    //[[ flatten ]] if (CMP == 1) { result = textureGather(SMP, TXL, 1); } else 
+    //                            { result = textureGather(SMP, TXL, 0); };
+    //return result;
+
+    // nested conditions 
+    return ( CMP == 3 ? textureGather(SMP, TXL, 3) : ( CMP == 2 ? textureGather(SMP, TXL, 2) : ( CMP == 1 ? textureGather(SMP, TXL, 1) : textureGather(SMP, TXL, 0) ) ) );
+};
+
 // bilinear interpolation remedy 
 const vec2 offsetf[4] = { vec2(0,1), vec2(1,1), vec2(1,0), vec2(0,0) };
 vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
@@ -381,7 +394,8 @@ vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     const vec4 il = vec4(fract(tc),1.f-fract(tc)), cf = vec4(il.z*il.y,il.x*il.y,il.x*il.w,il.z*il.w);
 
     vec4 fcol = 0.f.xxxx;
-    [[unroll]] for (int i=0;i<4;i++) fcol=fma(textureLod(SMP,fma(offsetf[i],is,tm),LOD),cf[i].xxxx,fcol);
+    //[[unroll]] for (int i=0;i<4;i++) fcol=fma(textureLod(SMP,fma(offsetf[i],is,tm),LOD),cf[i].xxxx,fcol);
+    [[unroll]] for (int i=0;i<4;i++) fcol[i]=dot(sifonGather(SMP,tm,i),cf); // tensor capable production 
     return fcol;
 };
 
