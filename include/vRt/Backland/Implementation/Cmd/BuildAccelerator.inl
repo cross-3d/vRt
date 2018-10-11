@@ -40,12 +40,6 @@ namespace _vt {
         return result;
     }
 
-    VtResult cmdBarrierAggregated(std::shared_ptr<CommandBuffer> cmdBuf) {
-        auto device = cmdBuf->_parent();
-        cmdDispatch(*cmdBuf, device->_dullBarrier);
-        return VK_SUCCESS;
-    }
-
     
     VtResult buildVertexSet(std::shared_ptr<CommandBuffer> cmdBuf, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
         VtResult result = VK_SUCCESS;
@@ -54,7 +48,7 @@ namespace _vt {
         if (cmdBuf->_vertexInputs.size() <= 0) return result;
 
         auto device = cmdBuf->_parent();
-        auto natvab = device->_nativeVertexAssembler;
+        auto natvab = device->_nativeVertexAssembler[0];
         auto vertx = cmdBuf->_vertexSet.lock();
         vertx->_vertexInputs = cmdBuf->_vertexInputs;
 
@@ -124,7 +118,7 @@ namespace _vt {
         // ptr's 
         auto device = cmdBuf->_parent();
         auto vertx = cmdBuf->_vertexSet.lock();
-        auto natvab = device->_nativeVertexAssembler;
+        auto natvab = device->_nativeVertexAssembler[0];
         vertx->_vertexInputs = cmdBuf->_vertexInputs;
 
         // update constants
@@ -189,7 +183,7 @@ namespace _vt {
     VtResult buildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf) {
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
-        auto acclb = device->_acceleratorBuilder;
+        auto acclb = device->_acceleratorBuilder[0];
         auto accel = cmdBuf->_acceleratorSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
         accel->_vertexAssemblySet = vertx; // bind vertex assembly with accelerator structure (planned to deprecate)

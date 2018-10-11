@@ -15,7 +15,7 @@ namespace _vt {
 
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
-        auto radix = device->_radixSort;
+        auto radix = device->_radixSort[0];
         std::vector<VkDescriptorSet> _sets = { radix->_descriptorSet, inputSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, radix->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
         //updateCommandBarrier(*cmdBuf);

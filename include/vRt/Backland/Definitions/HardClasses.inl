@@ -83,11 +83,12 @@ namespace _vt { // store in undercover namespace
         VkPipelineCache _pipelineCache = {}; // store native pipeline cache
         VkDescriptorPool _descriptorPool = {};
 
-        std::shared_ptr<RadixSort> _radixSort = {};
-        std::shared_ptr<AcceleratorHLBVH2> _acceleratorBuilder = {}; // planned to rename
-        std::shared_ptr<AssemblyPipeline> _nativeVertexAssembler = {};
-        std::shared_ptr<BufferTraffic> _bufferTraffic = {};
-        VkPipeline _dullBarrier = {};
+        // TODO: much better support of multi-threaded processing by multiple instances
+        uint32_t _supportedThreadCount = 1u;
+        std::vector<std::shared_ptr<RadixSort>> _radixSort = {}; // 
+        std::vector<std::shared_ptr<AcceleratorHLBVH2>> _acceleratorBuilder = {}; // planned to rename
+        std::vector<std::shared_ptr<AssemblyPipeline>> _nativeVertexAssembler = {};
+        std::vector<std::shared_ptr<BufferTraffic>> _bufferTraffic = {};
 
         // descriptor layout map in ray tracing system
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap = {};
@@ -97,8 +98,8 @@ namespace _vt { // store in undercover namespace
         operator VkPipelineCache() const { return _pipelineCache; };
         operator VkDescriptorPool() const { return _descriptorPool; };
 
-        operator std::shared_ptr<HostToDeviceBuffer>() const { return _bufferTraffic->_uploadBuffer; };
-        operator std::shared_ptr<DeviceToHostBuffer>() const { return _bufferTraffic->_downloadBuffer; };
+        operator std::shared_ptr<HostToDeviceBuffer>() const { return _bufferTraffic[0]->_uploadBuffer; };
+        operator std::shared_ptr<DeviceToHostBuffer>() const { return _bufferTraffic[0]->_downloadBuffer; };
 
         auto _parent() const { return _physicalDevice; };
         auto& _parent() { return _physicalDevice; };

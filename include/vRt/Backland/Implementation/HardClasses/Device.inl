@@ -95,22 +95,34 @@ namespace _vt {
         vtDevice->_mainFamilyIndex = vtExtension.mainQueueFamily;
         vtDevice->_shadersPath = vtExtension.shaderPath;
 
-        // make traffic buffers 
-        VtDeviceBufferCreateInfo dbfi = {};
-        dbfi.bufferSize = strided<uint32_t>(vtExtension.sharedCacheSize);
-        dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
-        dbfi.familyIndex = vtExtension.mainQueueFamily;
 
-        // make weak proxy (avoid cycled linking)
-        vtDevice->_bufferTraffic = std::make_shared<BufferTraffic>();
-        vtDevice->_bufferTraffic->_device = vtDevice;
-        createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_uploadBuffer);
-        createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_downloadBuffer);
 
-        dbfi.format = VK_FORMAT_UNDEFINED;
-        dbfi.bufferSize = strided<VtUniformBlock>(1024);
-        createDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic->_uniformVIBuffer);
-        const auto vendorName = vtDevice->_vendorName;
+
+        // buffer <--> host traffic buffers
+        { const constexpr uint32_t t = 0u;
+            vtDevice->_bufferTraffic.push_back(std::make_shared<BufferTraffic>());
+
+            // make traffic buffers 
+            VtDeviceBufferCreateInfo dbfi = {};
+            dbfi.bufferSize = strided<uint32_t>(vtExtension.sharedCacheSize);
+            dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
+            dbfi.familyIndex = vtExtension.mainQueueFamily;
+
+            vtDevice->_bufferTraffic[t]->_device = vtDevice;
+            createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uploadBuffer);
+            createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_downloadBuffer);
+        };
+
+        // vertex input meta construction arrays
+        { const constexpr uint32_t t = 0u;
+            VtDeviceBufferCreateInfo dbfi = {};
+            dbfi.format = VK_FORMAT_UNDEFINED;
+            dbfi.bufferSize = strided<VtUniformBlock>(1024);
+            dbfi.familyIndex = vtExtension.mainQueueFamily;
+            createDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uniformVIBuffer);
+        };
+
+
 
 
         //
@@ -223,6 +235,7 @@ namespace _vt {
         }
 
         // 
+        const auto vendorName = vtDevice->_vendorName;
         auto simfo = VtAttributePipelineCreateInfo{};
 #ifdef VRT_ENABLE_HARDCODED_SPV_CORE
         simfo.assemblyModule = makeComputePipelineStageInfo(*vtDevice, natives::vertexAssembly.at(vendorName));
@@ -230,13 +243,16 @@ namespace _vt {
         simfo.assemblyModule = makeComputePipelineStageInfo(*vtDevice, _vt::readBinary(natives::vertexAssembly.at(vendorName)));
 #endif
 
+        // native vertex input pipeline layout 
         auto vtpl = VtPipelineLayoutCreateInfo{};
         createPipelineLayout(vtDevice, vtpl, simfo.pipelineLayout, VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT);
 
-        // create radix sort tool
-        createRadixSort(vtDevice, vtExtension, vtDevice->_radixSort);
-        createAssemblyPipeline(vtDevice, simfo, vtDevice->_nativeVertexAssembler, true);
-        createAcceleratorHLBVH2(vtDevice, vtExtension, vtDevice->_acceleratorBuilder);
+        // create native tools 
+        for ( uint32_t t = 0; t < vtDevice->_supportedThreadCount; t++ ) {
+            vtDevice->_radixSort.push_back({});             createRadixSort(vtDevice, vtExtension, vtDevice->_radixSort[t]);
+            vtDevice->_nativeVertexAssembler.push_back({}); createAssemblyPipeline(vtDevice, simfo, vtDevice->_nativeVertexAssembler[t], true);
+            vtDevice->_acceleratorBuilder.push_back({});    createAcceleratorHLBVH2(vtDevice, vtExtension, vtDevice->_acceleratorBuilder[t]);
+        }
 
         // create dull barrier pipeline
         auto rng = vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2));

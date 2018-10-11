@@ -33,8 +33,9 @@ namespace vrt { // store in official namespace
      const void* VtDevice::_getAllocator() const { return nullptr; };
 #endif
 
-     VtDevice::operator VtHostToDeviceBuffer() const { return VtHostToDeviceBuffer{ _vtHandle->_bufferTraffic->_uploadBuffer }; };
-     VtDevice::operator VtDeviceToHostBuffer() const { return VtDeviceToHostBuffer{ _vtHandle->_bufferTraffic->_downloadBuffer }; };
+     // TODO: support of multi-threading support 
+     VtDevice::operator VtHostToDeviceBuffer() const { return VtHostToDeviceBuffer{ std::shared_ptr<_vt::HostToDeviceBuffer>(*_vtHandle) }; };
+     VtDevice::operator VtDeviceToHostBuffer() const { return VtDeviceToHostBuffer{ std::shared_ptr<_vt::DeviceToHostBuffer>(*_vtHandle) }; };
 
     // getter of descriptor layout from device VtDevice
 #ifdef VRT_ENABLE_STRING_VIEW

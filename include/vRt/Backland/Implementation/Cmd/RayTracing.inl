@@ -41,7 +41,7 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
 
         auto device = cmdBuf->_parent();
-        auto acclb = device->_acceleratorBuilder;
+        auto acclb = device->_acceleratorBuilder[0];
         auto accel = cmdBuf->_acceleratorSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
         auto matrl = cmdBuf->_materialSet.lock();
