@@ -16,7 +16,7 @@
 #include "../../include/structs.glsl"
 #include "../../include/vertex.glsl"
 #include "../../include/morton.glsl"
-#include "../submodules/includes.glsl"
+#include "../include/bvh-inputs.glsl"
 
 LOCAL_SIZE_LAYOUT;
 

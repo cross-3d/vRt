@@ -9,8 +9,7 @@
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
 #include "../include/vertex.glsl"
-#include "./submodules/includes.glsl"
-
+#include "./include/bvh-inputs.glsl"
 
 LOCAL_SIZE_LAYOUT;
 

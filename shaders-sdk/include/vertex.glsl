@@ -68,7 +68,15 @@ struct BTYPE_ {
     ivec4 meta;
 };
 
-layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { BvhBlockT bvhBlock_[]; };
+
+layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { BvhBlockT bvhBlock_[]; }; // bvhBlock of main structure 
+
+#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
+layout ( binding = 2, set = 1, std430 ) readonly restrict buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
+layout ( binding = 3, set = 1, std430 ) readonly restrict buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
+#endif
+
+
 #if (defined(ENABLE_VSTORAGE_DATA) && !defined(BVH_CREATION) && !defined(VERTEX_FILLING))
 layout ( binding = 1, set = 1, std430 ) readonly restrict buffer bvhBoxesB { BTYPE_ bvhNodes[]; };
 #else

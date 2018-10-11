@@ -5,10 +5,11 @@
 
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
 #include "../include/vertex.glsl"
-#include "../include/ballotlib.glsl"
-#include "./submodules/includes.glsl"
+#include "./include/bvh-inputs.glsl"
+
 
 // optimize by shareds
 void unifyNodeBox(inout int idx) {

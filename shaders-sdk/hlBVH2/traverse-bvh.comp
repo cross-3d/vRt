@@ -16,11 +16,10 @@
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
 #include "../include/rayslib.glsl"
-#include "../include/morton.glsl"
 #include "../include/vertex.glsl"
 
 
-#include "./submodules/traverse-bvh2.glsl"
+#include "./include/bvh-traverse-task.glsl"
 #define wgs gl_NumWorkGroups.x
 
 

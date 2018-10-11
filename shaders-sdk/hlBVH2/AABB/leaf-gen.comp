@@ -1,0 +1,57 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#define EXPERIMENTAL_INSTANCING_SUPPORT
+#define VRT_USE_FAST_INTERSECTION
+#define ENABLE_VSTORAGE_DATA
+#define BVH_CREATION
+#define LEAF_GEN
+
+#ifndef INTEL_PLATFORM
+#define PREFER_64BIT_MORTON_TYPE
+#endif
+
+#include "../../include/driver.glsl"
+#include "../../include/mathlib.glsl"
+#include "../../include/ballotlib.glsl"
+#include "../../include/structs.glsl"
+#include "../../include/vertex.glsl"
+#include "../../include/morton.glsl"
+#include "../include/bvh-inputs.glsl"
+
+LOCAL_SIZE_LAYOUT;
+
+#define wsize bvhBlock.leafCount
+//#define lbox Leafs[to].lbox
+
+void main() {
+    IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
+        const uint to = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (to >= wsize) break;
+        const uint tri = buildBlock.primitiveOffset+clamp(to, 0, buildBlock.primitiveCount-1);
+        
+        // unit mode 
+        //vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax, sceneRes = sceneMax - sceneMin;
+        vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx, sceneRes = sceneMax - sceneMin, sdiv = 1.f.xxxx;
+        bbox_t lbox = bbox_t(uniteBox(Leafs[to].lbox.mn)*sdiv, uniteBox(Leafs[to].lbox.mx)*sdiv);
+
+        // calculate center of box (yes, uses mix, because the same of (a+b)/2)
+        vec4 bcenter = vector4(mix(lbox.mn, lbox.mx, .5f.xxxx));
+        bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
+
+        // store leaf data
+        [[flatten]] if (to < wsize && to >= 0) {
+            // re-arrange box
+            Leafs[to].lbox = lbox;
+            
+            // save morton codes 
+#ifdef USE_MORTON_32
+            Mortoncodes[to] = encodeMorton(packUnorm4x8(bcenter));
+#else
+            Mortoncodes[to] = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
+#endif
+
+            MortoncodesIndices[to] = int(to+1);
+        };
+    };
+};

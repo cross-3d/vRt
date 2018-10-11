@@ -16,7 +16,7 @@
 #include "../../include/structs.glsl"
 #include "../../include/vertex.glsl"
 #include "../../include/morton.glsl"
-#include "../submodules/includes.glsl"
+#include "../include/bvh-inputs.glsl"
 
 LOCAL_SIZE_LAYOUT;
 
@@ -82,10 +82,9 @@ void main() {
 
         // unit mode 
         //vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax, sceneRes = sceneMax - sceneMin;
-        vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx, sceneRes = sceneMax - sceneMin;
-        bbox_t lbox = calcTriBox(triverts, sceneRes / (bvhBlock.sceneMax - bvhBlock.sceneMin));
-        //bbox_t lbox = calcTriBox(triverts);
-        
+        vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx, sceneRes = sceneMax - sceneMin, sdiv = 1.f.xxxx;
+        bbox_t lbox = bbox_t(uniteBox(Leafs[to].lbox.mn)*sdiv, uniteBox(Leafs[to].lbox.mx)*sdiv);
+
         vec4 bcenter = vector4((triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f);
         bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
 

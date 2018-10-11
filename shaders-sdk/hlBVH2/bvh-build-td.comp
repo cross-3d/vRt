@@ -12,10 +12,11 @@
 
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
 #include "../include/vertex.glsl"
-#include "../include/ballotlib.glsl"
-#include "./submodules/includes.glsl"
+#include "./include/bvh-inputs.glsl"
+
 
 // used sort of https://research.nvidia.com/sites/default/files/pubs/2011-08_Simpler-and-Faster/main.pdf
 // also, using better BVH2 layout
@@ -62,7 +63,7 @@ uint rID(in uint t) {return gl_NumWorkGroups.x * t + gl_WorkGroupID.x;};
 #define swapIn  _counters[1]
 #define swapOut _counters[2]
 
-#include "./submodules/bvh-build-general.glsl" // unified functions
+#include "./include/bvh-build-general.glsl" // unified functions
 layout ( local_size_x = WORK_SIZE_BND ) in;
 
 // I have no idea for optimize registers

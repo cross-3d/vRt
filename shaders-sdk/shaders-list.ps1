@@ -134,6 +134,9 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "/triangle/leaf-gen.comp"      "$INDIR$HLBV" "$HRDDIR$HLBV"
     BuildCompute "/triangle/box-calc.comp"      "$INDIR$HLBV" "$HRDDIR$HLBV"
     
+    # instances support (hlBVH2)
+    BuildCompute "/AABB/leaf-gen.comp"      "$INDIR$HLBV" "$HRDDIR$HLBV"
+    BuildCompute "/AABB/box-calc.comp"      "$INDIR$HLBV" "$HRDDIR$HLBV"
     
     
     # radix sort

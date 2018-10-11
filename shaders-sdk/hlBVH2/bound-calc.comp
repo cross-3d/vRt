@@ -23,7 +23,7 @@
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
 #include "../include/vertex.glsl"
-#include "./submodules/includes.glsl"
+#include "./include/bvh-inputs.glsl"
 
 
 layout ( binding = 9, set = 0, std430 ) restrict buffer SceneBoxB { vec4 minmax[]; };

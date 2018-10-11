@@ -1,0 +1,45 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#define EXPERIMENTAL_INSTANCING_SUPPORT
+#define VRT_USE_FAST_INTERSECTION
+#define ENABLE_VSTORAGE_DATA
+#define BVH_CREATION
+#define LEAF_GEN
+
+#ifndef INTEL_PLATFORM
+#define PREFER_64BIT_MORTON_TYPE
+#endif
+
+#include "../../include/driver.glsl"
+#include "../../include/mathlib.glsl"
+#include "../../include/ballotlib.glsl"
+#include "../../include/structs.glsl"
+#include "../../include/vertex.glsl"
+#include "../../include/morton.glsl"
+#include "../include/bvh-inputs.glsl"
+
+LOCAL_SIZE_LAYOUT;
+
+#define wsize buildBlock.primitiveCount
+
+// re-calculate box after transforming 
+bbox_t calculateTransformedBox(in mat4x4 transform, in vec4 smin, in vec4 smax){
+    const vec3 tmin = mult4(transform, smin).xyz, tmax = mult4(transform, smax).xyz;
+
+    bbox_t result;
+    result.mn = vec4(vec3(min(tmin.x,tmax.x),min(tmin.y,tmax.y),min(tmin.z,tmax.z)),0.f);
+    result.mx = vec4(vec3(max(tmin.x,tmax.x),max(tmin.y,tmax.y),max(tmin.z,tmax.z)),0.f);
+    return result;
+};
+
+void main() {
+    IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
+        const uint I = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (I >= wsize) break;
+        const uint T = clamp(buildBlock.primitiveOffset+bvhInstance_[I].bvhBlockID, 0, buildBlock.primitiveCount-1);
+
+        Leafs[I].lbox  = calculateTransformedBox(bvhInstance_[I].transform * bvhBlock.transform, bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax);
+        Leafs[I].pdata = ivec4(I.xx, 0, T+1);
+    };
+};
