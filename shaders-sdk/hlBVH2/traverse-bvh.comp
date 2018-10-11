@@ -19,8 +19,10 @@
 #include "../include/morton.glsl"
 #include "../include/vertex.glsl"
 
+
 #include "./submodules/traverse-bvh2.glsl"
 #define wgs gl_NumWorkGroups.x
+
 
 LOCAL_SIZE_LAYOUT;
 

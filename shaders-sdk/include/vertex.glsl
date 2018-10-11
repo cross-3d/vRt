@@ -15,27 +15,22 @@
 
 // Geometry Zone
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION) || defined(VERTEX_FILLING))
-    #ifdef VERTEX_FILLING
-    #define VTX_SET 0
-    #else
-    #define VTX_SET 2
+
+    #ifndef VTX_SET
+        #ifdef VERTEX_FILLING
+        #define VTX_SET 0
+        #else
+        #define VTX_SET 2
+        #endif
     #endif
 
+
     #ifdef VERTEX_FILLING
-    //layout ( binding = 0, set = VTX_SET, std430   ) buffer tcounterB { int tcounter[2]; };
-    layout ( binding = 1, set = VTX_SET, std430   ) buffer materialsB { int vmaterials[]; };
     layout ( binding = 2, set = VTX_SET, std430   ) buffer bitfieldsB { uint vbitfields[]; };
     #else
-    //layout ( binding = 0, set = VTX_SET, std430   ) readonly buffer tcounterB { int tcounter[2]; };
-    layout ( binding = 1, set = VTX_SET, std430   ) readonly buffer materialsB { int vmaterials[]; };
     layout ( binding = 2, set = VTX_SET, std430   ) readonly buffer bitfieldsB { int vbitfields[]; };
     #endif
 
-    #ifdef VERTEX_FILLING
-    layout ( binding = 3, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtxIn;
-    #else
-    layout ( binding = 3, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lvtxIn;
-    #endif
 
     #if (defined(LEAF_GEN) || defined(VERTEX_FILLING))
     layout ( binding = 5, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtx;
@@ -44,22 +39,25 @@
     layout ( binding = 5, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lvtx;
     layout ( binding = 7, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lnrm;
     #endif
-
-    #define TLOAD(img,t) imageLoad(img,t)
-    layout ( binding = 4, set = VTX_SET, rgba32f ) uniform highp image2D attrib_texture_out;
-    layout ( binding = 6, set = VTX_SET          ) uniform highp sampler2D attrib_texture;
-
+    
 #endif
 
 
-// require 256 bytes per meta block
-
+// task level traverse data 
 struct BvhBlockT {
-    mat4x4  transform,  transformInv;
-    mat4x4 projection, projectionInv;
-    int leafCount, primitiveCount, entryID, primitiveOffset;
+    int entryID, leafCount; // leafCount reserved for ESC versions
+    int primitiveCount, primitiveOffset; // first for default triangle limit, second for correct vertex data block ( because assembled set should have shared buffer )
+    mat4x4 transform, transformInv; // we resolved to save that row 
     vec4 sceneMin, sceneMax;
 };
+
+// TODO: remerge to new top level traverser 
+struct BvhInstanceT {
+    int bvhBlockID, r0, r1, r2;
+    mat4x4 transform, transformInv; // row of traversion correction, combined with transforming to instance space 
+};
+
+
 
 struct BTYPE_ {
 #if (defined(USE_F32_BVH) || defined(USE_F16_BVH)) && !defined(EXPERIMENTAL_UNORM16_BVH)
@@ -86,48 +84,9 @@ layout ( binding = 1, set = 1, std430 )          restrict buffer bvhBoxesB { BTY
 
 //vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4((bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
 vec4 uniteBox(in vec4 glb) { return point4(fma((glb - bvhBlock.sceneMin) / (bvhBlock.sceneMax - bvhBlock.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
-
-
-
-
-
-
-#ifdef VRT_INTERPOLATOR_TEXEL
-//const int WARPED_WIDTH = 4096;
-const int WARPED_WIDTH = 6144;
-//const ivec2 mit[4] = { ivec2(1,0), ivec2(0,0), ivec2(0,1),  ivec2(1,1) };
-const ivec2 mit[4] = { ivec2(0,0), ivec2(1,0), ivec2(0,1),  ivec2(1,1) };
-ivec2 gatherMosaic(in ivec2 uniformCoord) {
-    //return ivec2((uniformCoord.x * 3) + (uniformCoord.y % 3), uniformCoord.y);
-    return ivec2(uniformCoord)<<1;
-}
-
-#else
-
-const int WARPED_WIDTH = 4096;
-const ivec2 mit[4] = {ivec2(0,1), ivec2(1,1), ivec2(1,0), ivec2(0,0)};
-ivec2 gatherMosaic(in ivec2 uniformCoord) {
-    return ivec2(uniformCoord.x * 3 + (uniformCoord.y % 3), uniformCoord.y);
-}
-
-#endif
-
-
-
-ivec2 mosaicIdc(in ivec2 mosaicCoord, in uint idc) {
-    mosaicCoord += mit[idc];
-#ifdef VERTEX_FILLING
-    mosaicCoord.x %= int(imageSize(attrib_texture_out).x);
-#endif
-    return mosaicCoord;
-}
-
-ivec2 getUniformCoord(in int indice) {
-    return ivec2(indice % WARPED_WIDTH, indice / WARPED_WIDTH);
-}
-
-
 const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
+
+
 
 #ifndef VERTEX_FILLING
 #ifndef BVH_CREATION
@@ -190,44 +149,6 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 #endif
 
 #endif
-#endif
-#endif
-
-
-
-
-
-
-
-
-#ifdef ENABLE_VSTORAGE_DATA
-#ifdef ENABLE_VERTEX_INTERPOLATOR
-
-//const  vec2 tpattern[4] = { vec2(0,1),  vec2(1,1),  vec2(1,0),  vec2(0,0)};
-#define _SWIZV xyz
-
-// barycentric map (for corrections tangents in POM)
-void interpolateMeshData(inout VtHitData ht, in int tri) {
-    const vec4 vs = vec4(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy, 0.f); // added additional component for shared computing capable production 
-    const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
-    [[flatten]] if (ht.attribID > 0) {
-        //[[unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
-        [[dont_unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
-#ifdef VRT_INTERPOLATOR_TEXEL
-            const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + vs.yz + 0.5f) * sz;
-            ISTORE(attributes, makeAttribID(ht.attribID, i), textureHQ(attrib_texture, trig, 0));
-#else
-            const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
-
-            vec4 attrib = 0.f.xxxx;
-            //[[unroll]] for (int j=0;j<3;j++) {attrib=fma(vs[j].xxxx,textureLod(attrib_texture,fma(sz,offsetf[j],trig),0),attrib);}; // using accumulation sequence
-            [[unroll]] for (int j=0;j<4;j++) {attrib[j]=dot(vs,sifonGather(attrib_texture,trig,j));}; // tensor capable production 
-
-            ISTORE(attributes, makeAttribID(ht.attribID, i), attrib);
-#endif
-        }
-    }
-}
 #endif
 #endif
 

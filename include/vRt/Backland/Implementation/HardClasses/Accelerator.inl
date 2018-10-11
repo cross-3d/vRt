@@ -62,17 +62,17 @@ namespace _vt {
         };
 
 
-        std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
-
-        VtDeviceBufferCreateInfo bfic = {};
-        bfic.familyIndex = _vtDevice->_mainFamilyIndex;
-        bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
+        
 
         VtBufferRegionCreateInfo bfi = {};
         const auto maxPrimitives = info.maxPrimitives;
 
-        //if (!info.secondary)
+        std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
         { // solve building BVH conflicts by creation in accelerator set
+            bfi.bufferSize = std::max(sizeof(uint32_t) * 64ull, sizeof(VtBuildConst));
+            bfi.format = VK_FORMAT_UNDEFINED;
+            createBufferRegion(bManager, bfi, vtAccelerator->_constBuffer);
+
             bfi.bufferSize = maxPrimitives * sizeof(uint32_t) * 16ull;
             bfi.format = VK_FORMAT_UNDEFINED;
             createBufferRegion(bManager, bfi, vtAccelerator->_leafBuffer);
@@ -111,6 +111,9 @@ namespace _vt {
         };
 
         { // build final shared buffer for this class
+            VtDeviceBufferCreateInfo bfic = {};
+            bfic.familyIndex = _vtDevice->_mainFamilyIndex;
+            bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
             createSharedBuffer(bManager, bfic, vtAccelerator->_sharedBuffer);
         };
 
@@ -123,14 +126,15 @@ namespace _vt {
 
             auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_buildDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
             std::vector<vk::WriteDescriptorSet> writes = {
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_countersBuffer->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_mortonCodesBuffer->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_mortonIndicesBuffer->_descriptorInfo()),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_constBuffer->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_leafBuffer->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_onWorkBoxes->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_fitStatusBuffer->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_currentNodeIndices->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(7).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_leafNodeIndices->_descriptorInfo()),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_countersBuffer->_descriptorInfo()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(9).setPBufferInfo((vk::DescriptorBufferInfo*)&vtAccelerator->_generalBoundaryResultBuffer->_descriptorInfo()),
             };
             vk::Device(vkDevice).updateDescriptorSets(writes, {});

@@ -194,37 +194,40 @@ namespace _vt {
         auto vertx = cmdBuf->_vertexSet.lock();
         accel->_vertexAssemblySet = vertx; // bind vertex assembly with accelerator structure (planned to deprecate)
 
+
+        //VtBuildConst _buildConstData = {};
+        VtBuildConst& _buildConstData = acclb->_buildConstData;
+        _buildConstData.primitiveOffset = accel->_primitiveOffset; // 
+        _buildConstData.primitiveCount = (accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount;
+
         // create BVH instance meta (linking with geometry) 
-        VtBvhBlock _bvhBlockData = {};
-        _bvhBlockData.primitiveOffset = accel->_primitiveOffset; // 
-        _bvhBlockData.primitiveCount = (accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount;
-        _bvhBlockData.leafCount = _bvhBlockData.primitiveCount;
+        //VtBvhBlock _bvhBlockData = {};
+        VtBvhBlock& _bvhBlockData = accel->_bvhBlockData;
+        _bvhBlockData.primitiveCount = _buildConstData.primitiveCount;
+        _bvhBlockData.leafCount = _buildConstData.primitiveCount;
         _bvhBlockData.entryID = accel->_entryID;
 
         // planned to merge instance buffer of linked set
-        _bvhBlockData.projection = accel->_coverMatrice;
-        _bvhBlockData.projectionInv = IdentifyMat4;
-        _bvhBlockData.transform = IdentifyMat4;
+        _bvhBlockData.transform = accel->_coverMatrice;
         _bvhBlockData.transformInv = IdentifyMat4;
 
-
+        // updating meta buffers
         cmdUpdateBuffer(*cmdBuf, accel->_bvhHeadingBuffer, 0, sizeof(_bvhBlockData), &_bvhBlockData);
-        
+        cmdUpdateBuffer(*cmdBuf, acclb->_constBuffer, 0, sizeof(_buildConstData), &_buildConstData);
 
         // if has advanced accelerator
         if (device->_advancedAccelerator) {
             result = device->_advancedAccelerator->_BuildAccelerator(cmdBuf, accel);
         }
         else {
-
             // building hlBVH2 process
             // planned to use secondary buffer for radix sorting
             //auto bounder = accel;
 
-            // incorrect sorting defence
+            // incorrect sorting defence ( can't help after sorting )
             //cmdFillBuffer<0xFFFFFFFFu>(*cmdBuf, acclb->_mortonCodesBuffer);
 
-            // only for debug
+            // only for debug ( for better visibility )
             //cmdFillBuffer<0u>(*cmdBuf, acclb->_mortonIndicesBuffer);
             //cmdFillBuffer<0u>(*cmdBuf, accel->_bvhBoxBuffer);
 

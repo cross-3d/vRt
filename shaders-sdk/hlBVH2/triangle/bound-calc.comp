@@ -26,20 +26,20 @@
 #include "../submodules/includes.glsl"
 
 
-layout ( binding = 9, set = 0, std430 )  buffer minmaxB { vec4 minmax[]; };
+layout ( binding = 9, set = 0, std430 ) restrict buffer SceneBoxB { vec4 minmax[]; };
+
 
 bbox_t getMinMaxPrimitive(in uint idx) {
-    const uint tri = bvhBlock.primitiveOffset+clamp(idx, 0u, max(bvhBlock.primitiveCount,1u)-1u); 
-    return Leafs[tri].lbox;
-}
+    return Leafs[buildBlock.primitiveOffset+clamp(idx, 0u, max(buildBlock.primitiveCount,1u)-1u)].lbox;
+};
 
 bbox_t bbox_tunion(in bbox_t b1, in bbox_t b2) {
     return bbox_t(min(b1.mn, b2.mn), max(b1.mx, b2.mx));
-}
+};
 
 bbox_t bbox_tunion3(in bbox_t b1, in bbox_t b2, in bbox_t c3) {
     return bbox_t(min3_wrap(b1.mn, b2.mn, c3.mn), max3_wrap(b1.mx, b2.mx, c3.mx));
-}
+};
 
 
 layout ( local_size_x = WORK_SIZE_BND ) in;
@@ -47,9 +47,9 @@ shared bbox_t sdata[ WORK_SIZE_BND ];
 
 #define tid gl_LocalInvocationID.x
 void main() {
-    IFANY (bvhBlock.primitiveCount <= 0) return;
+    IFANY (buildBlock.primitiveCount <= 0) return;
     const uint gridSize = (gl_WorkGroupSize.x<<1u) * gl_NumWorkGroups.x;
-    const uint tcount = max( bvhBlock.primitiveCount, 2u );
+    const uint tcount = max( buildBlock.primitiveCount, 2u );
 
     // 
     sdata[tid] = bbox_t(INFINITY.xxxx, -INFINITY.xxxx);

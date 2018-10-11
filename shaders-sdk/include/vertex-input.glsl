@@ -1,7 +1,14 @@
 #ifndef _VERTEX_INPUT_H
 #define _VERTEX_INPUT_H
 
-#include "../include/vertex.glsl"
+//#include "../include/vertex.glsl"
+
+#ifdef VERTEX_FILLING
+#define VTX_SET 0
+#else
+#define VTX_SET 2
+#endif
+layout ( binding = 3, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtxIn;
 
 
 #if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SAMPLER_HACK) && defined(ENABLE_FP16_SUPPORT)
@@ -179,22 +186,6 @@ void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
         const bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
         const uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
         [[flatten]] if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
-    }
-}
-
-void storeAttribute(in ivec3 cdata, in vec4 fval) {
-    const ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(cdata.x*ATTRIB_EXTENT+cdata.y));
-    [[flatten]] if (cdata.z < 3) {
-        ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,cdata.z), (fval));
-    } else {
-#ifdef VRT_INTERPOLATOR_TEXEL
-        const vec3 vs = vec3(-1.f,1.f,1.f);
-        ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,3), mat3x4(
-            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,0)),
-            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,1)),
-            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,2))
-        ) * vs);
-#endif
     }
 }
 

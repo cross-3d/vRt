@@ -58,16 +58,18 @@ namespace vrt {
     };
 
     struct VtBvhBlock {
-        VtMat4 transform = IdentifyMat4, transformInv = IdentifyMat4; // planned to remove this row 
-        VtMat4 projection = IdentifyMat4, projectionInv = IdentifyMat4;
-        int leafCount = 0, primitiveCount = 0, entryID = 0, primitiveOffset = 0;
-        // int primitiveCount = 0, primitiveOffset = 0; // planned reduce to this
+        int entryID = 0u, leafCount = 0u, primitiveCount = 0u, r1 = 0u;
+        VtMat4 transform = IdentifyMat4, transformInv = IdentifyMat4;
         VtVec4 sceneMin = {}, sceneMax = {};
     };
 
     struct VtBvhInstance {
+        int bvhBlockID = 0u, entryID = 0u, r0 = 0u, r1 = 0u;
         VtMat4 transform = IdentifyMat4, transformInv = IdentifyMat4; // combined transform 
-        int bvhMetaID = 0, entryID = 0, unk1 = 0, unk2 = 0;
+    };
+
+    struct VtBuildConst {
+        int primitiveCount = 0u, primitiveOffset = 0u;
     };
 
 };

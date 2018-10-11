@@ -399,4 +399,9 @@ vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     return fcol;
 };
 
+
+// Legacy imageLoad wrapper (early had imageLoad with LOD support)
+// TODO: deprecate and replace to better version 
+#define TLOAD(s,t) imageLoad(s,t+0)
+
 #endif

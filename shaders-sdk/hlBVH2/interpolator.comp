@@ -17,6 +17,8 @@
 #include "../include/vertex.glsl"
 #include "../include/morton.glsl"
 
+#include "../include/vertex.glsl"
+#include "../include/attribute.glsl"
 
 LOCAL_SIZE_LAYOUT;
 

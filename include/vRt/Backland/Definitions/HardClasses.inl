@@ -250,6 +250,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<BufferRegion> _bvhBoxBuffer = {}, _bvhHeadingBuffer = {}; // planned to add support of instancing 
         uint32_t _entryID = 0, _primitiveCount = -1, _primitiveOffset = 0; // planned to rework building entrying 
         VtMat4 _coverMatrice = IdentifyMat4;
+        VtBvhBlock _bvhBlockData = {};
 
         operator VkDescriptorSet() const { return _descriptorSet; };
 
@@ -272,8 +273,8 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
         std::shared_ptr<BufferRegion> _bvhBoxBuffer = {}, _bvhInstanceBuffer = {};
         uint32_t _entryID = 0, _instanceCount = -1, _instanceOffset = 0;
-        VtBvhBlock _bvhBlockData = {};
         VtMat4 _coverMatrice = IdentifyMat4;
+        VtBvhBlock _bvhBlockData = {};
 
         operator VkDescriptorSet() const { return _descriptorSet; };
 
@@ -305,8 +306,10 @@ namespace _vt { // store in undercover namespace
 
         // internal buffers
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
-        std::shared_ptr<BufferRegion> _mortonCodesBuffer = {}, _mortonIndicesBuffer = {}, _leafBuffer = {}, _generalBoundaryResultBuffer = {}, _leafNodeIndices = {}, _currentNodeIndices = {}, _fitStatusBuffer = {}, _countersBuffer = {}, _onWorkBoxes = {};
+        std::shared_ptr<BufferRegion> _mortonCodesBuffer = {}, _mortonIndicesBuffer = {}, _leafBuffer = {}, _generalBoundaryResultBuffer = {}, _leafNodeIndices = {}, _currentNodeIndices = {}, _fitStatusBuffer = {}, _countersBuffer = {}, _onWorkBoxes = {}, _constBuffer = {};
 
+        // 
+        VtBuildConst _buildConstData = {};
 
         operator VkPipeline() const { return _dullPipeline; };
     };

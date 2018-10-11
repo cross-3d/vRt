@@ -1,18 +1,20 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+
 //#define EXTEND_LOCAL_GROUPS
-#define VERTEX_FILLING
 //#define USE_PUSH_CONSTANT
+#define VERTEX_FILLING
 
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
+
+
 #include "../include/vertex.glsl"
 #include "../include/vertex-input.glsl"
 
-LOCAL_SIZE_LAYOUT;
 
 
 const int VCOUNT = 3;
@@ -38,6 +40,9 @@ void precalculateNormals(in int rofft, in int trip, in mat3x4 transformNrm) {
 
 #define wsize vertexBlock.primitiveCount
 
+
+LOCAL_SIZE_LAYOUT;
+
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
@@ -49,32 +54,15 @@ void main() {
             // constant material ID from vertex instance
             const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
 
-            // read material accessor
-            uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
-
             // planned to support quad based geometry
-            vmaterials[wofft] = int(matID);
             vbitfields[wofft] = vertexBlock.bitfield;
             
             // load vertex data
-            
             [[unroll]] for (int i=0;i<3;i++) {
                 vec4 vertice = vec4(0.f, 0.f, 0.f, 1.f); uint indiceID = rofft * VCOUNT + i;
                 readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
                 readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice);
                 storePosition(ivec2(wofft, i), vertice);
-            };
-
-            // load attrib data
-            for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
-                const int ai = attributes[a].attributeID;
-                [[unroll]] for (int i=0;i<3;i++) {
-                    vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
-                    readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
-                    readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-                    storeAttribute(ivec3(wofft, ai, i), attribValue);
-                };
-                storeAttribute(ivec3(wofft, ai, 3), 0.f.xxxx);
             };
 
             // 

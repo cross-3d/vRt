@@ -1,12 +1,15 @@
 
 // Morton codes and geometry counters
 
-layout ( binding = 0, set = 0, std430 ) restrict buffer MortoncodesB {
 #ifdef USE_MORTON_32
-    uint Mortoncodes[];
+    #define morton_t uint
 #else
-    uvec2 Mortoncodes[];
+    #define morton_t uvec2
 #endif
+
+
+layout ( binding = 0, set = 0, std430 ) restrict buffer MortoncodesB {
+    morton_t Mortoncodes[];
 };
 
 layout ( binding = 1, set = 0, std430 ) restrict buffer MortoncodesIndicesB {
@@ -38,6 +41,17 @@ layout ( binding = 8, set = 0, std430 ) restrict buffer CountersB {
     int aCounter[2];
     int vtCounters[6];
 };
+
+
+// 
+struct VtBuildConst { int primitiveCount, primitiveOffset; };
+layout ( binding = 2, set = 0, std430 ) readonly restrict buffer BuildConstB {
+    VtBuildConst buildConst_[];
+};
+#define buildBlock buildConst_[0]
+
+
+
 
 // precision control of boxes
 #ifndef fpInner

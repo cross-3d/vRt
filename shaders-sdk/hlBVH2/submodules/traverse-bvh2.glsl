@@ -87,10 +87,12 @@ void doIntersection(in bool isvalid, in float dlen) {
     }; traverseState.defTriangleID=0;
 };
 
+
 // corrections of box intersection
 const bvec4 bsgn = false.xxxx;
 const 
 float dirlen = 1.f, invlen = 1.f, bsize = 1.f;
+
 
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
@@ -100,7 +102,7 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 
     // relative origin and vector
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
-    const vec4 torig = -uniteBox(divW(mult4( bvhBlock.projection, vec4(orig, 1.0f)))), torigTo = uniteBox(divW(mult4( bvhBlock.projection, vec4(orig, 1.0f) + vec4(dcts(pdir), 0.f)))), tdir = torigTo+torig;
+    const vec4 torig = -uniteBox(divW(mult4( bvhBlock.transform, vec4(orig, 1.0f)))), torigTo = uniteBox(divW(mult4( bvhBlock.transform, vec4(orig, 1.0f) + vec4(dcts(pdir), 0.f)))), tdir = torigTo+torig;
     const vec4 dirct = tdir*invlen, dirproj = 1.f / precIssue(dirct);
     primitiveState.dir = primitiveState.orig = dirct;
 

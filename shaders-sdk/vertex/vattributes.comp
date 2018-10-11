@@ -1,18 +1,20 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+
 //#define EXTEND_LOCAL_GROUPS
-#define VERTEX_FILLING
 //#define USE_PUSH_CONSTANT
+#define VERTEX_FILLING
 
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
-//#include "../include/vertex.glsl"
+
+#include "../include/attribute.glsl"
 #include "../include/vertex-input.glsl"
 
-LOCAL_SIZE_LAYOUT;
+
 
 // attribute formating
 const int NORMAL_TID = 0;
@@ -26,7 +28,8 @@ const int VCOUNT = 3;
 bool nvlda(in vec4 a) { return dot(a,a)<=SFN; };
 bool nvlda(in vec3 a) { return dot(a,a)<=SFN; };
 bool nvlda(in vec2 a) { return dot(a,a)<=SFN; };
-void calculateAttributes(in int rofft, in int trip, in mat3x4 transformNrm) {
+void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
+    #define trip wofft
 
     // alloc arrays
     vec4 normals[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
@@ -34,6 +37,46 @@ void calculateAttributes(in int rofft, in int trip, in mat3x4 transformNrm) {
     vec4 texcoord[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
     vec4 vertice[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
     
+    // load attrib data
+    /*for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
+        const int ai = attributes[a].attributeID;
+        [[unroll]] for (int i=0;i<3;i++) {
+            vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
+            readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
+            readByAccessor(attributes[a].accessorID, indiceID, attribValue);
+            [[flatten]] if (ai ==   NORMAL_TID) {  normals[i] = attribValue; };
+            [[flatten]] if (ai ==  TANGENT_TID) {  tangent[i] = attribValue; };
+            [[flatten]] if (ai == TEXCOORD_TID) { texcoord[i] = attribValue; };
+        };
+    };*/
+
+
+    // load attrib data
+    for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
+        const int ai = attributes[a].attributeID;
+        [[unroll]] for (int i=0;i<3;i++) {
+            vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
+            readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
+            readByAccessor(attributes[a].accessorID, indiceID, attribValue);
+            storeAttribute(ivec3(wofft, ai, i), attribValue);
+            [[flatten]] if (ai ==   NORMAL_TID) {  normals[i] = attribValue; };
+            [[flatten]] if (ai ==  TANGENT_TID) {  tangent[i] = attribValue; };
+            [[flatten]] if (ai == TEXCOORD_TID) { texcoord[i] = attribValue; };
+        };
+        storeAttribute(ivec3(wofft, ai, 3), 0.f.xxxx);
+    };
+
+
+    
+
+
+    // getting tangents and bitangents
+    const mat3x2 dlts = mat3x2(texcoord[0].xy, texcoord[1].xy-texcoord[0].xy, texcoord[2].xy-texcoord[0].xy);
+    const  ivec2   NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID)),
+                  TANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TANGENT_TID)),
+                BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
+
+
     // get vertices
     [[unroll]] for (int i=0;i<3;i++) {
         uint indiceID = rofft * VCOUNT + i;
@@ -45,26 +88,7 @@ void calculateAttributes(in int rofft, in int trip, in mat3x4 transformNrm) {
     mat3x3 dlps = mat3x3(vertice[0].xyz, vertice[1].xyz, vertice[2].xyz); dlps[1] -= dlps[0], dlps[2] -= dlps[0];
     const vec4 gnormal = vec4(cross(dlps[1], dlps[2]), 0.f);
 
-    // load attrib data
-    for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
-        const int ai = attributes[a].attributeID;
-        [[unroll]] for (int i=0;i<3;i++) {
-            vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
-            readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
-            readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-            [[flatten]] if (ai ==   NORMAL_TID) {  normals[i] = attribValue; };
-            [[flatten]] if (ai ==  TANGENT_TID) {  tangent[i] = attribValue; };
-            [[flatten]] if (ai == TEXCOORD_TID) { texcoord[i] = attribValue; };
-        };
-    };
     [[unroll]] for (int i=0;i<3;i++) { if (nvlda(normals[i].xyz)) normals[i] = gnormal; };
-
-
-    // getting tangents and bitangents
-    const mat3x2 dlts = mat3x2(texcoord[0].xy, texcoord[1].xy-texcoord[0].xy, texcoord[2].xy-texcoord[0].xy);
-    const  ivec2   NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID)),
-                  TANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TANGENT_TID)),
-                BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
     [[unroll]] for (int i=0;i<3;i++) {
         // calc raw TBN
         //normals[i].xyz = normalize(normals[i].xyz);
@@ -106,6 +130,9 @@ void calculateAttributes(in int rofft, in int trip, in mat3x4 transformNrm) {
 
 #define wsize vertexBlock.primitiveCount
 
+
+LOCAL_SIZE_LAYOUT;
+
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
@@ -116,7 +143,12 @@ void main() {
 
             // read pointer to required 
             const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
+
+            // read material accessor
             uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
+            vmaterials[wofft] = int(matID);
+
+            // make correct attributes for interpolation phases 
             calculateAttributes(int(rofft), int(wofft), transformNrm); // attributes calculation 
         }
     }
