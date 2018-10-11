@@ -71,8 +71,8 @@ function OptimizeMainline($Pfx = "") {
     Optimize "bvh-fit.comp" "$HRDDIR$HLBV" 
     Optimize "shorthand.comp" "$HRDDIR$HLBV" 
     Optimize "leaf-link.comp" "$HRDDIR$HLBV" 
+    Optimize "bound-calc.comp" "$HRDDIR$HLBV"  # merged to mainline of BVH
     
-    Optimize "/triangle/bound-calc.comp" "$HRDDIR$HLBV" 
     Optimize "/triangle/leaf-gen.comp" "$HRDDIR$HLBV" 
     Optimize "/triangle/box-calc.comp" "$HRDDIR$HLBV" 
     
@@ -119,10 +119,9 @@ function BuildAllShaders($Pfx = "") {
     #BuildCompute "dull.comp"                "$INDIR$NTVE" "$HRDDIR$NTVE"
     #BuildCompute "triplet.comp"             "$INDIR$NTVE" "$HRDDIR$NTVE"
 
+
     # accelerator structure (hlBVH2)
-    BuildCompute "/triangle/bound-calc.comp"    "$INDIR$HLBV" "$HRDDIR$HLBV"
-    BuildCompute "/triangle/leaf-gen.comp"      "$INDIR$HLBV" "$HRDDIR$HLBV"
-    BuildCompute "/triangle/box-calc.comp"      "$INDIR$HLBV" "$HRDDIR$HLBV"
+    BuildCompute "bound-calc.comp"    "$INDIR$HLBV" "$HRDDIR$HLBV"
     BuildCompute "bvh-build-td.comp"            "$INDIR$HLBV" "$HRDDIR$HLBV" "-DFIRST_STEP" "bvh-build-first.comp"
     BuildCompute "bvh-build-td.comp"            "$INDIR$HLBV" "$HRDDIR$HLBV" "" "bvh-build.comp"
     BuildCompute "bvh-fit.comp"                 "$INDIR$HLBV" "$HRDDIR$HLBV"
@@ -131,6 +130,12 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "traverse-bvh.comp"            "$INDIR$HLBV" "$HRDDIR$HLBV"
     BuildCompute "interpolator.comp"            "$INDIR$HLBV" "$HRDDIR$HLBV"
 
+    # triangles support (hlBVH2)
+    BuildCompute "/triangle/leaf-gen.comp"      "$INDIR$HLBV" "$HRDDIR$HLBV"
+    BuildCompute "/triangle/box-calc.comp"      "$INDIR$HLBV" "$HRDDIR$HLBV"
+    
+    
+    
     # radix sort
     BuildCompute "permute.comp"    "$INDIR$RDXI" "$HRDDIR$RDXI"
     BuildCompute "histogram.comp"  "$INDIR$RDXI" "$HRDDIR$RDXI"

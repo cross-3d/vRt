@@ -89,18 +89,17 @@ namespace _vt {
 
             // run traverse processing (single accelerator supported at now)
             if (vertx && vertx->_calculatedPrimitiveCount > 0) {
+                // reset hit counter before new intersections
                 auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
-                if (device->_advancedAccelerator) {
-                    result = device->_advancedAccelerator->_DoIntersections(cmdBuf, accel, rtset);
-                }
-                else {
-                    std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
-                    vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
 
-                    // reset hit counter before new intersections
-                    cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, RV_INTENSIVITY); // traverse BVH
-                    cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, RV_INTENSIVITY); // interpolate intersections
-                };
+                std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
+                vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
+
+                if (device->_advancedAccelerator) { result = device->_advancedAccelerator->_DoIntersections(cmdBuf, accel, rtset); } else // extension-based
+                { cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, RV_INTENSIVITY); }; // stock software BVH traverse (i.e. shader-based)
+
+                // interpolation hits
+                cmdDispatch(*cmdBuf, acclb->_interpolatorPipeline, RV_INTENSIVITY); // interpolate intersections
                 cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), strided<uint32_t>(1)) });
             }
 

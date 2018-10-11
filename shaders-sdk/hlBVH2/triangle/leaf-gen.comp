@@ -20,7 +20,7 @@
 
 LOCAL_SIZE_LAYOUT;
 
-#define wsize buildBlock.primitiveCount
+#define wsize bvhBlock.leafCount
 //#define lbox Leafs[to].lbox
 
 void main() {
@@ -32,7 +32,7 @@ void main() {
         // incarnated mode 
         const mat3x4 triverts = mat3x4(uniteBox(TLOAD(lvtx, int(tri*3+0))), uniteBox(TLOAD(lvtx, int(tri*3+1))), uniteBox(TLOAD(lvtx, int(tri*3+2))));
 
-        {
+        { // TODO: dedidcated geometry re-calculator when will ESC support 
 #ifndef VRT_USE_FAST_INTERSECTION
             const mat4x3 triverts = transpose(triverts);
             ISTORE(lvtx, int(tri*3+0), point4(triverts[0])), ISTORE(lvtx, int(tri*3+1), point4(triverts[1])), ISTORE(lvtx, int(tri*3+2), point4(triverts[2]));

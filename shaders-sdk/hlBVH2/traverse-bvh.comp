@@ -40,7 +40,7 @@ void main() {
 
         // do BVH traversing 
         int rayID = vtRayIdx(it), r2ID = rayID<<1, hid = vtFetchHitIdc(rayID); // in task-based traversing "hid" will means as "potential hit index"
-        //const ivec2 taskCode = vtFetchTask(it); int rayID = taskCode.x, hid = taskCode.y; 
+        //const ivec2 taskCode = vtFetchTask(it); int rayID = taskCode.x, instanceID = taskCode.y, hid = it; // 11.10.2018, remain hit index as main 
         traverseState.maxTriangles = bvhBlock.primitiveCount;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 

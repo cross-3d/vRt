@@ -32,14 +32,14 @@ void main() {
         if (leafID >= 0) {
             rbox = Leafs[leafID].lbox;
             bvhmeta.xy = Leafs[leafID].pdata.ww-1;
-        }
+        };
 
         // save boxes
         if (lidx >= 0) {
             bvhNodes[lidx].meta.xy = bvhmeta+1;
             bvhBoxesWork[lidx][0] = rbox.mn;
             bvhBoxesWork[lidx][1] = rbox.mx;
-        }
+        };
     }
     //LGROUP_BARRIER
 }

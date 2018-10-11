@@ -56,19 +56,19 @@ namespace _vt {
             { VT_VENDOR_UNIVERSAL, "./intrusive/universal/hlBVH2/interpolator.comp.spv" }
         };
 
+        static inline const std::map<VtVendor, std::string> outerBox = {
+            { VT_VENDOR_AMD, "./intrusive/amd/hlBVH2/bound-calc.comp.spv" },
+            { VT_VENDOR_NVIDIA, "./intrusive/nvidia/hlBVH2/bound-calc.comp.spv" },
+            { VT_VENDOR_INTEL, "./intrusive/intel/hlBVH2/bound-calc.comp.spv" },
+            { VT_VENDOR_UNIVERSAL, "./intrusive/universal/hlBVH2/bound-calc.comp.spv" }
+        };
+
         namespace triangle {
             static inline const std::map<VtVendor, std::string> boxCalc = {
                 { VT_VENDOR_AMD, "./intrusive/amd/hlBVH2/triangle/box-calc.comp.spv" },
                 { VT_VENDOR_NVIDIA, "./intrusive/nvidia/hlBVH2/triangle/box-calc.comp.spv" },
                 { VT_VENDOR_INTEL, "./intrusive/intel/hlBVH2/triangle/box-calc.comp.spv" },
                 { VT_VENDOR_UNIVERSAL, "./intrusive/universal/hlBVH2/triangle/box-calc.comp.spv" }
-            };
-
-            static inline const std::map<VtVendor, std::string> outerBox = {
-                { VT_VENDOR_AMD, "./intrusive/amd/hlBVH2/triangle/bound-calc.comp.spv" },
-                { VT_VENDOR_NVIDIA, "./intrusive/nvidia/hlBVH2/triangle/bound-calc.comp.spv" },
-                { VT_VENDOR_INTEL, "./intrusive/intel/hlBVH2/triangle/bound-calc.comp.spv" }, 
-                { VT_VENDOR_UNIVERSAL, "./intrusive/universal/hlBVH2/triangle/bound-calc.comp.spv" }
             };
 
             static inline const std::map<VtVendor, std::string> genLeafs = {

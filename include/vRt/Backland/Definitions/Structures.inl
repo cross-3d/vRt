@@ -250,8 +250,7 @@ namespace vrt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_BUFFER_REGION_CREATE_INFO;
         const void* pNext = nullptr;
 
-        VkDeviceSize offset = 0;
-        VkDeviceSize bufferSize = sizeof(uint32_t);
+        VkDeviceSize offset = 0, bufferSize = sizeof(uint32_t);
         VkFormat format = VK_FORMAT_UNDEFINED;
     };
 

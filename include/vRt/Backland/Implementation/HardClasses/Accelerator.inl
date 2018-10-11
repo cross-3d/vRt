@@ -50,7 +50,7 @@ namespace _vt {
             {
                 vtAccelerator->_boxCalcPipeline = createComputeHC(vkDevice, hlbvh2::triangle::boxCalc.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
                 vtAccelerator->_shorthandPipeline = createComputeHC(vkDevice, hlbvh2::shorthand.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_boundingPipeline = createComputeHC(vkDevice, hlbvh2::triangle::outerBox.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_boundingPipeline = createComputeHC(vkDevice, hlbvh2::outerBox.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
                 vtAccelerator->_buildPipeline = createComputeHC(vkDevice, hlbvh2::builder.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
                 vtAccelerator->_buildPipelineFirst = createComputeHC(vkDevice, hlbvh2::builderFirst.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
                 vtAccelerator->_fitPipeline = createComputeHC(vkDevice, hlbvh2::fitBox.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
