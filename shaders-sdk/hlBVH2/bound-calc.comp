@@ -28,7 +28,6 @@
 
 layout ( binding = 9, set = 0, std430 ) restrict buffer SceneBoxB { vec4 minmax[]; };
 
-
 bbox_t getMinMaxPrimitive(in uint idx) {
     return Leafs[0u+clamp(idx, 0u, max(bvhBlock.leafCount,1u)-1u)].lbox;
 };

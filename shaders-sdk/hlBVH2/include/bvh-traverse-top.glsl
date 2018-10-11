@@ -36,13 +36,12 @@ struct BvhTraverseState {
 
 // intersection current state
 struct PrimitiveState {
-    vec4 lastIntersection, orig;
-#ifdef VRT_USE_FAST_INTERSECTION
-    vec4 dir;
-#else
-    int axis; mat3 iM;
-#endif
+     vec4 lastIntersection; // used from previosly only 
+    ivec4 raydata; // with rayID
 } primitiveState;
+
+#define RAY_ID primitiveState.raydata[0]
+
 
 
 // stack system of current BVH traverser
@@ -66,23 +65,19 @@ void storeStack(in int rsl) {
 };
 
 
-// triangle intersection, when it found
+// TODO: add task pushing
+int pushTask(in int instanceID, in int rayID){
+    //int taskID = 
+};
+
+// 
 void doIntersection(in bool isvalid, in float dlen) {
+    // TODO: need to correct naming 
     isvalid = isvalid && traverseState.defTriangleID > 0 && traverseState.defTriangleID <= traverseState.maxTriangles;
     IFANY (isvalid) {
-        vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
-#ifdef VRT_USE_FAST_INTERSECTION
-            intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defTriangleID-1, uv.xy, isvalid, nearT);
-#else
-            intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defTriangleID-1, uv.xy, isvalid);
-#endif
 
-        const float tdiff = nearT-d, tmax = 0.f;
-        [[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
-            [[flatten]] if (abs(tdiff) > tmax || traverseState.defTriangleID > floatBitsToInt(primitiveState.lastIntersection.w)) {
-                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defTriangleID));
-            };
-        };
+        [[flatten]] if (isvalid) pushTask(traverseState.defTriangleID, RAY_ID); // push a task to bottom level traversing 
+
     }; traverseState.defTriangleID=0;
 };
 
@@ -96,8 +91,9 @@ float dirlen = 1.f, invlen = 1.f, bsize = 1.f;
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
 void resetEntry(in bool valid) { traverseState.idx = (valid ? BVH_ENTRY : -1), traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0; };
-void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir ) {
+void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir, in int rayID ) {
     [[flatten]] if (eht.x >= 0) primitiveState.lastIntersection = hits[eht].uvt;
+    RAY_ID = rayID; // for pushing a traversing tasks
 
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
@@ -180,7 +176,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
         }}};
 
         // every-step solving 
-        [[flatten]] IFANY (traverseState.defTriangleID > 0) { doIntersection( true, bsize ); } // if has triangle, do intersection
+        [[flatten]] IFANY (traverseState.defTriangleID > 0) { doIntersection( true, bsize ); } // instance task pushing 
         [[flatten]] if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
     };
 

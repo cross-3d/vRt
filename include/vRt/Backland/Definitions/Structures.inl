@@ -224,10 +224,18 @@ namespace vrt { // store in official namespace
         // passing a simple meta data for builders
         VkDeviceSize maxPrimitives = 1024ull * 256ull; VkBool32 secondary = false; // used for copying and storing only?
 
+        // linking with shared space of vertex assembly 
+        VkDeviceSize internalPrimitiveOffset = 0ull;
+
+        // entry point ID for traversing (required when using buffer sharing)
+        // from bytes, measuring by 'BvhDataByteOffset/sizeof(VtBvhNodeStruct)'
+        // note, entry point should indexing by Even i.e. powering by 2, so should have correction aligment (let's have small space, but correct aligment) 
+        uint32_t traversingEntryID = 0ull;
+
         // dedicated buffers for reusing 
-          VkBuffer bvhDataBuffer = VK_NULL_HANDLE; VkDeviceSize bvhDataOffset = 0ull; // external BVH data buffer 
-        //VkBuffer bvhMetaBuffer = VK_NULL_HANDLE; VkDeviceSize bvhMetaOffset = 0ull; // TODO: usage as dedicated heading in buffer 
-        VtVertexAccessor vertexDataAccess = {}, indexDataAccess = {};  // Reserved for new acceleration model 
+        VkBuffer bvhDataBuffer = VK_NULL_HANDLE; VkDeviceSize bvhDataOffset = 0ull; // external BVH data buffer 
+        VkBuffer bvhMetaBuffer = VK_NULL_HANDLE; VkDeviceSize bvhMetaOffset = 0ull; // usage as dedicated heading in buffer 
+        VkBuffer bvhInstanceBuffer = VK_NULL_HANDLE; VkDeviceSize bvhInstanceOffset = 0ull; // will used for top levels 
 
         // mat4 of optimization
         VtMat4 coverMat = vrt::IdentifyMat4;

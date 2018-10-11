@@ -197,6 +197,7 @@ namespace _vt {
         // create BVH instance meta (linking with geometry) 
         //VtBvhBlock _bvhBlockData = {};
         VtBvhBlock& _bvhBlockData = accel->_bvhBlockData;
+        _bvhBlockData.primitiveOffset = _buildConstData.primitiveOffset;
         _bvhBlockData.primitiveCount = _buildConstData.primitiveCount;
         _bvhBlockData.leafCount = _buildConstData.primitiveCount;
         _bvhBlockData.entryID = accel->_entryID;

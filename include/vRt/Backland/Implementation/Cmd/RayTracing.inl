@@ -115,12 +115,6 @@ namespace _vt {
                 }
             }
             
-            // handling misses in groups
-            if (rtppl->_missHitPipeline[0]) {
-                cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY);
-            }
-
             // handling hits in groups
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
                 if (rtppl->_closestHitPipeline[i]) {
@@ -128,6 +122,13 @@ namespace _vt {
                     cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                     cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY);
                 }
+            }
+
+            // handling misses in groups
+            // moved to after in 11.10.2018
+            if (rtppl->_missHitPipeline[0]) {
+                cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY);
             }
 
             // clear counters for pushing newer data

@@ -9,9 +9,11 @@ namespace vrt {
     struct VtVec4 { float x = 0.f, y = 0.f, z = 0.f, w = 0.f; };
     struct VtVec3 { float x = 0.f, y = 0.f, z = 0.f; };
     struct VtVec2 { float x = 0.f, y = 0.f; };
-    struct VtUVec2 { uint32_t x = 0u, y = 0u; };
     struct VtMat4 { VtVec4 m0 = {}, m1 = {}, m2 = {}, m3 = {}; };
     struct VtMat3x4 { VtVec4 m0 = {}, m1 = {}, m2 = {}; };
+    struct VtUVec2 { uint32_t x = 0u, y = 0u; };
+    struct VtUVec4 { uint32_t x = 0u, y = 0u, z = 0u, w = 0u; };
+    struct VtIVec4 {  int32_t x = 0u, y = 0u, z = 0u, w = 0u; };
 
     // identified matrix 
     constexpr inline static const VtMat4 IdentifyMat4 = {
@@ -66,7 +68,7 @@ namespace vrt {
     };
 
     struct VtBvhBlock {
-        int32_t entryID = 0u, leafCount = 0u, primitiveCount = 0u, r1 = 0u;
+        int32_t entryID = 0u, leafCount = 0u, primitiveCount = 0u, primitiveOffset = 0u;
         VtMat4 transform = IdentifyMat4, transformInv = IdentifyMat4;
         VtVec4 sceneMin = {}, sceneMax = {};
     };
@@ -79,5 +81,25 @@ namespace vrt {
     struct VtBuildConst {
         int32_t primitiveCount = 0u, primitiveOffset = 0u;
     };
+
+
+    // required for measuring required bytes and debugging 
+    struct VtBvhNodeStruct {
+        VtUVec2 ch0 = {}, ch1 = {}, ch2 = {}, ch3 = {}, ch4 = {}, ch5 = {};
+        VtUVec4 data = {};
+    };
+
+
+
+    // helping to calculate possible entry ID by BVH data byte offset
+    inline static uint32_t VtMeasureEntryIDByByteOffset(VkDeviceSize byteOffset = 0ull) {
+        return uint32_t(((byteOffset / sizeof(VtBvhNodeStruct) + 1ull) >> 1ull) << 1ull);
+    };
+
+    // helping to calculate correct offset by entry ID 
+    inline static VkDeviceSize VtMeasureByteOffsetByEntryID(uint32_t entryID = 0ull) {
+        return ((entryID * sizeof(VtBvhNodeStruct)) << 1ull) >> 1ull;
+    };
+
 
 };

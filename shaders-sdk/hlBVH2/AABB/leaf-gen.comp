@@ -27,31 +27,31 @@ LOCAL_SIZE_LAYOUT;
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        const uint to = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (to >= wsize) break;
-        const uint tri = buildBlock.primitiveOffset+clamp(to, 0, buildBlock.primitiveCount-1);
+        const uint I = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (I >= wsize) break;
+        //const uint T = clamp(buildBlock.primitiveOffset+bvhInstance_[I].bvhBlockID, 0, buildBlock.primitiveCount-1);
         
         // unit mode 
         //vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax, sceneRes = sceneMax - sceneMin;
         vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx, sceneRes = sceneMax - sceneMin, sdiv = 1.f.xxxx;
-        bbox_t lbox = bbox_t(uniteBox(Leafs[to].lbox.mn)*sdiv, uniteBox(Leafs[to].lbox.mx)*sdiv);
+        bbox_t lbox = bbox_t(uniteBox(Leafs[I].lbox.mn)*sdiv, uniteBox(Leafs[I].lbox.mx)*sdiv);
 
         // calculate center of box (yes, uses mix, because the same of (a+b)/2)
         vec4 bcenter = vector4(mix(lbox.mn, lbox.mx, .5f.xxxx));
         bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
 
         // store leaf data
-        [[flatten]] if (to < wsize && to >= 0) {
+        [[flatten]] if (I < wsize && I >= 0) {
             // re-arrange box
-            Leafs[to].lbox = lbox;
+            Leafs[I].lbox = lbox;
             
             // save morton codes 
 #ifdef USE_MORTON_32
-            Mortoncodes[to] = encodeMorton(packUnorm4x8(bcenter));
+            Mortoncodes[I] = encodeMorton(packUnorm4x8(bcenter));
 #else
-            Mortoncodes[to] = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
+            Mortoncodes[I] = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
 #endif
 
-            MortoncodesIndices[to] = int(to+1);
+            MortoncodesIndices[I] = int(I+1);
         };
     };
 };

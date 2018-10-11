@@ -166,26 +166,29 @@ namespace _vt {
         auto vkDevice = _vtDevice->_device;
         vtAccelerator->_device = _vtDevice;
         vtAccelerator->_coverMatrice = info.coverMat;
+        vtAccelerator->_primitiveOffset = info.internalPrimitiveOffset;
+        vtAccelerator->_entryID = info.traversingEntryID;
+
 
         // planned import from descriptor
-        std::shared_ptr<BufferManager> bManager; 
+        std::shared_ptr<BufferManager> bManager = {};
         createBufferManager(_vtDevice, bManager);
-
-        
 
         // 
         VtBufferRegionCreateInfo bfi = {};
+        bfi.bufferSize = (info.maxPrimitives * sizeof(VtBvhNodeStruct)) << 1ull;
+        if (!info.bvhDataBuffer) { 
+            createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer); 
+        } else 
+        { bfi.offset = info.bvhDataOffset; createBufferRegion(info.bvhDataBuffer, bfi, vtAccelerator->_bvhBoxBuffer, _vtDevice); };
 
-        if (!info.bvhDataBuffer) { // planned to remove support of native buffers 
-            bfi.bufferSize = sizeof(uint32_t) * info.maxPrimitives * 32ull;
-            createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer);
-        };
-
-        { // planned to add support of instancing and linking 
-          // TODO: sharing of meta heading 
-            bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
+        // 
+        bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
+        if (!info.bvhMetaBuffer) { // planned to add support of instancing and linking 
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingBuffer);
-        };
+        } else 
+        { bfi.offset = info.bvhMetaOffset; createBufferRegion(info.bvhMetaBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, _vtDevice); };
+
 
         { // build final shared buffer for this class
             VtDeviceBufferCreateInfo bfic = {};
@@ -194,9 +197,7 @@ namespace _vt {
             createSharedBuffer(bManager, bfic, vtAccelerator->_sharedBuffer);
         };
 
-
-
-        { // build BVH builder program
+        { // descriptor set (TODO: deprecate descriptor sets for bottom levels)
             std::vector<vk::PushConstantRange> constRanges = { vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2)) };
             std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"]) };
 
@@ -205,12 +206,11 @@ namespace _vt {
             vtAccelerator->_descriptorSet = std::move(dsc[0]);
         };
 
-        {
-            auto boxBuffer = info.bvhDataBuffer ? vk::DescriptorBufferInfo(info.bvhDataBuffer, info.bvhDataOffset, VK_WHOLE_SIZE) : vk::DescriptorBufferInfo(vtAccelerator->_bvhBoxBuffer->_descriptorInfo());
-            auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+        { // 
+            const auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
             std::vector<vk::WriteDescriptorSet> writes = {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingBuffer->_descriptorInfo())), // TODO: dedicated meta buffer
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(&boxBuffer),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhBoxBuffer->_descriptorInfo())),
             };
             vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };

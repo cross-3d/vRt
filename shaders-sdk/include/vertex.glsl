@@ -58,19 +58,24 @@ struct BvhInstanceT {
 };
 
 
-
+// required 64-byte per full node 
 struct BTYPE_ {
 #if (defined(USE_F32_BVH) || defined(USE_F16_BVH)) && !defined(EXPERIMENTAL_UNORM16_BVH)
     fvec4_ cbox[3];
 #else
     uvec2 cbox[3];
 #endif
+#if (defined(USE_F16_BVH) || defined(EXPERIMENTAL_UNORM16_BVH) || !defined(USE_F32_BVH))
+    uvec2 spacing[3]; // when using 16-bit data, need have data space ()
+#endif
     ivec4 meta;
 };
 
 
+// Block of main BVH structure (for bottom levels will not required)
 layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { BvhBlockT bvhBlock_[]; }; // bvhBlock of main structure 
 
+// Accessible blocks and instances for top levels, or task accessing (required shared buffers)
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 layout ( binding = 2, set = 1, std430 ) readonly restrict buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
 layout ( binding = 3, set = 1, std430 ) readonly restrict buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
