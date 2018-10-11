@@ -3,8 +3,8 @@
 # It is helper for compilation shaders to SPIR-V
 
 $INDIR="./"
-$OUTDIR="../build/shaders/$VNDR/"
-$HRDDIR="../build/intrusive/$VNDR/"
+$OUTDIR="../prebuilt/shaders/$VNDR/"
+$HRDDIR="../prebuilt/intrusive/$VNDR/"
 
 $NTVE="native/"
 $VRTX="vertex/"

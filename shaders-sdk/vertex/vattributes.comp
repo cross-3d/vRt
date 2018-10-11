@@ -36,20 +36,6 @@ void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
     vec4 tangent[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
     vec4 texcoord[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
     vec4 vertice[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
-    
-    // load attrib data
-    /*for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
-        const int ai = attributes[a].attributeID;
-        [[unroll]] for (int i=0;i<3;i++) {
-            vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
-            readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
-            readByAccessor(attributes[a].accessorID, indiceID, attribValue);
-            [[flatten]] if (ai ==   NORMAL_TID) {  normals[i] = attribValue; };
-            [[flatten]] if (ai ==  TANGENT_TID) {  tangent[i] = attribValue; };
-            [[flatten]] if (ai == TEXCOORD_TID) { texcoord[i] = attribValue; };
-        };
-    };*/
-
 
     // load attrib data
     for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
@@ -65,17 +51,13 @@ void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
         };
         storeAttribute(ivec3(wofft, ai, 3), 0.f.xxxx);
     };
-
-
     
-
 
     // getting tangents and bitangents
     const mat3x2 dlts = mat3x2(texcoord[0].xy, texcoord[1].xy-texcoord[0].xy, texcoord[2].xy-texcoord[0].xy);
     const  ivec2   NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID)),
                   TANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TANGENT_TID)),
                 BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
-
 
     // get vertices
     [[unroll]] for (int i=0;i<3;i++) {

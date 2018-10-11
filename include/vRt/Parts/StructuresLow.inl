@@ -11,6 +11,7 @@ namespace vrt {
     struct VtVec2 { float x = 0.f, y = 0.f; };
     struct VtUVec2 { uint32_t x = 0u, y = 0u; };
     struct VtMat4 { VtVec4 m0 = {}, m1 = {}, m2 = {}, m3 = {}; };
+    struct VtMat3x4 { VtVec4 m0 = {}, m1 = {}, m2 = {}; };
 
     // identified matrix 
     constexpr inline static const VtMat4 IdentifyMat4 = {
@@ -18,6 +19,13 @@ namespace vrt {
         {0.f,1.f,0.f,0.f},
         {0.f,0.f,1.f,0.f},
         {0.f,0.f,0.f,1.f},
+    };
+
+    // identified matrix 
+    constexpr inline static const VtMat3x4 IdentifyMat3x4 = {
+        {1.f,0.f,0.f,0.f},
+        {0.f,1.f,0.f,0.f},
+        {0.f,0.f,1.f,0.f},
     };
 
 
@@ -53,23 +61,23 @@ namespace vrt {
     };
 
     struct VtStageUniform { 
-        int currentGroup = 0, maxRayCount = 0, maxHitCount = 0, closestHitOffset = 0;
-        int width = 1, height = 1, lastIteration = 0, iteration = 0;
+        int32_t currentGroup = 0, maxRayCount = 0, maxHitCount = 0, closestHitOffset = 0;
+        int32_t width = 1, height = 1, lastIteration = 0, iteration = 0;
     };
 
     struct VtBvhBlock {
-        int entryID = 0u, leafCount = 0u, primitiveCount = 0u, r1 = 0u;
+        int32_t entryID = 0u, leafCount = 0u, primitiveCount = 0u, r1 = 0u;
         VtMat4 transform = IdentifyMat4, transformInv = IdentifyMat4;
         VtVec4 sceneMin = {}, sceneMax = {};
     };
 
     struct VtBvhInstance {
-        int bvhBlockID = 0u, entryID = 0u, r0 = 0u, r1 = 0u;
+        int32_t bvhBlockID = 0u, entryID = 0u, r0 = 0u, r1 = 0u;
         VtMat4 transform = IdentifyMat4, transformInv = IdentifyMat4; // combined transform 
     };
 
     struct VtBuildConst {
-        int primitiveCount = 0u, primitiveOffset = 0u;
+        int32_t primitiveCount = 0u, primitiveOffset = 0u;
     };
 
 };
