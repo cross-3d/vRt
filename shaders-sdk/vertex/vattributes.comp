@@ -16,20 +16,11 @@
 
 
 
-// attribute formating
-const int NORMAL_TID = 0;
-const int TEXCOORD_TID = 1;
-const int TANGENT_TID = 2;
-const int BITANGENT_TID = 3;
-const int VCOLOR_TID = 4;
-const int VCOUNT = 3;
-
 
 bool nvlda(in vec4 a) { return dot(a,a)<=SFN; };
 bool nvlda(in vec3 a) { return dot(a,a)<=SFN; };
 bool nvlda(in vec2 a) { return dot(a,a)<=SFN; };
 void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
-    #define trip wofft
 
     // alloc arrays
     vec4 normals[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
@@ -51,13 +42,6 @@ void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
         };
         storeAttribute(ivec3(wofft, ai, 3), 0.f.xxxx);
     };
-    
-
-    // getting tangents and bitangents
-    const mat3x2 dlts = mat3x2(texcoord[0].xy, texcoord[1].xy-texcoord[0].xy, texcoord[2].xy-texcoord[0].xy);
-    const  ivec2   NORMAL_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+NORMAL_TID)),
-                  TANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+TANGENT_TID)),
-                BITANGENT_ = gatherMosaic(getUniformCoord(trip*ATTRIB_EXTENT+BITANGENT_TID));
 
     // get vertices
     [[unroll]] for (int i=0;i<3;i++) {
@@ -66,10 +50,12 @@ void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
         readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice[i]);
     };
 
-    // calculate geometrical normal
-    mat3x3 dlps = mat3x3(vertice[0].xyz, vertice[1].xyz, vertice[2].xyz); dlps[1] -= dlps[0], dlps[2] -= dlps[0];
+    // getting tangents and bitangents
+    const mat3x2 dlts = mat3x2(texcoord[0].xy, texcoord[1].xy-texcoord[0].xy, texcoord[2].xy-texcoord[0].xy);
+    const mat3x3 dlps = mat3x3(vertice[0].xyz, vertice[1].xyz-vertice[0].xyz, vertice[2].xyz-vertice[0].xyz);
     const vec4 gnormal = vec4(cross(dlps[1], dlps[2]), 0.f);
 
+    // calculate geometrical normal
     [[unroll]] for (int i=0;i<3;i++) { if (nvlda(normals[i].xyz)) normals[i] = gnormal; };
     [[unroll]] for (int i=0;i<3;i++) {
         // calc raw TBN
@@ -100,12 +86,12 @@ void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
         [[flatten]] if (abs(tangent[i].w) <= SFN) { tangent[i].w = -1.f; };
 
         // transform and store TBN
-        vec3 fn = normals[i].xyz, ft = (tangent[i].xyz), fb = (b * tangent[i].w);
-        ISTORE(attrib_texture_out, mosaicIdc(   NORMAL_, i), vec4( normalize(mult4(transformNrm, vec4(fn,0.f))), 0.0f));
-        ISTORE(attrib_texture_out, mosaicIdc(  TANGENT_, i), vec4( normalize(mult4(transformNrm, vec4(ft,0.f))), 0.0f));
-        ISTORE(attrib_texture_out, mosaicIdc(BITANGENT_, i), vec4( normalize(mult4(transformNrm, vec4(fb,0.f))), 0.0f));
-    }
-}
+        const vec3 fn = normals[i].xyz, ft = (tangent[i].xyz), fb = (b * tangent[i].w);
+        ISTORE(attrib_texture_out, mosaicIdc(gatherMosaic(getUniformCoord(wofft*ATTRIB_EXTENT+   NORMAL_TID)), i), vec4( normalize(mult4(transformNrm, vec4(fn,0.f)).xyz), 0.f));
+        ISTORE(attrib_texture_out, mosaicIdc(gatherMosaic(getUniformCoord(wofft*ATTRIB_EXTENT+  TANGENT_TID)), i), vec4( normalize(mult4(transformNrm, vec4(ft,0.f)).xyz), 0.f));
+        ISTORE(attrib_texture_out, mosaicIdc(gatherMosaic(getUniformCoord(wofft*ATTRIB_EXTENT+BITANGENT_TID)), i), vec4( normalize(mult4(transformNrm, vec4(fb,0.f)).xyz), 0.f));
+    };
+};
 
 //struct Transforms { mat3x4 transform, transformNrm; };
 //layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { mat3x4 vTransforms[]; };

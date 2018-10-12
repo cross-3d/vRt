@@ -12,6 +12,14 @@
 #endif
 
 
+// attribute formating
+const int NORMAL_TID = 0;
+const int TEXCOORD_TID = 1;
+const int TANGENT_TID = 2;
+const int BITANGENT_TID = 3;
+const int VCOLOR_TID = 4;
+const int VCOUNT = 3;
+
 
 // Geometry Zone
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION) || defined(VERTEX_FILLING))
@@ -85,19 +93,17 @@ void storeAttribute(in ivec3 cdata, in vec4 fval) {
 #endif 
 
 
-#ifdef ENABLE_VSTORAGE_DATA
-#ifdef ENABLE_VERTEX_INTERPOLATOR
-
+#if (defined(ENABLE_VSTORAGE_DATA) && defined(ENABLE_VERTEX_INTERPOLATOR))
 // barycentric map (for corrections tangents in POM)
-void interpolateMeshData(inout VtHitData ht, in int tri) {
-    const vec4 vs = vec4(1.0f - ht.uvt.x - ht.uvt.y, ht.uvt.xy, 0.f); // added additional component for shared computing capable production 
+void interpolateMeshData(in int hitID, in int tri) {
+    const vec4 vs = vec4(1.0f - hit.uvt.x - hit.uvt.y, hit.uvt.xy, 0.f); // added additional component for shared computing capable production 
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
-    [[flatten]] if (ht.attribID > 0) {
+    [[flatten]] if (hit.attribID > 0) {
         //[[unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
         [[dont_unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
 #ifdef VRT_INTERPOLATOR_TEXEL
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + vs.yz + 0.5f) * sz;
-            ISTORE(attributes, makeAttribID(ht.attribID, i), textureHQ(attrib_texture, trig, 0));
+            ISTORE(attributes, makeAttribID(hit.attribID, i), textureHQ(attrib_texture, trig, 0));
 #else
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
 
@@ -105,12 +111,15 @@ void interpolateMeshData(inout VtHitData ht, in int tri) {
             //[[unroll]] for (int j=0;j<3;j++) {attrib=fma(vs[j].xxxx,textureLod(attrib_texture,fma(sz,offsetf[j],trig),0),attrib);}; // using accumulation sequence
             [[unroll]] for (int j=0;j<4;j++) {attrib[j]=dot(vs,sifonGather(attrib_texture,trig,j));}; // tensor capable production 
 
-            ISTORE(attributes, makeAttribID(ht.attribID, i), attrib);
+#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
+            [[flatten]] if (any(equal(i.xxx, ivec3(NORMAL_TID, TANGENT_TID, BITANGENT_TID)))) attrib = mult4(bvhInstance.transform, attrib);
+#endif
+
+            ISTORE(attributes, makeAttribID(hit.attribID, i), attrib);
 #endif
         }
     }
 }
-#endif
 #endif
 
 
