@@ -74,22 +74,18 @@ namespace _vt {
 
             
             { // allocate buffer regions
-                bfi.bufferSize = rayCount * 8ull * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * (8ull * sizeof(uint32_t));
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createBufferRegion(bManager, bfi, vtRTSet->_rayBuffer);
 
 
-                bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
+                bfi.bufferSize = rayCount * MAX_RAY_GROUPS * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_groupIndicesBuffer);
-
-
-                bfi.bufferSize = rayCount * 5ull * sizeof(uint32_t);
-                bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_groupIndicesBufferRead);
 
 
-                bfi.bufferSize = hitCount * 16ull * sizeof(uint32_t);
+                bfi.bufferSize = hitCount * (8ull * sizeof(uint32_t));
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createBufferRegion(bManager, bfi, vtRTSet->_hitBuffer);
 
@@ -119,7 +115,7 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_groupCountersBufferRead);
 
 
-                bfi.bufferSize = hitCount * 64ull * sizeof(uint32_t);
+                bfi.bufferSize = hitCount * 16ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createBufferRegion(bManager, bfi, vtRTSet->_hitPayloadBuffer);
 
@@ -140,13 +136,13 @@ namespace _vt {
                 bfi.format = VK_FORMAT_UNDEFINED;
                 createBufferRegion(bManager, bfi, vtRTSet->_constBuffer);
 
-                // at now unused
-                bfi.bufferSize = sizeof(uint32_t);//tiled(rayCount, 4096ull) * 64ull * sizeof(uint32_t);
-                bfi.format = VK_FORMAT_R32_UINT;
+                // task lists 
+                bfi.bufferSize = (hitCount * sizeof(uint64_t)) << 1ull; // max 2 tasks supported now 
+                bfi.format = VK_FORMAT_R32G32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_blockBuffer);
 
 
-                bfi.bufferSize = hitCount * 4ull * ATTRIB_EXTENT * sizeof(uint32_t);
+                bfi.bufferSize = hitCount * ATTRIB_EXTENT * (4ull * sizeof(uint32_t));
                 bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 createBufferRegion(bManager, bfi, vtRTSet->_attribBuffer);
 

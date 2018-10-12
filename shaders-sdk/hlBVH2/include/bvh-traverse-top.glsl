@@ -159,9 +159,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
                     [[flatten]] if (fmask == 3) { fmask &= true_<<pbool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
                     traverseState.idx = cnode.x^int(fmask&1u); // set traversing node id
 
-                    // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
-                    // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
-                    //#define snode (bvhNodes[secondary].meta.xy) // use reference only
+                    // save of BVH traversing stacks only 
                     [[flatten]] if (secondary > 0) {
                         const ivec2 snode = bvhNodes[secondary].meta.xy;
                         [[flatten]] if (isLeaf(snode)) { traverseState.defTriangleID = snode.x; secondary = -1; } else 

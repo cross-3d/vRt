@@ -149,7 +149,8 @@ void main() {
                 ghit = imageAtomicMin(rayLink,rayID<<1,(hitID+1).x);
             };
             
-            [[flatten]] if (ghit >= (hitID+1u)) { // if z-fight solved 
+            // if z-fight solved 
+            [[flatten]] if (ghit >= (hitID+1u) && hits[hitID].uvt.z <= hits[ghit-1].uvt.z) {  // also, required range checking for correct more results
                 int pid = atomicIncPayloadHitCount();
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT
