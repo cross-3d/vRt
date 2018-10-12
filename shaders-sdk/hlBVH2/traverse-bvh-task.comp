@@ -27,6 +27,7 @@
 #define hid it
 #define r4ID (rayIDh<<2)
 
+
 LOCAL_SIZE_LAYOUT;
 
 void main() {
@@ -38,12 +39,9 @@ void main() {
     for (uint w=0;w<wcount;w+=wgs) {
         const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         const bool overflow = it >= wsize; IFALL(overflow) break;
-
-        // do BVH traversing 
-        //const int rayID = vtRayIdx(it), r2ID = rayID<<1, hid = vtFetchHitIdc(rayID); // in task-based traversing "hid" will means as "potential hit index"
-        const ivec2 taskCode = vtFetchTask(it); // 11.10.2018, remain hit index as main 
-
-        traverseState.maxTriangles = bvhBlock.primitiveCount;
+        const ivec2 taskCode = vtFetchTask(it); // get task codes 
+        
+        traverseState.maxElements = bvhBlock.primitiveCount;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
         INSTANCE_ID = instanceID;
 
@@ -57,31 +55,27 @@ void main() {
 
             const dirtype_t _direction = rays[rayIDh].cdirect;
             const vec3 _position = rays[rayIDh].origin.xyz;
-            initTraversing(!overflow, hid, _position, _direction);
+            initTraversing(!overflow, vtFetchHitIdc(rayIDh), _position, _direction);
 
             // traversing from front layer to back layers
-            const uint chit = hid+1; // last possible found hit
-            
             int ftrID = -1; // current found triangle
-            [[flatten]] if (traverseState.maxTriangles > 0) {
+            [[flatten]] if (traverseState.maxElements > 0) {
                 traverseBVH2(false, !overflow);
-                ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxTriangles = min(traverseState.maxTriangles, ftrID);
+                ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxElements = min(traverseState.maxElements, ftrID);
             };
             
+            // resolve closest hit 
+            const uint chit = hid+1; // last possible found hit
             [[flatten]] if (chit > 0) {
-                //if (hid < 0) hid = rayID;//atomicIncHitCount(); // if required new
                 hit.payloadID = 0, hit.rayID = rayIDh+1;
                 hit.uvt = primitiveState.lastIntersection;
                 hit.vdat = 0.f.xxxx;
                 
                 const uint lhit = imageAtomicMax(rayLink,r4ID,chit.x);
-                [[flatten]] if (ftrID >= 0 && chit > 0) {
+                [[flatten]] if ( chit > 0 && ftrID >= 0 ) {
                     hit.attribID = vtVerifyClosestHit(hid,-1)+1; } else 
-                [[flatten]] if ( lhit == chit || lhit <= 0 ) {
+                [[flatten]] if ( lhit <= 0 ) {
                     hit.attribID = 0; vtVerifyMissedHit(hid, 0); };
-
-                // resolve minimal possible hit point 
-                //imageAtomicMax(rayLink,r4ID|2,chit);
             };
 
 #ifndef DMA_HIT

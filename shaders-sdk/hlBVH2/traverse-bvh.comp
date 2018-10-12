@@ -29,8 +29,6 @@ void main() {
     IFANY (bvhBlock.primitiveCount <= 0) return;
     const uint wsize = min(rayCounter, MAX_RAYS); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
-    //traverseState.cacheID = int(gl_GlobalInvocationID.x);
-    //traverseState.maxTriangles = bvhBlock.primitiveCount;
 
     // planned task-based BVH traversing (for two-level BVH support)
     for (uint w=0;w<wcount;w+=wgs) {
@@ -40,7 +38,7 @@ void main() {
         // do BVH traversing 
         int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID); // in task-based traversing "hid" will means as "potential hit index"
         //const ivec2 taskCode = vtFetchTask(it); int rayID = taskCode.x, instanceID = taskCode.y, hid = it; // 11.10.2018, remain hit index as main 
-        traverseState.maxTriangles = bvhBlock.primitiveCount;
+        traverseState.maxElements = bvhBlock.primitiveCount;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 
         // planned multiple-hits support
@@ -64,9 +62,9 @@ void main() {
 
                 // traversing triangles
                 int ftrID = -1; // current found triangle
-                [[flatten]] if (traverseState.maxTriangles > 0) {
+                [[flatten]] if (traverseState.maxElements > 0) {
                     traverseBVH2(i > 0, !overflow);
-                    ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxTriangles = min(traverseState.maxTriangles, ftrID);
+                    ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxElements = min(traverseState.maxElements, ftrID);
                 };
                 found = found || ftrID >= 0;
 
@@ -77,9 +75,9 @@ void main() {
                     hit.vdat = 0.f.xxxx;
                     
                     const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);
-                    [[flatten]] if ( found && ftrID >= 0) 
+                    [[flatten]] if ( ftrID >= 0) 
                         { hit.attribID = vtVerifyClosestHit(hid,-1)+1; } else 
-                    [[flatten]] if (!found && lhit <= 0 && lhit == mhit) 
+                    [[flatten]] if ( !found && lhit <= 0 && lhit == mhit ) 
                         { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
                     
                     {mhit=max(mhit,hid+1);hid=-1;};
@@ -90,8 +88,6 @@ void main() {
 #ifndef DMA_HIT
             hits[mhit] = hit;
 #endif
-        }
-    }
-
-    //LGROUP_BARRIER;
-}
+        };
+    };
+};

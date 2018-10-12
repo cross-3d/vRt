@@ -24,6 +24,7 @@
 #define wgs gl_NumWorkGroups.x
 #define r4ID (rayID<<2)
 
+
 LOCAL_SIZE_LAYOUT;
 
 void main() {
@@ -38,7 +39,7 @@ void main() {
 
         // do BVH traversing 
         const int rayID = vtRayIdx(it);
-        traverseState.maxTriangles = bvhBlock.primitiveCount;
+        traverseState.maxElements = bvhBlock.primitiveCount;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 
         // planned multiple-hits support
@@ -49,9 +50,8 @@ void main() {
 
             // traversing from front layer to back layers
             [[unroll]] for (int i=0;i<1;i++) {
-                [[flatten]] if (traverseState.maxTriangles > 0) traverseBVH2(false, !overflow); // top levels traversing 
+                [[flatten]] if (traverseState.maxElements > 0) traverseBVH2(false, !overflow); // top levels traversing 
             };
         };
     };
-    //LGROUP_BARRIER;
 };

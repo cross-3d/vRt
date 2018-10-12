@@ -76,8 +76,8 @@ void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
         // if no valid generation 
         [[flatten]] if (nvlda(tangent[i].xyz)) {
             vec3 dirn = vec3(0.f, 0.f, 1.f);
-            if (abs(n.x) < SQRT_OF_ONE_THIRD) dirn = vec3(1.f, 0.f, 0.f);
-            if (abs(n.y) < SQRT_OF_ONE_THIRD) dirn = vec3(0.f, 1.f, 0.f);
+            [[flatten]] if (abs(n.x) < SQRT_OF_ONE_THIRD) dirn = vec3(1.f, 0.f, 0.f);
+            [[flatten]] if (abs(n.y) < SQRT_OF_ONE_THIRD) dirn = vec3(0.f, 1.f, 0.f);
             tangent[i].xyz = cross(normals[i].xyz, dirn), b = cross(normals[i].xyz, tangent[i].xyz);
         };
 
