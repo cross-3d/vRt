@@ -180,7 +180,7 @@ namespace _vt {
     };
 
     // building accelerator structure
-    VtResult buildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf) {
+    VtResult buildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, VkDeviceSize coveredCapacity = VK_WHOLE_SIZE) {
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
         auto acclb = device->_acceleratorBuilder[0];
@@ -192,7 +192,7 @@ namespace _vt {
         //VtBuildConst _buildConstData = {};
         VtBuildConst& _buildConstData = acclb->_buildConstData;
         _buildConstData.primitiveOffset = accel->_primitiveOffset; // 
-        _buildConstData.primitiveCount = (accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? accel->_primitiveCount : vertx->_calculatedPrimitiveCount;
+        _buildConstData.primitiveCount = std::min((accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? VkDeviceSize(accel->_primitiveCount) : VkDeviceSize(vertx->_calculatedPrimitiveCount), std::min(coveredCapacity, accel->_capacity));
 
         // create BVH instance meta (linking with geometry) 
         //VtBvhBlock _bvhBlockData = {};

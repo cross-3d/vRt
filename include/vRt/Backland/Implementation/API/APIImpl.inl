@@ -91,7 +91,7 @@ namespace vrt {
         return _vt::buildVertexSet(commandBuffer, useInstance, cb);
     };
 
-    VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer /*,  */) {
+    VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer, VkDeviceSize coveredCapacity) {
         return _vt::buildAccelerator(commandBuffer);
     };
 

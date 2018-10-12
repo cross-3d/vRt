@@ -225,7 +225,7 @@ namespace vrt { // store in official namespace
         VkDeviceSize maxPrimitives = 1024ull * 256ull; VkBool32 secondary = false; // used for copying and storing only?
 
         // linking with shared space of vertex assembly 
-        VkDeviceSize internalPrimitiveOffset = 0ull;
+        VkDeviceSize vertexPointingOffset = 0ull;
 
         // entry point ID for traversing (required when using buffer sharing)
         // from bytes, measuring by 'BvhDataByteOffset/sizeof(VtBvhNodeStruct)'

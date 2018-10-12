@@ -252,6 +252,7 @@ namespace _vt { // store in undercover namespace
         uint32_t _entryID = 0, _primitiveCount = -1, _primitiveOffset = 0; // planned to rework building entrying 
         VtMat4 _coverMatrice = IdentifyMat4;
         VtBvhBlock _bvhBlockData = {};
+        VkDeviceSize _capacity = 0ull;
 
         operator VkDescriptorSet() const { return _descriptorSet; };
 

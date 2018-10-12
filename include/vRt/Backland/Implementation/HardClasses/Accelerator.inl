@@ -166,9 +166,9 @@ namespace _vt {
         auto vkDevice = _vtDevice->_device;
         vtAccelerator->_device = _vtDevice;
         vtAccelerator->_coverMatrice = info.coverMat;
-        vtAccelerator->_primitiveOffset = info.internalPrimitiveOffset;
+        vtAccelerator->_primitiveOffset = info.vertexPointingOffset;
         vtAccelerator->_entryID = info.traversingEntryID;
-
+        vtAccelerator->_capacity = info.maxPrimitives;
 
         // planned import from descriptor
         std::shared_ptr<BufferManager> bManager = {};

@@ -67,7 +67,7 @@ namespace vrt { // store in official namespace
     extern VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer, bool useInstance = true, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)>& cb = {});
 
     // build accelerator structure command
-    extern VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer /*,  */);
+    extern VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer, VkDeviceSize coveredCapacity = VK_WHOLE_SIZE);
 
     extern VtResult vtCmdBindRayTracingSet(VtCommandBuffer commandBuffer, VtRayTracingSet rtset);
 
