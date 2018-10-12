@@ -108,11 +108,11 @@ void main() {
             const vec3 rdirect = dcts(cray.cdirect);
 
             // AMD not supported per-lane texture data loading, if texture index is not constant
-            vec2 texcoord = imageLoad(attributes, makeAttribID(hit.attribID, TEXCOORD_TID)).xy;
-            vec3 normal = imageLoad(attributes, makeAttribID(hit.attribID, NORMAL_TID)).xyz;
-            vec3 bitang = imageLoad(attributes, makeAttribID(hit.attribID, BITANGENT_TID)).xyz;
-            vec3 tangent = imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz;
-            mat3 tbn = mat3( (tangent.xyz), (bitang.xyz), (normal.xyz) );
+            const vec2 texcoord = imageLoad(attributes, makeAttribID(hit.attribID, TEXCOORD_TID)).xy;
+            const vec3 normal = normalize(imageLoad(attributes, makeAttribID(hit.attribID, NORMAL_TID)).xyz);
+            const vec3 bitang = normalize(imageLoad(attributes, makeAttribID(hit.attribID, BITANGENT_TID)).xyz);
+            const vec3 tangent = normalize(imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz);
+            const mat3 tbn = mat3( tangent.xyz, bitang.xyz, normal.xyz );
 
             // get textured data
             textured.bump = getNormalMapping(texcoord);
@@ -126,15 +126,14 @@ void main() {
 
             // if normal goes wrong, restore normal
             [[flatten]] if (dot(hitp.normalHeight.xyz,hitp.normalHeight.xyz) <= SFN) { hitp.normalHeight.xyz = normal.xyz; };
-            hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz); // facing of normal
+            hitp.normalHeight.xyz = normalize(hitp.normalHeight.xyz); // normalize 
             
             // convert metallic roughness to glossiness specular PBR model
-            const vec3 faceNormal = faceforward(hitp.normalHeight.xyz, rdirect, hitp.normalHeight.xyz);
+            const vec3 faceNormal = normalize(faceforward(hitp.normalHeight.xyz, rdirect, normal));
             const float fresnel = clamp01(pow(abs(dot(rdirect, faceNormal)), sIOR - 1.f));
             const vec3 fresnelColor = clamp01(mix(min_fresnel_color * 0.02f, max_fresnel_color * 0.45f, 1.f-fresnel.xxx));
             const vec3 specularColor = clamp01(mix(fresnelColor, textured.diffuse.xyz, textured.specular.zzz)); // use correct specular
             const vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
-            
             
             // temporary solution - add emission to albedo
             hitp.emission = textured.emissive * mix(1.f-textured.diffuse,textured.diffuse,vec4(0.f.xxx,1.f));
