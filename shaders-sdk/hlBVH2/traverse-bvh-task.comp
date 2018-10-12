@@ -1,0 +1,109 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#define EXPERIMENTAL_INSTANCING_SUPPORT
+#define VRT_USE_FAST_INTERSECTION
+#define USE_SINGLE_THREAD_RAY_MANAGMENT
+#define SIMPLIFIED_RAY_MANAGMENT
+#define DISCARD_SHARED_CACHING
+#define ENABLE_TRAVERSE_DATA
+#define ENABLE_VSTORAGE_DATA
+#define DMA_HIT
+
+#define EXTEND_LOCAL_GROUPS
+
+#include "../include/driver.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+#include "../include/structs.glsl"
+#include "../include/rayslib.glsl"
+#include "../include/vertex.glsl"
+
+
+#include "./include/bvh-traverse-task.glsl"
+#define wgs gl_NumWorkGroups.x
+#define rayIDh taskCode.x
+#define instanceID taskCode.y
+#define hid it
+
+LOCAL_SIZE_LAYOUT;
+
+void main() {
+    IFANY (bvhBlock.primitiveCount <= 0) return;
+    const uint wsize = min(rayCounter, MAX_RAYS); IFANY (wsize <= 0) return;
+    const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
+
+    // planned task-based BVH traversing (for two-level BVH support)
+    for (uint w=0;w<wcount;w+=wgs) {
+        const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+        const bool overflow = it >= wsize; IFALL(overflow) break;
+
+        // do BVH traversing 
+        //int rayID = vtRayIdx(it), r2ID = rayID<<1, hid = vtFetchHitIdc(rayID); // in task-based traversing "hid" will means as "potential hit index"
+        const ivec2 taskCode = vtFetchTask(it); // 11.10.2018, remain hit index as main 
+        const int r2ID = rayIDh<<1;
+
+        traverseState.maxTriangles = bvhBlock.primitiveCount;
+        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+        INSTANCE_ID = instanceID;
+
+        // planned multiple-hits support
+        [[flatten]] if (!overflow) { // verify intersection
+            //int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
+            bool found = hid >= 0; // experimental
+
+#ifdef DMA_HIT
+            #define hit hits[hid]
+#else
+            VtHitData hit;
+#endif
+
+            const dirtype_t _direction = rays[rayIDh].cdirect;
+            const vec3 _position = rays[rayIDh].origin.xyz;
+            initTraversing(!overflow, hid, _position, _direction);
+
+            // traversing from front layer to back layers
+            int lhit = hid+1; // last possible found hit
+            //[[unroll]] for (int i=0;i<1;i++) {
+                int ftrID = -1; // current found triangle
+                const bool notfirst = false;//i > 0;
+
+                // traversing triangles
+                [[flatten]] if (traverseState.maxTriangles > 0) {
+                    traverseBVH2(notfirst, !overflow);
+                    ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxTriangles = min(traverseState.maxTriangles, ftrID);
+                }; //else IFALL (true) { break; };
+                found = found || ftrID >= 0;
+
+                // if has triangle 
+                [[flatten]] if (ftrID >= 0) {
+                    //if (hid < 0) hid = i*int(wsize) + rayID;//atomicIncHitCount(); // if required new
+                    hit.payloadID = 0, hit.rayID = rayIDh+1;
+                    hit.uvt = primitiveState.lastIntersection;
+                    hit.vdat = 0.f.xxxx;
+                    hit.attribID = vtVerifyClosestHit(hid,-1)+1;
+                    //imageStore(rayLink,r2ID,max(imageLoad(rayLink,r2ID),hid+1));hid=-1;
+                    lhit = int(imageAtomicMax(rayLink,r2ID,(hid+1).x));
+                    primitiveState.lastIntersection.w = FINT_ZERO;
+                };
+            //};
+
+            // if no found any intersection
+            // planned to add multi-traversing support, and another resolver
+            [[flatten]] if (!found && lhit <= 0) {
+                //if (hid < 0) hid = rayID;//atomicIncHitCount(); // if required new
+                hit.payloadID = 0, hit.rayID = rayIDh+1;
+                hit.uvt = primitiveState.lastIntersection;
+                hit.vdat = 0.f.xxxx;
+                hit.attribID = 0; vtVerifyMissedHit(hid, 0);
+                //imageStore(rayLink,r2ID,max(imageLoad(rayLink,r2ID),hid+1));
+                lhit = int(imageAtomicMax(rayLink,r2ID,(hid+1).x));
+            };
+
+#ifndef DMA_HIT
+            hits[hid] = hit;
+#endif
+        };
+    };
+    //LGROUP_BARRIER;
+};

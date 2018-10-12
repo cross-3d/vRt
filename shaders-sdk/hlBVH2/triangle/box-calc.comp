@@ -35,6 +35,6 @@ void main() {
             divW(mult4(bvhBlock.transform, TLOAD(lvtxIn, int(tri*3+2)).xyzw))
         );
         ISTORE(lvtx, int(tri*3+0), triverts[0]), ISTORE(lvtx, int(tri*3+1), triverts[1]), ISTORE(lvtx, int(tri*3+2), triverts[2]);
-        Leafs[to].lbox = calcTriBox(triverts), Leafs[to].pdata = ivec4(to.xx, 0, tri+1);
+        Leafs[to].lbox = calcTriBox(triverts), Leafs[to].pdata = ivec4((0).xxx, tri+1);
     };
 };

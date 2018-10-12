@@ -75,10 +75,16 @@ struct BTYPE_ {
 // Block of main BVH structure (for bottom levels will not required)
 layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { BvhBlockT bvhBlock_[]; }; // bvhBlock of main structure 
 
+
 // Accessible blocks and instances for top levels, or task accessing (required shared buffers)
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
+#ifdef BVH_CREATION
+layout ( binding = 2, set = 1, std430 ) restrict buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
+layout ( binding = 3, set = 1, std430 ) restrict buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
+#else
 layout ( binding = 2, set = 1, std430 ) readonly restrict buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
 layout ( binding = 3, set = 1, std430 ) readonly restrict buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
+#endif
 #endif
 
 
@@ -88,7 +94,14 @@ layout ( binding = 1, set = 1, std430 ) readonly restrict buffer bvhBoxesB { BTY
 layout ( binding = 1, set = 1, std430 )          restrict buffer bvhBoxesB { BTYPE_ bvhNodes[]; };
 #endif
 
+#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
+int INSTANCE_ID = 0;
+#define bvhInstance bvhInstance_[INSTANCE_ID]
+#define bvhBlock bvhBlockIn_[bvhInstance.bvhBlockID]
+#else
 #define bvhBlock bvhBlock_[0] 
+#endif
+
 #define BVH_ENTRY bvhBlock.entryID
 #define BVH_ENTRY_HALF (bvhBlock.entryID>>1)
 

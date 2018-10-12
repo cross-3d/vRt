@@ -41,13 +41,14 @@ struct PrimitiveState {
 } primitiveState;
 
 #define RAY_ID primitiveState.raydata[0]
-
+#define MAX_TASK_COUNT primitiveState.raydata[1]
 
 
 // stack system of current BVH traverser
 shared int localStack[WORK_SIZE][localStackSize];
 #define lstack localStack[Local_Idx]
 #define sidx  traverseState.stackPtr
+
 
 void loadStack(inout int rsl) {
     [[flatten]] if ((--sidx) >= 0) rsl = lstack[sidx];
@@ -65,9 +66,10 @@ void storeStack(in int rsl) {
 };
 
 
-// TODO: add task pushing
-int pushTask(in int instanceID, in int rayID){
-    //int taskID = 
+// alpha version of task pushing 
+int pushTask(in int rayID, in int instanceID) {
+    const int thid = atomicIncTaskCount(); imageStore(taskList, thid, uvec4(rayID+1, instanceID, 0u.xx)); // push a task to traversing 
+    --MAX_TASK_COUNT; return thid;
 };
 
 // 
@@ -75,9 +77,7 @@ void doIntersection(in bool isvalid, in float dlen) {
     // TODO: need to correct naming 
     isvalid = isvalid && traverseState.defTriangleID > 0 && traverseState.defTriangleID <= traverseState.maxTriangles;
     IFANY (isvalid) {
-
-        [[flatten]] if (isvalid) pushTask(traverseState.defTriangleID, RAY_ID); // push a task to bottom level traversing 
-
+        [[flatten]] if (isvalid) { pushTask(RAY_ID, traverseState.defTriangleID); }; // push a task to bottom level traversing 
     }; traverseState.defTriangleID=0;
 };
 
@@ -93,13 +93,13 @@ bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
 void resetEntry(in bool valid) { traverseState.idx = (valid ? BVH_ENTRY : -1), traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defTriangleID = 0; };
 void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir, in int rayID ) {
     [[flatten]] if (eht.x >= 0) primitiveState.lastIntersection = hits[eht].uvt;
-    RAY_ID = rayID; // for pushing a traversing tasks
+    RAY_ID = rayID+1, MAX_TASK_COUNT = 2; // for pushing a traversing tasks
 
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
     const vec4 torig = -uniteBox(vec4(mult4(bvhBlock.transform, vec4(orig, 1.f)).xyz, 1.f)), torigTo = uniteBox(vec4(mult4(bvhBlock.transform, vec4(orig, 1.f) + vec4(dcts(pdir).xyz, 0.f)).xyz, 1.f)), tdir = torigTo+torig;
     const vec4 dirct = tdir*invlen, dirproj = 1.f / precIssue(dirct);
-    primitiveState.dir = primitiveState.orig = dirct;
+    //primitiveState.dir = primitiveState.orig = dirct;
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
@@ -113,7 +113,7 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir,
     // traversing inputs
     traverseState.diffOffset = min(-nfe.x, 0.f);
     traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(vec4(fma(fvec4_(torig), traverseState.directInv, ftype_(traverseState.diffOffset).xxxx)));
-    primitiveState.orig = fma(primitiveState.orig, traverseState.diffOffset.xxxx, torig);
+    //primitiveState.orig = fma(primitiveState.orig, traverseState.diffOffset.xxxx, torig);
 };
 
 
@@ -177,7 +177,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
 
         // every-step solving 
         [[flatten]] IFANY (traverseState.defTriangleID > 0) { doIntersection( true, bsize ); } // instance task pushing 
-        [[flatten]] if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
+        [[flatten]] if (traverseState.idx <= 0 || MAX_TASK_COUNT <= 0) { break; } // if no to traversing, or stack was exceeded - breaking
     };
 
     // correction of hit distance
