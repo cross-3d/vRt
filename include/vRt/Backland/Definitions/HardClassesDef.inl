@@ -21,6 +21,7 @@ namespace _vt { // store in undercover namespace
     class VertexInputSet;
     class AcceleratorHLBVH2;
     class AcceleratorSet;
+    class AcceleratorLinkedSet;
     class AssemblyPipeline;
     class VertexAssemblySet;
     class RayTracingSet;

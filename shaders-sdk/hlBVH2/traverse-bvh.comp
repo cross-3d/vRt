@@ -21,6 +21,7 @@
 
 #define wgs gl_NumWorkGroups.x
 #define r4ID (rayID<<2)
+#define hit hits[hid]
 
 
 LOCAL_SIZE_LAYOUT;
@@ -36,28 +37,18 @@ void main() {
         const bool overflow = it >= wsize; IFALL(overflow) break;
 
         // do BVH traversing 
-        int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID); // in task-based traversing "hid" will means as "potential hit index"
-        //const ivec2 taskCode = vtFetchTask(it); int rayID = taskCode.x, instanceID = taskCode.y, hid = it; // 11.10.2018, remain hit index as main 
+        int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID);
         traverseState.maxElements = bvhBlock.primitiveCount;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection
-            //int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
-            bool found = hid >= 0; // experimental
-
-#ifdef DMA_HIT
-            #define hit hits[hid]
-#else
-            VtHitData hit;
-#endif
-
             const dirtype_t _direction = rays[rayID].cdirect;
             const vec3 _position = rays[rayID].origin.xyz;
             initTraversing(!overflow, hid, _position, _direction);
 
             // traversing from front layer to back layers
-            uint mhit = hid+1; // last possible found hit
+            uint mhit = hid+1; bool found = mhit > 0u; // last possible found hit
             [[unroll]] for (int i=0;i<1;i++) {
 
                 // traversing triangles
@@ -84,10 +75,6 @@ void main() {
                     primitiveState.lastIntersection.w = FINT_ZERO;
                 };
             };
-
-#ifndef DMA_HIT
-            hits[mhit] = hit;
-#endif
         };
     };
 };

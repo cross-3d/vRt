@@ -3,7 +3,6 @@
 
 #include "../include/mathlib.glsl"
 
-//#define VRT_INTERPOLATOR_TEXEL
 
 #ifdef ENABLE_VERTEX_INTERPOLATOR
 #ifndef ENABLE_VSTORAGE_DATA

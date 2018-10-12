@@ -2,7 +2,6 @@
 // default definitions
 #include "./bvh-state-code.glsl"
 
-
 // intersection current state
 struct PrimitiveState {
     vec4 lastIntersection, orig;
@@ -12,7 +11,6 @@ struct PrimitiveState {
     int axis; mat3 iM;
 #endif
 } primitiveState;
-
 
 // triangle intersection, when it found
 void doIntersection(in bool isvalid, in float dlen) {
@@ -34,20 +32,12 @@ void doIntersection(in bool isvalid, in float dlen) {
     }; traverseState.defElementID=0;
 };
 
-
-// corrections of box intersection
-const bvec4 bsgn = false.xxxx;
-const 
-float dirlen = 1.f, invlen = 1.f, bsize = 1.f;
-
-
 // 
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 #define TROOT bvhInstance
 #else
 #define TROOT bvhBlock
 #endif
-
 
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };

@@ -3,8 +3,6 @@
 
 #include "../include/mathlib.glsl"
 
-//#define VRT_INTERPOLATOR_TEXEL
-
 #ifdef ENABLE_VERTEX_INTERPOLATOR
 #ifndef ENABLE_VSTORAGE_DATA
 #define ENABLE_VSTORAGE_DATA
@@ -41,25 +39,11 @@ const int VCOUNT = 3;
 #endif
 
 
-
-
-
-#ifdef VRT_INTERPOLATOR_TEXEL
-const int WARPED_WIDTH = 6144;
-const ivec2 mit[4] = { ivec2(0,0), ivec2(1,0), ivec2(0,1),  ivec2(1,1) };
-ivec2 gatherMosaic(in ivec2 uniformCoord) {
-    return ivec2(uniformCoord)<<1;
-}
-
-#else
 const int WARPED_WIDTH = 4096;
 const ivec2 mit[4] = {ivec2(0,1), ivec2(1,1), ivec2(1,0), ivec2(0,0)};
 ivec2 gatherMosaic(in ivec2 uniformCoord) {
     return ivec2(uniformCoord.x * 3 + (uniformCoord.y % 3), uniformCoord.y);
 }
-#endif
-
-
 
 ivec2 mosaicIdc(in ivec2 mosaicCoord, in uint idc) {
     mosaicCoord += mit[idc];
@@ -79,15 +63,6 @@ void storeAttribute(in ivec3 cdata, in vec4 fval) {
     const ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(cdata.x*ATTRIB_EXTENT+cdata.y));
     [[flatten]] if (cdata.z < 3) {
         ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,cdata.z), (fval));
-    } else {
-#ifdef VRT_INTERPOLATOR_TEXEL
-        const vec3 vs = vec3(-1.f,1.f,1.f);
-        ISTORE(attrib_texture_out, mosaicIdc(ATTRIB_,3), mat3x4(
-            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,0)),
-            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,1)),
-            TLOAD(attrib_texture_out, mosaicIdc(ATTRIB_,2))
-        ) * vs);
-#endif
     }
 }
 #endif 
@@ -101,22 +76,18 @@ void interpolateMeshData(in int hitID, in int tri) {
     [[flatten]] if (hit.attribID > 0) {
         //[[unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
         [[dont_unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
-#ifdef VRT_INTERPOLATOR_TEXEL
-            const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + vs.yz + 0.5f) * sz;
-            ISTORE(attributes, makeAttribID(hit.attribID, i), textureHQ(attrib_texture, trig, 0));
-#else
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
 
             vec4 attrib = 0.f.xxxx;
             //[[unroll]] for (int j=0;j<3;j++) {attrib=fma(vs[j].xxxx,textureLod(attrib_texture,fma(sz,offsetf[j],trig),0),attrib);}; // using accumulation sequence
             [[unroll]] for (int j=0;j<4;j++) {attrib[j]=dot(vs,sifonGather(attrib_texture,trig,j));}; // tensor capable production 
 
+            // TODO: support of variable attribute transforms
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
             [[flatten]] if (any(equal(i.xxx, ivec3(NORMAL_TID, TANGENT_TID, BITANGENT_TID)))) attrib = mult4(bvhInstance.transform, attrib);
 #endif
 
             ISTORE(attributes, makeAttribID(hit.attribID, i), attrib);
-#endif
         }
     }
 }

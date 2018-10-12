@@ -50,3 +50,7 @@ void storeStack(in int rsl) {
     traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
 };
 
+// corrections of box intersection
+const bvec4 bsgn = false.xxxx;
+const 
+float dirlen = 1.f, invlen = 1.f, bsize = 1.f;

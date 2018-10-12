@@ -25,10 +25,8 @@
 VtHitPayload hitp;
 LOCAL_SIZE_LAYOUT;
 
-
-
 void main() {
-    const  int wsize = min(missHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS); IFANY (wsize <= 0) return;
+    const uint wsize = min(missHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=wgs) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
@@ -71,7 +69,7 @@ void main() {
 #endif
                     hitPayload[pid] = hitp;
                 };
-            }
-        }
-    }
-}
+            };
+        };
+    };
+};

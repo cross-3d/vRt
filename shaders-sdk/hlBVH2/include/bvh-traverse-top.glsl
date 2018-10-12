@@ -2,8 +2,6 @@
 // default definitions
 #include "./bvh-state-code.glsl"
 
-
-
 // intersection current state
 struct PrimitiveState {
      vec4 lastIntersection; // used from previosly only 
@@ -13,8 +11,6 @@ struct PrimitiveState {
 #define RAY_ID primitiveState.raydata[0]
 #define MAX_TASK_COUNT primitiveState.raydata[1]
 
-
-
 // alpha version of task pushing 
 int pushTask(in int rayID, in int instanceID) {
     const int thid = atomicIncTaskCount(); imageStore(taskList, thid, uvec4(rayID+1, instanceID, 0u.xx)); // push a task to traversing 
@@ -23,19 +19,11 @@ int pushTask(in int rayID, in int instanceID) {
 
 // 
 void doIntersection(in bool isvalid, in float dlen) {
-    // TODO: need to correct naming 
     isvalid = isvalid && traverseState.defElementID > 0 && traverseState.defElementID <= traverseState.maxElements;
     IFANY (isvalid) {
         [[flatten]] if (isvalid) { pushTask(RAY_ID, traverseState.defElementID); }; // push a task to bottom level traversing 
     }; traverseState.defElementID=0;
 };
-
-
-// corrections of box intersection
-const bvec4 bsgn = false.xxxx;
-const 
-float dirlen = 1.f, invlen = 1.f, bsize = 1.f;
-
 
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };

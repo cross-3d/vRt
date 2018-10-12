@@ -21,53 +21,42 @@
 #define rayID (hit.rayID-1)
 #define r4ID (rayID<<2)
 #define cray rays[rayID]
-#ifdef DMA_HIT
-    #define hit hits[hitID]
-#endif
+#define hit hits[hitID]
+
 
 #include "../include/attribute.glsl"
 
 
 LOCAL_SIZE_LAYOUT;
 
+// TODO: support of custom attribute shaders 
 void main() {
-    const int wsize = min(closestHitCounterCurrent, MAX_HITS); IFANY (wsize <= 0) return;
+    const uint wsize = min(closestHitCounterCurrent, MAX_HITS); IFANY (wsize <= 0) return;
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
 
     // accumulate closest hits
     [[flatten]] if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(closestHitCounter, closestHitCounterCurrent); }
-
-    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         const bool overflow = globalID >= wsize; IFALL(overflow) break;
         const int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
-
-#ifndef DMA_HIT
-        VtHitData hit = hits[hitID];
-#endif
-
+        
         [[flatten]] if (!overflow && hitID >= 0) { // verify intersection
-            const int triID = floatBitsToInt(hit.uvt.w)-1;
-            
             // interpolate hit
+            const int triID = floatBitsToInt(hit.uvt.w)-1;
             [[flatten]] if (triID >= 0) {
+                hit.uvt.w = intBitsToFloat(vmaterials[triID]);
+                hit.vdat = TLOAD(lnrm, triID); // pick-up pre-computed physical normal
+
                 // store minimal possible hit (first operation required, because MAX will haven't no effect)
                 // required for correct alpha channels support 
                 imageAtomicCompSwap(rayLink,r4ID|2,0xFFFFFFFFu,hitID+1),imageAtomicMax(rayLink,r4ID|2,hitID+1);
-
-                hit.uvt.w = intBitsToFloat(vmaterials[triID]);
-                hit.vdat = TLOAD(lnrm, triID); // pick-up pre-computed physical normal
-                interpolateMeshData(hitID, triID);
-#ifndef DMA_HIT
-                hits[hitID] = hit;
-#endif
-            }
+                interpolateMeshData(hitID, triID); // 
+            };
 
             // re-group hit 
             const lowp uint rID = floatBitsToUint(hit.vdat.w);
             [[unroll]] for (lowp int i=0;i<4;i++) { [[flatten]] if (rID == i) { vtVerifyClosestHit(hitID, i); break; }; };
-        }
-    }
-
-    //LGROUP_BARRIER;
-}
+        };
+    };
+};

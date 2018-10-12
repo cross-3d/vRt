@@ -26,6 +26,7 @@
 #define instanceID taskCode.y
 #define hid it
 #define r4ID (rayIDh<<2)
+#define hit hits[hid]
 
 
 LOCAL_SIZE_LAYOUT;
@@ -47,12 +48,6 @@ void main() {
 
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection
-#ifdef DMA_HIT
-            #define hit hits[hid]
-#else
-            VtHitData hit;
-#endif
-
             const dirtype_t _direction = rays[rayIDh].cdirect;
             const vec3 _position = rays[rayIDh].origin.xyz;
             initTraversing(!overflow, vtFetchHitIdc(rayIDh), _position, _direction);
@@ -77,10 +72,6 @@ void main() {
                 [[flatten]] if ( lhit <= 0 ) {
                     hit.attribID = 0; vtVerifyMissedHit(hid, 0); };
             };
-
-#ifndef DMA_HIT
-            hits[chit] = hit;
-#endif
         };
     };
     //LGROUP_BARRIER;
