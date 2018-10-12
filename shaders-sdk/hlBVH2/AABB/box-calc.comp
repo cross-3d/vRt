@@ -44,7 +44,7 @@ void main() {
         Leafs[I].lbox  = calculateTransformedBox(gT, bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax);
         Leafs[I].pdata = ivec4((0).xxx, I+1);
 
-        // getting combined transformation 
-        bvhInstance_[I].transform = gT * bvhBlockIn_[T].transform;
+        // getting combined transformation (disabled, can cause bad effect)
+        //bvhInstance_[I].transform = gT * bvhBlockIn_[T].transform;
     };
 };
