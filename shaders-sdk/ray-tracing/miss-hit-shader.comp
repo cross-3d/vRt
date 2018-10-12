@@ -20,7 +20,7 @@
 #define r4ID (rayID<<2)
 #define rayID (hit.rayID-1)
 #define cray rays[rayID]
-#define hid hitID // alias of
+
 
 VtHitPayload hitp;
 LOCAL_SIZE_LAYOUT;
@@ -61,16 +61,16 @@ void main() {
             // additional validation of hit (hit point interpolated offset test)
 
 
-            ghit = imageAtomicMin(rayLink,r4ID,(hid+1).x);
-            [[flatten]] if (ghit >= (hitID+1u) && hits[hitID].uvt.z <= hits[ghit-1].uvt.z) { // also, required range checking for correct more results 
-                imageAtomicMin(rayLink,r4ID|2,(hitID+1).x);
-
-                const int pid = atomicIncPayloadHitCount();
-                hit.payloadID = pid+1;
+            const uint chit = (hitID+1), ghit = imageAtomicMin(rayLink,r4ID,chit.x);
+            [[flatten]] if (ghit >= chit && hit.uvt.z <= hits[ghit-1].uvt.z) { // also, required range checking for correct more results 
+                [[flatten]] if (imageAtomicMin(rayLink,r4ID|2,chit.x) >= chit) {
+                    const int pid = atomicIncPayloadHitCount();
+                    hit.payloadID = pid+1;
 #ifndef DMA_HIT
-                hits[hitID] = hit;
+                    hits[hitID] = hit;
 #endif
-                hitPayload[pid] = hitp;
+                    hitPayload[pid] = hitp;
+                };
             }
         }
     }

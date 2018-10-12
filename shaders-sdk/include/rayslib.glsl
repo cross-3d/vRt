@@ -97,7 +97,7 @@ int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayI
         imageStore(rayLink, (rayID<<2)|0, 0u.xxxx);
         imageStore(rayLink, (rayID<<2)|1, p2x_16(c2d).xxxx);
         imageStore(rayLink, (rayID<<2)|2, 0xFFFFFFFFu.xxxx);
-        imageStore(rayLink, (rayID<<2)|3, 0xFFFFFFFFu.xxxx);
+        imageStore(rayLink, (rayID<<2)|3, 0u.xxxx);
     };
     return rayID;
 };

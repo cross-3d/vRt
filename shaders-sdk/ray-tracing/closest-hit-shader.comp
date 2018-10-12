@@ -145,18 +145,19 @@ void main() {
             hitp.albedo = (textured.diffuse * vec4(  mix(lightColor*0.1f, lightColor*1.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx), 1.f));
             hitp.albedo += vec4(hitp.emission.xyz * hitp.emission.a * hitp.albedo.w, 0.f);
             
+            
             // z-fighting by hashing (if fail to alpha test, back layers will still showing)
-            const bool hashPass = hrand(uvec4( vtFetchCode(rayID), stageUniform.iteration, packHalf4x16(vec4(rdirect, 0.f)) )) <= hitp.albedo.w;
-            [[flatten]] if (hashPass) { ghit = imageAtomicMin(rayLink,r4ID,(hitID+1).x); // if z-fight solved 
-                [[flatten]] if (ghit >= (hitID+1u) && hits[hitID].uvt.z <= hits[ghit-1].uvt.z) {  // also, required range checking for correct more results
-                    imageAtomicMin(rayLink,r4ID|2,(hitID+1).x);
-
-                    int pid = atomicIncPayloadHitCount();
-                    hit.payloadID = pid+1;
-    #ifndef DMA_HIT
-                    hits[hitID] = hit;
-    #endif
-                    hitPayload[pid] = hitp;
+            [[flatten]] if (hrand(uvec4( vtFetchCode(rayID), stageUniform.iteration, packSnorm4x16(vec4(rdirect, 0.f)) )) <= hitp.albedo.w) {
+                const uint chit = hitID+1, ghit = imageAtomicMin(rayLink,r4ID,chit.x);
+                [[flatten]] if (ghit >= chit && hit.uvt.z <= hits[ghit-1].uvt.z) { // also, required range checking for correct more results 
+                    [[flatten]] if (imageAtomicMin(rayLink,r4ID|2,chit.x) >= chit) {
+                        int pid = atomicIncPayloadHitCount();
+                        hit.payloadID = pid+1;
+#ifndef DMA_HIT
+                        hits[hitID] = hit;
+#endif
+                        hitPayload[pid] = hitp;
+                    };
                 };
             };
         }

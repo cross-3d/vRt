@@ -49,9 +49,6 @@ void main() {
 
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection
-            //int triID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
-            bool found = hid >= 0; // experimental
-
 #ifdef DMA_HIT
             #define hit hits[hid]
 #else
@@ -63,43 +60,32 @@ void main() {
             initTraversing(!overflow, hid, _position, _direction);
 
             // traversing from front layer to back layers
-            int lhit = hid+1; // last possible found hit
-            //[[unroll]] for (int i=0;i<1;i++) {
-                int ftrID = -1; // current found triangle
-                const bool notfirst = false;//i > 0;
-
-                // traversing triangles
-                [[flatten]] if (traverseState.maxTriangles > 0) {
-                    traverseBVH2(notfirst, !overflow);
-                    ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxTriangles = min(traverseState.maxTriangles, ftrID);
-                }; //else IFALL (true) { break; };
-                found = found || ftrID >= 0;
-
-                // if has triangle 
-                [[flatten]] if (ftrID >= 0) {
-                    //if (hid < 0) hid = i*int(wsize) + rayID;//atomicIncHitCount(); // if required new
-                    hit.payloadID = 0, hit.rayID = rayIDh+1;
-                    hit.uvt = primitiveState.lastIntersection;
-                    hit.vdat = 0.f.xxxx;
-                    hit.attribID = vtVerifyClosestHit(hid,-1)+1;
-                    lhit = int(imageAtomicMax(rayLink,r4ID,(hid+1).x));
-                    primitiveState.lastIntersection.w = FINT_ZERO;
-                };
-            //};
-
-            // if no found any intersection
-            // planned to add multi-traversing support, and another resolver
-            [[flatten]] if (!found && lhit <= 0) {
+            const uint chit = hid+1; // last possible found hit
+            
+            int ftrID = -1; // current found triangle
+            [[flatten]] if (traverseState.maxTriangles > 0) {
+                traverseBVH2(false, !overflow);
+                ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxTriangles = min(traverseState.maxTriangles, ftrID);
+            };
+            
+            [[flatten]] if (chit > 0) {
                 //if (hid < 0) hid = rayID;//atomicIncHitCount(); // if required new
                 hit.payloadID = 0, hit.rayID = rayIDh+1;
                 hit.uvt = primitiveState.lastIntersection;
                 hit.vdat = 0.f.xxxx;
-                hit.attribID = 0; vtVerifyMissedHit(hid, 0);
-                lhit = int(imageAtomicMax(rayLink,r4ID,(hid+1).x));
+                
+                const uint lhit = imageAtomicMax(rayLink,r4ID,chit.x);
+                [[flatten]] if (ftrID >= 0 && chit > 0) {
+                    hit.attribID = vtVerifyClosestHit(hid,-1)+1; } else 
+                [[flatten]] if ( lhit == chit || lhit <= 0 ) {
+                    hit.attribID = 0; vtVerifyMissedHit(hid, 0); };
+
+                // resolve minimal possible hit point 
+                //imageAtomicMax(rayLink,r4ID|2,chit);
             };
 
 #ifndef DMA_HIT
-            hits[hid] = hit;
+            hits[chit] = hit;
 #endif
         };
     };
