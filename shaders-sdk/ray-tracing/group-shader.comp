@@ -41,7 +41,7 @@ void main() {
 
         // get ray by id
         ray = rays[rayID];
-        const int hitIdc = vtFetchHitIdc(rayID);
+        const int hitIdc = vtFetchHitClosest(rayID);
         const int hitpId = hits[hitIdc].payloadID-1;
         const vec4 diffuse = hitp.albedo, reflc = hitp.specularGlossiness;
         const float shiftLenght = SFN + sqrt(hit.uvt.z)*One1024; // TODO: advanced correction of ray starting
@@ -62,7 +62,7 @@ void main() {
             writeColor(ray.dcolor, vec4(0.f.xxx, 1.f));
 
             // alternate of http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
-            float alph = diffuse.a >= hrand(uvec4(imageLoad(rayLink, (rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(vec4(orgdir, 0.f)))) ? 1.f : 0.f;
+            float alph = diffuse.a >= hrand(uvec4( vtFetchCode(rayID), stageUniform.iteration, packHalf4x16(vec4(orgdir, 0.f)) )) ? 1.f : 0.f;
             [[flatten]] if (stageUniform.iteration == stageUniform.lastIteration) alph = diffuse.a;
 
             // transparency ray

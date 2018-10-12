@@ -15,15 +15,17 @@
 #include "../include/random.glsl"
 #include "./submodules/environment.glsl"
 
+
+#define wgs gl_NumWorkGroups.x
+#define r4ID (rayID<<2)
+#define rayID (hit.rayID-1)
 #define cray rays[rayID]
 #define hid hitID // alias of
 
 VtHitPayload hitp;
 LOCAL_SIZE_LAYOUT;
 
-#define rayID (hit.rayID-1)
-#define wgs gl_NumWorkGroups.x
-//#define wsize missHitTypedCounterRead[stageUniform.currentGroup]
+
 
 void main() {
     const  int wsize = min(missHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS); IFANY (wsize <= 0) return;
@@ -40,7 +42,7 @@ void main() {
 #endif
 
         uint ghit = hitID+1;
-        [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0 && (imageLoad(rayLink,rayID<<1).x-1) == hitID) { // if hit is valid and not overriden
+        [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0 && vtFetchHitIdc(rayID) == hitID) { // if hit is valid and not overriden
             const vec3 viewVec = dcts(cray.cdirect), rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;
 
@@ -58,8 +60,11 @@ void main() {
             hitp.albedo = hitp.emission+vec4(0.f.xxx, 0.f);
             // additional validation of hit (hit point interpolated offset test)
 
-            ghit = imageAtomicMin(rayLink,rayID<<1,(hid+1).x);
+
+            ghit = imageAtomicMin(rayLink,r4ID,(hid+1).x);
             [[flatten]] if (ghit >= (hitID+1u) && hits[hitID].uvt.z <= hits[ghit-1].uvt.z) { // also, required range checking for correct more results 
+                imageAtomicMin(rayLink,r4ID|2,(hitID+1).x);
+
                 const int pid = atomicIncPayloadHitCount();
                 hit.payloadID = pid+1;
 #ifndef DMA_HIT

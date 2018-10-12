@@ -51,6 +51,13 @@ struct VtAppMaterial {
 
 #include "../include/hitlib.glsl"
 
+layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
+    mat4x4 camInv;
+    mat4x4 projInv;
+    vec4 sceneRes;
+    int enable360, variant, r1, r2;
+} cameraUniform;
+
 // texturing cache 
 struct Textured {
     vec4 diffuse;
@@ -59,23 +66,16 @@ struct Textured {
     vec4 emissive;
 } textured;
 
+
+#define wgs gl_NumWorkGroups.x
+#define rayID (hit.rayID-1)
+#define r4ID (rayID<<2)
 #define cray rays[rayID]
 
 LOCAL_SIZE_LAYOUT;
 VtHitPayload hitp;
 
 
-
-layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
-    mat4x4 camInv;
-    mat4x4 projInv;
-    vec4 sceneRes;
-    int enable360, variant, r1, r2;
-} cameraUniform;
-
-
-#define wgs gl_NumWorkGroups.x
-#define rayID (hit.rayID-1)
 
 void main() {
     
@@ -135,28 +135,29 @@ void main() {
             const vec3 specularColor = clamp01(mix(fresnelColor, textured.diffuse.xyz, textured.specular.zzz)); // use correct specular
             const vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
             
-            // TODO: dynamic light
-            const vec3 lightVector = normalize(vec3(0.4f, 1.f, 0.1f)), lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
-            hitp.albedo = (textured.diffuse * vec4(  mix(lightColor*0.1f, lightColor*1.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx), 1.f));
             
             // temporary solution - add emission to albedo
             hitp.emission = textured.emissive * mix(1.f-textured.diffuse,textured.diffuse,vec4(0.f.xxx,1.f));
             hitp.specularGlossiness = specularGlossiness; // set emission and specularity
-            hitp.albedo += vec4(hitp.emission.xyz * hitp.emission.a * hitp.albedo.w, 0.f);
 
-            // z-fighting by hashing (if fail to alpha test, back layers will still showing)
-            [[flatten]] if (hrand(uvec4(imageLoad(rayLink,(rayID<<1)|1).x, stageUniform.iteration, packHalf4x16(vec4(rdirect, 0.f)))) <= hitp.albedo.w) {
-                ghit = imageAtomicMin(rayLink,rayID<<1,(hitID+1).x);
-            };
+            // TODO: dynamic light
+            const vec3 lightVector = normalize(vec3(0.4f, 1.f, 0.1f)), lightColor = toLinear(vec3(1.0f, 0.9f, 0.75f));
+            hitp.albedo = (textured.diffuse * vec4(  mix(lightColor*0.1f, lightColor*1.f, clamp(dot(hitp.normalHeight.xyz, lightVector), 0.f, 1.f).xxx), 1.f));
+            hitp.albedo += vec4(hitp.emission.xyz * hitp.emission.a * hitp.albedo.w, 0.f);
             
-            // if z-fight solved 
-            [[flatten]] if (ghit >= (hitID+1u) && hits[hitID].uvt.z <= hits[ghit-1].uvt.z) {  // also, required range checking for correct more results
-                int pid = atomicIncPayloadHitCount();
-                hit.payloadID = pid+1;
-#ifndef DMA_HIT
-                hits[hitID] = hit;
-#endif
-                hitPayload[pid] = hitp;
+            // z-fighting by hashing (if fail to alpha test, back layers will still showing)
+            const bool hashPass = hrand(uvec4( vtFetchCode(rayID), stageUniform.iteration, packHalf4x16(vec4(rdirect, 0.f)) )) <= hitp.albedo.w;
+            [[flatten]] if (hashPass) { ghit = imageAtomicMin(rayLink,r4ID,(hitID+1).x); // if z-fight solved 
+                [[flatten]] if (ghit >= (hitID+1u) && hits[hitID].uvt.z <= hits[ghit-1].uvt.z) {  // also, required range checking for correct more results
+                    imageAtomicMin(rayLink,r4ID|2,(hitID+1).x);
+
+                    int pid = atomicIncPayloadHitCount();
+                    hit.payloadID = pid+1;
+    #ifndef DMA_HIT
+                    hits[hitID] = hit;
+    #endif
+                    hitPayload[pid] = hitp;
+                };
             };
         }
     }

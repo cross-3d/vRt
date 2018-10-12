@@ -22,7 +22,7 @@
 
 #include "./include/bvh-traverse-top.glsl"
 #define wgs gl_NumWorkGroups.x
-
+#define r4ID (rayID<<2)
 
 LOCAL_SIZE_LAYOUT;
 
@@ -37,7 +37,7 @@ void main() {
         const bool overflow = it >= wsize; IFALL(overflow) break;
 
         // do BVH traversing 
-        const int rayID = vtRayIdx(it), r2ID = rayID<<1;
+        const int rayID = vtRayIdx(it);
         traverseState.maxTriangles = bvhBlock.primitiveCount;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 

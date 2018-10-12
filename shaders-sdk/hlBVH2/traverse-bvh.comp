@@ -21,7 +21,7 @@
 
 #include "./include/bvh-traverse-task.glsl"
 #define wgs gl_NumWorkGroups.x
-
+#define r4ID (rayID<<2)
 
 LOCAL_SIZE_LAYOUT;
 
@@ -38,7 +38,7 @@ void main() {
         const bool overflow = it >= wsize; IFALL(overflow) break;
 
         // do BVH traversing 
-        int rayID = vtRayIdx(it), r2ID = rayID<<1, hid = vtFetchHitIdc(rayID); // in task-based traversing "hid" will means as "potential hit index"
+        int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID); // in task-based traversing "hid" will means as "potential hit index"
         //const ivec2 taskCode = vtFetchTask(it); int rayID = taskCode.x, instanceID = taskCode.y, hid = it; // 11.10.2018, remain hit index as main 
         traverseState.maxTriangles = bvhBlock.primitiveCount;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
@@ -78,8 +78,7 @@ void main() {
                     hit.uvt = primitiveState.lastIntersection;
                     hit.vdat = 0.f.xxxx;
                     hit.attribID = vtVerifyClosestHit(hid,-1)+1;
-                    //imageStore(rayLink,r2ID,max(imageLoad(rayLink,r2ID),hid+1));hid=-1;
-                    lhit = int(imageAtomicMax(rayLink,r2ID,(hid+1).x));hid=-1;
+                    lhit = int(imageAtomicMax(rayLink,r4ID,(hid+1).x));hid=-1;
                     primitiveState.lastIntersection.w = FINT_ZERO;
                 };
             };
@@ -92,8 +91,7 @@ void main() {
                 hit.uvt = primitiveState.lastIntersection;
                 hit.vdat = 0.f.xxxx;
                 hit.attribID = 0; vtVerifyMissedHit(hid, 0);
-                //imageStore(rayLink,r2ID,max(imageLoad(rayLink,r2ID),hid+1));
-                lhit = int(imageAtomicMax(rayLink,r2ID,(hid+1).x));
+                lhit = int(imageAtomicMax(rayLink,r4ID,(hid+1).x));
             };
 
 #ifndef DMA_HIT

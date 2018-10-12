@@ -142,7 +142,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
             //const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
             #define bvhNode bvhNodes[traverseState.idx]
             const ivec2 cnode = traverseState.idx >= 0 ? bvhNode.meta.xy : (0).xx;
-            [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defTriangleID = cnode.x; } // if leaf, defer for intersection 
+            [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defTriangleID = bvhBlock.primitiveOffset + cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
 
@@ -175,7 +175,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
                     //#define snode (bvhNodes[secondary].meta.xy) // use reference only
                     [[flatten]] if (secondary > 0) {
                         const ivec2 snode = bvhNodes[secondary].meta.xy;
-                        [[flatten]] if (isLeaf(snode)) { traverseState.defTriangleID = snode.x; secondary = -1; } else 
+                        [[flatten]] if (isLeaf(snode)) { traverseState.defTriangleID = bvhBlock.primitiveOffset + snode.x; secondary = -1; } else 
                         [[flatten]] if (secondary > 0) storeStack(secondary);
                     };
                 };

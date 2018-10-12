@@ -92,15 +92,23 @@ int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayI
         const int gID = atomicIncRayTypedCount(type);
         [[flatten]] if (gID < MAX_RAYS) rayGroupIndices[MAX_RAYS*(type+1)+gID] = (rayID+1);
         [[flatten]] if (rID < MAX_RAYS) rayGroupIndices[rID] = (rayID+1);
-    }
-    [[flatten]] if (rayID >= 0) { imageStore(rayLink, rayID<<1, 0u.xxxx), imageStore(rayLink, (rayID<<1)|1, p2x_16(c2d).xxxx); };
+    };
+    [[flatten]] if (rayID >= 0) { 
+        imageStore(rayLink, (rayID<<2)|0, 0u.xxxx);
+        imageStore(rayLink, (rayID<<2)|1, p2x_16(c2d).xxxx);
+        imageStore(rayLink, (rayID<<2)|2, 0xFFFFFFFFu.xxxx);
+        imageStore(rayLink, (rayID<<2)|3, 0xFFFFFFFFu.xxxx);
+    };
     return rayID;
 };
 
 int vtEmitRays(in VtRay ray, in highp uvec2 c2d, in uint type) { return vtReuseRays(ray, c2d, type, -1); };
-int vtFetchHitIdc(in int lidx) { return int(imageAtomicMax(rayLink, lidx<<1, 0u).x)-1; }; // will be replace in traversing by tasks 
+int vtFetchHitIdc(in int lidx) { return int(imageAtomicMax(rayLink, lidx<<2, 0u).x)-1; }; // will be replace in traversing by tasks 
+int vtFetchHitClosest(in int lidx) { return int(imageAtomicMax(rayLink, (lidx<<2)|2, 0u).x)-1; };
+
 //
-highp uvec2 vtFetchIndex(in int lidx) { return up2x_16(imageLoad(rayLink, (lidx<<1)|1).x); };
+uint vtFetchCode(in int lidx) { return imageLoad(rayLink, (lidx<<2)|1).x; };
+highp uvec2 vtFetchIndex(in int lidx) { return up2x_16(vtFetchCode(lidx)); };
 int vtRayIdx(in int lidx) { return rayGroupIndices[lidx]-1; };
 
 int vtVerifyClosestHit(in int closestId, in lowp int g) {
