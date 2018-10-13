@@ -54,7 +54,8 @@ namespace _vt {
 
 
     RayTracingSet::~RayTracingSet() {
-        vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
+        if (_descriptorSet) vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
+        _descriptorSet = {};
     };
 
     // ray tracing set of state

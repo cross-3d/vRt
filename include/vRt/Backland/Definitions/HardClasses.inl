@@ -64,7 +64,7 @@ namespace _vt { // store in undercover namespace
     // ray tracing device with aggregation
     class Device : public std::enable_shared_from_this<Device> {
     public:
-        ~Device(){ this->_device = {}; };
+        ~Device();
 
         friend PhysicalDevice;
         VkDevice _device = {};

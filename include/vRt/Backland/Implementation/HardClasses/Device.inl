@@ -7,6 +7,12 @@ namespace _vt {
     using namespace vrt;
 
 
+    Device::~Device() {
+        if (_device) vk::Device(_device).waitIdle(); // just wait device idle for destructor 
+        _device = {};
+    };
+
+
     VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, VtArtificalDeviceExtension vtExtension, std::shared_ptr<Device>& vtDevice) {
         //auto vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice = std::make_shared<Device>();

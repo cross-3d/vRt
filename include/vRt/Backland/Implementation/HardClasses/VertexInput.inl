@@ -7,7 +7,8 @@ namespace _vt {
     using namespace vrt;
 
     VertexInputSet::~VertexInputSet() {
-        vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
+        if (_descriptorSet) vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
+        _descriptorSet = {};
     };
 
     // also, planned to add support of offsets in buffers 
