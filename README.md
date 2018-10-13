@@ -41,30 +41,35 @@
 
 ## Roadmaps
 
- **October 2018**
+**October 2018**
 
 - De-vendorize possible features
-- HLSL shaders for non-core functionality
-- Begin of development for OpenGL, OpenCL and CUDA interoperability
+- Refactoring code and adding minor features
+- Better compute and shading  
 
- **November 2018**
+**November 2018**
 
 - Support for RTX graphics cards (RTX 2070, 2080, etc.)
-- Support of RTX acceleration
-- Support of extensions (which with RTX)
+- Initial support of extensions (which will based on RTX acceleration)
+- Advanced ray-tracing API (include top level BVH)
+- HLSL shaders for non-core functionality
 
- **December 2018** (or beyond)
+**January 2019** (or beyond)
 
+- Extended RTX support (with acceleration)
 - Coming to alpha stage
-- Advanced ray-tracing API
-- Support for Vulkan API 1.2
 
- **Indefinite Term**
+**Indefinite Term**
 
 - Unit tests
+- Begin of development for OpenGL, OpenCL and CUDA interoperability
 - First implementations for games, engines, applications, blockchains
 - Make custom GLSL/HLSL compiler for unified compatibility
 - Support of PowerVR Wizard Ray Tracing, Intel Larrabee 2019
+
+### About RTX support
+
+We have no so much priorities about support of RTX series, since NVidia giving so huge price to video cards, and not no many people can order now... We will more active, when pricing will down to 399$. Yes, we can collect that funds, but will not so much users at this moment. For first times, we may suggest get early access by donation (but it is not exactly), but after all we can give public accesses. Our priorities now are just to ensure compatibility.
 
 ## Direct Donation (ETH)
 
