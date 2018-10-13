@@ -24,7 +24,7 @@ layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYS
 
 // stack system of current BVH traverser
 shared int localStack[WORK_SIZE][localStackSize];
-int currentState = 0;
+uint currentState = BVH_STATE_TOP;
 #define lstack localStack[Local_Idx]
 #define sidx  traverseState.stackPtr
 
@@ -36,6 +36,11 @@ struct BvhTraverseState {
     fvec4_ directInv, minusOrig;
 } traverseStates[2];
 #define traverseState traverseStates[currentState] // yes, require two states 
+
+// 13.10.2018 added one mandatory stack page, can't be reached by regular operations 
+#define CACHE_BLOCK_SIZE (gl_WorkGroupSize.x*gl_NumWorkGroups.x*localStackSize*(pageCount+1)) // require one reserved block 
+#define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
+#define VTX_PTR (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveOffset : bvhBlockIn.primitiveOffset)
 
 
 void loadStack(inout int rsl) {
@@ -54,7 +59,7 @@ void storeStack(in int rsl) {
 };
 
 // required switch stack when switching states 
-void switchStackToState(in int stateTo){
+void switchStateToStack(in int stateTo){
     if (stateTo != currentState) {
         pages[_cacheID*pageCount + (traverseState.pageID++)  + STATE_PAGE_OFFSET] = lstack;
         currentState = stateTo;

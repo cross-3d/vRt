@@ -42,8 +42,8 @@ void main() {
         const bool overflow = it >= wsize; IFALL(overflow) break;
         const ivec2 taskCode = vtFetchTask(it); // get task codes 
         
-        traverseState.maxElements = bvhBlockIn.primitiveCount;
-        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO), traverseState.diffOffset = 0.f;
+        traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = 0.f;
+        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
         INSTANCE_ID = instanceID;
 
         // planned multiple-hits support

@@ -43,12 +43,12 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir,
     const   vec3 interm = fma(fpInner.xxxx, 2.f.xxxx, 1.f.xxxx).xyz;
     const   vec2 bside2 = vec2(-fpOne, fpOne);
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
+    resetEntry(valid);
 
     // initial traversing state
-    valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe), resetEntry(valid);
+    //valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe), resetEntry(valid); traverseState.diffOffset = min(-nfe.x, 0.f);
 
     // traversing inputs
-    traverseState.diffOffset = min(-nfe.x, 0.f);
     traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(vec4(fma(fvec4_(torig), traverseState.directInv, ftype_(traverseState.diffOffset).xxxx)));
     //primitiveState.orig = fma(primitiveState.orig, traverseState.diffOffset.xxxx, torig);
 };

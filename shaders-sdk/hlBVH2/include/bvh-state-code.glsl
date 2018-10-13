@@ -7,6 +7,8 @@
 #define _RAY_TYPE VtRay
 #endif
 
+const uint currentState = BVH_STATE_TOP;
+#define VTX_PTR (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveOffset : bvhBlockIn.primitiveOffset)
 
 #ifndef fpInner
   const float fpInner = 0.0000152587890625f, fpOne = 1.f;

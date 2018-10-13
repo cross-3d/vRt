@@ -39,8 +39,8 @@ void main() {
 
         // do BVH traversing 
         const int rayID = vtRayIdx(it);
-        traverseState.maxElements = bvhBlockTop.primitiveCount;
-        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO), traverseState.diffOffset = 0.f;
+        traverseState.maxElements = bvhBlockTop.primitiveCount, traverseState.diffOffset = 0.f;
+        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection

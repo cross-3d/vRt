@@ -1,4 +1,4 @@
-// TODO: fix primitiveOffset support 
+
 void traverseBVH2( in bool reset, in bool valid ) {
     primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, traverseState.diffOffset);
     [[flatten]] if (reset) resetEntry(valid);
@@ -12,7 +12,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
             //const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
             #define bvhNode bvhNodes[traverseState.idx]
             const ivec2 cnode = traverseState.idx >= 0 ? bvhNode.meta.xy : (0).xx;
-            [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defElementID = bvhBlockIn.primitiveOffset + cnode.x; } // if leaf, defer for intersection 
+            [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
 
@@ -45,7 +45,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
                     //#define snode (bvhNodes[secondary].meta.xy) // use reference only
                     [[flatten]] if (secondary > 0) {
                         const ivec2 snode = bvhNodes[secondary].meta.xy;
-                        [[flatten]] if (isLeaf(snode)) { traverseState.defElementID = bvhBlockIn.primitiveOffset + snode.x; secondary = -1; } else 
+                        [[flatten]] if (isLeaf(snode)) { traverseState.defElementID = VTX_PTR + snode.x; secondary = -1; } else 
                         [[flatten]] if (secondary > 0) storeStack(secondary);
                     };
                 };
@@ -59,11 +59,11 @@ void traverseBVH2( in bool reset, in bool valid ) {
         // every-step solving 
         [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); } // 
         [[flatten]] if (traverseState.idx < 0) {
-            [[flatten]] if (currentState == 0) { break; } else { switchStateTo(0, -1); };
+            [[flatten]] if (currentState == BVH_STATE_TOP) { break; } else { switchStateTo(BVH_STATE_TOP, -1); };
         };
     };
 
     // final correction of hit distance
     primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
-    currentState = 0; // switch back to top level when finished 
+    currentState = BVH_STATE_TOP; // switch back to top level when finished 
 };

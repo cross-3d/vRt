@@ -103,8 +103,12 @@ int INSTANCE_ID = 0;
 #define bvhBlockTop bvhBlock_[0] 
 #endif
 
+const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
+
 #define BVH_ENTRY bvhBlockIn.entryID
 #define BVH_ENTRY_HALF (bvhBlockIn.entryID>>1)
+
+
 
 
 
