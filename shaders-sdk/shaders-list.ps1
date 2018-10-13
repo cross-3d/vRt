@@ -129,8 +129,8 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "shorthand.comp"               "$INDIR$HLBV" "$HRDDIR$HLBV"
     BuildCompute "traverse-bvh.comp"            "$INDIR$HLBV" "$HRDDIR$HLBV"
     BuildCompute "interpolator.comp"            "$INDIR$HLBV" "$HRDDIR$HLBV"
-    BuildCompute "traverse-bvh-task.comp"       "$INDIR$HLBV" "$HRDDIR$HLBV"
-    BuildCompute "traverse-bvh-top.comp"        "$INDIR$HLBV" "$HRDDIR$HLBV"
+    #BuildCompute "traverse-bvh-task.comp"       "$INDIR$HLBV" "$HRDDIR$HLBV"
+    #BuildCompute "traverse-bvh-top.comp"        "$INDIR$HLBV" "$HRDDIR$HLBV"
     
     
     # triangles support (hlBVH2)

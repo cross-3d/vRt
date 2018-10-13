@@ -1,6 +1,6 @@
 
 // default definitions
-#include "./bvh-state-code.glsl"
+#include "./bvh-traverse-state.glsl"
 
 // intersection current state
 struct PrimitiveState {
@@ -94,4 +94,4 @@ void doIntersection(in bool isvalid, in float dlen) {
     }; traverseState.defElementID=0;
 };
 
-#include "./bvh-traverse-code.glsl"
+#include "./bvh-traverse-process.glsl"

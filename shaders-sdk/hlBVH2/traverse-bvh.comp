@@ -17,7 +17,12 @@
 #include "../include/structs.glsl"
 #include "../include/rayslib.glsl"
 #include "../include/vertex.glsl"
-#include "./include/bvh-traverse-task.glsl"
+
+#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
+#include "./state-based/bvh-traverse-core.glsl"
+#else
+#include "./single-level/bvh-traverse-core.glsl"
+#endif
 
 #define wgs gl_NumWorkGroups.x
 #define r4ID (rayID<<2)

@@ -1,6 +1,6 @@
 
 // default definitions
-#include "./bvh-state-code.glsl"
+#include "./bvh-traverse-state.glsl"
 
 // intersection current state
 struct PrimitiveState {
@@ -66,4 +66,4 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
     primitiveState.orig = fma(primitiveState.orig, traverseState.diffOffset.xxxx, torig);
 };
 
-#include "./bvh-traverse-code.glsl"
+#include "./bvh-traverse-process.glsl"
