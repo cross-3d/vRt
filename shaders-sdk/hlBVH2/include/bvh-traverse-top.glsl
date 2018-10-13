@@ -34,13 +34,13 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir,
 
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
-    const vec4 torig = -uniteBox(vec4(mult4(bvhBlock.transform, vec4(orig, 1.f)).xyz, 1.f)), torigTo = uniteBox(vec4(mult4(bvhBlock.transform, vec4(orig, 1.f) + vec4(dcts(pdir).xyz, 0.f)).xyz, 1.f)), tdir = torigTo+torig;
+    const vec4 torig = -uniteBox(vec4(mult4(bvhBlockTop.transform, vec4(orig, 1.f)).xyz, 1.f)), torigTo = uniteBox(vec4(mult4(bvhBlockTop.transform, vec4(orig, 1.f) + vec4(dcts(pdir).xyz, 0.f)).xyz, 1.f)), tdir = torigTo+torig;
     const vec4 dirct = tdir*invlen, dirproj = 1.f / precIssue(dirct);
     //primitiveState.dir = primitiveState.orig = dirct;
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const   vec3 interm = fma(fpInner.xxxx, 2.f / (bvhBlock.sceneMax - bvhBlock.sceneMin), 1.f.xxxx).xyz;
+    const   vec3 interm = fma(fpInner.xxxx, 2.f.xxxx, 1.f.xxxx).xyz;
     const   vec2 bside2 = vec2(-fpOne, fpOne);
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
 

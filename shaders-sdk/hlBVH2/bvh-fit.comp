@@ -42,7 +42,7 @@ void unifyNodeBox(inout int idx) {
 LOCAL_SIZE_LAYOUT;
 #define lID gl_LocalInvocationID.x
 #define gS gl_WorkGroupSize.x
-#define wsize bvhBlock.leafCount
+#define wsize bvhBlockTop.leafCount
 
 // referable value
 const int _NULL = -1;

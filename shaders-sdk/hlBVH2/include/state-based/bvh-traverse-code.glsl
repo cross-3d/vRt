@@ -1,4 +1,3 @@
-
 // TODO: fix primitiveOffset support 
 void traverseBVH2( in bool reset, in bool valid ) {
     primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, traverseState.diffOffset);
@@ -53,15 +52,18 @@ void traverseBVH2( in bool reset, in bool valid ) {
             };
 
             // if all threads had intersection, or does not given any results, break for processing
-            [[flatten]] if ( !_continue && traverseState.idx > 0 ) { traverseState.idx = -1, loadStack(traverseState.idx); } // load from stack 
-            [[flatten]] IFANY (traverseState.defElementID > 0 || traverseState.idx <= 0) { break; } // 
+            [[flatten]] if ( !_continue && traverseState.idx >= 0 ) { traverseState.idx = -1, loadStack(traverseState.idx); } // load from stack 
+            [[flatten]] IFANY (traverseState.defElementID > 0 || traverseState.idx < 0) { break; } // 
         }}};
 
         // every-step solving 
-        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); } // if has triangle, do intersection
-        [[flatten]] if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
+        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); } // 
+        [[flatten]] if (traverseState.idx < 0) {
+            [[flatten]] if (currentState == 0) { break; } else { switchStateTo(0, -1); };
+        };
     };
 
-    // correction of hit distance
+    // final correction of hit distance
     primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
+    currentState = 0; // switch back to top level when finished 
 };

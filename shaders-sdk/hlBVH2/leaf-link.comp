@@ -13,12 +13,12 @@
 
 LOCAL_SIZE_LAYOUT;
 
-#define wsize bvhBlock.leafCount
+#define wsize bvhBlockTop.leafCount
 
 void main() {
     IFANY (wsize <= 0) return; uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-         uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
+        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
         IFALL (globalID >= wsize) break;
 
         // get leaf data

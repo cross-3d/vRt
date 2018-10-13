@@ -40,7 +40,7 @@ void main() {
         const uint T = clamp(buildBlock.primitiveOffset+bvhInstance_[I].bvhBlockID, 0, buildBlock.primitiveCount-1);
 
         // 
-        const mat4x4 gT = bvhBlock.transform * bvhInstance_[I].transform;
+        const mat4x4 gT = bvhBlockTop.transform * bvhInstance_[I].transform;
         Leafs[I].lbox  = calculateTransformedBox(gT, bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax);
         Leafs[I].pdata = ivec4((0).xxx, I+1);
 

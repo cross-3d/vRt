@@ -29,7 +29,7 @@
 layout ( binding = 9, set = 0, std430 ) restrict buffer SceneBoxB { vec4 minmax[]; };
 
 bbox_t getMinMaxPrimitive(in uint idx) {
-    return Leafs[0u+clamp(idx, 0u, max(bvhBlock.leafCount,1u)-1u)].lbox;
+    return Leafs[0u+clamp(idx, 0u, max(bvhBlockTop.leafCount,1u)-1u)].lbox;
 };
 
 bbox_t bbox_tunion(in bbox_t b1, in bbox_t b2) {
@@ -46,9 +46,9 @@ shared bbox_t sdata[ WORK_SIZE_BND ];
 
 #define tid gl_LocalInvocationID.x
 void main() {
-    IFANY (bvhBlock.leafCount <= 0) return;
+    IFANY (bvhBlockTop.leafCount <= 0) return;
     const uint gridSize = (gl_WorkGroupSize.x<<1u) * gl_NumWorkGroups.x;
-    const uint tcount = max( bvhBlock.leafCount, 2u );
+    const uint tcount = max( bvhBlockTop.leafCount, 2u );
 
     // 
     sdata[tid] = bbox_t(INFINITY.xxxx, -INFINITY.xxxx);

@@ -137,9 +137,10 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_constBuffer);
 
                 // task lists 
-                bfi.bufferSize = (hitCount * sizeof(uint64_t)) << 1ull; // max 2 tasks supported now 
+                //bfi.bufferSize = (hitCount * sizeof(uint64_t)) << 1ull; // max 2 tasks supported now 
+                bfi.bufferSize = sizeof(uint64_t);
                 bfi.format = VK_FORMAT_R32G32_UINT;
-                createBufferRegion(bManager, bfi, vtRTSet->_blockBuffer);
+                createBufferRegion(bManager, bfi, vtRTSet->_taskBuffer);
 
 
                 bfi.bufferSize = hitCount * ATTRIB_EXTENT * (4ull * sizeof(uint32_t));
@@ -170,7 +171,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupIndicesBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_constBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(7).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_countersBuffer->_descriptorInfo()),
-                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_blockBuffer->_descriptorInfo()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_taskBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(12).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupCountersBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(13).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupIndicesBufferRead->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(14).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupCountersBufferRead->_descriptorInfo()),

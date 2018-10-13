@@ -27,7 +27,7 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    const uint wsize = min(rayCounter, MAX_RAYS); IFANY (wsize <= 0 || bvhBlock.primitiveCount <= 0) return;
+    const uint wsize = min(rayCounter, MAX_RAYS); IFANY (wsize <= 0 || bvhBlockTop.primitiveCount <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
 
     // planned task-based BVH traversing (for two-level BVH support)
@@ -37,8 +37,8 @@ void main() {
 
         // do BVH traversing 
         int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID);
-        traverseState.maxElements = bvhBlock.primitiveCount;
-        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+        traverseState.maxElements = bvhBlockTop.primitiveCount;
+        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO), traverseState.diffOffset = 0.f;
 
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection

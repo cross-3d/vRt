@@ -20,7 +20,7 @@
 
 LOCAL_SIZE_LAYOUT;
 
-#define wsize bvhBlock.leafCount
+#define wsize bvhBlockTop.leafCount
 //#define lbox Leafs[to].lbox
 
 void main() {

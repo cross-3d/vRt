@@ -165,7 +165,7 @@ namespace _vt { // store in undercover namespace
             _hitPayloadBuffer = {},
             _constBuffer = {},
             _traverseCache = {},
-            _blockBuffer = {},
+            _taskBuffer = {},
             _rayLinkPayload = {},
             _attribBuffer = {};
         VtStageUniform _cuniform = {};

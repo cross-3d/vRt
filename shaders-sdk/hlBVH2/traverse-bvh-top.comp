@@ -28,7 +28,7 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    IFANY (bvhBlock.primitiveCount <= 0) return;
+    IFANY (bvhBlockTop.primitiveCount <= 0) return;
     const uint wsize = min(rayCounter, MAX_RAYS); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
 
@@ -39,8 +39,8 @@ void main() {
 
         // do BVH traversing 
         const int rayID = vtRayIdx(it);
-        traverseState.maxElements = bvhBlock.primitiveCount;
-        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+        traverseState.maxElements = bvhBlockTop.primitiveCount;
+        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO), traverseState.diffOffset = 0.f;
 
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection

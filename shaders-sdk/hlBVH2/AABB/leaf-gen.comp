@@ -21,17 +21,16 @@
 
 LOCAL_SIZE_LAYOUT;
 
-#define wsize bvhBlock.leafCount
+#define wsize bvhBlockTop.leafCount
 //#define lbox Leafs[to].lbox
 
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         const uint I = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (I >= wsize) break;
-        //const uint T = clamp(buildBlock.primitiveOffset+bvhInstance_[I].bvhBlockID, 0, buildBlock.primitiveCount-1);
-        
+
         // unit mode 
-        //vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax, sceneRes = sceneMax - sceneMin;
+        //vec4 sceneMin = bvhBlockTop.sceneMin, sceneMax = bvhBlockTop.sceneMax, sceneRes = sceneMax - sceneMin;
         vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx, sceneRes = sceneMax - sceneMin, sdiv = 1.f.xxxx;
         bbox_t lbox = bbox_t(uniteBox(Leafs[I].lbox.mn)*sdiv, uniteBox(Leafs[I].lbox.mx)*sdiv);
 

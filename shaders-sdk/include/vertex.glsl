@@ -96,19 +96,22 @@ layout ( binding = 1, set = 1, std430 )          restrict buffer bvhBoxesB { BTY
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 int INSTANCE_ID = 0;
 #define bvhInstance bvhInstance_[INSTANCE_ID]
-#define bvhBlock bvhBlockIn_[bvhInstance.bvhBlockID]
+#define bvhBlockIn bvhBlockIn_[bvhInstance.bvhBlockID]
+#define bvhBlockTop bvhBlock_[0] 
 #else
-#define bvhBlock bvhBlock_[0] 
+#define bvhBlockIn bvhBlock_[0] 
+#define bvhBlockTop bvhBlock_[0] 
 #endif
 
-#define BVH_ENTRY bvhBlock.entryID
-#define BVH_ENTRY_HALF (bvhBlock.entryID>>1)
+#define BVH_ENTRY bvhBlockIn.entryID
+#define BVH_ENTRY_HALF (bvhBlockIn.entryID>>1)
 
 
 
 
 //vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4((bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
-vec4 uniteBox(in vec4 glb) { return point4(fma((glb - bvhBlock.sceneMin) / (bvhBlock.sceneMax - bvhBlock.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
+vec4 uniteBox(in vec4 glb) { return point4(fma((glb - bvhBlockIn.sceneMin) / (bvhBlockIn.sceneMax - bvhBlockIn.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
+vec4 uniteBoxTop(in vec4 glb) { return point4(fma((glb - bvhBlockTop.sceneMin) / (bvhBlockTop.sceneMax - bvhBlockTop.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
 const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 
 
