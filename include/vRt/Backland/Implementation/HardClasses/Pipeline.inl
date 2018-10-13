@@ -52,6 +52,11 @@ namespace _vt {
         return result;
     };
 
+
+    RayTracingSet::~RayTracingSet() {
+        vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
+    };
+
     // ray tracing set of state
     VtResult createRayTracingSet(std::shared_ptr<Device> _vtDevice,  VtRayTracingSetCreateInfo info, std::shared_ptr<RayTracingSet>& _vtRTSet) {
         VtResult result = VK_SUCCESS;

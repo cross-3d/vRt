@@ -6,6 +6,10 @@
 namespace _vt {
     using namespace vrt;
 
+    VertexInputSet::~VertexInputSet() {
+        vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
+    };
+
     // also, planned to add support of offsets in buffers 
     VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice,  VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& vtVertexInput) {
         VtResult result = VK_SUCCESS;

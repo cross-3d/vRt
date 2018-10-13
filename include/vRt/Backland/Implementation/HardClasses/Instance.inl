@@ -12,4 +12,11 @@ namespace _vt {
         vtInstance->_instance = vkInstance; // assign a Vulkan physical device
         return VK_SUCCESS;
     };
+
+    VtResult convertPhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, std::shared_ptr<PhysicalDevice>& vtPhysicalDevice) {
+        vtPhysicalDevice = std::make_shared<PhysicalDevice>();
+        vtPhysicalDevice->_physicalDevice = physical; // assign a Vulkan physical device
+        return VK_SUCCESS;
+    };
+
 };

@@ -6,6 +6,11 @@
 namespace _vt {
     using namespace vrt;
 
+
+    MaterialSet::~MaterialSet() {
+        vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
+    };
+
     // ray tracing set of state
     VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice,  VtMaterialSetCreateInfo info, std::shared_ptr<MaterialSet>& vtMaterialSet) {
         VtResult result = VK_SUCCESS;

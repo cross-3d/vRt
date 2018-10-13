@@ -159,6 +159,10 @@ namespace _vt {
     };
 
 
+    AcceleratorSet::~AcceleratorSet() {
+        vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
+    };
+
     // planned advanced accelerator construction too
     VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, VtAcceleratorSetCreateInfo info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
         VtResult result = VK_SUCCESS;
@@ -216,5 +220,10 @@ namespace _vt {
         };
 
         return result;
+    };
+
+
+    AcceleratorLinkedSet::~AcceleratorLinkedSet() {
+        vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
     };
 };

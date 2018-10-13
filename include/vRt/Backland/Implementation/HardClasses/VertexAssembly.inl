@@ -17,6 +17,10 @@ namespace _vt {
         return result;
     };
 
+    VertexAssemblySet::~VertexAssemblySet() {
+        vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
+    };
+
     VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, VtVertexAssemblySetCreateInfo info, std::shared_ptr<VertexAssemblySet>& _assemblySet) {
         VtResult result = VK_SUCCESS;
         _assemblySet = std::make_shared<VertexAssemblySet>();

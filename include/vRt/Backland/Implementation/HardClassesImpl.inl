@@ -13,6 +13,5 @@
 #include "HardClasses/VertexInput.inl"
 #include "HardClasses/VertexAssembly.inl"
 #include "HardClasses/Accelerator.inl"
-#include "HardClasses/PhysicalDevice.inl"
 #include "HardClasses/Device.inl"
 #include "HardClasses/Instance.inl"

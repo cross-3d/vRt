@@ -147,6 +147,7 @@ namespace _vt { // store in undercover namespace
     class RayTracingSet : public std::enable_shared_from_this<RayTracingSet> {
     public:
         friend Device;
+        ~RayTracingSet();
         VkDescriptorSet _descriptorSet = {};
         std::shared_ptr<Device> _device = {};
 
@@ -207,6 +208,7 @@ namespace _vt { // store in undercover namespace
     class VertexAssemblySet : public std::enable_shared_from_this<VertexAssemblySet> {
     public:
         friend Device;
+        ~VertexAssemblySet();
         VkDescriptorSet _descriptorSet = {};
         std::shared_ptr<Device> _device = {};
 
@@ -244,6 +246,7 @@ namespace _vt { // store in undercover namespace
     class AcceleratorSet : public std::enable_shared_from_this<AcceleratorSet> {
     public:
         friend Device;
+        ~AcceleratorSet();
         VkDescriptorSet _descriptorSet = {};
         std::shared_ptr<Device> _device = {};
         std::shared_ptr<AcceleratorSetExtensionBase> _EXtension = {};
@@ -267,6 +270,7 @@ namespace _vt { // store in undercover namespace
     // accelerator set for linking accelerator instances 
     class AcceleratorLinkedSet : public std::enable_shared_from_this<AcceleratorLinkedSet> {
     public:
+        ~AcceleratorLinkedSet();
         friend Device;
         VkDescriptorSet _descriptorSet = {};
         std::shared_ptr<Device> _device = {};
@@ -504,6 +508,7 @@ namespace _vt { // store in undercover namespace
     class MaterialSet : public std::enable_shared_from_this<MaterialSet> {
     public:
         friend Device;
+        ~MaterialSet();
         VkDescriptorSet _descriptorSet = {}; // textures and samplers bound in descriptor set directly
         std::shared_ptr<Device> _device = {};
 
@@ -522,6 +527,7 @@ namespace _vt { // store in undercover namespace
     class VertexInputSet : public std::enable_shared_from_this<VertexInputSet> {
     public:
         friend Device;
+        ~VertexInputSet();
         VkDescriptorSet _descriptorSet = {};
         std::shared_ptr<Device> _device = {};
         VtUniformBlock _uniformBlock = {};
