@@ -196,6 +196,14 @@ namespace _vt {
         } else 
         { bfi.offset = info.bvhMetaOffset; createBufferRegion(info.bvhMetaBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, _vtDevice); };
 
+        // empty buffer for backward compatibility with newer traverse code 
+        bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
+        createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingInBuffer);
+
+        // single instance for backward compatibility with newer traverse code 
+        bfi.bufferSize = sizeof(VtBvhInstance) * 1ull;
+        createBufferRegion(bManager, bfi, vtAccelerator->_bvhInstancedBuffer);
+
 
         { // build final shared buffer for this class
             VtDeviceBufferCreateInfo bfic = {};
@@ -218,6 +226,8 @@ namespace _vt {
             std::vector<vk::WriteDescriptorSet> writes = {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingBuffer->_descriptorInfo())), // TODO: dedicated meta buffer
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhBoxBuffer->_descriptorInfo())),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhInstancedBuffer->_descriptorInfo())),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingInBuffer->_descriptorInfo())),
             };
             vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };

@@ -59,7 +59,7 @@ void storeStack(in int rsl) {
 };
 
 // required switch stack when switching states 
-void switchStateToStack(in int stateTo){
+void switchStateToStack(in uint stateTo){
     if (stateTo != currentState) {
         pages[_cacheID*pageCount + (traverseState.pageID++)  + STATE_PAGE_OFFSET] = lstack;
         currentState = stateTo;

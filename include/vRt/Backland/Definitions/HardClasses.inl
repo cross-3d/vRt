@@ -254,7 +254,8 @@ namespace _vt { // store in undercover namespace
 
         // vertex and bvh export 
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
-        std::shared_ptr<BufferRegion> _bvhBoxBuffer = {}, _bvhHeadingBuffer = {}; // planned to add support of instancing 
+        std::shared_ptr<BufferRegion> _bvhBoxBuffer = {}, _bvhHeadingBuffer = {}; // 
+        std::shared_ptr<BufferRegion> _bvhHeadingInBuffer = {}, _bvhInstancedBuffer = {}; // shared buffer with multiple BVH data 
 
         // planned to rework building system  
         uint32_t _entryID = 0, _primitiveCount = -1, _primitiveOffset = 0;
@@ -279,7 +280,7 @@ namespace _vt { // store in undercover namespace
         // vertex and bvh export 
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
         std::shared_ptr<BufferRegion> _bvhBoxBuffer = {}, _bvhHeadingBuffer = {}; // 
-        std::shared_ptr<BufferRegion> _bvhHeadingInBuffer = {}, _bvhInstanceBuffer = {}; // shared buffer with multiple BVH data  
+        std::shared_ptr<BufferRegion> _bvhHeadingInBuffer = {}, _bvhInstancedBuffer = {}; // shared buffer with multiple BVH data  
 
         // 
         uint32_t _entryID = 0, _instanceCount = -1, _instanceOffset = 0;
