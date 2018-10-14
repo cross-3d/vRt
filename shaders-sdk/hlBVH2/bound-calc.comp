@@ -1,6 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+#define EXPERIMENTAL_INSTANCING_SUPPORT
 #define EXTEND_LOCAL_GROUPS
 #define BVH_CREATION
 

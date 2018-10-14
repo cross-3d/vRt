@@ -84,7 +84,7 @@ void interpolateMeshData(in int hitID, in int tri) {
 
             // TODO: support of variable attribute transforms
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-            [[flatten]] if (any(equal(i.xxx, ivec3(NORMAL_TID, TANGENT_TID, BITANGENT_TID)))) attrib = mult4(bvhInstance.transform, attrib);
+            [[flatten]] if (any(equal(i.xxx, ivec3(NORMAL_TID, TANGENT_TID, BITANGENT_TID)))) attrib = mult4(bvhInstance.transformIn, attrib);
 #endif
 
             ISTORE(attributes, makeAttribID(hit.attribID, i), attrib);

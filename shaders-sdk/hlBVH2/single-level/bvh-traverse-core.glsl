@@ -47,7 +47,7 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
-    const vec4 torig = -uniteBox(vec4(mult4(TROOT.transform, vec4(orig, 1.f)).xyz, 1.f)), torigTo = uniteBox(vec4(mult4(TROOT.transform, vec4(orig, 1.f) + vec4(dcts(pdir).xyz, 0.f)).xyz, 1.f)), tdir = torigTo+torig;
+    const vec4 torig = -uniteBoxTop(vec4(mult4(TROOT.transform, vec4(orig, 1.f)).xyz, 1.f)), torigTo = uniteBoxTop(vec4(mult4(TROOT.transform, vec4(orig, 1.f) + vec4(dcts(pdir).xyz, 0.f)).xyz, 1.f)), tdir = torigTo+torig;
     const vec4 dirct = tdir*invlen, dirproj = 1.f / precIssue(dirct);
     primitiveState.dir = primitiveState.orig = dirct;
 

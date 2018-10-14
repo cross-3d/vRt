@@ -179,7 +179,9 @@ namespace _vt {
         return result;
     };
 
+
     // building accelerator structure
+    // TODO: enable AABB shaders for real support of multi-leveling (i.e. top level)
     VtResult buildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, VkDeviceSize coveredCapacity = VK_WHOLE_SIZE) {
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();

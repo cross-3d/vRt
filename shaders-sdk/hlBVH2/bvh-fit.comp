@@ -1,6 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+#define EXPERIMENTAL_INSTANCING_SUPPORT
 #define BVH_CREATION
 
 #include "../include/driver.glsl"

@@ -1,6 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+#define EXPERIMENTAL_INSTANCING_SUPPORT
 #define VRT_USE_FAST_INTERSECTION
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
@@ -30,7 +31,7 @@ void main() {
         const uint tri = buildBlock.primitiveOffset+clamp(to, 0, buildBlock.primitiveCount-1);
 
         // incarnated mode 
-        const mat3x4 triverts = mat3x4(uniteBox(TLOAD(lvtx, int(tri*3+0))), uniteBox(TLOAD(lvtx, int(tri*3+1))), uniteBox(TLOAD(lvtx, int(tri*3+2))));
+        const mat3x4 triverts = mat3x4(uniteBoxTop(TLOAD(lvtx, int(tri*3+0))), uniteBoxTop(TLOAD(lvtx, int(tri*3+1))), uniteBoxTop(TLOAD(lvtx, int(tri*3+2))));
 
         { // TODO: dedidcated geometry re-calculator when will ESC support 
 #ifndef VRT_USE_FAST_INTERSECTION
@@ -83,7 +84,7 @@ void main() {
         // unit mode 
         //vec4 sceneMin = bvhBlock.sceneMin, sceneMax = bvhBlock.sceneMax, sceneRes = sceneMax - sceneMin;
         vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx, sceneRes = sceneMax - sceneMin, sdiv = 1.f.xxxx;
-        bbox_t lbox = bbox_t(uniteBox(Leafs[to].lbox.mn)*sdiv, uniteBox(Leafs[to].lbox.mx)*sdiv);
+        bbox_t lbox = bbox_t(uniteBoxTop(Leafs[to].lbox.mn)*sdiv, uniteBoxTop(Leafs[to].lbox.mx)*sdiv);
 
         vec4 bcenter = vector4((triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f);
         bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);

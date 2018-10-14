@@ -1,6 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+#define EXPERIMENTAL_INSTANCING_SUPPORT
 #ifdef FIRST_STEP
     #define WORK_SIZE_BND 64u
 #endif
