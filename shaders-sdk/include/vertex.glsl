@@ -13,7 +13,7 @@
 
 
 // Geometry Zone
-#if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION) || defined(VERTEX_FILLING))
+#if (defined(ENABLE_VSTORAGE_DATA) || defined(VERTEX_FILLING))
 
     #ifndef VTX_SET
         #ifdef VERTEX_FILLING
@@ -53,8 +53,9 @@ struct BvhBlockT {
 // TODO: remerge to new top level traverser 
 struct BvhInstanceT {
     int bvhBlockID, r0, r1, r2;
-    mat4x4 transform, transformInv; // row of traversion correction, combined with transforming to instance space 
+    mat4x4 transform, transformIn; // row of traversion correction, combined with transforming to instance space 
 };
+
 
 
 // required 64-byte per full node 
@@ -71,6 +72,7 @@ struct BTYPE_ {
 };
 
 
+#ifndef VERTEX_FILLING
 // Block of main BVH structure (for bottom levels will not required)
 layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { BvhBlockT bvhBlock_[]; }; // bvhBlock of main structure 
 
@@ -87,11 +89,13 @@ layout ( binding = 3, set = 1, std430 ) readonly restrict buffer bvhBlockInB { B
 #endif
 
 
-#if (defined(ENABLE_VSTORAGE_DATA) && !defined(BVH_CREATION) && !defined(VERTEX_FILLING))
-layout ( binding = 1, set = 1, std430 ) readonly restrict buffer bvhBoxesB { BTYPE_ bvhNodes[]; };
-#else
+#ifdef BVH_CREATION
 layout ( binding = 1, set = 1, std430 )          restrict buffer bvhBoxesB { BTYPE_ bvhNodes[]; };
+#else
+layout ( binding = 1, set = 1, std430 ) readonly restrict buffer bvhBoxesB { BTYPE_ bvhNodes[]; };
 #endif
+#endif
+
 
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 int INSTANCE_ID = 0;
@@ -112,10 +116,12 @@ const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
 
 
 
-
+#ifndef VERTEX_FILLING
 //vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4((bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
 vec4 uniteBox(in vec4 glb) { return point4(fma((glb - bvhBlockIn.sceneMin) / (bvhBlockIn.sceneMax - bvhBlockIn.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
 vec4 uniteBoxTop(in vec4 glb) { return point4(fma((glb - bvhBlockTop.sceneMin) / (bvhBlockTop.sceneMax - bvhBlockTop.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
+#endif
+
 const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 
 

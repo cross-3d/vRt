@@ -186,13 +186,15 @@ namespace _vt {
         auto acclb = device->_acceleratorBuilder[0];
         auto accel = cmdBuf->_acceleratorSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
-        accel->_vertexAssemblySet = vertx; // bind vertex assembly with accelerator structure (planned to deprecate)
-
+        if (vertx) accel->_vertexAssemblySet = vertx; // bind vertex assembly with accelerator structure (planned to deprecate)
+        
+        // if geometry level, limit by vertex assembly set 
+        VkDeviceSize vsize = vertx && accel->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? VkDeviceSize(vertx->_calculatedPrimitiveCount) : VK_WHOLE_SIZE;
 
         //VtBuildConst _buildConstData = {};
         VtBuildConst& _buildConstData = acclb->_buildConstData;
-        _buildConstData.primitiveOffset = accel->_primitiveOffset; // 
-        _buildConstData.primitiveCount = std::min((accel->_primitiveCount != -1 && accel->_primitiveCount >= 0) ? VkDeviceSize(accel->_primitiveCount) : VkDeviceSize(vertx->_calculatedPrimitiveCount), std::min(coveredCapacity, accel->_capacity));
+        _buildConstData.primitiveOffset = accel->_elementsOffset; // 
+        _buildConstData.primitiveCount = std::min((accel->_elementsCount != -1 && accel->_elementsCount >= 0) ? VkDeviceSize(accel->_elementsCount) : VkDeviceSize(vsize), std::min(coveredCapacity, accel->_capacity));
 
         // create BVH instance meta (linking with geometry) 
         //VtBvhBlock _bvhBlockData = {};
@@ -231,7 +233,9 @@ namespace _vt {
             updateCommandBarrier(*cmdBuf);
 
             const auto workGroupSize = 16u;
-            std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
+            std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet };
+            if (vertx) _sets.push_back(vertx->_descriptorSet);
+
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, acclb->_boxCalcPipeline, INTENSIVITY); // calculate general box of BVH
             cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH

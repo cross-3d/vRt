@@ -222,6 +222,7 @@ namespace vrt { // store in official namespace
         const void* pNext = nullptr;
 
         // passing a simple meta data for builders
+        VtAcceleratorSetLevel structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
         VkDeviceSize maxPrimitives = 1024ull * 256ull; VkBool32 secondary = false; // used for copying and storing only?
 
         // linking with shared space of vertex assembly 
@@ -234,7 +235,9 @@ namespace vrt { // store in official namespace
 
         // dedicated buffers for reusing 
         VkBuffer bvhDataBuffer = VK_NULL_HANDLE; VkDeviceSize bvhDataOffset = 0ull; // external BVH data buffer 
-        VkBuffer bvhMetaBuffer = VK_NULL_HANDLE; VkDeviceSize bvhMetaOffset = 0ull; // usage as dedicated heading in buffer 
+        VkBuffer bvhMetaBuffer = VK_NULL_HANDLE; VkDeviceSize bvhMetaOffset = 0ull; // buffer, used in top levels 
+
+        VkBuffer bvhMetaHeadBuffer = VK_NULL_HANDLE; VkDeviceSize bvhMetaHeadOffset = 0ull; // buffer, used as header 
         VkBuffer bvhInstanceBuffer = VK_NULL_HANDLE; VkDeviceSize bvhInstanceOffset = 0ull; // will used for top levels 
 
         // mat4 of optimization

@@ -48,6 +48,11 @@ namespace vrt { // store in official namespace
         VT_FORMAT_R32_UINT = VtFormatDecomp(1u, VT_TYPE_UINT32),
         VT_FORMAT_R16_UINT = VtFormatDecomp(1u, VT_TYPE_UINT16);
 
+    typedef enum VtAcceleratorSetLevel : uint32_t {
+        VT_ACCELERATOR_SET_LEVEL_INSTANCE = 0, // top level 
+        VT_ACCELERATOR_SET_LEVEL_GEOMETRY = 1  // bottom level 
+    } VtAcceleratorSetLevel;
+
     // all supported topologies
     typedef enum VtTopologyType : uint32_t {
         VT_TOPOLOGY_TYPE_TRIANGLES_LIST = 0x00000000

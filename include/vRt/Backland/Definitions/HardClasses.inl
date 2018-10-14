@@ -248,9 +248,12 @@ namespace _vt { // store in undercover namespace
         friend Device;
         ~AcceleratorSet();
         VkDescriptorSet _descriptorSet = {};
+        VtAcceleratorSetLevel _level = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
+
         std::shared_ptr<Device> _device = {};
         std::shared_ptr<AcceleratorSetExtensionBase> _EXtension = {};
         std::shared_ptr<VertexAssemblySet> _vertexAssemblySet = {}; // in-bound vertex assembly
+        std::vector<std::shared_ptr<AcceleratorSet>> _usedAcceleratorSets = {};
 
         // vertex and bvh export 
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
@@ -258,7 +261,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<BufferRegion> _bvhHeadingInBuffer = {}, _bvhInstancedBuffer = {}; // shared buffer with multiple BVH data 
 
         // planned to rework building system  
-        uint32_t _entryID = 0, _primitiveCount = -1, _primitiveOffset = 0;
+        uint32_t _entryID = 0, _elementsCount = -1, _elementsOffset = 0;
         VtMat4 _coverMatrice = IdentifyMat4;
         VtBvhBlock _bvhBlockData = {};
         VkDeviceSize _capacity = 0ull;
@@ -267,32 +270,6 @@ namespace _vt { // store in undercover namespace
         auto  _parent() const { return _device; };
         auto& _parent() { return _device; };
     };
-
-    // accelerator set for linking accelerator instances 
-    class AcceleratorLinkedSet : public std::enable_shared_from_this<AcceleratorLinkedSet> {
-    public:
-        ~AcceleratorLinkedSet();
-        friend Device;
-        VkDescriptorSet _descriptorSet = {};
-        std::shared_ptr<Device> _device = {};
-        std::vector<std::shared_ptr<AcceleratorSet>> _usedAcceleratorSets;
-
-        // vertex and bvh export 
-        std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
-        std::shared_ptr<BufferRegion> _bvhBoxBuffer = {}, _bvhHeadingBuffer = {}; // 
-        std::shared_ptr<BufferRegion> _bvhHeadingInBuffer = {}, _bvhInstancedBuffer = {}; // shared buffer with multiple BVH data  
-
-        // 
-        uint32_t _entryID = 0, _instanceCount = -1, _instanceOffset = 0;
-        VtMat4 _coverMatrice = IdentifyMat4;
-        VtBvhBlock _bvhBlockData = {};
-        VkDeviceSize _capacity = 0ull;
-
-        operator VkDescriptorSet() const { return _descriptorSet; };
-        auto  _parent() const { return _device; };
-        auto& _parent() { return _device; };
-    };
-
 
 
     // ray tracing accelerator structure object

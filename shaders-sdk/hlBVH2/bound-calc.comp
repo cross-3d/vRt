@@ -2,7 +2,6 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #define EXTEND_LOCAL_GROUPS
-#define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 
 //#define fpInner InZero

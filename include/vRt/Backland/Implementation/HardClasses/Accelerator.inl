@@ -173,9 +173,10 @@ namespace _vt {
         auto vkDevice = _vtDevice->_device;
         vtAccelerator->_device = _vtDevice;
         vtAccelerator->_coverMatrice = info.coverMat;
-        vtAccelerator->_primitiveOffset = info.vertexPointingOffset;
+        vtAccelerator->_elementsOffset = info.vertexPointingOffset;
         vtAccelerator->_entryID = info.traversingEntryID;
         vtAccelerator->_capacity = info.maxPrimitives;
+        vtAccelerator->_level = info.structureLevel;
 
         // planned import from descriptor
         std::shared_ptr<BufferManager> bManager = {};
@@ -191,19 +192,24 @@ namespace _vt {
 
         // 
         bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
-        if (!info.bvhMetaBuffer) { // planned to add support of instancing and linking 
+        if (!info.bvhMetaHeadBuffer) { 
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingBuffer);
         } else 
-        { bfi.offset = info.bvhMetaOffset; createBufferRegion(info.bvhMetaBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, _vtDevice); };
+        { bfi.offset = info.bvhMetaHeadOffset; createBufferRegion(info.bvhMetaHeadBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, _vtDevice); };
 
-        // empty buffer for backward compatibility with newer traverse code 
-        bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
-        createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingInBuffer);
+        // 
+        if (!info.bvhMetaBuffer) {  // create for backward compatibility 
+            bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
+            createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingInBuffer);
+        } else
+        { bfi.offset = info.bvhMetaOffset; bfi.bufferSize = sizeof(VtBvhBlock) * info.maxPrimitives; createBufferRegion(info.bvhMetaBuffer, bfi, vtAccelerator->_bvhHeadingInBuffer, _vtDevice); };
 
-        // single instance for backward compatibility with newer traverse code 
-        bfi.bufferSize = sizeof(VtBvhInstance) * 1ull;
-        createBufferRegion(bManager, bfi, vtAccelerator->_bvhInstancedBuffer);
-
+        // 
+        if (!info.bvhInstanceBuffer) { // create for backward compatibility 
+            bfi.bufferSize = sizeof(VtBvhInstance) * 1ull;
+            createBufferRegion(bManager, bfi, vtAccelerator->_bvhInstancedBuffer);
+        } else
+        { bfi.offset = info.bvhInstanceOffset; bfi.bufferSize = sizeof(VtBvhInstance) * info.maxPrimitives; createBufferRegion(info.bvhInstanceBuffer, bfi, vtAccelerator->_bvhInstancedBuffer, _vtDevice); };
 
         { // build final shared buffer for this class
             VtDeviceBufferCreateInfo bfic = {};
@@ -236,8 +242,8 @@ namespace _vt {
     };
 
 
-    AcceleratorLinkedSet::~AcceleratorLinkedSet() {
-        if (_descriptorSet) vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
-        _descriptorSet = {};
-    };
+    //AcceleratorLinkedSet::~AcceleratorLinkedSet() {
+    //    if (_descriptorSet) vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
+    //    _descriptorSet = {};
+    //};
 };
