@@ -2,6 +2,9 @@
 // default definitions
 #include "./bvh-traverse-state.glsl"
 
+// used for re-init traversing 
+vec3 ORIGINAL_ORIGIN = vec3(0.f); dirtype_t ORIGINAL_DIRECTION = dirtype_t(0);
+
 // intersection current state
 struct PrimitiveState {
     vec4 lastIntersection, orig;

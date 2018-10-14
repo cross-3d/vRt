@@ -50,9 +50,9 @@ void main() {
 
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection
-            const dirtype_t _direction = rays[rayID].cdirect;
-            const vec3 _position = rays[rayID].origin.xyz;
-            initTraversing(!overflow, hid, _position, _direction);
+            ORIGINAL_DIRECTION = rays[rayID].cdirect;
+            ORIGINAL_ORIGIN = rays[rayID].origin.xyz;
+            initTraversing(!overflow, hid, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
 
             // traversing from front layer to back layers
             uint mhit = hid+1; bool found = mhit > 0u; // last possible found hit

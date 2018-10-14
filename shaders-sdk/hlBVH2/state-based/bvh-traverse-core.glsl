@@ -12,23 +12,28 @@ struct PrimitiveState {
 #endif
 } primitiveState;
 
+
 // used for re-init traversing 
 vec3 ORIGINAL_ORIGIN = vec3(0.f); dirtype_t ORIGINAL_DIRECTION = dirtype_t(0);
+
 
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
 void resetEntry(in bool valid) { 
     [[flatten]] if (currentState == BVH_STATE_TOP) {
-        traverseState.idx = (valid ? bvhBlockTop.entryID : -1), traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defElementID = 0; 
+        traverseState.idx = (valid ? bvhBlockTop.entryID : -1);
     } else {
-        traverseState.idx = (valid ? bvhBlockIn.entryID : -1), traverseState.defElementID = 0;
+        traverseState.idx = (valid ? bvhBlockIn.entryID : -1);
     };
+
+    // bottom states should also reset own stacks, top levels doesn't require it
+    traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defElementID = 0;
 };
 
 
 // initialize state 
 void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir ) {
-    [[flatten]] if (eht.x >= 0) primitiveState.lastIntersection = hits[eht].uvt;
+    [[flatten]] if (eht.x >= 0 && currentState == BVH_STATE_TOP) primitiveState.lastIntersection = hits[eht].uvt;
 
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
@@ -61,11 +66,17 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 // kill switch when traversing 
 void switchStateTo(in uint stateTo, in int instanceTo){
     if (currentState != stateTo) {
+        // restore hit state 
         primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
+
+        // switch stack in local memory 
         switchStateToStack(stateTo);
-        if (currentState == BVH_STATE_BOTTOM) { // every bottom level states requires to partial resetting states 
-            initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
-        };
+
+        // every bottom level states requires to partial resetting states 
+        if (currentState == BVH_STATE_BOTTOM) initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+
+        // require conversion to correct formation 
+        primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, traverseState.diffOffset);
     };
 };
 

@@ -228,6 +228,9 @@ vec3 mult4(in mat3x4 tmat, in vec4 vec) { return vec * tmat; };
 vec3 mult4(in vec4 vec, in mat4x3 tmat) { return tmat * vec; };
 vec4 mult4(in mat4x3 tmat, in vec3 vec) { return vec * tmat; };
 
+mat4 mult4(in mat4 tmat, in mat4 otmat) { return otmat*tmat; };
+
+
 const vec2 swiz01 = vec2(0.f,1.f);
 vec4 point4(in vec4 p) {return p*swiz01.yyyx+swiz01.xxxy;};
 vec4 point4(in vec4 p, in float w) {return p*swiz01.yyyx+w*swiz01.xxxy;};
