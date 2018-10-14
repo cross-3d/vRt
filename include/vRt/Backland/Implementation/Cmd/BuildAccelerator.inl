@@ -239,10 +239,10 @@ namespace _vt {
             if (vertx) _sets.push_back(vertx->_descriptorSet);
 
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
-            cmdDispatch(*cmdBuf, acclb->_boxCalcPipeline, INTENSIVITY); // calculate general box of BVH
+            cmdDispatch(*cmdBuf, acclb->_boxCalcPipeline[accel->_level], INTENSIVITY); // calculate general box of BVH
             cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH
             cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
-            cmdDispatch(*cmdBuf, acclb->_leafPipeline, INTENSIVITY); // calculate node boxes and morton codes
+            cmdDispatch(*cmdBuf, acclb->_leafPipeline[accel->_level], INTENSIVITY); // calculate node boxes and morton codes
             radixSort(cmdBuf, acclb->_sortDescriptorSet, _bvhBlockData.leafCount);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements

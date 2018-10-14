@@ -2,8 +2,6 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #define EXPERIMENTAL_INSTANCING_SUPPORT
-#define VRT_USE_FAST_INTERSECTION
-#define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 #define LEAF_GEN
 

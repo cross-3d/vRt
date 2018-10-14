@@ -78,6 +78,22 @@ namespace _vt {
                 { VT_VENDOR_UNIVERSAL, "./intrusive/universal/hlBVH2/triangle/leaf-gen.comp.spv" }
             };
         };
+
+        namespace instance {
+            static inline const std::map<VtVendor, std::string> boxCalc = {
+                { VT_VENDOR_AMD, "./intrusive/amd/hlBVH2/AABB/box-calc.comp.spv" },
+                { VT_VENDOR_NVIDIA, "./intrusive/nvidia/hlBVH2/AABB/box-calc.comp.spv" },
+                { VT_VENDOR_INTEL, "./intrusive/intel/hlBVH2/AABB/box-calc.comp.spv" },
+                { VT_VENDOR_UNIVERSAL, "./intrusive/universal/hlBVH2/AABB/box-calc.comp.spv" }
+            };
+
+            static inline const std::map<VtVendor, std::string> genLeafs = {
+                { VT_VENDOR_AMD, "./intrusive/amd/hlBVH2/AABB/leaf-gen.comp.spv" },
+                { VT_VENDOR_NVIDIA, "./intrusive/nvidia/hlBVH2/AABB/leaf-gen.comp.spv" },
+                { VT_VENDOR_INTEL, "./intrusive/intel/hlBVH2/AABB/leaf-gen.comp.spv" },
+                { VT_VENDOR_UNIVERSAL, "./intrusive/universal/hlBVH2/AABB/leaf-gen.comp.spv" }
+            };
+        };
     };
     
     namespace qradix {
