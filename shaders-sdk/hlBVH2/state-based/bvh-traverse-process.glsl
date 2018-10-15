@@ -2,7 +2,7 @@
 void traverseBVH2( in bool reset, in bool valid ) {
     primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, traverseState.diffOffset);
     [[flatten]] if (reset) resetEntry(valid);
-    [[flatten]] if (traverseState.maxElements <= 0 || primitiveState.lastIntersection.z < 0.f) { traverseState.idx = -1; };
+    [[flatten]] if (traverseState.maxElements <= 0 || primitiveState.lastIntersection.z <= 0.f) { traverseState.idx = -1; };
 
     // two loop based BVH traversing
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
@@ -10,7 +10,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
         [[flatten]] if (traverseState.idx >= 0 && traverseState.defElementID <= 0) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) { bool _continue = false;
             //const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
-            #define bvhNode bvhNodes[traverseState.idx]
+            #define bvhNode bvhNodes[traverseState.entryIDBase+traverseState.idx]
             const ivec2 cnode = traverseState.idx >= 0 ? bvhNode.meta.xy : (0).xx;
             [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x; } // if leaf, defer for intersection 
             else { // if not leaf, intersect with nodes
@@ -44,7 +44,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
                     // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
                     //#define snode (bvhNodes[secondary].meta.xy) // use reference only
                     [[flatten]] if (secondary > 0) {
-                        const ivec2 snode = bvhNodes[secondary].meta.xy;
+                        const ivec2 snode = bvhNodes[traverseState.entryIDBase+secondary].meta.xy;
                         [[flatten]] if (isLeaf(snode)) { traverseState.defElementID = VTX_PTR + snode.x; secondary = -1; } else 
                         [[flatten]] if (secondary > 0) storeStack(secondary);
                     };
@@ -54,16 +54,20 @@ void traverseBVH2( in bool reset, in bool valid ) {
             // if all threads had intersection, or does not given any results, break for processing
             [[flatten]] if ( !_continue && traverseState.idx >= 0 ) { traverseState.idx = -1, loadStack(traverseState.idx); } // load from stack 
             [[flatten]] IFANY (traverseState.defElementID > 0 || traverseState.idx < 0) { break; } // 
-        }}};
+        }}}; //else {break;};
 
         // every-step solving 
-        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); } // 
+        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); }; // 
         [[flatten]] if (traverseState.idx < 0) {
+            //break;
             [[flatten]] if (currentState == BVH_STATE_TOP) { break; } else { switchStateTo(BVH_STATE_TOP, -1); };
         };
     };
 
     // final correction of hit distance
+    //[[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); }; // 
     primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
-    currentState = BVH_STATE_TOP; // switch back to top level when finished 
+    
+    // switch back to top level when finished 
+    currentState = BVH_STATE_TOP; INSTANCE_ID = 0;
 };

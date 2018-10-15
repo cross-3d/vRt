@@ -190,32 +190,34 @@ namespace _vt {
 
         // 
         VtBufferRegionCreateInfo bfi = {};
-        bfi.bufferSize = (info.maxPrimitives * sizeof(VtBvhNodeStruct)) << 1ull;
         if (!info.bvhDataBuffer) { 
+            bfi.bufferSize = (info.maxPrimitives * sizeof(VtBvhNodeStruct)) << 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer); 
         } else 
-        { bfi.offset = info.bvhDataOffset; createBufferRegion(info.bvhDataBuffer, bfi, vtAccelerator->_bvhBoxBuffer, _vtDevice); };
+        {
+            bfi.offset = info.bvhDataOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhDataBuffer, bfi, vtAccelerator->_bvhBoxBuffer, _vtDevice);
+        };
 
         // 
-        bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
         if (!info.bvhMetaHeadBuffer) { 
+            bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingBuffer);
         } else 
-        { bfi.offset = info.bvhMetaHeadOffset; createBufferRegion(info.bvhMetaHeadBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, _vtDevice); };
+        { bfi.offset = info.bvhMetaHeadOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhMetaHeadBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, _vtDevice); };
 
         // 
         if (!info.bvhMetaBuffer) {  // create for backward compatibility 
             bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingInBuffer);
         } else
-        { bfi.offset = info.bvhMetaOffset; bfi.bufferSize = sizeof(VtBvhBlock) * info.maxPrimitives; createBufferRegion(info.bvhMetaBuffer, bfi, vtAccelerator->_bvhHeadingInBuffer, _vtDevice); };
+        { bfi.offset = info.bvhMetaOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhMetaBuffer, bfi, vtAccelerator->_bvhHeadingInBuffer, _vtDevice); };
 
         // 
         if (!info.bvhInstanceBuffer) { // create for backward compatibility 
             bfi.bufferSize = sizeof(VtBvhInstance) * 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhInstancedBuffer);
         } else
-        { bfi.offset = info.bvhInstanceOffset; bfi.bufferSize = sizeof(VtBvhInstance) * info.maxPrimitives; createBufferRegion(info.bvhInstanceBuffer, bfi, vtAccelerator->_bvhInstancedBuffer, _vtDevice); };
+        { bfi.offset = info.bvhInstanceOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhInstanceBuffer, bfi, vtAccelerator->_bvhInstancedBuffer, _vtDevice); };
 
         { // build final shared buffer for this class
             VtDeviceBufferCreateInfo bfic = {};

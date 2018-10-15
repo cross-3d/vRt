@@ -346,6 +346,15 @@ namespace rnd {
         vk::Pipeline firstGenPipeline = {};
 
 
+
+        std::vector<VtBvhInstance> BvhInstancedData = {};
+        std::vector<VtBvhBlock> BvhHeadersData = {};
+        VtDeviceBuffer BvhDataBuffer = {};
+        VtDeviceBuffer BvhInstancedBuffer = {};
+        VtDeviceBuffer BvhHeadersBuffer = {};
+
+
+
         // ray tracing objects
         std::vector<VtDeviceBuffer> VDataSpace = {};
         std::vector<VkBufferView> bviews = {};
@@ -370,7 +379,10 @@ namespace rnd {
         VtPipelineLayout rtPipelineLayout = {}, rtVPipelineLayout = {};
         VtPipeline rtPipeline, rfPipeline = {};
         VtAttributePipeline vtxPipeline = {};
-        VtAcceleratorSet accelerator = {};
+
+        VtAcceleratorSet acceleratorGeometry = {};
+        VtAcceleratorSet acceleratorMain = {};
+
         VtVertexAssemblySet vertexAssembly = {};
         VkCommandBuffer bCmdBuf = {}, rtCmdBuf = {}, vxCmdBuf = {}, vxuCmdBuf = {};
         VtDeviceBuffer rtUniformBuffer = {};

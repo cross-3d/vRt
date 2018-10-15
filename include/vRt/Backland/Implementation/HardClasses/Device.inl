@@ -8,7 +8,8 @@ namespace _vt {
 
 
     Device::~Device() {
-        if (_device) vk::Device(_device).waitIdle(); // just wait device idle for destructor 
+        // HANGING ON RX VEGA GPU 
+        //if (_device) vk::Device(_device).waitIdle(); // just wait device idle for destructor 
         _device = {};
     };
 

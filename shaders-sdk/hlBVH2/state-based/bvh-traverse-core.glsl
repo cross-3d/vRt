@@ -16,24 +16,24 @@ struct PrimitiveState {
 // used for re-init traversing 
 vec3 ORIGINAL_ORIGIN = vec3(0.f); dirtype_t ORIGINAL_DIRECTION = dirtype_t(0);
 
-
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
 void resetEntry(in bool valid) { 
     [[flatten]] if (currentState == BVH_STATE_TOP) {
-        traverseState.idx = (valid ? bvhBlockTop.entryID : -1);
+        traverseState.entryIDBase = (valid ? bvhBlockTop.entryID : -1);
     } else {
-        traverseState.idx = (valid ? bvhBlockIn.entryID : -1);
+        traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset  = 0.f;
+        traverseState.entryIDBase = (valid ? bvhBlockIn.entryID : -1);
     };
 
     // bottom states should also reset own stacks, top levels doesn't require it
-    traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defElementID = 0;
+    traverseState.idx = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defElementID = 0;
 };
 
 
 // initialize state 
 void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir ) {
-    [[flatten]] if (eht.x >= 0 && currentState == BVH_STATE_TOP) primitiveState.lastIntersection = hits[eht].uvt;
+    [[flatten]] if (currentState == BVH_STATE_TOP && eht.x >= 0) primitiveState.lastIntersection = hits[eht].uvt;
 
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
@@ -70,7 +70,7 @@ void switchStateTo(in uint stateTo, in int instanceTo){
         primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
 
         // switch stack in local memory 
-        switchStateToStack(stateTo);
+        switchStateToStack(stateTo); INSTANCE_ID = instanceTo;
 
         // every bottom level states requires to partial resetting states 
         if (currentState == BVH_STATE_BOTTOM) initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
@@ -82,27 +82,35 @@ void switchStateTo(in uint stateTo, in int instanceTo){
 
 
 // triangle intersection, when it found
-void doIntersection(in bool isvalid, in float dlen) {
-    isvalid = isvalid && traverseState.defElementID > 0 && traverseState.defElementID <= traverseState.maxElements;
-    IFANY (isvalid) {
-        if (currentState == BVH_STATE_TOP) {
-            switchStateTo(BVH_STATE_BOTTOM, traverseState.defElementID);
-        } else {
+bool doIntersection(in bool isvalid, in float dlen) {
+    bool stateSwitched = false;
+    const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
+    isvalid = isvalid && elementID >= 0 && elementID  < traverseState.maxElements;
+    [[flatten]] if (isvalid) {
+        
+        [[flatten]] if (currentState == BVH_STATE_TOP) {
+            [[flatten]] if (isvalid) { switchStateTo(BVH_STATE_BOTTOM, elementID); stateSwitched = true; };
+        }
+
+        else 
+        {
             vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
 #ifdef VRT_USE_FAST_INTERSECTION
-                intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defElementID-1, uv.xy, isvalid, nearT);
+                intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid, nearT);
 #else
-                intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defElementID-1, uv.xy, isvalid);
+                intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, elementID, uv.xy, isvalid);
 #endif
 
             const float tdiff = nearT-d, tmax = 0.f;
             [[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
-                [[flatten]] if (abs(tdiff) > tmax || traverseState.defElementID > floatBitsToInt(primitiveState.lastIntersection.w)) {
-                    primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defElementID));
+                [[flatten]] if (abs(tdiff) > tmax || elementID+1 > floatBitsToInt(primitiveState.lastIntersection.w)) {
+                    primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1));
                 };
             };
         };
-    }; traverseState.defElementID=0;
+    }; //traverseState.defElementID=0;
+
+    return stateSwitched;
 };
 
 #include "./bvh-traverse-process.glsl"

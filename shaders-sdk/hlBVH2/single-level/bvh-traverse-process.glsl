@@ -55,13 +55,14 @@ void traverseBVH2( in bool reset, in bool valid ) {
             // if all threads had intersection, or does not given any results, break for processing
             [[flatten]] if ( !_continue && traverseState.idx > 0 ) { traverseState.idx = -1, loadStack(traverseState.idx); } // load from stack 
             [[flatten]] IFANY (traverseState.defElementID > 0 || traverseState.idx <= 0) { break; } // 
-        }}};
+        }}}; //else {break;};
 
         // every-step solving 
-        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); } // if has triangle, do intersection
+        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); }; // if has triangle, do intersection
         [[flatten]] if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
     };
 
     // correction of hit distance
+    //[[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); };
     primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
 };

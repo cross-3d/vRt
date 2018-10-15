@@ -45,7 +45,10 @@ void main() {
 
         // do BVH traversing 
         int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID);
-        traverseState.maxElements = bvhBlockTop.primitiveCount, traverseState.diffOffset = 0.f;
+#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
+        currentState = BVH_STATE_TOP; INSTANCE_ID = 0;
+#endif
+        traverseState.entryIDBase = 0, traverseState.maxElements = bvhBlockTop.primitiveCount, traverseState.diffOffset = 0.f;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 
         // planned multiple-hits support

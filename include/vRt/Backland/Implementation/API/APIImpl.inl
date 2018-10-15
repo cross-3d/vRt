@@ -92,7 +92,7 @@ namespace vrt {
     };
 
     VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer, VkDeviceSize coveredCapacity) {
-        return _vt::buildAccelerator(commandBuffer);
+        return _vt::buildAccelerator(commandBuffer, coveredCapacity);
     };
 
     VtResult vtCmdBindVertexInputSets(VtCommandBuffer commandBuffer, uint32_t setCount, const VtVertexInputSet * sets) {

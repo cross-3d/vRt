@@ -242,10 +242,16 @@ namespace rnd {
             // make accelerator and vertex builder command
             bCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
-            vtCmdBindAccelerator(qBCmdBuf, accelerator);
+
+
+            vtCmdBindAccelerator(qBCmdBuf, acceleratorGeometry);
             vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
             vtCmdBindVertexInputSets(qBCmdBuf, inputs.size(), inputs.data());
             vtCmdBuildAccelerator(qBCmdBuf);
+
+            vtCmdBindAccelerator(qBCmdBuf, acceleratorMain);
+            vtCmdBuildAccelerator(qBCmdBuf, 2);
+
             vkEndCommandBuffer(qBCmdBuf);
         }
 
@@ -260,7 +266,14 @@ namespace rnd {
             vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST_BIT | VT_ENTRY_USAGE_MISS_BIT), materialSet);
             vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
             vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
-            vtCmdBindAccelerator(qRtCmdBuf, accelerator);
+
+            //  low levels
+            vtCmdBindAccelerator(qRtCmdBuf, acceleratorGeometry);
+
+            //  top levels (have issues at now, low performance problems)
+            //vtCmdBindAccelerator(qRtCmdBuf, acceleratorMain);
+
+            // vertex assembly 
             vtCmdBindVertexAssembly(qRtCmdBuf, vertexAssembly);
 
             // primary rays generation
@@ -281,15 +294,67 @@ namespace rnd {
 
 
      void Renderer::InitRayTracing() {
-        {
-            // box matrix optimizer ( by default 16.f geometry density per 1.f unit, not bound by global box ) 
-            const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
+         {
+             createBufferFast(deviceQueue, BvhDataBuffer, sizeof(VtBvhNodeStruct) * 1024ull * 1024ull);
+             createBufferFast(deviceQueue, BvhHeadersBuffer, sizeof(VtBvhBlock) * 256ull);
+             createBufferFast(deviceQueue, BvhInstancedBuffer, sizeof(VtBvhInstance) * 256ull);
+         };
 
-            // create accelerator set
+         {
+             glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3( 0.f, 0.f, 0.f)));
+             glm::mat4 movedBK = glm::transpose(glm::translate(glm::vec3( 0.f, 0.f, 200.f)));
+
+             // instances
+             BvhInstancedData.push_back(VtBvhInstance{});
+             BvhInstancedData.push_back(VtBvhInstance{});
+
+             BvhInstancedData[0].transformIn = *((VtMat4*)&movedFW);
+             BvhInstancedData[1].transformIn = *((VtMat4*)&movedBK);
+
+             // headers 
+             BvhHeadersData.push_back(VtBvhBlock{});
+             BvhHeadersData.push_back(VtBvhBlock{});
+
+             // write entire into buffers 
+             writeIntoBuffer(deviceQueue, BvhHeadersData, BvhHeadersBuffer);
+             writeIntoBuffer(deviceQueue, BvhInstancedData, BvhInstancedBuffer);
+         };
+
+
+
+        {
+
+
+
+            // box matrix optimizer ( by default 16.f geometry density per 1.f unit, not bound by global box ) 
+             const auto optMat = glm::mat4(1.f);//glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
+
+            // create accelerator set in bottom level 
             VtAcceleratorSetCreateInfo acci = {};
+            acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
             acci.coverMat = *((VtMat4*)&optMat);
-            acci.maxPrimitives = 1024 * 2048;
-            vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &accelerator);
+            acci.maxPrimitives = 1024ull * 512ull;
+            acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
+            acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
+            acci.bvhDataBuffer = BvhDataBuffer;
+            acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(8u);
+            acci.traversingEntryID = 8u; // this information will known when will traversing 
+            vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorGeometry);
+
+            // create accelerator set in top level 
+            acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_INSTANCE;
+            acci.maxPrimitives = 4;
+            acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
+            acci.bvhMetaHeadOffset = 0;
+            acci.bvhMetaBuffer = BvhHeadersBuffer;
+            acci.bvhMetaOffset = sizeof(VtBvhBlock);
+            acci.bvhInstanceBuffer = BvhInstancedBuffer;
+            acci.bvhInstanceOffset = 0;
+            acci.bvhDataBuffer = BvhDataBuffer;
+            acci.bvhDataOffset = 0;
+            acci.traversingEntryID = 0u;
+            vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorMain);
+
 
             // create vertex assembly
             VtVertexAssemblySetCreateInfo vtsi = {};
@@ -526,6 +591,9 @@ namespace rnd {
             createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4x3) * 1024ull * 1024ull);
             createBufferFast(deviceQueue, materialDescs, sizeof(VtAppMaterial) * (1ull+model.materials.size()));
             createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImageV16>(256));
+
+
+
         };
 
 

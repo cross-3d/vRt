@@ -22,10 +22,10 @@ LOCAL_SIZE_LAYOUT;
 #define wsize buildBlock.primitiveCount
 
 // re-calculate box after transforming 
-bbox_t calculateTransformedBox(in mat4x4 transform, in vec4 bnds[2]){
+bbox_t calculateTransformedBox(in uint I, in vec4 bnds[2]){
     vec3 tmin = INFINITY.xxx, tmax = -INFINITY.xxx;
     [[unroll]] for (int x=0;x<2;x++) { [[unroll]] for (int y=0;y<2;y++) { [[unroll]] for (int z=0;z<2;z++) {
-        const vec3 point = mult4(transform, vec4(bnds[x].x,bnds[y].y,bnds[z].z,1.f)).xyz;
+        const vec3 point = mult4(bvhBlockTop.transform, mult4(bvhInstance_[I].transformIn, vec4(bnds[x].x,bnds[y].y,bnds[z].z,1.f))).xyz;
         tmin = min(tmin, point), tmax = max(tmax, point);
     }}};
 
@@ -42,10 +42,10 @@ void main() {
         const uint T = clamp(buildBlock.primitiveOffset+bvhInstance_[I].bvhBlockID, 0, buildBlock.primitiveCount-1);
 
         // using global optimization transform + input transform of instance 
-        Leafs[I].lbox  = calculateTransformedBox(mult4(mult4(bvhBlockTop.transform, bvhInstance_[I].transformIn), transpose(inverse(mat4(transpose(bvhBlockIn_[I].transform))))), vec4[2](bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax));
+        Leafs[I].lbox  = calculateTransformedBox(I, vec4[2](bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax));
         Leafs[I].pdata = ivec4((0).xxx, I+1);
 
         // getting combined transformation for instance 
-        bvhInstance_[I].transform = mult4(bvhBlockIn_[T].transform, transpose(inverse(mat4(transpose(bvhInstance_[I].transformIn)))));
+        bvhInstance_[I].transform = transpose( transpose(bvhBlockIn_[T].transform) * inverse(mat4(transpose(bvhInstance_[I].transformIn))) );
     };
 };

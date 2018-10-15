@@ -28,29 +28,35 @@ layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYS
 shared int localStack[WORK_SIZE][localStackSize];
 #define lstack localStack[Local_Idx]
 #define sidx  traverseState.stackPtr
+#define STATE_PAGE_OFFSET 0
 
 // BVH traversing state
 #define _cacheID gl_GlobalInvocationID.x
 struct BvhTraverseState {
-         int idx, defElementID, maxElements; float diffOffset;
+         int idx, defElementID, maxElements, entryIDBase, gStackPtr; float diffOffset;
     lowp int stackPtr, pageID;
     fvec4_ directInv, minusOrig;
 } traverseState;
 
+
+
 void loadStack(inout int rsl) {
-    [[flatten]] if ((--sidx) >= 0) rsl = lstack[sidx];
     [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { // make store/load deferred 
-        lstack = pages[_cacheID*pageCount + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize;
-    }; traverseState.stackPtr = max(traverseState.stackPtr, 0);
+        lstack = pages[_cacheID*pageCount + (--traverseState.pageID) + STATE_PAGE_OFFSET]; traverseState.stackPtr = localStackSize;
+    };
+    [[flatten]] if ((--sidx) >= 0) rsl = lstack[sidx];
+    traverseState.stackPtr = clamp(traverseState.stackPtr, 0, localStackSize);
 };
 
 void storeStack(in int rsl) {
+    [[flatten]] if (sidx < localStackSize) { const int pti = sidx++; pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET][pti] = (lstack[pti] = rsl); };
     [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) { // make store/load deferred 
-        pages[_cacheID*pageCount + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
+        pages[_cacheID*pageCount + (traverseState.pageID++) + STATE_PAGE_OFFSET] = lstack; traverseState.stackPtr = 0;
     };
-    [[flatten]] if (sidx < localStackSize) lstack[sidx++] = rsl; 
-    traverseState.stackPtr = min(traverseState.stackPtr, localStackSize);
+    traverseState.stackPtr = clamp(traverseState.stackPtr, 0, localStackSize);
 };
+
+
 
 // corrections of box intersection
 const bvec4 bsgn = false.xxxx;

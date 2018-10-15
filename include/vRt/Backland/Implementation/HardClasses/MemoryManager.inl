@@ -47,15 +47,17 @@ namespace _vt {
             bvi.offset = bRegion->_offset();
             bvi.range = bRegion->_size();
 
+            if (bRegion->_size() > 0) {
 #ifdef VRT_ENABLE_VEZ_INTEROP
-            if (vezCreateBufferView(device->_device, &bvi, &bRegion->_bufferView()) == VK_SUCCESS) {
+                if (vezCreateBufferView(device->_device, &bvi, &bRegion->_bufferView()) == VK_SUCCESS) {
 #else
-            if (vkCreateBufferView(device->_device, &bvi, nullptr, &bRegion->_bufferView()) == VK_SUCCESS) {
+                if (vkCreateBufferView(device->_device, &bvi, nullptr, &bRegion->_bufferView()) == VK_SUCCESS) {
 #endif
-                result = VK_SUCCESS;
-            }
-            else {
-                result = VK_INCOMPLETE;
+                    result = VK_SUCCESS;
+                }
+                else {
+                    result = VK_INCOMPLETE;
+                };
             };
         };
         return result;
@@ -76,8 +78,10 @@ namespace _vt {
         // make memory usages 
         auto usageFlagCstr = 0u;
         if constexpr (U != VT_MEMORY_USAGE_GPU_ONLY) { allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT; }
-        if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; } else {
-            if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; } else {
+        if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; }
+        else {
+            if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; }
+            else {
                 usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             };
         };
@@ -104,18 +108,20 @@ namespace _vt {
         binfo.size = cinfo.bufferSize;//((cinfo.bufferSize >> 5ull) << 5ull) + 32ull;
         binfo.usage = usageFlag;
 
+        if (binfo.size > 0) {
 #ifdef VRT_ENABLE_VEZ_INTEROP
-        result = vezCreateBuffer(device->_device, mem, &binfo, &vtDeviceBuffer->_buffer);
+            result = vezCreateBuffer(device->_device, mem, &binfo, &vtDeviceBuffer->_buffer);
 #else
-        result = vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo);
+            result = vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo);
 #endif
+        };
 
         // if format is known, make bufferView
         if constexpr (U == VT_MEMORY_USAGE_GPU_ONLY) {
             VtBufferRegionCreateInfo rbc = {};
             rbc.offset = 0, rbc.bufferSize = cinfo.bufferSize, rbc.format = cinfo.format;
             createBufferRegion(vtDeviceBuffer, rbc, vtDeviceBuffer->_bufferRegion);
-        }
+        };
 
         return result;
     };

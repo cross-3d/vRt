@@ -109,9 +109,13 @@ int INSTANCE_ID = 0;
 
 const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
 
+#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 #define BVH_ENTRY bvhBlockIn.entryID
-#define BVH_ENTRY_HALF (bvhBlockIn.entryID>>1)
-
+#define BVH_ENTRY_HALF (BVH_ENTRY>>1)
+#else
+#define BVH_ENTRY 0
+#define BVH_ENTRY_HALF (BVH_ENTRY>>1)
+#endif
 
 
 

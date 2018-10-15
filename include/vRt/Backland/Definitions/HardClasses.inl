@@ -419,8 +419,8 @@ namespace _vt { // store in undercover namespace
 
 
     // avoid compilation issues
-     inline BufferRegion::operator VkBuffer&() { return _boundBuffer.lock()->_buffer; };
-     inline BufferRegion::operator VkBuffer() const { return _boundBuffer.lock()->_buffer; };
+     inline BufferRegion::operator VkBuffer&() { return _descriptorInfo().buffer; };
+     inline BufferRegion::operator VkBuffer() const { return _descriptorInfo().buffer; };
      inline VkDescriptorBufferInfo  RoledBufferBase::_descriptorInfo() const { return _bufferRegion->_descriptorInfo(); };
      inline VkDescriptorBufferInfo& RoledBufferBase::_descriptorInfo() { return _bufferRegion->_descriptorInfo(); };
      inline VkBufferView  RoledBufferBase::_bufferView() const { return _bufferRegion->_bufferView(); };
