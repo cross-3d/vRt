@@ -42,7 +42,7 @@ void main() {
         const uint T = clamp(buildBlock.primitiveOffset+bvhInstance_[I].bvhBlockID, 0, buildBlock.primitiveCount-1);
 
         // using global optimization transform + input transform of instance 
-        Leafs[I].lbox  = calculateTransformedBox(mult4(bvhBlockTop.transform, bvhInstance_[I].transformIn), vec4[2](bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax));
+        Leafs[I].lbox  = calculateTransformedBox(mult4(mult4(bvhBlockTop.transform, bvhInstance_[I].transformIn), transpose(inverse(mat4(transpose(bvhBlockIn_[I].transform))))), vec4[2](bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax));
         Leafs[I].pdata = ivec4((0).xxx, I+1);
 
         // getting combined transformation for instance 
