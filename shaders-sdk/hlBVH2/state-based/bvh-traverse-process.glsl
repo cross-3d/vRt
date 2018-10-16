@@ -1,9 +1,6 @@
 
-
-
 // require solve problem with State registry ( probably, need even better hardware ) 
 void traverseBVH2( in bool reset, in bool validTop ) {
-    const bool validEntry = (validTop = validTop && validIdx(traverseState.idx));
     [[flatten]] if (validTop) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
         [[flatten]] if ( validIdx(traverseState.idx) ) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) { bool _continue = false;
@@ -42,12 +39,11 @@ void traverseBVH2( in bool reset, in bool validTop ) {
 
                     // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
                     // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
-                    //#define snode (bvhNodes[traverseState.entryIDBase+secondary].meta.xy) // use reference only
-                    [[flatten]] if (secondary > 0) {
+                    [[flatten]] if (secondary > 0 && currentState == BVH_STATE_BOTTOM) {
                         const ivec2 snode = bvhNodes[traverseState.entryIDBase+secondary].meta.xy;
-                        [[flatten]] if (isLeaf(snode) && currentState == BVH_STATE_BOTTOM) { traverseState.defElementID = VTX_PTR + snode.x; secondary = -1; } else 
-                        [[flatten]] if (secondary > 0) storeStack(traverseState.entryIDBase+secondary);
+                        [[flatten]] if (isLeaf(snode)) { traverseState.defElementID = VTX_PTR + snode.x; secondary = -1; }; 
                     };
+                    [[flatten]] if (secondary > 0) storeStack(traverseState.entryIDBase+secondary);
                 };
             };
 
@@ -58,10 +54,9 @@ void traverseBVH2( in bool reset, in bool validTop ) {
         }}};
         
         // every-step solving 
-        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( currentState == BVH_STATE_TOP ? validTop : validEntry ); }; // 
-        [[flatten]] if (!validIdx(traverseState.idx)) {
-            [[flatten]] if (currentState == BVH_STATE_BOTTOM) { switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop); };
-            [[flatten]] if (currentState == BVH_STATE_TOP) { [[flatten]] if (!(validTop = validTop && validIdx(traverseState.idx))) break; };// break if doesn't need to continue 
-        };
+        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( validTop ); }; // 
+        [[flatten]] if (!validIdx(traverseState.idx) && currentState == BVH_STATE_TOP) { switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop); break; };
+        [[flatten]] if (!validIdx(traverseState.idx)) { break; };
     };
+    switchStateTo(BVH_STATE_TOP, 0, true);
 };

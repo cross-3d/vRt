@@ -14,6 +14,8 @@
 #define DMA_HIT
 
 #define EXTEND_LOCAL_GROUPS
+//#define WORK_SIZE 64u
+
 
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
@@ -49,12 +51,12 @@ void main() {
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
         currentState = BVH_STATE_TOP; INSTANCE_ID = 0;
 #endif
-        traverseState.entryIDBase = -1, traverseState.idx = -1, traverseState.idxTop = (!overflow ? bvhBlockTop.entryID : -1), traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f), 
-        traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0;
+        traverseState.entryIDBase = (!overflow ? bvhBlockTop.entryID : -1), traverseState.idx = traverseState.entryIDBase, traverseState.idxTop = traverseState.idx, traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f), 
+        traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.saved = false;
+        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 #ifdef ENABLE_STACK_SWITCH
         traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0;
 #endif
-        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection
