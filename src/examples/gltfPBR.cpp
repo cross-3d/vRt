@@ -309,7 +309,7 @@ namespace rnd {
          {
              // instances
              //BvhInstancedData.push_back(VtBvhInstance{});
-             for (int x = 0; x < 1; x++) {
+             for (int x = 0; x < 4; x++) {
                  for (int z = 0; z < 4; z++) {
                      glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*400.f, 0.f, z*200.f)));
                      BvhInstancedData.push_back(VtBvhInstance{});

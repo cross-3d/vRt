@@ -3,8 +3,9 @@
 
 // require solve problem with State registry ( probably, need even better hardware ) 
 void traverseBVH2( in bool reset, in bool valid ) {
-    switchStateTo(BVH_STATE_TOP, 0, valid);
-    [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
+    //switchStateTo(BVH_STATE_TOP, 0, valid);
+    valid = valid && validIdx(traverseState.idx);
+    [[flatten]] if (valid) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
         [[flatten]] if ( validIdx(traverseState.idx) ) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) { bool _continue = false;
             //const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
@@ -64,7 +65,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
         [[flatten]] if (!validIdx(traverseState.idx)) {
             //const uint CSTATE = currentState;
             [[flatten]] if (CSTATE == BVH_STATE_BOTTOM) { switchStateTo(BVH_STATE_TOP, INSTANCE_ID, valid); };
-            [[flatten]] if (CSTATE == BVH_STATE_TOP) { break; };
+            [[flatten]] if (CSTATE == BVH_STATE_TOP) break;
         };
     };
 };

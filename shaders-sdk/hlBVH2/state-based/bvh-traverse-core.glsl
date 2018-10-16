@@ -42,7 +42,7 @@ bool validIdx(in int idx){
 
 // initialize state 
 void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir ) {
-    [[flatten]] if (currentState == BVH_STATE_TOP && eht.x >= 0) primitiveState.lastIntersection = hits[eht].uvt;
+    //[[flatten]] if (currentState == BVH_STATE_TOP && eht.x >= 0) primitiveState.lastIntersection = hits[eht].uvt;
 
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
@@ -75,12 +75,13 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 // kill switch when traversing 
 void switchStateTo(in uint stateTo, in int instanceTo, in bool valid){
     [[flatten]] if (currentState != stateTo) {
-        [[flatten]] if (currentState == BVH_STATE_TOP) traverseState.idxTop = traverseState.idx;
+        [[flatten]] if (currentState == BVH_STATE_TOP) traverseState.idxTop = valid ? traverseState.idx : -1;
 
 #ifdef ENABLE_STACK_SWITCH
         [[flatten]] if (currentState == BVH_STATE_TOP) {
-            [[flatten]] if ( traverseState.pageID < pageCount ) {
-                pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET] = lstack; // save current stack 
+            [[flatten]] if ( (traverseState.pageID+1) <= pageCount ) {
+                pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (++traverseState.pageID)] = lstack; // save current stack 
+                traverseState.pageID = clamp(traverseState.pageID, 0, pageCount);
             };
             traverseState.stackPtrTop = traverseState.stackPtr, traverseState.pageIDTop = traverseState.pageID; 
         };
@@ -88,14 +89,15 @@ void switchStateTo(in uint stateTo, in int instanceTo, in bool valid){
 
         currentState = stateTo, INSTANCE_ID = instanceTo;
         initTraversing(valid, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
-        [[flatten]] if (stateTo == BVH_STATE_TOP) traverseState.idx = traverseState.idxTop;
+        [[flatten]] if (stateTo == BVH_STATE_TOP) traverseState.idx = valid ? traverseState.idxTop : -1;
 
         // restoration of stack state
 #ifdef ENABLE_STACK_SWITCH
         [[flatten]] if (stateTo == BVH_STATE_TOP) {
             traverseState.stackPtr = traverseState.stackPtrTop, traverseState.pageID = traverseState.pageIDTop;
             [[flatten]] if ( traverseState.pageID >= 0 ) {
-                lstack = pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET]; // load top level stack
+                lstack = pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (traverseState.pageID--)]; // load top level stack
+                traverseState.pageID = clamp(traverseState.pageID, 0, pageCount);
             };
         } //else 
         [[flatten]] if (stateTo == BVH_STATE_BOTTOM) {

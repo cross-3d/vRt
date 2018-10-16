@@ -2,7 +2,7 @@
 #extension GL_GOOGLE_include_directive : enable
 
 // enable it, when you will ready...
-//#define ENABLE_STACK_SWITCH // still has glitches, when is enabled, will used unified stack (may no enough)
+#define ENABLE_STACK_SWITCH // still has glitches, when is enabled, will used unified stack (may no enough)
 #define EXPERIMENTAL_INSTANCING_SUPPORT
 
 #define VRT_USE_FAST_INTERSECTION
@@ -47,9 +47,9 @@ void main() {
         // do BVH traversing 
         int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID);
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-        currentState = BVH_STATE_TOP; INSTANCE_ID = 0;
+        currentState = BVH_STATE_BOTTOM; INSTANCE_ID = 0;
 #endif
-        traverseState.entryIDBase = -1, traverseState.idx = -1, traverseState.idxTop = -1, traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f), 
+        traverseState.entryIDBase = -1, traverseState.idx = -1, traverseState.idxTop = (!overflow ? bvhBlockTop.entryID : -1), traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f), 
         traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.idxTop = 0;
 #ifdef ENABLE_STACK_SWITCH
         traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0;
@@ -60,7 +60,9 @@ void main() {
         [[flatten]] if (!overflow) { // verify intersection
             ORIGINAL_DIRECTION = rays[rayID].cdirect;
             ORIGINAL_ORIGIN = rays[rayID].origin.xyz;
-            initTraversing(!overflow, hid, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+
+            [[flatten]] if (hid >= 0) primitiveState.lastIntersection = hits[hid].uvt;
+            switchStateTo(BVH_STATE_TOP, 0, !overflow);
 
             // traversing from front layer to back layers
             uint mhit = hid+1; bool found = mhit > 0u; // last possible found hit
