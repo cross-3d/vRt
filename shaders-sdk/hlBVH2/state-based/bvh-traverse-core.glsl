@@ -26,9 +26,10 @@ void resetEntry(in bool valid) {
         traverseState.maxElements = bvhBlockTop.primitiveCount;
         traverseState.entryIDBase = (valid ? bvhBlockTop.entryID : -1);
     } else 
-     [[flatten]] if (currentState == BVH_STATE_BOTTOM) {
+    [[flatten]] if (currentState == BVH_STATE_BOTTOM) {
         traverseState.maxElements = bvhBlockIn .primitiveCount;
-        traverseState.entryIDBase = (valid ? bvhBlockIn .entryID : -1), traverseState.idx = traverseState.entryIDBase;
+        traverseState.entryIDBase = (valid ? bvhBlockIn .entryID : -1);
+        traverseState.idx = traverseState.entryIDBase;
 #ifdef ENABLE_STACK_SWITCH
         traverseState.stackPtr = 0, traverseState.pageID = 0;
 #endif
@@ -37,7 +38,7 @@ void resetEntry(in bool valid) {
 
 
 bool validIdx(in int idx){
-    return traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && idx >= 0 && idx != -1;
+    return traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && (idx-traverseState.entryIDBase)<(traverseState.maxElements<<1) && idx >= 0 && idx != -1;
 };
 
 
@@ -71,26 +72,35 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 };
 
 
+
+void triggerSwitch(in uint stateTo){
+    currentState = stateTo; initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+};
+
 // kill switch when traversing 
 void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
     [[flatten]] if (currentState != stateTo) { 
         [[flatten]] if (stateTo == BVH_STATE_BOTTOM && !traverseState.saved) {
-            traverseState.idxTop = traverseState.idx;
 #ifdef ENABLE_STACK_SWITCH
-            traverseState.stackPtrTop = traverseState.stackPtr, traverseState.pageIDTop = traverseState.pageID, traverseState.saved = true;
-            traverseCache.pages[_cacheID] = lstack;
+            traverseState.idxTop = traverseState.idx, traverseState.stackPtrTop = traverseState.stackPtr, traverseState.pageIDTop = traverseState.pageID, traverseState.saved = true;
+            traverseCache.stack[_cacheID] = lstack;
+#else
+            traverseState.idxDefer = traverseState.idx;
 #endif
         };
 
         [[flatten]] if (stateTo == BVH_STATE_TOP && traverseState.saved) {
-            traverseState.idx = traverseState.idxTop;
 #ifdef ENABLE_STACK_SWITCH
-            traverseState.stackPtr = traverseState.stackPtrTop, traverseState.pageID = traverseState.pageIDTop, traverseState.saved = false;
-            lstack = traverseCache.pages[_cacheID];
+            traverseState.idx = traverseState.idxTop, traverseState.stackPtr = traverseState.stackPtrTop, traverseState.pageID = traverseState.pageIDTop, traverseState.saved = false;
+            traverseState.idxTop = -1, traverseState.stackPtrTop = -1, traverseState.pageIDTop = -1;
+            lstack = traverseCache.stack[_cacheID];
+#else
+            traverseState.idx = traverseState.idxDefer; traverseState.idxDefer = -1;
 #endif
         };
 
-        INSTANCE_ID = instanceTo; currentState = stateTo; initTraversing(valid, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+        INSTANCE_ID = instanceTo;
+        if (valid) triggerSwitch(stateTo);
     };
 };
 

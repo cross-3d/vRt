@@ -1,4 +1,11 @@
 
+int goDeeper (inout int idx) {
+#ifndef ENABLE_STACK_SWITCH
+    //[[flatten]] if (traverseState.idxDefer >= 0 || !validIdx(idx)) { idx = traverseState.idxDefer; triggerSwitch(BVH_STATE_BOTTOM); }; traverseState.idxDefer = -1;
+#endif
+    return idx;
+};
+
 // require solve problem with State registry ( probably, need even better hardware ) 
 void traverseBVH2( in bool reset, in bool validTop ) {
     [[flatten]] if (validTop) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
@@ -33,9 +40,9 @@ void traverseBVH2( in bool reset, in bool validTop ) {
                 pbool_ fmask = pl_x(childIntersect)|(pl_y(childIntersect)<<true_);
                 traverseState.idx = -1;
                 [[flatten]] if (fmask > 0) { _continue = true;
-                    int secondary = -1; 
+                    int secondary = -1, primary = -1; 
                     [[flatten]] if (fmask == 3) { fmask &= true_<<pbool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
-                    traverseState.idx = traverseState.entryIDBase + (cnode.x^int(fmask&1u)); // set traversing node id
+                    primary = traverseState.entryIDBase + (cnode.x^int(fmask&1u)), traverseState.idx = primary; goDeeper(traverseState.idx);
 
                     // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
                     // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
@@ -43,20 +50,26 @@ void traverseBVH2( in bool reset, in bool validTop ) {
                         const ivec2 snode = bvhNodes[traverseState.entryIDBase+secondary].meta.xy;
                         [[flatten]] if (isLeaf(snode)) { traverseState.defElementID = VTX_PTR + snode.x; secondary = -1; }; 
                     };
+                    [[flatten]] if (primary != traverseState.idx) storeStack(primary);
                     [[flatten]] if (secondary > 0) storeStack(traverseState.entryIDBase+secondary);
                 };
             };
 
             // if all threads had intersection, or does not given any results, break for processing
             //[[flatten]] if ( !_continue && validIdx(traverseState.idx) ) { traverseState.idx = -1, loadStack(traverseState.idx); } // load from stack 
-            [[flatten]] if ( !_continue ) { traverseState.idx = -1, loadStack(traverseState.idx); } // load from stack 
+            [[flatten]] if ( !_continue ) {
+                traverseState.idx = -1; goDeeper(traverseState.idx);
+                if (!validIdx(traverseState.idx)) loadStack(traverseState.idx); }; // load from stack 
             [[flatten]] IFANY (traverseState.defElementID > 0 || !validIdx(traverseState.idx)) { break; }; // 
         }}};
         
         // every-step solving 
-        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( validTop ); }; // 
-        [[flatten]] if (!validIdx(traverseState.idx) && currentState == BVH_STATE_TOP) { switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop); break; };
+        [[flatten]] IFANY (traverseState.defElementID > 0) {
+            doIntersection( validTop );
+            goDeeper(traverseState.idx);
+        }; // 
+        [[flatten]] if (!validIdx(traverseState.idx) && currentState == BVH_STATE_BOTTOM) { switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop); };
         [[flatten]] if (!validIdx(traverseState.idx)) { break; };
     };
-    switchStateTo(BVH_STATE_TOP, 0, true);
+    //switchStateTo(BVH_STATE_TOP, 0, true);
 };

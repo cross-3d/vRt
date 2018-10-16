@@ -2,7 +2,7 @@
 #extension GL_GOOGLE_include_directive : enable
 
 // enable it, when you will ready...
-//#define ENABLE_STACK_SWITCH // still has glitches, when is enabled, will used unified stack (may no enough)
+#define ENABLE_STACK_SWITCH // still has glitches, when is enabled, will used unified stack (may no enough)
 #define EXPERIMENTAL_INSTANCING_SUPPORT
 
 #define VRT_USE_FAST_INTERSECTION
@@ -51,11 +51,14 @@ void main() {
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
         currentState = BVH_STATE_TOP; INSTANCE_ID = 0;
 #endif
-        traverseState.entryIDBase = (!overflow ? bvhBlockTop.entryID : -1), traverseState.idx = traverseState.entryIDBase, traverseState.idxTop = traverseState.idx, traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f), 
+        traverseState.entryIDBase = (!overflow ? bvhBlockTop.entryID : -1), traverseState.idx = traverseState.entryIDBase, traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f), 
         traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.saved = false;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+        
 #ifdef ENABLE_STACK_SWITCH
-        traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0;
+        traverseState.idxTop = traverseState.idx, traverseState.stackPtrTop = 0, traverseState.pageIDTop = -1;
+#else
+        traverseState.idxDefer = -1;
 #endif
 
         // planned multiple-hits support

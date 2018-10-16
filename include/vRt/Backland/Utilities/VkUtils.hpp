@@ -163,11 +163,12 @@ namespace _vt {
     // create shader module
     static inline auto makeComputePipelineStageInfo(VkDevice device, const std::vector<uint32_t>& code, const char * entry = "main") {
         VkPipelineShaderStageCreateInfo spi = vk::PipelineShaderStageCreateInfo{};
+        spi.module = {};
         spi.flags = {};
         createShaderModuleIntrusive(device, code, spi.module);
         spi.pName = entry;
         spi.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-        spi.pSpecializationInfo = nullptr;
+        spi.pSpecializationInfo = {};
         return spi;
     };
 
