@@ -2,6 +2,7 @@
 #extension GL_GOOGLE_include_directive : enable
 
 // enable it, when you will ready...
+//#define ENABLE_STACK_SWITCH // still has glitches, when is enabled, will used unified stack (may no enough)
 #define EXPERIMENTAL_INSTANCING_SUPPORT
 
 #define VRT_USE_FAST_INTERSECTION
@@ -35,9 +36,6 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-    currentState = BVH_STATE_BOTTOM; INSTANCE_ID = 0;
-#endif
     const uint wsize = min(rayCounter, MAX_RAYS); IFANY (wsize <= 0 || bvhBlockTop.primitiveCount <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
 
@@ -49,9 +47,13 @@ void main() {
         // do BVH traversing 
         int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID);
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-        currentState = BVH_STATE_BOTTOM; INSTANCE_ID = 0;
+        currentState = BVH_STATE_TOP; INSTANCE_ID = 0;
 #endif
-        traverseState.entryIDBase = 0, traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = 0.f;
+        traverseState.entryIDBase = -1, traverseState.idx = -1, traverseState.idxTop = -1, traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f), 
+        traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.idxTop = 0;
+#ifdef ENABLE_STACK_SWITCH
+        traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0;
+#endif
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 
         // planned multiple-hits support
@@ -66,10 +68,10 @@ void main() {
 
                 // traversing triangles
                 int ftrID = -1; // current found triangle
-                [[flatten]] if (traverseState.maxElements > 0) {
+                [[flatten]] if (traverseState.maxElements > 0 && validIdx(traverseState.idx)) {
                     traverseBVH2(i > 0, !overflow);
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-                    currentState = BVH_STATE_BOTTOM; INSTANCE_ID = 0;
+                    currentState = BVH_STATE_TOP; INSTANCE_ID = 0;
 #endif
                     ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
                     //traverseState.maxElements = min(traverseState.maxElements, ftrID);

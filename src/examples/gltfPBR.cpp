@@ -307,11 +307,14 @@ namespace rnd {
          };
 
          {
-             // instances 
-             for (int i = 0; i < 4;i++) {
-                 glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(0.f, 0.f, i*200.f)));
-                 BvhInstancedData.push_back(VtBvhInstance{});
-                 BvhInstancedData[i].transformIn = *((VtMat4*)&movedFW);
+             // instances
+             //BvhInstancedData.push_back(VtBvhInstance{});
+             for (int x = 0; x < 1; x++) {
+                 for (int z = 0; z < 4; z++) {
+                     glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*400.f, 0.f, z*200.f)));
+                     BvhInstancedData.push_back(VtBvhInstance{});
+                     BvhInstancedData[BvhInstancedData.size()-1].transformIn = *((VtMat4*)&movedFW);
+                 }
              }
 
              // headers 
@@ -326,9 +329,6 @@ namespace rnd {
 
 
         {
-
-
-
             // box matrix optimizer ( by default 16.f geometry density per 1.f unit, not bound by global box ) 
              const auto optMat = glm::mat4(1.f);//glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
 
@@ -340,13 +340,14 @@ namespace rnd {
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
             acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
             acci.bvhDataBuffer = BvhDataBuffer;
-            acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(64u);
-            acci.traversingEntryID = 64u; // this information will known when will traversing 
+            acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(1024u);
+            acci.traversingEntryID = 1024u; // this information will known when will traversing 
+            acci.vertexPointingOffset = 0u;
             vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorGeometry);
 
             // create accelerator set in top level 
             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_INSTANCE;
-            acci.maxPrimitives = 2048ull;
+            acci.maxPrimitives = 1024ull;
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
             acci.bvhMetaHeadOffset = 0;
             acci.bvhMetaBuffer = BvhHeadersBuffer;
@@ -356,6 +357,7 @@ namespace rnd {
             acci.bvhDataBuffer = BvhDataBuffer;
             acci.bvhDataOffset = 0;
             acci.traversingEntryID = 0u;
+            acci.vertexPointingOffset = 0u;
             vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorMain);
 
 

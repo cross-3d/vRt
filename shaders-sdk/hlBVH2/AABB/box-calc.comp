@@ -38,16 +38,16 @@ bbox_t calculateTransformedBox(in uint I, in vec4 bnds[2]){
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        const uint I = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (I >= wsize) break;
+        const uint I = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x, rI = buildBlock.primitiveOffset+I; IFALL (I >= wsize) break;
         [[flatten]] if (I < wsize) {
-            const uint T = clamp(buildBlock.primitiveOffset+bvhInstance_[I].bvhBlockID, 0, buildBlock.primitiveCount-1);
+            const uint T = clamp(bvhInstance_[I].bvhBlockID, 0, buildBlock.primitiveCount-1);
 
             // using global optimization transform + input transform of instance 
-            Leafs[I].lbox  = calculateTransformedBox(I, vec4[2](bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax));
-            Leafs[I].pdata = ivec4((0).xxx, I+1);
+            Leafs[I].lbox  = calculateTransformedBox(rI, vec4[2](bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax));
+            Leafs[I].pdata = ivec4((0).xxx, rI+1);
 
             // getting combined transformation for instance 
-            bvhInstance_[I].transform = transpose( transpose(bvhBlockIn_[T].transform) * inverse(mat4(transpose(bvhInstance_[I].transformIn))) );
+            bvhInstance_[I].transform = transpose( transpose(bvhBlockIn_[T].transform) * inverse(mat4(transpose(bvhInstance_[rI].transformIn))) );
         };
     };
 };

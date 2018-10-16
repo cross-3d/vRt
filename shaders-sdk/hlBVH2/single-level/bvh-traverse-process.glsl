@@ -1,9 +1,7 @@
 
 
 void traverseBVH2( in bool reset, in bool valid ) {
-    //primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, traverseState.diffOffset);
     [[flatten]] if (reset) resetEntry(valid);
-    [[flatten]] if (traverseState.maxElements <= 0 || primitiveState.lastIntersection.z < 0.f) { traverseState.idx = -1; };
 
     // two loop based BVH traversing
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
@@ -59,10 +57,7 @@ void traverseBVH2( in bool reset, in bool valid ) {
 
         // every-step solving 
         [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); }; // if has triangle, do intersection
-        [[flatten]] if (traverseState.idx <= 0 || traverseState.maxElements <= 0 || primitiveState.lastIntersection.z <= 0.f) { break; } // if no to traversing - breaking
+        [[flatten]] if (traverseState.idx <= 0) { break; } // if no to traversing - breaking
     };
 
-    // correction of hit distance
-    //[[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true, bsize ); };
-    //primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
 };

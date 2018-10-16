@@ -8,18 +8,20 @@
 #endif
 
 const uint currentState = BVH_STATE_TOP;
-#define VTX_PTR (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveOffset : bvhBlockIn.primitiveOffset)
+//#define VTX_PTR (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveOffset : bvhBlockIn.primitiveOffset)
+#define VTX_PTR 0
 
 #ifndef fpInner
   const float fpInner = 0.0000152587890625f, fpOne = 1.f;
 #endif
 
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
-  const  lowp  int localStackSize = 8, pageCount = 4; // 256-bit global memory stack pages
+  const  lowp  int localStackSize = 8, pageCount = 16; // 256-bit global memory stack pages
 #else
-  const  lowp  int localStackSize = 4, pageCount = 8; // 128-bit capable (minor GPU, GDDR6 two-channels)
+  const  lowp  int localStackSize = 4, pageCount = 32; // 128-bit capable (minor GPU, GDDR6 two-channels)
 #endif
-  const highp uint maxIterations  = 8192;
+  //const highp uint maxIterations  = 8192u;
+  const highp uint maxIterations  = 16384u;
 
 
 layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYSTEM { int pages[][localStackSize]; };
@@ -33,12 +35,15 @@ shared int localStack[WORK_SIZE][localStackSize];
 // BVH traversing state
 #define _cacheID gl_GlobalInvocationID.x
 struct BvhTraverseState {
-         int idx, defElementID, maxElements, entryIDBase, gStackPtr; float diffOffset;
-    lowp int stackPtr, pageID;
+    int defElementID, maxElements, entryIDBase, diffOffset;
+    int idx;    lowp int stackPtr   , pageID;
+#ifdef ENABLE_STACK_SWITCH
+    int idxTop; lowp int stackPtrTop, pageIDTop;
+#else
+    int idxTop;
+#endif
     fvec4_ directInv, minusOrig;
 } traverseState;
-
-
 
 void loadStack(inout int rsl) {
     [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { // make store/load deferred 
@@ -49,9 +54,10 @@ void loadStack(inout int rsl) {
 };
 
 void storeStack(in int rsl) {
-    [[flatten]] if (sidx < localStackSize) { const int pti = sidx++; pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET][pti] = (lstack[pti] = rsl); };
+    //[[flatten]] if (sidx < localStackSize) { const int pti = sidx++; pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET][pti] = (lstack[pti] = rsl); };
+    [[flatten]] if (sidx < localStackSize) { lstack[sidx++] = rsl; };
     [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) { // make store/load deferred 
-        pages[_cacheID*pageCount + (traverseState.pageID++) + STATE_PAGE_OFFSET] = lstack; traverseState.stackPtr = 0;
+        pages[_cacheID*pageCount + (traverseState.pageID++) + STATE_PAGE_OFFSET] = lstack; lstack[traverseState.stackPtr = 0] = -1;
     };
     traverseState.stackPtr = clamp(traverseState.stackPtr, 0, localStackSize);
 };

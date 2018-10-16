@@ -20,15 +20,23 @@ vec3 ORIGINAL_ORIGIN = vec3(0.f); dirtype_t ORIGINAL_DIRECTION = dirtype_t(0);
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
 void resetEntry(in bool valid) { 
+    valid == valid && INSTANCE_ID >= 0;
+
     [[flatten]] if (currentState == BVH_STATE_TOP) {
+        traverseState.maxElements = bvhBlockTop.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f);
         traverseState.entryIDBase = (valid ? bvhBlockTop.entryID : -1);
     } else {
-        traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset  = 0.f;
-        traverseState.entryIDBase = (valid ? bvhBlockIn.entryID : -1);
+        traverseState.maxElements = bvhBlockIn .primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f);
+        traverseState.entryIDBase = (valid ? bvhBlockIn .entryID : -1);
     };
 
     // bottom states should also reset own stacks, top levels doesn't require it
-    traverseState.idx = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.defElementID = 0;
+    traverseState.idx = valid ? traverseState.entryIDBase : -1, traverseState.defElementID = 0;
+    //traverseState.stackPtr = 0, traverseState.pageID = 0;
+};
+
+bool validIdx(in int idx){
+    return traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && idx >= 0 && idx != -1;
 };
 
 
@@ -50,50 +58,65 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const   vec3 interm = fma(fpInner.xxxx, 2.f.xxxx, 1.f.xxxx).xyz;
+    const   vec3 interm = fma(0.5f.xxxx, 2.f.xxxx, 1.f.xxxx).xyz;
     const   vec2 bside2 = vec2(-fpOne, fpOne);
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
-    resetEntry(valid);
+    //resetEntry(valid);
 
     // initial traversing state
-    //valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe), resetEntry(valid); traverseState.diffOffset = min(-nfe.x, 0.f);
+    valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe), resetEntry(valid); //traverseState.diffOffset = floatBitsToInt(min(-nfe.x, 0.f));
 
     // traversing inputs
-    traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(vec4(fma(fvec4_(torig), traverseState.directInv, ftype_(traverseState.diffOffset).xxxx)));
+    traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(vec4(fma(fvec4_(torig), traverseState.directInv, ftype_(intBitsToFloat(traverseState.diffOffset)).xxxx)));
     primitiveState.orig = fma(primitiveState.orig, traverseState.diffOffset.xxxx, torig);
 };
 
 
 // kill switch when traversing 
-void switchStateTo(in uint stateTo, in int instanceTo){
+void switchStateTo(in uint stateTo, in int instanceTo, in bool valid){
     [[flatten]] if (currentState != stateTo) {
-        // restore hit state 
-        //primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
+        [[flatten]] if (currentState == BVH_STATE_TOP) traverseState.idxTop = traverseState.idx;
 
-        // switch stack in local memory 
-        currentState = stateTo;
-        //switchStateToStack(stateTo); INSTANCE_ID = instanceTo;
+#ifdef ENABLE_STACK_SWITCH
+        [[flatten]] if (currentState == BVH_STATE_TOP) {
+            [[flatten]] if ( traverseState.pageID < pageCount ) {
+                pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET] = lstack; // save current stack 
+            };
+            traverseState.stackPtrTop = traverseState.stackPtr, traverseState.pageIDTop = traverseState.pageID; 
+        };
+#endif
 
-        // every bottom level states requires to partial resetting states 
-        //if (stateTo == BVH_STATE_BOTTOM) initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+        currentState = stateTo, INSTANCE_ID = instanceTo;
+        initTraversing(valid, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+        [[flatten]] if (stateTo == BVH_STATE_TOP) traverseState.idx = traverseState.idxTop;
 
-        // require conversion to correct formation 
-        //primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, traverseState.diffOffset);
+        // restoration of stack state
+#ifdef ENABLE_STACK_SWITCH
+        [[flatten]] if (stateTo == BVH_STATE_TOP) {
+            traverseState.stackPtr = traverseState.stackPtrTop, traverseState.pageID = traverseState.pageIDTop;
+            [[flatten]] if ( traverseState.pageID >= 0 ) {
+                lstack = pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET]; // load top level stack
+            };
+        } //else 
+        [[flatten]] if (stateTo == BVH_STATE_BOTTOM) {
+            traverseState.stackPtr = 0, traverseState.pageID = 0;
+        };
+#endif
     };
 };
 
 
 // triangle intersection, when it found
-bool doIntersection(in bool isvalid, in float dlen) {
-    bool stateSwitched = false;
+void doIntersection(in bool isvalid) {
     const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
     isvalid = isvalid && elementID >= 0 && elementID  < traverseState.maxElements;
 
-    //[[flatten]] if (isvalid && currentState == BVH_STATE_TOP) { 
-    //    if (currentState != BVH_STATE_BOTTOM) { switchStateTo(BVH_STATE_BOTTOM, elementID); stateSwitched = true; };
-    //};
+    const uint CSTATE = currentState;
+    [[flatten]] if (isvalid && CSTATE == BVH_STATE_TOP) { 
+        switchStateTo(BVH_STATE_BOTTOM, elementID, isvalid);
+    } //else 
 
-    [[flatten]] if (isvalid && currentState == BVH_STATE_BOTTOM && !stateSwitched) {
+    [[flatten]] if (isvalid && CSTATE == BVH_STATE_BOTTOM) {
         vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
 #ifdef VRT_USE_FAST_INTERSECTION
             intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid, nearT);
@@ -108,9 +131,6 @@ bool doIntersection(in bool isvalid, in float dlen) {
             };
         };
     };
-
-    //traverseState.defElementID = 0;
-    return stateSwitched;
 };
 
 #include "./bvh-traverse-process.glsl"

@@ -13,11 +13,12 @@
 #endif
 
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
-  const  lowp  int localStackSize = 8, pageCount = 4; // 256-bit global memory stack pages
+  const  lowp  int localStackSize = 8, pageCount = 16; // 256-bit global memory stack pages
 #else
-  const  lowp  int localStackSize = 4, pageCount = 8; // 128-bit capable (minor GPU, GDDR6 two-channels)
+  const  lowp  int localStackSize = 4, pageCount = 32; // 128-bit capable (minor GPU, GDDR6 two-channels)
 #endif
-  const highp uint maxIterations  = 8192;
+  //const highp uint maxIterations  = 8192u;
+  const highp uint maxIterations  = 16384u;
 
 
 layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYSTEM { int pages[][localStackSize]; };
@@ -31,17 +32,28 @@ uint currentState = BVH_STATE_TOP;
 // BVH traversing state
 #define _cacheID gl_GlobalInvocationID.x
 struct BvhTraverseState {
-         int idx, defElementID, maxElements, entryIDBase, gStackPtr; float diffOffset;
-    lowp int stackPtr, pageID;
+    int defElementID, maxElements, entryIDBase, diffOffset;
+    int idx;    lowp int stackPtr   , pageID;
+#ifdef ENABLE_STACK_SWITCH
+    int idxTop; lowp int stackPtrTop, pageIDTop;
+#else
+    int idxTop;
+#endif
     fvec4_ directInv, minusOrig;
-} traverseStates[2];
-#define traverseState traverseStates[currentState] // yes, require two states 
+} traverseState; //traverseStates[2];
+//#define traverseState traverseStates[currentState] // yes, require two states 
 
 // 13.10.2018 added one mandatory stack page, can't be reached by regular operations 
 #define CACHE_BLOCK_SIZE (gl_WorkGroupSize.x*gl_NumWorkGroups.x*(pageCount+1)) // require one reserved block 
-#define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
-#define VTX_PTR (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveOffset : bvhBlockIn.primitiveOffset)
 
+#ifdef ENABLE_STACK_SWITCH
+#define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
+#else
+#define STATE_PAGE_OFFSET 0
+#endif
+
+//#define VTX_PTR (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveOffset : bvhBlockIn.primitiveOffset)
+#define VTX_PTR 0
 
 
 void loadStack(inout int rsl) {
@@ -53,26 +65,13 @@ void loadStack(inout int rsl) {
 };
 
 void storeStack(in int rsl) {
-    [[flatten]] if (sidx < localStackSize) { const int pti = sidx++; pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET][pti] = (lstack[pti] = rsl); };
+    //[[flatten]] if (sidx < localStackSize) { const int pti = sidx++; pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET][pti] = (lstack[pti] = rsl); };
+    [[flatten]] if (sidx < localStackSize) { lstack[sidx++] = rsl; };
     [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) { // make store/load deferred 
-        pages[_cacheID*pageCount + (traverseState.pageID++) + STATE_PAGE_OFFSET] = lstack; traverseState.stackPtr = 0;
+        pages[_cacheID*pageCount + (traverseState.pageID++) + STATE_PAGE_OFFSET] = lstack; lstack[traverseState.stackPtr = 0] = -1;
     };
     traverseState.stackPtr = clamp(traverseState.stackPtr, 0, localStackSize);
 };
-
-
-
-// required switch stack when switching states 
-void switchStateToStack(in uint stateTo){
-    //if (traverseState.pageID < pageCount) {
-    //    pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET] = lstack; // synchronize or save 
-    //};
-    currentState = stateTo;
-    if (traverseState.pageID >= 0) { // 
-        lstack = pages[_cacheID*pageCount + (traverseState.pageID) + STATE_PAGE_OFFSET]; // load last state stack 
-    };
-};
-
 
 
 // corrections of box intersection
