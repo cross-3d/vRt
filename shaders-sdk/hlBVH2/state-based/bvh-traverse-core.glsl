@@ -15,6 +15,7 @@ struct PrimitiveState {
 
 // used for re-init traversing 
 vec3 ORIGINAL_ORIGIN = vec3(0.f); dirtype_t ORIGINAL_DIRECTION = dirtype_t(0);
+int LAST_INSTANCE = 0;
 
 
 // BVH traversing itself 
@@ -130,7 +131,7 @@ void doIntersection(in bool isvalid) {
         const float tdiff = nearT-d, tmax = 0.f;
         [[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
             [[flatten]] if (abs(tdiff) > tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
-                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1));
+                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
             };
         };
     };
