@@ -22,10 +22,11 @@ LOCAL_SIZE_LAYOUT;
 #define wsize buildBlock.primitiveCount
 
 // re-calculate box after transforming 
-bbox_t calculateTransformedBox(in uint rI, in vec4 bnds[2]){
+bbox_t calculateTransformedBox(in uint rI, in uint T, in vec4 bnds[2]) {
     vec3 tmin = INFINITY.xxx, tmax = -INFINITY.xxx;
     [[unroll]] for (int x=0;x<2;x++) { [[unroll]] for (int y=0;y<2;y++) { [[unroll]] for (int z=0;z<2;z++) {
         const vec3 point = divW(mult4(bvhBlockTop.transform, divW(mult4(bvhInstance_[rI].transformIn, vec4(bnds[x].x,bnds[y].y,bnds[z].z,1.f))))).xyz;
+        //const vec3 point = divW(mult4(bvhBlockTop.transform, divW(mult4(bvhInstance_[rI].transformIn, divW(mult4(transpose(inverse(transpose(bvhBlockIn_[T].transform))), vec4(bnds[x].x,bnds[y].y,bnds[z].z,1.f))))))).xyz;
         tmin = min(tmin, point), tmax = max(tmax, point);
     }}};
 
@@ -35,6 +36,7 @@ bbox_t calculateTransformedBox(in uint rI, in vec4 bnds[2]){
     return result;
 };
 
+// TODO: complete transformations support
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
@@ -43,11 +45,11 @@ void main() {
             const uint T = clamp(bvhInstance_[rI].bvhBlockID, 0, buildBlock.primitiveCount-1);
 
             // using global optimization transform + input transform of instance 
-            Leafs[I].lbox  = calculateTransformedBox(rI, vec4[2](bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax));
+            Leafs[I].lbox  = calculateTransformedBox(rI, T, vec4[2](bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax));
             Leafs[I].pdata = ivec4((0).xxx, rI+1);
 
             // getting combined transformation for instance 
-            bvhInstance_[rI].transform = transpose( transpose(bvhBlockIn_[T].transform) * inverse(mat4(transpose(bvhInstance_[rI].transformIn))) );
+            bvhInstance_[rI].transform = transpose(inverse(transpose( bvhInstance_[rI].transformIn )));
         };
     };
 };
