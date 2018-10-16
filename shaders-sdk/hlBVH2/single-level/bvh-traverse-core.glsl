@@ -30,7 +30,7 @@ void doIntersection(in bool isvalid, in float dlen) {
         const float tdiff = nearT-d, tmax = 0.f;
         [[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
             [[flatten]] if (abs(tdiff) > tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
-                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1));
+                primitiveState.lastIntersection = vec4(uv.xy, min(d.x, primitiveState.lastIntersection.z), intBitsToFloat(elementID+1));
             };
         };
     }; traverseState.defElementID = 0;
