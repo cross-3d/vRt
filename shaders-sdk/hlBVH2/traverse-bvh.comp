@@ -49,10 +49,10 @@ void main() {
         // do BVH traversing 
         int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID);
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-        currentState = BVH_STATE_TOP; INSTANCE_ID = 0;
+        currentState = bvhBlockTop.primitiveCount <= 1 ? BVH_STATE_BOTTOM : BVH_STATE_TOP; INSTANCE_ID = 0;
 #endif
-        traverseState.entryIDBase = (!overflow ? bvhBlockTop.entryID : -1), traverseState.idx = traverseState.entryIDBase, traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f), 
-        traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.saved = false;
+        traverseState.entryIDBase = (!overflow ? bvhBlockTop.entryID : -1), traverseState.idx = traverseState.entryIDBase, traverseState.maxElements = bvhBlockTop.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f), 
+        traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.saved = bvhBlockTop.primitiveCount <= 1;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
         
 #ifdef ENABLE_STACK_SWITCH

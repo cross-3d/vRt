@@ -68,7 +68,7 @@ void traverseBVH2( in bool reset, in bool validTop ) {
             doIntersection( validTop );
             goDeeper(traverseState.idx);
         }; // 
-        [[flatten]] if (!validIdx(traverseState.idx) && currentState == BVH_STATE_BOTTOM) { switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop); };
+        [[flatten]] if (!validIdx(traverseState.idx) && currentState == BVH_STATE_BOTTOM && validIdxTop(traverseState.idxTop)) { switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop); };
         [[flatten]] if (!validIdx(traverseState.idx)) { break; };
     };
     //switchStateTo(BVH_STATE_TOP, 0, true);
