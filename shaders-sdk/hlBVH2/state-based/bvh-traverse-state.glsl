@@ -21,7 +21,7 @@
   const highp uint maxIterations  = 16384u;
 
 
-layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYSTEM { int pages[][localStackSize]; };
+layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYSTEM { int pages[][localStackSize]; } traverseCache;
 
 // stack system of current BVH traverser
 shared int localStack[WORK_SIZE][localStackSize];
@@ -45,35 +45,31 @@ struct BvhTraverseState {
 
 // 13.10.2018 added one mandatory stack page, can't be reached by regular operations 
 #define CACHE_BLOCK_SIZE (gl_WorkGroupSize.x*gl_NumWorkGroups.x*(pageCount+1)) // require one reserved block 
-#define CACHE_BLOCK (_cacheID*(pageCount+1))
+#define CACHE_BLOCK (_cacheID*(pageCount+1)+(gl_WorkGroupSize.x*gl_NumWorkGroups.x*2))
 
 #ifdef ENABLE_STACK_SWITCH
-#define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
-#else
 #define STATE_PAGE_OFFSET 0
+#else
+#define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
 #endif
+
 
 //#define VTX_PTR (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveOffset : bvhBlockIn.primitiveOffset)
 #define VTX_PTR 0
 
 
 void loadStack(inout int rsl) {
-    [[flatten]] if (traverseState.stackPtr <= 0 && (traverseState.pageID-1) >= 0) { // make store/load deferred 
-        lstack = pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize;
-        traverseState.pageID = clamp(traverseState.pageID, 0, pageCount);
+    [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0) { // make store/load deferred 
+        lstack = traverseCache.pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize;
     };
-    [[flatten]] if ((--sidx) >= 0) rsl = lstack[sidx];
-    traverseState.stackPtr = clamp(traverseState.stackPtr, 0, localStackSize);
+    [[flatten]] if (sidx > 0) { rsl = lstack[--sidx], lstack[sidx] = -1; };
 };
 
 void storeStack(in int rsl) {
-    //[[flatten]] if (sidx < localStackSize) { const int pti = sidx++; pages[CACHE_BLOCK + traverseState.pageID + STATE_PAGE_OFFSET][pti] = (lstack[pti] = rsl); };
     [[flatten]] if (sidx < localStackSize) { lstack[sidx++] = rsl; };
     [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) { // make store/load deferred 
-        pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
-        traverseState.pageID = clamp(traverseState.pageID, 0, pageCount);
+        traverseCache.pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
     };
-    traverseState.stackPtr = clamp(traverseState.stackPtr, 0, localStackSize);
 };
 
 

@@ -1,4 +1,5 @@
 
+/*
 #ifndef _CACHE_BINDING
 #define _CACHE_BINDING 9
 #endif
@@ -33,14 +34,9 @@ shared int localStack[WORK_SIZE][localStackSize];
 
 
 // 13.10.2018 added one mandatory stack page, can't be reached by regular operations 
-#define CACHE_BLOCK_SIZE (gl_WorkGroupSize.x*gl_NumWorkGroups.x*(pageCount+1)) // require one reserved block 
-#define CACHE_BLOCK (_cacheID*(pageCount+1))
-
-#ifdef ENABLE_STACK_SWITCH
-#define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
-#else
+#define CACHE_BLOCK_SIZE (gl_WorkGroupSize.x*gl_NumWorkGroups.x*pageCount) // require one reserved block 
+#define CACHE_BLOCK (_cacheID*(pageCount)+(gl_WorkGroupSize.x*gl_NumWorkGroups.x))
 #define STATE_PAGE_OFFSET 0
-#endif
 
 
 // BVH traversing state
@@ -62,18 +58,19 @@ struct BvhTraverseState {
 void loadStack(inout int rsl) {
     [[flatten]] if (traverseState.stackPtr <= 0 && (traverseState.pageID-1) >= 0) { // make store/load deferred 
         lstack = pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize;
+        traverseState.pageID = clamp(traverseState.pageID, 0, pageCount-1);
     };
-    [[flatten]] if ((--sidx) >= 0) rsl = lstack[sidx];
-    traverseState.stackPtr = clamp(traverseState.stackPtr, 0, localStackSize), traverseState.pageID = clamp(traverseState.pageID, 0, pageCount);
+    [[flatten]] if ((--sidx) >= 0) { rsl = lstack[sidx], lstack[sidx] = -1; };
+    traverseState.stackPtr = clamp(traverseState.stackPtr, 0, localStackSize);
 };
 
 void storeStack(in int rsl) {
-    //[[flatten]] if (sidx < localStackSize) { const int pti = sidx++; pages[CACHE_BLOCK + traverseState.pageID + STATE_PAGE_OFFSET][pti] = (lstack[pti] = rsl); };
     [[flatten]] if (sidx < localStackSize) { lstack[sidx++] = rsl; };
     [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount) { // make store/load deferred 
         pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
+        traverseState.pageID = clamp(traverseState.pageID, 1, pageCount);
     };
-    traverseState.stackPtr = clamp(traverseState.stackPtr, 0, localStackSize), traverseState.pageID = clamp(traverseState.pageID, 0, pageCount);
+    traverseState.stackPtr = clamp(traverseState.stackPtr, 0, localStackSize);
 };
 
 
@@ -82,3 +79,4 @@ void storeStack(in int rsl) {
 const bvec4 bsgn = false.xxxx;
 const 
 float dirlen = 1.f, invlen = 1.f, bsize = 1.f;
+*/

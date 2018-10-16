@@ -32,7 +32,6 @@ void resetEntry(in bool valid) {
 
     // bottom states should also reset own stacks, top levels doesn't require it
     traverseState.idx = valid ? traverseState.entryIDBase : -1, traverseState.defElementID = 0;
-    //traverseState.stackPtr = 0, traverseState.pageID = 0;
 };
 
 bool validIdx(in int idx){
@@ -61,10 +60,10 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
     const   vec3 interm = fma(0.5f.xxxx, 2.f.xxxx, 1.f.xxxx).xyz;
     const   vec2 bside2 = vec2(-fpOne, fpOne);
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
-    //resetEntry(valid);
+    resetEntry(valid);
 
     // initial traversing state
-    valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe), resetEntry(valid); //traverseState.diffOffset = floatBitsToInt(min(-nfe.x, 0.f));
+    //valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe), resetEntry(valid);
 
     // traversing inputs
     traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(vec4(fma(fvec4_(torig), traverseState.directInv, ftype_(intBitsToFloat(traverseState.diffOffset)).xxxx)));
@@ -73,34 +72,27 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 
 
 // kill switch when traversing 
-void switchStateTo(in uint stateTo, in int instanceTo, in bool valid){
-    [[flatten]] if (currentState != stateTo) {
-        [[flatten]] if (currentState == BVH_STATE_TOP) traverseState.idxTop = valid ? traverseState.idx : -1;
-
+void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
+    const uint CSTATE = currentState;
+    [[flatten]] if (CSTATE != stateTo) { INSTANCE_ID = instanceTo;
+        [[flatten]] if (CSTATE == BVH_STATE_TOP && stateTo == BVH_STATE_BOTTOM) { traverseState.idxTop = traverseState.idx; };
 #ifdef ENABLE_STACK_SWITCH
-        [[flatten]] if (currentState == BVH_STATE_TOP) {
-            [[flatten]] if ( (traverseState.pageID+1) <= pageCount ) {
-                pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (++traverseState.pageID)] = lstack; // save current stack 
-                traverseState.pageID = clamp(traverseState.pageID, 0, pageCount);
-            };
-            traverseState.stackPtrTop = traverseState.stackPtr, traverseState.pageIDTop = traverseState.pageID; 
+        [[flatten]] if (CSTATE == BVH_STATE_TOP && stateTo == BVH_STATE_BOTTOM) {
+            traverseCache.pages[_cacheID] = lstack;
+            traverseState.stackPtrTop = traverseState.stackPtr, traverseState.pageIDTop = traverseState.pageID;
         };
 #endif
 
-        currentState = stateTo, INSTANCE_ID = instanceTo;
-        initTraversing(valid, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
-        [[flatten]] if (stateTo == BVH_STATE_TOP) traverseState.idx = valid ? traverseState.idxTop : -1;
+        currentState = stateTo; initTraversing(valid, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
 
         // restoration of stack state
+        [[flatten]] if (CSTATE == BVH_STATE_BOTTOM && stateTo == BVH_STATE_TOP) { traverseState.idx = traverseState.idxTop; };
 #ifdef ENABLE_STACK_SWITCH
-        [[flatten]] if (stateTo == BVH_STATE_TOP) {
+        [[flatten]] if (CSTATE == BVH_STATE_BOTTOM && stateTo == BVH_STATE_TOP) {
             traverseState.stackPtr = traverseState.stackPtrTop, traverseState.pageID = traverseState.pageIDTop;
-            [[flatten]] if ( traverseState.pageID >= 0 ) {
-                lstack = pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (traverseState.pageID--)]; // load top level stack
-                traverseState.pageID = clamp(traverseState.pageID, 0, pageCount);
-            };
-        } //else 
-        [[flatten]] if (stateTo == BVH_STATE_BOTTOM) {
+            lstack = traverseCache.pages[_cacheID];
+        };
+        [[flatten]] if (CSTATE == BVH_STATE_TOP && stateTo == BVH_STATE_BOTTOM) {
             traverseState.stackPtr = 0, traverseState.pageID = 0;
         };
 #endif

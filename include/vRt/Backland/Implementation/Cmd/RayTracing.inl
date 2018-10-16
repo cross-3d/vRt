@@ -91,6 +91,7 @@ namespace _vt {
             if (vertx && vertx->_calculatedPrimitiveCount > 0) {
                 // reset hit counter before new intersections
                 auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
+                cmdFillBuffer<-1>(*cmdBuf, rtset->_traverseCache);
 
                 std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
