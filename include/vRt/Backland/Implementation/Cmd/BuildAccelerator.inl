@@ -236,7 +236,7 @@ namespace _vt {
 
             const auto workGroupSize = 16u;
             std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet };
-            if (vertx) _sets.push_back(vertx->_descriptorSet);
+            if (vertx && accel->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY) _sets.push_back(vertx->_descriptorSet);
 
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, acclb->_boxCalcPipeline[accel->_level], INTENSIVITY); // calculate general box of BVH
@@ -250,6 +250,7 @@ namespace _vt {
             cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
             cmdDispatch(*cmdBuf, acclb->_fitPipeline, INTENSIVITY);
         };
+        commandBarrier(*cmdBuf);
 
         return result;
     };

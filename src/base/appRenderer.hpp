@@ -384,7 +384,7 @@ namespace rnd {
         VtAcceleratorSet acceleratorMain = {};
 
         VtVertexAssemblySet vertexAssembly = {};
-        VkCommandBuffer bCmdBuf = {}, rtCmdBuf = {}, vxCmdBuf = {}, vxuCmdBuf = {};
+        VkCommandBuffer bCmdBuf = {}, tbCmdBuf, rtCmdBuf = {}, vxCmdBuf = {}, vxuCmdBuf = {};
         VtDeviceBuffer rtUniformBuffer = {};
         VtCameraUniform cameraUniformData = {};
 

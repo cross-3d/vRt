@@ -35,6 +35,9 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
+#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
+    currentState = BVH_STATE_BOTTOM; INSTANCE_ID = 0;
+#endif
     const uint wsize = min(rayCounter, MAX_RAYS); IFANY (wsize <= 0 || bvhBlockTop.primitiveCount <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
 
@@ -46,9 +49,9 @@ void main() {
         // do BVH traversing 
         int rayID = vtRayIdx(it), hid = vtFetchHitIdc(rayID);
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-        currentState = BVH_STATE_TOP; INSTANCE_ID = 0;
+        currentState = BVH_STATE_BOTTOM; INSTANCE_ID = 0;
 #endif
-        traverseState.entryIDBase = 0, traverseState.maxElements = bvhBlockTop.primitiveCount, traverseState.diffOffset = 0.f;
+        traverseState.entryIDBase = 0, traverseState.maxElements = bvhBlockIn.primitiveCount, traverseState.diffOffset = 0.f;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 
         // planned multiple-hits support
@@ -65,7 +68,11 @@ void main() {
                 int ftrID = -1; // current found triangle
                 [[flatten]] if (traverseState.maxElements > 0) {
                     traverseBVH2(i > 0, !overflow);
-                    ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1, traverseState.maxElements = min(traverseState.maxElements, ftrID);
+#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
+                    currentState = BVH_STATE_BOTTOM; INSTANCE_ID = 0;
+#endif
+                    ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
+                    //traverseState.maxElements = min(traverseState.maxElements, ftrID);
                 };
                 found = found || ftrID >= 0;
 

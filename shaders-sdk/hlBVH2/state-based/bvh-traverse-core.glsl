@@ -16,6 +16,7 @@ struct PrimitiveState {
 // used for re-init traversing 
 vec3 ORIGINAL_ORIGIN = vec3(0.f); dirtype_t ORIGINAL_DIRECTION = dirtype_t(0);
 
+
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
 void resetEntry(in bool valid) { 
@@ -65,15 +66,16 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 
 // kill switch when traversing 
 void switchStateTo(in uint stateTo, in int instanceTo){
-    if (currentState != stateTo) {
+    [[flatten]] if (currentState != stateTo) {
         // restore hit state 
         //primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
 
         // switch stack in local memory 
-        switchStateToStack(stateTo); INSTANCE_ID = instanceTo;
+        currentState = stateTo;
+        //switchStateToStack(stateTo); INSTANCE_ID = instanceTo;
 
         // every bottom level states requires to partial resetting states 
-        if (currentState == BVH_STATE_BOTTOM) initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+        //if (stateTo == BVH_STATE_BOTTOM) initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
 
         // require conversion to correct formation 
         //primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, traverseState.diffOffset);
@@ -87,11 +89,11 @@ bool doIntersection(in bool isvalid, in float dlen) {
     const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
     isvalid = isvalid && elementID >= 0 && elementID  < traverseState.maxElements;
 
-    [[flatten]] if (isvalid && currentState == BVH_STATE_TOP) { 
-        switchStateTo(BVH_STATE_BOTTOM, elementID); stateSwitched = true;
-    };
+    //[[flatten]] if (isvalid && currentState == BVH_STATE_TOP) { 
+    //    if (currentState != BVH_STATE_BOTTOM) { switchStateTo(BVH_STATE_BOTTOM, elementID); stateSwitched = true; };
+    //};
 
-    [[flatten]] if (isvalid && currentState == BVH_STATE_BOTTOM) {
+    [[flatten]] if (isvalid && currentState == BVH_STATE_BOTTOM && !stateSwitched) {
         vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
 #ifdef VRT_USE_FAST_INTERSECTION
             intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid, nearT);

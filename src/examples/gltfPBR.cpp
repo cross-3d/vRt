@@ -243,16 +243,21 @@ namespace rnd {
             bCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
 
-
             vtCmdBindAccelerator(qBCmdBuf, acceleratorGeometry);
             vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
             vtCmdBindVertexInputSets(qBCmdBuf, inputs.size(), inputs.data());
             vtCmdBuildAccelerator(qBCmdBuf);
-
-            vtCmdBindAccelerator(qBCmdBuf, acceleratorMain);
-            vtCmdBuildAccelerator(qBCmdBuf, 2);
-
             vkEndCommandBuffer(qBCmdBuf);
+        }
+
+        {
+            // make accelerator and vertex builder command
+            tbCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
+            VtCommandBuffer qTBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, tbCmdBuf, &qTBCmdBuf);
+
+            vtCmdBindAccelerator(qTBCmdBuf, acceleratorMain);
+            vtCmdBuildAccelerator(qTBCmdBuf, BvhInstancedData.size());
+            vkEndCommandBuffer(qTBCmdBuf);
         }
 
         {
@@ -290,6 +295,7 @@ namespace rnd {
 
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { vxuCmdBuf });
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { tbCmdBuf });
     };
 
 
@@ -301,15 +307,12 @@ namespace rnd {
          };
 
          {
-             glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3( 0.f, 0.f, 0.f)));
-             glm::mat4 movedBK = glm::transpose(glm::translate(glm::vec3( 0.f, 0.f, 200.f)));
-
-             // instances
-             BvhInstancedData.push_back(VtBvhInstance{});
-             BvhInstancedData.push_back(VtBvhInstance{});
-
-             BvhInstancedData[0].transformIn = *((VtMat4*)&movedFW);
-             BvhInstancedData[1].transformIn = *((VtMat4*)&movedBK);
+             // instances 
+             for (int i = 0; i < 4;i++) {
+                 glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(0.f, 0.f, i*200.f)));
+                 BvhInstancedData.push_back(VtBvhInstance{});
+                 BvhInstancedData[i].transformIn = *((VtMat4*)&movedFW);
+             }
 
              // headers 
              BvhHeadersData.push_back(VtBvhBlock{});
@@ -337,13 +340,13 @@ namespace rnd {
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
             acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
             acci.bvhDataBuffer = BvhDataBuffer;
-            acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(8u);
-            acci.traversingEntryID = 8u; // this information will known when will traversing 
+            acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(64u);
+            acci.traversingEntryID = 64u; // this information will known when will traversing 
             vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorGeometry);
 
             // create accelerator set in top level 
             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_INSTANCE;
-            acci.maxPrimitives = 4;
+            acci.maxPrimitives = 2048ull;
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
             acci.bvhMetaHeadOffset = 0;
             acci.bvhMetaBuffer = BvhHeadersBuffer;
@@ -864,6 +867,7 @@ namespace rnd {
      void Renderer::ComputeRayTracing(){
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { vxuCmdBuf });
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
+        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { tbCmdBuf });
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
     };
 
