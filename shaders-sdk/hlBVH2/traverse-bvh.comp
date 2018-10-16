@@ -78,7 +78,7 @@ void main() {
                 [[flatten]] if (traverseState.maxElements > 0 && validIdx(traverseState.idx)) {
                     traverseBVH2(i > 0, !overflow);
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-                    currentState = BVH_STATE_TOP; INSTANCE_ID = 0;
+                    currentState = BVH_STATE_TOP; //INSTANCE_ID = 0;
 #endif
                     ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
                     //traverseState.maxElements = min(traverseState.maxElements, ftrID);
@@ -89,7 +89,7 @@ void main() {
                     [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // if required new
                     hit.payloadID = 0, hit.rayID = rayID+1;
                     hit.uvt = primitiveState.lastIntersection;
-                    hit.vdat = 0.f.xxxx;
+                    hit.vdat = 0.f.xxxx; hit.vdat.w = intBitsToFloat(INSTANCE_ID);
                     
                     const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);
                     [[flatten]] if ( ftrID >= 0) 
