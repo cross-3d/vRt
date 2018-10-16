@@ -17,22 +17,23 @@ struct PrimitiveState {
 
 // triangle intersection, when it found
 void doIntersection(in bool isvalid, in float dlen) {
-    isvalid = isvalid && traverseState.defElementID > 0 && traverseState.defElementID <= traverseState.maxElements;
+    const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
+    isvalid = isvalid && elementID >= 0 && elementID  < traverseState.maxElements;
     IFANY (isvalid) {
         vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
 #ifdef VRT_USE_FAST_INTERSECTION
-            intersectTriangle(primitiveState.orig, primitiveState.dir, traverseState.defElementID-1, uv.xy, isvalid, nearT);
+            intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid, nearT);
 #else
-            intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, traverseState.defElementID-1, uv.xy, isvalid);
+            intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, elementID, uv.xy, isvalid);
 #endif
 
         const float tdiff = nearT-d, tmax = 0.f;
         [[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
-            [[flatten]] if (abs(tdiff) > tmax || traverseState.defElementID > floatBitsToInt(primitiveState.lastIntersection.w)) {
-                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(traverseState.defElementID));
+            [[flatten]] if (abs(tdiff) > tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
+                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1));
             };
         };
-    }; traverseState.defElementID=0;
+    }; traverseState.defElementID = 0;
 };
 
 // 

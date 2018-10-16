@@ -47,6 +47,7 @@ void main() {
     //} else {
         vec4 co = divW(mult4(cameraUniform.camInv, mult4(cameraUniform.projInv, vec4(fma(coord, 2.0f.xx, -1.0f.xx), 1.f-SFN, 1.0f))));
            orig = divW(mult4(cameraUniform.camInv, mult4(cameraUniform.projInv, vec4(fma(coord, 2.0f.xx, -1.0f.xx),     SFN, 1.0f))));
+
         dir = co - orig; //vec4(normalize(co.xyz - orig.xyz)*vec3(1.f,1.f,1.f), 0.0f);
     //}
 

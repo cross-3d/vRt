@@ -26,29 +26,30 @@ void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         const uint I = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (I >= wsize) break;
+        [[flatten]] if (I < wsize) {
+            // unit mode 
+            //vec4 sceneMin = bvhBlockTop.sceneMin, sceneMax = bvhBlockTop.sceneMax, sceneRes = sceneMax - sceneMin;
+            vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx, sceneRes = sceneMax - sceneMin, sdiv = 1.f.xxxx;
+            bbox_t lbox = bbox_t(uniteBoxTop(Leafs[I].lbox.mn)*sdiv, uniteBoxTop(Leafs[I].lbox.mx)*sdiv);
 
-        // unit mode 
-        //vec4 sceneMin = bvhBlockTop.sceneMin, sceneMax = bvhBlockTop.sceneMax, sceneRes = sceneMax - sceneMin;
-        vec4 sceneMin = -1.f.xxxx, sceneMax = 1.f.xxxx, sceneRes = sceneMax - sceneMin, sdiv = 1.f.xxxx;
-        bbox_t lbox = bbox_t(uniteBox(Leafs[I].lbox.mn)*sdiv, uniteBox(Leafs[I].lbox.mx)*sdiv);
+            // calculate center of box (yes, uses mix, because the same of (a+b)/2)
+            vec4 bcenter = vector4(mix(lbox.mn, lbox.mx, .5f.xxxx));
+            bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
 
-        // calculate center of box (yes, uses mix, because the same of (a+b)/2)
-        vec4 bcenter = vector4(mix(lbox.mn, lbox.mx, .5f.xxxx));
-        bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
+            // store leaf data
+            {
+                // re-arrange box
+                Leafs[I].lbox = lbox;
+                
+                // save morton codes 
+    #ifdef USE_MORTON_32
+                Mortoncodes[I] = encodeMorton(packUnorm4x8(bcenter));
+    #else
+                Mortoncodes[I] = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
+    #endif
 
-        // store leaf data
-        [[flatten]] if (I < wsize && I >= 0) {
-            // re-arrange box
-            Leafs[I].lbox = lbox;
-            
-            // save morton codes 
-#ifdef USE_MORTON_32
-            Mortoncodes[I] = encodeMorton(packUnorm4x8(bcenter));
-#else
-            Mortoncodes[I] = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
-#endif
-
-            MortoncodesIndices[I] = int(I+1);
+                MortoncodesIndices[I] = int(I+1);
+            };
         };
     };
 };

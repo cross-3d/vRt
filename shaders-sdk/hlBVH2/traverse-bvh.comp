@@ -2,7 +2,7 @@
 #extension GL_GOOGLE_include_directive : enable
 
 // enable it, when you will ready...
-//#define EXPERIMENTAL_INSTANCING_SUPPORT
+#define EXPERIMENTAL_INSTANCING_SUPPORT
 
 #define VRT_USE_FAST_INTERSECTION
 #define USE_SINGLE_THREAD_RAY_MANAGMENT

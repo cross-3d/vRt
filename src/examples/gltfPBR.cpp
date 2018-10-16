@@ -271,7 +271,7 @@ namespace rnd {
             vtCmdBindAccelerator(qRtCmdBuf, acceleratorGeometry);
 
             //  top levels (have issues at now, low performance problems)
-            //vtCmdBindAccelerator(qRtCmdBuf, acceleratorMain);
+            vtCmdBindAccelerator(qRtCmdBuf, acceleratorMain);
 
             // vertex assembly 
             vtCmdBindVertexAssembly(qRtCmdBuf, vertexAssembly);
@@ -295,7 +295,7 @@ namespace rnd {
 
      void Renderer::InitRayTracing() {
          {
-             createBufferFast(deviceQueue, BvhDataBuffer, sizeof(VtBvhNodeStruct) * 1024ull * 1024ull);
+             createBufferFast(deviceQueue, BvhDataBuffer, sizeof(VtBvhNodeStruct) * 2048ull * 2048ull);
              createBufferFast(deviceQueue, BvhHeadersBuffer, sizeof(VtBvhBlock) * 256ull);
              createBufferFast(deviceQueue, BvhInstancedBuffer, sizeof(VtBvhInstance) * 256ull);
          };
@@ -333,7 +333,7 @@ namespace rnd {
             VtAcceleratorSetCreateInfo acci = {};
             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
             acci.coverMat = *((VtMat4*)&optMat);
-            acci.maxPrimitives = 1024ull * 512ull;
+            acci.maxPrimitives = 1024ull * 2048ull;
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
             acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
             acci.bvhDataBuffer = BvhDataBuffer;

@@ -67,7 +67,7 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 void switchStateTo(in uint stateTo, in int instanceTo){
     if (currentState != stateTo) {
         // restore hit state 
-        primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
+        //primitiveState.lastIntersection.z = min(fma(primitiveState.lastIntersection.z, invlen, -traverseState.diffOffset*invlen), INFINITY);
 
         // switch stack in local memory 
         switchStateToStack(stateTo); INSTANCE_ID = instanceTo;
@@ -76,7 +76,7 @@ void switchStateTo(in uint stateTo, in int instanceTo){
         if (currentState == BVH_STATE_BOTTOM) initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
 
         // require conversion to correct formation 
-        primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, traverseState.diffOffset);
+        //primitiveState.lastIntersection.z = fma(min(primitiveState.lastIntersection.z, INFINITY), dirlen, traverseState.diffOffset);
     };
 };
 
@@ -86,30 +86,28 @@ bool doIntersection(in bool isvalid, in float dlen) {
     bool stateSwitched = false;
     const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
     isvalid = isvalid && elementID >= 0 && elementID  < traverseState.maxElements;
-    [[flatten]] if (isvalid) {
-        
-        [[flatten]] if (currentState == BVH_STATE_TOP) {
-            [[flatten]] if (isvalid) { switchStateTo(BVH_STATE_BOTTOM, elementID); stateSwitched = true; };
-        }
 
-        else 
-        {
-            vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
+    [[flatten]] if (isvalid && currentState == BVH_STATE_TOP) { 
+        switchStateTo(BVH_STATE_BOTTOM, elementID); stateSwitched = true;
+    };
+
+    [[flatten]] if (isvalid && currentState == BVH_STATE_BOTTOM) {
+        vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
 #ifdef VRT_USE_FAST_INTERSECTION
-                intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid, nearT);
+            intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid, nearT);
 #else
-                intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, elementID, uv.xy, isvalid);
+            intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, elementID, uv.xy, isvalid);
 #endif
 
-            const float tdiff = nearT-d, tmax = 0.f;
-            [[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
-                [[flatten]] if (abs(tdiff) > tmax || elementID+1 > floatBitsToInt(primitiveState.lastIntersection.w)) {
-                    primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1));
-                };
+        const float tdiff = nearT-d, tmax = 0.f;
+        [[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
+            [[flatten]] if (abs(tdiff) > tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
+                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1));
             };
         };
-    }; //traverseState.defElementID=0;
+    };
 
+    //traverseState.defElementID = 0;
     return stateSwitched;
 };
 
