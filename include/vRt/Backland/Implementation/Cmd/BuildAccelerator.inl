@@ -237,16 +237,20 @@ namespace _vt {
             const auto workGroupSize = 16u;
             std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet };
             if (vertx && accel->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY) _sets.push_back(vertx->_descriptorSet);
-
+            
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, acclb->_boxCalcPipeline[accel->_level], INTENSIVITY); // calculate general box of BVH
             cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH
             cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
             cmdDispatch(*cmdBuf, acclb->_leafPipeline[accel->_level], INTENSIVITY); // calculate node boxes and morton codes
-            radixSort(cmdBuf, acclb->_sortDescriptorSet, _bvhBlockData.leafCount);
-            vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+            if (_bvhBlockData.leafCount > 2) { // don't use radix sort when only 1-2 elements 
+                radixSort(cmdBuf, acclb->_sortDescriptorSet, _bvhBlockData.leafCount);
+                vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
+            };
             cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
-            cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
+            if (_bvhBlockData.leafCount > 4) { // useless step for too fews 
+                cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
+            };
             cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
             cmdDispatch(*cmdBuf, acclb->_fitPipeline, INTENSIVITY);
         };
