@@ -57,10 +57,10 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 
     // test intersection with main box
     vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-    const   vec3 interm = fma(fpInner.xxxx, 2.f.xxxx, 1.f.xxxx).xyz;
+    const   vec3 interm = fma(0.5f.xxxx, 2.f.xxxx, fpInner.xxxx).xyz;
     const   vec2 bside2 = vec2(-fpOne, fpOne);
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
-    resetEntry(valid);
+    //resetEntry(valid);
 
     // initial traversing state
     //valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe), resetEntry(valid); traverseState.diffOffset = min(-nfe.x, 0.f);
