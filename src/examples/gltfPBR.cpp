@@ -330,7 +330,7 @@ namespace rnd {
 
         {
             // box matrix optimizer ( by default 16.f geometry density per 1.f unit, not bound by global box ) 
-             const auto optMat = glm::mat4(1.f);//glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
+             const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
 
             // create accelerator set in bottom level 
             VtAcceleratorSetCreateInfo acci = {};
@@ -346,6 +346,8 @@ namespace rnd {
             vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorGeometry);
 
             // create accelerator set in top level 
+            acci.coverMat = IdentifyMat4;
+            //acci.coverMat = *((VtMat4*)&optMat);
             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_INSTANCE;
             acci.maxPrimitives = 1024ull;
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
