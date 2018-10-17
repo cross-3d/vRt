@@ -389,6 +389,7 @@ namespace _vt { // store in undercover namespace
     class BufferRegion : public std::enable_shared_from_this<BufferRegion> {
     public:
         friend Device;
+        ~BufferRegion();
         VkBufferView _sBufferView = {};
         std::shared_ptr<Device> _device = {};
 

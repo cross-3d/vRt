@@ -28,6 +28,11 @@ namespace _vt {
     };
 
 
+    BufferRegion::~BufferRegion() {
+        if (_bufferView() && _device) vkDestroyBufferView(*_device, _bufferView(), nullptr); _bufferView() = {}, _device = {};
+    };
+
+
     VtResult createBufferView(std::shared_ptr<BufferRegion> bRegion) {
         VtResult result = VK_SUCCESS;
 
@@ -219,6 +224,7 @@ namespace _vt {
     DeviceImage::~DeviceImage() {
         auto  image = this->_image ; this->_image  = {};
         auto device = this->_device; this->_device = {};
+        if (_imageView && device) vkDestroyImageView(*device, _imageView, nullptr); _imageView = {};
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         auto allocation = this->_allocation; this->_allocation = {};
 #endif
