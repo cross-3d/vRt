@@ -311,7 +311,9 @@ namespace rnd {
              //BvhInstancedData.push_back(VtBvhInstance{});
              for (int x = 0; x < 4; x++) {
                  for (int z = 0; z < 4; z++) {
-                     glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*400.f, 0.f, z*200.f)));
+                     glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f))*glm::rotate(glm::radians(90.f * (x + z)), glm::vec3(0.f, 1.f, 0.f))); 
+                     //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*100.f, 0.f, z*100.f))*glm::rotate(glm::radians(90.f * (x + z)), glm::vec3(0.f, 1.f, 0.f)));
+                     //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f)));
                      BvhInstancedData.push_back(VtBvhInstance{});
                      BvhInstancedData[BvhInstancedData.size()-1].transformIn = *((VtMat4*)&movedFW);
                  }
@@ -330,12 +332,14 @@ namespace rnd {
 
         {
             // box matrix optimizer ( by default 16.f geometry density per 1.f unit, not bound by global box ) 
-             const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
+             //const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
+             const auto optMat = glm::transpose( glm::rotate(glm::radians(60.f), glm::vec3(1.f, 0.f, 0.f)) );
 
             // create accelerator set in bottom level 
             VtAcceleratorSetCreateInfo acci = {};
             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
-            acci.coverMat = *((VtMat4*)&optMat);
+            acci.coverMat = IdentifyMat4;
+            //acci.coverMat = *((VtMat4*)&optMat);
             acci.maxPrimitives = 1024ull * 2048ull;
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
             acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
@@ -346,8 +350,8 @@ namespace rnd {
             vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorGeometry);
 
             // create accelerator set in top level 
-            acci.coverMat = IdentifyMat4;
-            //acci.coverMat = *((VtMat4*)&optMat);
+            //acci.coverMat = IdentifyMat4;
+            acci.coverMat = *((VtMat4*)&optMat);
             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_INSTANCE;
             acci.maxPrimitives = 1024ull;
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
