@@ -91,8 +91,8 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_groupIndicesBufferRead);
 
 
-                bfi.bufferSize = hitCount * (8ull * sizeof(uint32_t));
                 bfi.format = VK_FORMAT_UNDEFINED;
+                bfi.bufferSize = hitCount * (16ull * sizeof(uint32_t));
                 createBufferRegion(bManager, bfi, vtRTSet->_hitBuffer);
 
 
