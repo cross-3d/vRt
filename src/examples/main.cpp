@@ -3,7 +3,7 @@
 #include "../base/appRenderer.hpp"
 
 // initial renderer
-const uint32_t canvasWidth = 640, canvasHeight = 360; // without accounting super-sampling
+const uint32_t canvasWidth = 1024, canvasHeight = 576; // without accounting super-sampling
 std::shared_ptr<rnd::Renderer> renderer = nullptr;
 
 // main program with handling
