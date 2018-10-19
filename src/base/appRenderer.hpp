@@ -401,7 +401,7 @@ namespace rnd {
 
         // methods for rendering
         void Arguments(int argc = 0, char** argv = nullptr);
-        void Init(uint32_t canvasWidth, uint32_t canvasHeight);
+        void Init(uint32_t canvasWidth, uint32_t canvasHeight, bool enableSuperSampling = false);
         void InitRayTracing();
         void InitPipeline();
         void InitCommands();

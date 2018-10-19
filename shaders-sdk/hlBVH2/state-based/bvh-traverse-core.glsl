@@ -47,16 +47,20 @@ bool validIdx(in int idx){
 };
 
 
+#define TRANSFORM_IN (currentState == BVH_STATE_TOP ? bvhBlockTop.transform : bvhInstance.transform)
+
+vec4 uniteBoxLv(in vec4 pt){
+    return (currentState == BVH_STATE_TOP ? uniteBoxTop(pt) : uniteBox(pt));
+};
+
 // initialize state 
 void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir ) {
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
-    vec4 torig = 0.f.xxxx, torigTo = 0.f.xxxx;
-    [[flatten]] if (currentState == BVH_STATE_TOP) {
-        torig = -uniteBoxTop(vec4(mult4(bvhBlockTop.transform, vec4(orig, 1.f)).xyz, 1.f)), torigTo = uniteBoxTop(vec4(mult4(bvhBlockTop.transform, vec4(orig, 1.f) + vec4(dcts(pdir).xyz, 0.f)).xyz, 1.f));
-    } else {
-        torig = -uniteBox   (vec4(mult4(bvhInstance.transform, vec4(orig, 1.f)).xyz, 1.f)), torigTo = uniteBox   (vec4(mult4(bvhInstance.transform, vec4(orig, 1.f) + vec4(dcts(pdir).xyz, 0.f)).xyz, 1.f));
-    }; const vec4 tdir = torigTo+torig;
+    const vec4 
+        torig   = -uniteBoxLv(vec4(mult4(TRANSFORM_IN, vec4(orig, 1.f)).xyz, 1.f)), 
+        torigTo =  uniteBoxLv(vec4(mult4(TRANSFORM_IN, vec4(orig, 1.f) + vec4(dcts(pdir).xyz, 0.f)).xyz, 1.f)), 
+        tdir    =  torigTo+torig;
 
     const vec4 dirct = tdir*invlen, dirproj = 1.f / precIssue(dirct);
     primitiveState.dir = primitiveState.orig = dirct;

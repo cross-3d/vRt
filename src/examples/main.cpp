@@ -3,7 +3,8 @@
 #include "../base/appRenderer.hpp"
 
 // initial renderer
-const uint32_t canvasWidth = 1024, canvasHeight = 576; // without accounting super-sampling
+const uint32_t canvasWidth = 640, canvasHeight = 360; // 
+const bool enableSuperSampling = true;
 std::shared_ptr<rnd::Renderer> renderer = nullptr;
 
 // main program with handling
@@ -17,7 +18,7 @@ int main(int argc, char** argv) {
     // initialize renderer
     renderer = std::make_shared<rnd::Renderer>();
     renderer->Arguments(argc, argv);
-    renderer->Init(canvasWidth, canvasHeight); // init GLFW window there
+    renderer->Init(canvasWidth, canvasHeight, enableSuperSampling); // init GLFW window there
     renderer->InitPipeline();
     renderer->InitRayTracing();
     renderer->InitRayTracingPipeline();

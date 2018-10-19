@@ -47,7 +47,7 @@ namespace rnd {
         if (trnsLV) transparencyLevel = args::get(trnsLV);
     };
 
-     void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight) {
+     void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, bool enableSuperSampling) {
         // create GLFW window
         this->windowWidth = windowWidth, this->windowHeight = windowHeight;
         this->window = glfwCreateWindow(windowWidth, windowHeight, "vRt early test", NULL, NULL);
@@ -97,7 +97,7 @@ namespace rnd {
         renderpass = appBase->createRenderpass(deviceQueue);
         
         // create image output
-        const double SuperSampling = 2.0; // super sampling image
+        const auto SuperSampling = enableSuperSampling ? 2.0 : 1.0; // super sampling image
         this->canvasWidth  = this->windowWidth  * SuperSampling;
         this->canvasHeight = this->windowHeight * SuperSampling;
 
@@ -211,8 +211,8 @@ namespace rnd {
             Shared::active.tDiff = 0.0; // reset diff to near-zero (avoid critical math errors)
             Shared::active.keys.resize(1024, uint8_t(0u));
             Shared::active.mouse.resize(128, uint8_t(0u));
-            
         }
+
     };
 
      void Renderer::InitCommands() {
