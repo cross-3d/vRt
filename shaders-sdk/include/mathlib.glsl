@@ -221,12 +221,15 @@ vec4  clamp01(in vec4 c)  { return clamp(c, 0.f.xxxx, (1.f-SFN).xxxx); };
 // matrix math (simular DX12)
 vec4 mult4(in vec4 vec, in mat4 tmat) { return tmat * vec; };
 vec4 mult4(in mat4 tmat, in vec4 vec) { return vec * tmat; };
+//vec4 mult4(in mat4 tmat, in vec4 vec) { return vec4(dot(vec,tmat[0]),dot(vec,tmat[1]),dot(vec,tmat[2]),dot(vec,tmat[3])); };
 
 vec4 mult4(in vec3 vec, in mat3x4 tmat) { return tmat * vec; };
 vec3 mult4(in mat3x4 tmat, in vec4 vec) { return vec * tmat; };
+//vec3 mult4(in mat3x4 tmat, in vec4 vec) { return vec3(dot(vec,tmat[0]),dot(vec,tmat[1]),dot(vec,tmat[2])); };
 
 vec3 mult4(in vec4 vec, in mat4x3 tmat) { return tmat * vec; };
 vec4 mult4(in mat4x3 tmat, in vec3 vec) { return vec * tmat; };
+//vec4 mult4(in mat4x3 tmat, in vec3 vec) { return vec4(dot(vec,tmat[0]),dot(vec,tmat[1]),dot(vec,tmat[2]),dot(vec,tmat[3])); };
 
 mat4 mult4(in mat4 tmat, in mat4 otmat) { return otmat*tmat; };
 
