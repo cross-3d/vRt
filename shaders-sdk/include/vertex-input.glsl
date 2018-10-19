@@ -131,17 +131,15 @@ uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) 
 };
 
 void readByAccessorLL(in int accessor, in uint index, inout uvec4 outpx) {
-    uint attribution[4] = {outpx.x, outpx.y, outpx.z, outpx.w};
     [[flatten]] if (accessor >= 0) {
         const int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         const uint T = calculateByteOffset(accessor, index, 2);
-        const uint C = aComponents(accessors[accessor].bitfield)+1;
         const uint D = 0u; // component decoration
+        const uint C = min(aComponents(accessors[accessor].bitfield)+1, 4u-D);
         [[unroll]] for (int i=0;i<4;i++) {
-            [[flatten]] if (C > i) attribution[D+i] = M32(BFS,T+i);
+            [[flatten]] if (C > i) outpx[D+i] = M32(BFS,T+i);
         };
-    }
-    outpx = uvec4(attribution[0], attribution[1], attribution[2], attribution[3]);
+    };
 };
 
 uvec4 readByAccessorLLW(in int accessor, in uint index, in uvec4 outpx) { readByAccessorLL(accessor, index, outpx); return outpx; };
