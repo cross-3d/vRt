@@ -61,7 +61,7 @@ void main() {
 
             const uint chit = (hitID+1), ghit = imageAtomicMin(rayLink,r4ID,chit.x);
             [[flatten]] if (ghit >= chit && hit.uvt.z <= hits[ghit-1].uvt.z) { // also, required range checking for correct more results 
-                [[flatten]] if (imageAtomicMin(rayLink,r4ID|2,chit.x) >= chit) {
+                [[flatten]] if (imageAtomicCompSwap(rayLink,r4ID|2,0xFFFFFFFFu,chit.x) == 0xFFFFFFFFu) {
                     const int pid = atomicIncPayloadHitCount();
                     hit.payloadID = pid+1;
 #ifndef DMA_HIT
