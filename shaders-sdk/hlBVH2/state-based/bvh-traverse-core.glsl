@@ -43,7 +43,7 @@ bool validIdxTop(in int idx){
 };
 
 bool validIdx(in int idx){
-    return traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && (idx-traverseState.entryIDBase)<(traverseState.maxElements<<1) && idx >= 0 && idx != -1;
+    return INSTANCE_ID >= 0 && traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && (idx-traverseState.entryIDBase)<(traverseState.maxElements<<1) && idx >= 0 && idx != -1;
 };
 
 
@@ -71,10 +71,11 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
     const   vec3 interm = fma(0.5f.xxxx, 2.f.xxxx, fpInner.xxxx).xyz;
     const   vec2 bside2 = vec2(-fpOne, fpOne);
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
-    //resetEntry(valid);
 
     // initial traversing state
-    valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe), resetEntry(valid);
+    [[flatten]] if ((currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) > 1) {
+        valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe);
+    }; resetEntry(valid);
 
     // traversing inputs
     traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(vec4(fma(fvec4_(torig), traverseState.directInv, ftype_(intBitsToFloat(traverseState.diffOffset)).xxxx)));
