@@ -18,7 +18,7 @@ struct PrimitiveState {
 // triangle intersection, when it found
 void doIntersection(in bool isvalid, in float dlen) {
     const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
-    isvalid = isvalid && elementID >= 0 && elementID  < traverseState.maxElements;
+    isvalid = isvalid && elementID >= 0;
     IFANY (isvalid) {
         vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
 #ifdef VRT_USE_FAST_INTERSECTION

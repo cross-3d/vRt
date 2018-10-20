@@ -6,7 +6,7 @@ int goDeeper (inout int idx) {
     return idx;
 };
 
-// require solve problem with State registry ( probably, need even better hardware ) 
+// TODO: need solve to better bottom level BVH primitive ID support 
 void traverseBVH2( in bool reset, in bool validTop ) {
     [[flatten]] if (validTop) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
         [[flatten]] if ( validIdx(traverseState.idx) ) {
@@ -14,8 +14,8 @@ void traverseBVH2( in bool reset, in bool validTop ) {
             //const NTYPE_ bvhNode = bvhNodes[traverseState.idx]; // each full node have 64 bytes
             #define bvhNode bvhNodes[traverseState.idx]
             const ivec2 cnode = validIdx(traverseState.idx) ? bvhNode.meta.xy : (0).xx;
-            [[flatten]] if (isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x; } // if leaf, defer for intersection 
-            else { // if not leaf, intersect with nodes
+            [[flatten]] if ( isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x; } else  // if leaf, defer for intersection 
+            [[flatten]] if (isnLeaf(cnode.xy)) { // if not leaf, intersect with nodes
                 //const fmat3x4_ bbox2x = fmat3x4_(bvhNode.cbox[0], bvhNode.cbox[1], bvhNode.cbox[2]);
 
 #ifdef EXPERIMENTAL_UNORM16_BVH

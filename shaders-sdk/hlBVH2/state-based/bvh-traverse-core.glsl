@@ -15,25 +15,20 @@ struct PrimitiveState {
 
 // used for re-init traversing 
 vec3 ORIGINAL_ORIGIN = vec3(0.f); dirtype_t ORIGINAL_DIRECTION = dirtype_t(0);
-int LAST_INSTANCE = 0;
-
+int LAST_INSTANCE = 0, MAX_ELEMENTS = 0;
 
 // BVH traversing itself 
-bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1; };
-void resetEntry(in bool valid) { 
-    valid == valid && INSTANCE_ID >= 0; 
+bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1 && (currentState == BVH_STATE_TOP || mem.x <= traverseState.maxElements); };
+bool isnLeaf(in ivec2 mem) { return mem.x!=mem.y && mem.x >= 1; };
+
+
+void resetEntry(in bool VALID) {
+    VALID = VALID && INSTANCE_ID >= 0, MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0;
     traverseState.defElementID = 0, traverseState.diffOffset = floatBitsToInt(0.f);
-    [[flatten]] if (currentState == BVH_STATE_TOP) {
-        traverseState.maxElements = bvhBlockTop.primitiveCount;
-        traverseState.entryIDBase = (valid ? bvhBlockTop.entryID : -1);
-    } else 
+    traverseState.entryIDBase = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.entryID : bvhBlockIn.entryID) : -1;
+
     [[flatten]] if (currentState == BVH_STATE_BOTTOM) {
-        traverseState.maxElements = bvhBlockIn .primitiveCount;
-        traverseState.entryIDBase = (valid ? bvhBlockIn .entryID : -1);
-        traverseState.idx = traverseState.entryIDBase;
-#ifdef ENABLE_STACK_SWITCH
-        traverseState.stackPtr = 0, traverseState.pageID = 0;
-#endif
+        traverseState.idx = traverseState.entryIDBase, traverseState.stackPtr = 0, traverseState.pageID = 0;
     };
 };
 
@@ -43,21 +38,19 @@ bool validIdxTop(in int idx){
 };
 
 bool validIdx(in int idx){
-    return INSTANCE_ID >= 0 && traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && (idx-traverseState.entryIDBase)<(traverseState.maxElements<<1) && idx >= 0 && idx != -1;
+    return INSTANCE_ID >= 0 && MAX_ELEMENTS > 0 && traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && (idx-traverseState.entryIDBase)<(MAX_ELEMENTS<<1) && idx >= 0 && idx != -1;
 };
-
-
-
-#define TRANSFORM_IN (currentState == BVH_STATE_TOP ? bvhBlockTop.transform : bvhInstance.transform)
 
 vec4 uniteBoxLv(in vec4 pt){
     return (currentState == BVH_STATE_TOP ? uniteBoxTop(pt) : uniteBox(pt));
 };
 
+
 // initialize state 
 void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir ) {
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
+    const mat4 TRANSFORM_IN = currentState == BVH_STATE_TOP ? bvhBlockTop.transform : bvhInstance.transform;
     const vec4 
         torig   = -uniteBoxLv(vec4(mult4(TRANSFORM_IN, vec4(orig, 1.f)).xyz, 1.f)), 
         torigTo =  uniteBoxLv(vec4(mult4(TRANSFORM_IN, vec4(orig, 1.f) + vec4(dcts(pdir).xyz, 0.f)).xyz, 1.f)), 
@@ -82,8 +75,7 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
     primitiveState.orig = fma(primitiveState.orig, traverseState.diffOffset.xxxx, torig);
 };
 
-
-
+// 
 void triggerSwitch(in uint stateTo){
     currentState = stateTo; initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
 };
@@ -115,11 +107,10 @@ void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
     };
 };
 
-
 // triangle intersection, when it found
 void doIntersection(in bool isvalid) {
     const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
-    isvalid = isvalid && elementID >= 0 && elementID  < traverseState.maxElements;
+    isvalid = isvalid && elementID >= 0;
 
     const uint CSTATE = currentState;
     [[flatten]] if (isvalid && CSTATE == BVH_STATE_TOP) { 

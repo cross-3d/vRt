@@ -51,7 +51,7 @@ void main() {
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
         currentState = bvhBlockTop.primitiveCount <= 1 ? BVH_STATE_BOTTOM : BVH_STATE_TOP; INSTANCE_ID = 0, LAST_INSTANCE = 0;
 #endif
-        traverseState.entryIDBase = (!overflow ? bvhBlockTop.entryID : -1), traverseState.idx = traverseState.entryIDBase, traverseState.maxElements = bvhBlockTop.primitiveCount, traverseState.diffOffset = floatBitsToInt(0.f), 
+        traverseState.entryIDBase = (!overflow ? bvhBlockTop.entryID : -1), traverseState.idx = traverseState.entryIDBase, traverseState.maxElements = 0x7FFFFFFF, traverseState.diffOffset = floatBitsToInt(0.f), 
         traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.saved = bvhBlockTop.primitiveCount <= 1;
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
         
