@@ -39,12 +39,13 @@ void resetEntry(in bool valid) {
 
 
 bool validIdxTop(in int idx){
-    return bvhBlockTop.primitiveCount > 1 && bvhBlockTop.entryID >= 0 && idx >= bvhBlockTop.entryID && (idx-bvhBlockTop.entryID)<(bvhBlockTop.leafCount<<1) && idx >= 0 && idx != -1;
+    return bvhBlockTop.primitiveCount > 1 && bvhBlockTop.entryID >= 0 && idx > bvhBlockTop.entryID && (idx-bvhBlockTop.entryID)<(bvhBlockTop.leafCount<<1) && idx >= 0 && idx != -1;
 };
 
 bool validIdx(in int idx){
     return traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && (idx-traverseState.entryIDBase)<(traverseState.maxElements<<1) && idx >= 0 && idx != -1;
 };
+
 
 
 #define TRANSFORM_IN (currentState == BVH_STATE_TOP ? bvhBlockTop.transform : bvhInstance.transform)

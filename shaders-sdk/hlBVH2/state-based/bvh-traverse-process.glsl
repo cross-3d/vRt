@@ -60,7 +60,7 @@ void traverseBVH2( in bool reset, in bool validTop ) {
             [[flatten]] if ( !_continue ) {
                 traverseState.idx = -1; goDeeper(traverseState.idx);
                 if (!validIdx(traverseState.idx)) loadStack(traverseState.idx); }; // load from stack 
-            [[flatten]] IFANY (traverseState.defElementID > 0 || !validIdx(traverseState.idx)) { break; }; // 
+            [[flatten]] IFANY (traverseState.defElementID > 0 || !validIdx(traverseState.idx) || traverseState.idx == bvhBlockTop.entryID) { break; }; // 
         }}};
         
         // every-step solving 
@@ -68,8 +68,8 @@ void traverseBVH2( in bool reset, in bool validTop ) {
             doIntersection( validTop );
             goDeeper(traverseState.idx);
         }; // 
-        [[flatten]] if (!validIdx(traverseState.idx) && currentState == BVH_STATE_BOTTOM && validIdxTop(traverseState.idxTop)) { switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop); };
-        [[flatten]] if (!validIdx(traverseState.idx)) { break; };
+        [[flatten]] if (!validIdx(traverseState.idx) && traverseState.idx != bvhBlockTop.entryID && validIdxTop(traverseState.idxTop) && currentState == BVH_STATE_BOTTOM) { switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop); };
+        [[flatten]] if (!validIdx(traverseState.idx) || traverseState.idx == bvhBlockTop.entryID) { break; };
     };
     //switchStateTo(BVH_STATE_TOP, 0, true);
 };
