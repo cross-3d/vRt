@@ -6,7 +6,7 @@
 namespace _vt {
     using namespace vrt;
 
-    VtResult createPipelineLayout(std::shared_ptr<Device> _vtDevice, VtPipelineLayoutCreateInfo vtPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& vtPipelineLayout, VtPipelineLayoutType type) {
+    VtResult createPipelineLayout(std::shared_ptr<Device> _vtDevice, VtPipelineLayoutCreateInfo vtPipelineLayoutCreateInfo, std::shared_ptr<PipelineLayout>& vtPipelineLayout, const VtPipelineLayoutType& type) {
         VtResult result = VK_SUCCESS;
         auto vkDevice = _vtDevice->_device;
 
