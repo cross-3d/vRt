@@ -53,11 +53,16 @@
 - HLSL shaders for non-core functionality
 - Initial support of extensions
 - Advanced ray-tracing API (i.e. reduce API bloating)
+- Public MVP and prototype stage
+
+**Q1 of 2019**
+
+- Unit tests 
+- Documentation 
+- Alpha stage
 
 **Indefinite Term**
 
-- Unit tests
-- Coming to alpha stage
 - Begin of development for OpenGL, OpenCL and CUDA interoperability
 - First implementations for games, engines, applications, blockchains
 - Make custom GLSL/HLSL compiler for unified compatibility
