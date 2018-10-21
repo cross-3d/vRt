@@ -220,7 +220,7 @@ namespace rnd {
             // make accelerator and vertex builder command
             vxCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qVxCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxCmdBuf, &qVxCmdBuf);
-            vtCmdBindRayTracingSet(qVxCmdBuf, raytracingSet); // required, because Vulkan API have forced requirements for having sets
+            //vtCmdBindRayTracingSet(qVxCmdBuf, raytracingSet); 
             vtCmdBindDescriptorSets(qVxCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
             vtCmdBindVertexAssembly(qVxCmdBuf, vertexAssembly);
             vtCmdBindVertexInputSets(qVxCmdBuf, inputs.size(), inputs.data());
@@ -232,7 +232,7 @@ namespace rnd {
             // make accelerator and vertex builder command
             vxuCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qVxuCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxuCmdBuf, &qVxuCmdBuf);
-            vtCmdBindRayTracingSet(qVxuCmdBuf, raytracingSet); // required, because Vulkan API have forced requirements for having sets
+            //vtCmdBindRayTracingSet(qVxCmdBuf, raytracingSet); 
             vtCmdBindDescriptorSets(qVxuCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
             vtCmdBindVertexAssembly(qVxuCmdBuf, vertexAssembly);
             vtCmdBindVertexInputSets(qVxuCmdBuf, inputs.size(), inputs.data());
@@ -244,7 +244,7 @@ namespace rnd {
             // make accelerator and vertex builder command
             bCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
-            vtCmdBindRayTracingSet(qBCmdBuf, raytracingSet); // required, because Vulkan API have forced requirements for having sets
+            //vtCmdBindRayTracingSet(qVxCmdBuf, raytracingSet); 
 
             vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
             vtCmdBindVertexInputSets(qBCmdBuf, inputs.size(), inputs.data());
@@ -615,9 +615,6 @@ namespace rnd {
             createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4x3) * 1024ull * 1024ull);
             createBufferFast(deviceQueue, materialDescs, sizeof(VtAppMaterial) * (1ull+model.materials.size()));
             createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImageV16>(256));
-
-
-
         };
 
 

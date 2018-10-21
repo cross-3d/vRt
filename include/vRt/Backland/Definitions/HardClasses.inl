@@ -82,6 +82,7 @@ namespace _vt { // store in undercover namespace
 
         VkPipelineCache _pipelineCache = {}; // store native pipeline cache
         VkDescriptorPool _descriptorPool = {};
+        VkDescriptorSet _emptyDS = {};
 
         // TODO: much better support of multi-threaded processing by multiple instances
         uint32_t _supportedThreadCount = 1u;

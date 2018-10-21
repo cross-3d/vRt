@@ -16,7 +16,7 @@ namespace _vt {
         vtPipelineLayout->_device = _vtDevice;
         vtPipelineLayout->_type = type;
 
-        std::vector<vk::DescriptorSetLayout> dsLayouts = {vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"])};
+        std::vector<vk::DescriptorSetLayout> dsLayouts = {vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap[type == VT_PIPELINE_LAYOUT_TYPE_RAYTRACING ? "rayTracing" : "empty"])};
         if (type == VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT) {
             dsLayouts.push_back(vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]));
             dsLayouts.push_back(vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]));
@@ -29,7 +29,6 @@ namespace _vt {
             dsLayouts.push_back(vkPipelineLayout.pSetLayouts[i]);
         };
 
-        
         vkPipelineLayout.setLayoutCount = dsLayouts.size();
         vkPipelineLayout.pSetLayouts = dsLayouts.data();
 
@@ -42,6 +41,7 @@ namespace _vt {
         vtPipelineLayout->_vsLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo(vkPipelineLayout));
         vtPipelineLayout->_rtLayout = vtPipelineLayout->_vsLayout;
         if (type == VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT) {
+            dsLayouts[0] = vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]); // attemp to shift descriptor sets 
             dsLayouts[1] = vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"]), vkPipelineLayout.pSetLayouts = dsLayouts.data(); // replace inputs to hlbvh2 data (require for ray-tracing)
             vtPipelineLayout->_rtLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo(vkPipelineLayout));
         };

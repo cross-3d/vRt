@@ -48,7 +48,7 @@ namespace _vt {
         if (cmdBuf->_vertexInputs.size() <= 0) return result;
 
         auto device = cmdBuf->_parent();
-        auto rtset = cmdBuf->_rayTracingSet.lock();
+        //auto rtset = cmdBuf->_rayTracingSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
         auto vasmp = vertx && vertx->_vertexAssembly ? vertx->_vertexAssembly : device->_nativeVertexAssembler[0];
         vertx->_vertexInputs = cmdBuf->_vertexInputs;
@@ -74,7 +74,7 @@ namespace _vt {
             auto iV = cmdBuf->_vertexInputs[_bnd];
 
             // native descriptor sets
-            std::vector<VkDescriptorSet> _sets = { rtset->_descriptorSet, iV->_descriptorSet, vertx->_descriptorSet };
+            std::vector<VkDescriptorSet> _sets = { device->_emptyDS, iV->_descriptorSet, vertx->_descriptorSet };
 
             // user defined descriptor sets
             auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
@@ -91,7 +91,7 @@ namespace _vt {
                 const uint32_t _bnd = _bndc++;
 
                 // native descriptor sets
-                std::vector<VkDescriptorSet> _sets = { rtset->_descriptorSet, iV->_descriptorSet, vertx->_descriptorSet };
+                std::vector<VkDescriptorSet> _sets = { device->_emptyDS, iV->_descriptorSet, vertx->_descriptorSet };
 
                 // user defined descriptor sets
                 auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
@@ -119,7 +119,7 @@ namespace _vt {
 
         // ptr's 
         auto device = cmdBuf->_parent();
-        auto rtset = cmdBuf->_rayTracingSet.lock();
+        //auto rtset = cmdBuf->_rayTracingSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
         auto vasmp = vertx && vertx->_vertexAssembly ? vertx->_vertexAssembly : device->_nativeVertexAssembler[0];
         vertx->_vertexInputs = cmdBuf->_vertexInputs;
@@ -146,7 +146,7 @@ namespace _vt {
             // native descriptor sets
             const auto pLayout = (iV->_attributeAssembly ? iV->_attributeAssembly : vasmp)->_pipelineLayout;
             //auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
-            std::vector<VkDescriptorSet> _sets = { rtset->_descriptorSet, iV->_descriptorSet, vertx->_descriptorSet };
+            std::vector<VkDescriptorSet> _sets = { device->_emptyDS, iV->_descriptorSet, vertx->_descriptorSet };
 
             // user defined descriptor sets
             auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
@@ -164,7 +164,7 @@ namespace _vt {
                     // native descriptor sets
                     const auto pLayout = (iV->_attributeAssembly ? iV->_attributeAssembly : vasmp)->_pipelineLayout;
                     //auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
-                    std::vector<VkDescriptorSet> _sets = { rtset->_descriptorSet, iV->_descriptorSet, vertx->_descriptorSet };
+                    std::vector<VkDescriptorSet> _sets = { device->_emptyDS, iV->_descriptorSet, vertx->_descriptorSet };
 
                     // user defined descriptor sets
                     auto _bsets = cmdBuf->_perVertexInputDSC.find(_bnd) != cmdBuf->_perVertexInputDSC.end() ? cmdBuf->_perVertexInputDSC[_bnd] : cmdBuf->_boundVIDescriptorSets;
@@ -188,7 +188,7 @@ namespace _vt {
     VtResult buildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, VtAcceleratorBuildInfo buildInfo = {}) {
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
-        auto rtset = cmdBuf->_rayTracingSet.lock();
+        //auto rtset = cmdBuf->_rayTracingSet.lock();
         auto acclb = device->_acceleratorBuilder[0];
         auto accel = cmdBuf->_acceleratorSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();

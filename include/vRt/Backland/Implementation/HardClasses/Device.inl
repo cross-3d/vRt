@@ -38,7 +38,8 @@ namespace _vt {
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         if (vtExtension.allocator) {
             vtDevice->_allocator = *(const VmaAllocator*)vtExtension.allocator; result = VK_SUCCESS;
-        } else {
+        }
+        else {
             VmaAllocatorCreateInfo allocatorInfo = {};
             allocatorInfo.physicalDevice = *(vtDevice->_physicalDevice);
             allocatorInfo.device = vtDevice->_device;
@@ -87,7 +88,7 @@ namespace _vt {
 
         // make descriptor pool
         const size_t mult = 4;
-        std::vector<vk::DescriptorPoolSize> dps = { 
+        std::vector<vk::DescriptorPoolSize> dps = {
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(256 * mult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageImage).setDescriptorCount(256 * mult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageBuffer).setDescriptorCount(256 * mult),
@@ -107,26 +108,26 @@ namespace _vt {
 
         // buffer <--> host traffic buffers
         { const constexpr uint32_t t = 0u;
-            vtDevice->_bufferTraffic.push_back(std::make_shared<BufferTraffic>());
+        vtDevice->_bufferTraffic.push_back(std::make_shared<BufferTraffic>());
 
-            // make traffic buffers 
-            VtDeviceBufferCreateInfo dbfi = {};
-            dbfi.bufferSize = strided<uint32_t>(vtExtension.sharedCacheSize);
-            dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
-            dbfi.familyIndex = vtExtension.mainQueueFamily;
+        // make traffic buffers 
+        VtDeviceBufferCreateInfo dbfi = {};
+        dbfi.bufferSize = strided<uint32_t>(vtExtension.sharedCacheSize);
+        dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
+        dbfi.familyIndex = vtExtension.mainQueueFamily;
 
-            vtDevice->_bufferTraffic[t]->_device = vtDevice;
-            createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uploadBuffer);
-            createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_downloadBuffer);
+        vtDevice->_bufferTraffic[t]->_device = vtDevice;
+        createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uploadBuffer);
+        createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_downloadBuffer);
         };
 
         // vertex input meta construction arrays
         { const constexpr uint32_t t = 0u;
-            VtDeviceBufferCreateInfo dbfi = {};
-            dbfi.format = VK_FORMAT_UNDEFINED;
-            dbfi.bufferSize = strided<VtUniformBlock>(1024);
-            dbfi.familyIndex = vtExtension.mainQueueFamily;
-            createDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uniformVIBuffer);
+        VtDeviceBufferCreateInfo dbfi = {};
+        dbfi.format = VK_FORMAT_UNDEFINED;
+        dbfi.bufferSize = strided<VtUniformBlock>(1024);
+        dbfi.familyIndex = vtExtension.mainQueueFamily;
+        createDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uniformVIBuffer);
         };
 
 
@@ -241,6 +242,12 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute),
             };
             vtDevice->_descriptorLayoutMap["vertexInputSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
+        };
+
+        { //
+            const auto layoutSet = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(nullptr).setBindingCount(0));
+            vtDevice->_emptyDS = _device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&layoutSet).setDescriptorSetCount(1))[0];
+            vtDevice->_descriptorLayoutMap["empty"] = layoutSet;
         };
 
         // 
