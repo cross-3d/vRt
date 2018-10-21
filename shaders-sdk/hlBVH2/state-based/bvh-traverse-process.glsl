@@ -7,7 +7,9 @@ int goDeeper (inout int idx) {
 };
 
 // TODO: need solve to better bottom level BVH primitive ID support 
-void traverseBVH2( in bool reset, in bool validTop ) {
+int traverseBVH2( in bool validTop ) {
+    currentState = bvhBlockTop.primitiveCount <= 1 ? BVH_STATE_BOTTOM : BVH_STATE_TOP, INSTANCE_ID = 0, LAST_INSTANCE = 0;
+    initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     [[flatten]] if (validTop) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
         [[flatten]] if ( validIdx(traverseState.idx) ) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) { bool _continue = false;
@@ -71,5 +73,6 @@ void traverseBVH2( in bool reset, in bool validTop ) {
         [[flatten]] if (!validIdx(traverseState.idx) && traverseState.idx != bvhBlockTop.entryID && validIdxTop(traverseState.idxTop) && currentState == BVH_STATE_BOTTOM) { switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop); };
         [[flatten]] if (!validIdx(traverseState.idx) || traverseState.idx == bvhBlockTop.entryID) { break; };
     };
+    return floatBitsToInt(primitiveState.lastIntersection.w);
     //switchStateTo(BVH_STATE_TOP, 0, true);
 };

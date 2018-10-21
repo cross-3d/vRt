@@ -23,7 +23,7 @@ bool isnLeaf(in ivec2 mem) { return mem.x!=mem.y && mem.x >= 1; };
 
 
 void resetEntry(in bool VALID) {
-    VALID = VALID && INSTANCE_ID >= 0, MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0;
+    VALID = VALID && INSTANCE_ID >= 0, MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0, VALID = VALID && MAX_ELEMENTS > 0;
     traverseState.defElementID = 0, traverseState.diffOffset = floatBitsToInt(0.f);
     traverseState.entryIDBase = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.entryID : bvhBlockIn.entryID) : -1;
 
@@ -38,7 +38,7 @@ bool validIdxTop(in int idx){
 };
 
 bool validIdx(in int idx){
-    return INSTANCE_ID >= 0 && MAX_ELEMENTS > 0 && traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && (idx-traverseState.entryIDBase)<(MAX_ELEMENTS<<1) && idx >= 0 && idx != -1;
+    return traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && (idx-traverseState.entryIDBase)<(MAX_ELEMENTS<<1) && idx >= 0 && idx != -1;
 };
 
 vec4 uniteBoxLv(in vec4 pt){
@@ -84,22 +84,14 @@ void triggerSwitch(in uint stateTo){
 void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
     [[flatten]] if (currentState != stateTo) { 
         [[flatten]] if (stateTo == BVH_STATE_BOTTOM && !traverseState.saved) {
-#ifdef ENABLE_STACK_SWITCH
             traverseState.idxTop = traverseState.idx, traverseState.stackPtrTop = traverseState.stackPtr, traverseState.pageIDTop = traverseState.pageID, traverseState.saved = true;
             traverseCache.stack[_cacheID] = lstack;
-#else
-            traverseState.idxDefer = traverseState.idx;
-#endif
         };
 
         [[flatten]] if (stateTo == BVH_STATE_TOP && traverseState.saved) {
-#ifdef ENABLE_STACK_SWITCH
             traverseState.idx = traverseState.idxTop, traverseState.stackPtr = traverseState.stackPtrTop, traverseState.pageID = traverseState.pageIDTop, traverseState.saved = false;
             traverseState.idxTop = -1, traverseState.stackPtrTop = -1, traverseState.pageIDTop = -1;
             lstack = traverseCache.stack[_cacheID];
-#else
-            traverseState.idx = traverseState.idxDefer; traverseState.idxDefer = -1;
-#endif
         };
 
         INSTANCE_ID = instanceTo;

@@ -39,11 +39,7 @@ uint currentState = BVH_STATE_TOP;
 struct BvhTraverseState {
     int defElementID, maxElements, entryIDBase, diffOffset; bool saved;
     int idx;    lowp int stackPtr   , pageID;
-#ifdef ENABLE_STACK_SWITCH
     int idxTop; lowp int stackPtrTop, pageIDTop;
-#else
-    int idxDefer;
-#endif
     fvec4_ directInv, minusOrig;
 } traverseState; //traverseStates[2];
 //#define traverseState traverseStates[currentState] // yes, require two states 
@@ -51,13 +47,7 @@ struct BvhTraverseState {
 // 13.10.2018 added one mandatory stack page, can't be reached by regular operations 
 #define CACHE_BLOCK_SIZE (gl_WorkGroupSize.x*gl_NumWorkGroups.x*uint(pageCount)) // require one reserved block 
 #define CACHE_BLOCK (_cacheID*pageCount)
-
-#ifdef ENABLE_STACK_SWITCH
-#define STATE_PAGE_OFFSET 0u
-#else
 #define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
-#endif
-
 
 //#define VTX_PTR (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveOffset : bvhBlockIn.primitiveOffset)
 #define VTX_PTR 0
