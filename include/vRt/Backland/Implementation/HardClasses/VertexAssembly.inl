@@ -12,8 +12,17 @@ namespace _vt {
         auto vkPipelineCache = _vtDevice->_pipelineCache;
         assemblyPipeline = std::make_shared<AssemblyPipeline>();
         assemblyPipeline->_device = _vtDevice;
-        assemblyPipeline->_pipelineLayout = info.pipelineLayout;
-        assemblyPipeline->_vkPipeline = createCompute(vkDevice, info.assemblyModule, *assemblyPipeline->_pipelineLayout, vkPipelineCache);
+
+        // 
+        auto originalAssembler = _vtDevice->_nativeVertexAssembler[0];
+        if (originalAssembler) {
+            assemblyPipeline->_pipelineLayout = _vtDevice->_nativeVertexAssembler[0]->_pipelineLayout;
+            assemblyPipeline->_intrpPipeline = _vtDevice->_nativeVertexAssembler[0]->_intrpPipeline;
+            assemblyPipeline->_inputPipeline = _vtDevice->_nativeVertexAssembler[0]->_inputPipeline;
+        };
+        if (info.pipelineLayout) assemblyPipeline->_pipelineLayout = info.pipelineLayout;
+        if (info.assemblyModule.module) assemblyPipeline->_inputPipeline = createCompute(vkDevice, info.assemblyModule, assemblyPipeline->_pipelineLayout->_vsLayout, vkPipelineCache);
+        if (info.interpolModule.module) assemblyPipeline->_intrpPipeline = createCompute(vkDevice, info.interpolModule, assemblyPipeline->_pipelineLayout->_rtLayout, vkPipelineCache);
         return result;
     };
 
@@ -26,6 +35,8 @@ namespace _vt {
         VtResult result = VK_SUCCESS;
         _assemblySet = std::make_shared<VertexAssemblySet>();
         _assemblySet->_device = _vtDevice;
+        _assemblySet->_vertexAssembly = _vtDevice->_nativeVertexAssembler[0];
+        if (info.vertexAssembly) _assemblySet->_vertexAssembly = info.vertexAssembly;
 
                   const auto maxPrimitives = info.maxPrimitives;
         constexpr const auto aWidth = 4096ull * 3ull;

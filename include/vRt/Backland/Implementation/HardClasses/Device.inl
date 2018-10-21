@@ -157,7 +157,7 @@ namespace _vt {
             };
             //vkfl.setBindingCount(_bindings.size());
             vtDevice->_descriptorLayoutMap["rayTracing"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
-        }
+        };
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
@@ -167,7 +167,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(3, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // bvh blocks  
             };
             vtDevice->_descriptorLayoutMap["hlbvh2"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
-        }
+        };
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
@@ -183,7 +183,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(9 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // box calculation of scene 
             };
             vtDevice->_descriptorLayoutMap["hlbvh2work"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
-        }
+        };
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
@@ -191,13 +191,13 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // material buffer (unused)
                 vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // order buffer (unused)
                 vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // writable vertices
-                vk::DescriptorSetLayoutBinding(4 , vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eCompute), // writable attributes
+                vk::DescriptorSetLayoutBinding(4 , vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eCompute), // writable attributes (DEPRECATED row)
                 vk::DescriptorSetLayoutBinding(5 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // readonly vertices
-                vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute), // readonly attributes
+                vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute), // readonly attributes (DEPRECATED row)
                 vk::DescriptorSetLayoutBinding(7 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlagBits::eCompute), // precomputed normals
             };
             vtDevice->_descriptorLayoutMap["vertexData"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
-        }
+        };
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
@@ -205,7 +205,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // values in
             };
             vtDevice->_descriptorLayoutMap["radixSortBind"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
-        }
+        };
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
@@ -216,7 +216,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(4, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // prefix-sum of radices (every work group)
             };
             vtDevice->_descriptorLayoutMap["radixSort"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
-        }
+        };
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
@@ -227,7 +227,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(4 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // material set uniform 
             };
             vtDevice->_descriptorLayoutMap["materialSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
-        }
+        };
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
@@ -241,16 +241,17 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute),
             };
             vtDevice->_descriptorLayoutMap["vertexInputSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
-        }
+        };
 
         // 
         const auto vendorName = vtDevice->_vendorName;
         auto simfo = VtAttributePipelineCreateInfo{};
-#ifdef VRT_ENABLE_HARDCODED_SPV_CORE
-        simfo.assemblyModule = makeComputePipelineStageInfo(*vtDevice, natives::vertexAssembly.at(vendorName));
-#else
+//#ifdef VRT_ENABLE_HARDCODED_SPV_CORE
+//        simfo.assemblyModule = makeComputePipelineStageInfo(*vtDevice, natives::vertexAssembly.at(vendorName));
+//#else
         simfo.assemblyModule = makeComputePipelineStageInfo(*vtDevice, _vt::readBinary(natives::vertexAssembly.at(vendorName)));
-#endif
+        simfo.interpolModule = makeComputePipelineStageInfo(*vtDevice, _vt::readBinary(hlbvh2::interpolator.at(vendorName)));
+//#endif
 
         // native vertex input pipeline layout 
         auto vtpl = VtPipelineLayoutCreateInfo{};

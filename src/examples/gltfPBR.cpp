@@ -220,6 +220,7 @@ namespace rnd {
             // make accelerator and vertex builder command
             vxCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qVxCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxCmdBuf, &qVxCmdBuf);
+            vtCmdBindRayTracingSet(qVxCmdBuf, raytracingSet); // required, because Vulkan API have forced requirements for having sets
             vtCmdBindDescriptorSets(qVxCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
             vtCmdBindVertexAssembly(qVxCmdBuf, vertexAssembly);
             vtCmdBindVertexInputSets(qVxCmdBuf, inputs.size(), inputs.data());
@@ -231,6 +232,7 @@ namespace rnd {
             // make accelerator and vertex builder command
             vxuCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qVxuCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxuCmdBuf, &qVxuCmdBuf);
+            vtCmdBindRayTracingSet(qVxuCmdBuf, raytracingSet); // required, because Vulkan API have forced requirements for having sets
             vtCmdBindDescriptorSets(qVxuCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
             vtCmdBindVertexAssembly(qVxuCmdBuf, vertexAssembly);
             vtCmdBindVertexInputSets(qVxuCmdBuf, inputs.size(), inputs.data());
@@ -242,15 +244,23 @@ namespace rnd {
             // make accelerator and vertex builder command
             bCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, bCmdBuf, &qBCmdBuf);
+            vtCmdBindRayTracingSet(qBCmdBuf, raytracingSet); // required, because Vulkan API have forced requirements for having sets
 
-            vtCmdBindAccelerator(qBCmdBuf, acceleratorGeometry);
             vtCmdBindVertexAssembly(qBCmdBuf, vertexAssembly);
             vtCmdBindVertexInputSets(qBCmdBuf, inputs.size(), inputs.data());
+
+            vtCmdBindAccelerator(qBCmdBuf, acceleratorGeometry);
             vtCmdBuildAccelerator(qBCmdBuf);
+
+            VtAcceleratorBuildInfo buildInfo = {};
+            buildInfo.elementSize = BvhInstancedData.size();
+            vtCmdBindAccelerator(qBCmdBuf, acceleratorMain);
+            vtCmdBuildAccelerator(qBCmdBuf, buildInfo);
+
             vkEndCommandBuffer(qBCmdBuf);
         }
 
-        {
+        /*{
             // make accelerator and vertex builder command
             tbCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qTBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, tbCmdBuf, &qTBCmdBuf);
@@ -261,7 +271,7 @@ namespace rnd {
             vtCmdBindAccelerator(qTBCmdBuf, acceleratorMain);
             vtCmdBuildAccelerator(qTBCmdBuf, buildInfo);
             vkEndCommandBuffer(qTBCmdBuf);
-        }
+        }*/
 
         {
             // use single layer only (for experimenting, can changed)
@@ -298,7 +308,7 @@ namespace rnd {
 
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { vxuCmdBuf });
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
-        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { tbCmdBuf });
+        //vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { tbCmdBuf });
     };
 
 
@@ -801,7 +811,7 @@ namespace rnd {
                     vtii.attributeOffset = attribOffset;
                     vtii.bBufferRegionBindings = VBufferRegions;
                     vtii.bBufferViews = VBufferView;
-                    vtii.attributePipeline = vtxPipeline;
+                    vtii.attributeAssembly = vtxPipeline;
                     vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &primitive);
                     primitives.push_back(primitive);
                 }
@@ -878,7 +888,7 @@ namespace rnd {
      void Renderer::ComputeRayTracing(){
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { vxuCmdBuf });
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
-        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { tbCmdBuf });
+        //vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { tbCmdBuf });
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
     };
 

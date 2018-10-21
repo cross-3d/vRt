@@ -133,12 +133,11 @@ namespace _vt { // store in undercover namespace
     class PipelineLayout : public std::enable_shared_from_this<PipelineLayout> {
     public:
         friend Device;
-        VkPipelineLayout _pipelineLayout = {}; // replaced set 0 and 1
-        std::shared_ptr<Device> _device = {};
+        VkPipelineLayout _vsLayout = {}, _rtLayout = {}; // replaced set 0 and 1
         VtPipelineLayoutType _type = VT_PIPELINE_LAYOUT_TYPE_RAYTRACING;
+        std::shared_ptr<Device> _device = {};
 
-        operator VkPipelineLayout() const { return _pipelineLayout; }; // no correct conversion
-
+        operator VkPipelineLayout() const { return _vsLayout; }; // by default should be return vertex version
         auto _parent() const { return _device; };
         auto& _parent() { return _device; };
     };
@@ -191,7 +190,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<PipelineLayout> _pipelineLayout = {}; // customized pipeline layout, when pipeline was created
 
         //
-        std::vector<VkPipeline> _generationPipeline = {}, _closestHitPipeline = {}, _missHitPipeline = {}, _groupPipelines = {};
+        std::vector<VkPipeline> _generationPipeline = {}, _closestHitPipeline = {}, _missHitPipeline = {}, _groupPipeline = {};
 
         // material and accelerator descriptor sets, that sets to "1" is dedicated by another natives
         std::vector<VkDescriptorSet> _userDefinedDescriptorSets = {}; // beyond than 1 only
@@ -212,9 +211,11 @@ namespace _vt { // store in undercover namespace
         VkDescriptorSet _descriptorSet = {};
         std::shared_ptr<Device> _device = {};
 
-        // vertex and bvh export 
-        // TODO: support of advanced vertex sharing (with indices, formats, striding supports)
+        // DEPRECATED, planned to fully remove, since need merge to dedicated descriptor set 
         std::shared_ptr<DeviceImage> _attributeTexelBuffer = {};
+        std::shared_ptr<AssemblyPipeline> _vertexAssembly = {}; //
+
+        // vertex for BVH export
         std::shared_ptr<BufferRegion> _verticeBufferCached = {}, _verticeBufferInUse = {}, _materialBuffer = {}, _bitfieldBuffer = {}, _countersBuffer = {}, _normalBuffer = {};
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
 
@@ -234,10 +235,10 @@ namespace _vt { // store in undercover namespace
     class AssemblyPipeline : public std::enable_shared_from_this<AssemblyPipeline> {
     public:
         friend Device;
-        VkPipeline _vkPipeline = {}; // protect from stupid casting
+        VkPipeline _inputPipeline = {}, _intrpPipeline = {};
         std::weak_ptr<Device> _device = {};
         std::shared_ptr<PipelineLayout> _pipelineLayout = {};
-        operator VkPipeline() const { return _vkPipeline; };
+        operator VkPipeline() const { return _inputPipeline; };
     };
 
 
@@ -281,7 +282,7 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<Device> _device = {};
 
         // traverse pipeline
-        VkPipeline _intersectionPipeline = {}, _interpolatorPipeline = {};
+        VkPipeline _intersectionPipeline = {};
 
         // build BVH stages (few stages, in sequences)
         VkPipeline _boundingPipeline = {}, _shorthandPipeline = {}, /*...radix sort between*/ _buildPipeline = {}, _buildPipelineFirst = {}, _fitPipeline = {}, _leafLinkPipeline = {};
@@ -514,7 +515,7 @@ namespace _vt { // store in undercover namespace
 
         // vertex assembly pipeline bound
         std::shared_ptr<DeviceBuffer> _uniformBlockBuffer = {}; // binding of uniform arrays
-        std::shared_ptr<AssemblyPipeline> _attributeVertexAssembly = {}; //
+        std::shared_ptr<AssemblyPipeline> _attributeAssembly = {}; //
         std::shared_ptr<DeviceBuffer> _inlineTransformBuffer = {}; // if have no required
 
         // TODO: RTX capable buffers 

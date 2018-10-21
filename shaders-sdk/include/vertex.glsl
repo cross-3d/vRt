@@ -3,7 +3,6 @@
 
 #include "../include/mathlib.glsl"
 
-
 #ifdef ENABLE_VERTEX_INTERPOLATOR
 #ifndef ENABLE_VSTORAGE_DATA
 #define ENABLE_VSTORAGE_DATA
@@ -11,25 +10,18 @@
 #endif
 
 
-
 // Geometry Zone
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(VERTEX_FILLING))
 
     #ifndef VTX_SET
-        #ifdef VERTEX_FILLING
-        #define VTX_SET 0
-        #else
         #define VTX_SET 2
-        #endif
     #endif
 
-
     #ifdef VERTEX_FILLING
-    layout ( binding = 2, set = VTX_SET, std430   ) buffer bitfieldsB { uint vbitfields[]; };
+    layout ( binding = 2, set = VTX_SET, std430   ) coherent buffer bitfieldsB { uint vbitfields[]; };
     #else
     layout ( binding = 2, set = VTX_SET, std430   ) readonly buffer bitfieldsB { int vbitfields[]; };
     #endif
-
 
     #if (defined(LEAF_GEN) || defined(VERTEX_FILLING))
     layout ( binding = 5, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtx;
@@ -38,7 +30,7 @@
     layout ( binding = 5, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lvtx;
     layout ( binding = 7, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lnrm;
     #endif
-    
+
 #endif
 
 
@@ -50,7 +42,7 @@ struct BvhBlockT {
     vec4 sceneMin, sceneMax;
 };
 
-// TODO: remerge to new top level traverser 
+// 
 struct BvhInstanceT {
     int bvhBlockID, r0, r1, r2;
     mat4x4 transform, transformIn; // row of traversion correction, combined with transforming to instance space 
@@ -107,7 +99,7 @@ int INSTANCE_ID = 0;
 #define bvhBlockTop bvhBlock_[0] 
 #endif
 
-const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
+
 
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 #define BVH_ENTRY bvhBlockIn.entryID
@@ -119,13 +111,13 @@ const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
 
 
 
-
 #ifndef VERTEX_FILLING
 //vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4((bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
-vec4 uniteBox(in vec4 glb) { return point4(fma((glb - bvhBlockIn.sceneMin) / (bvhBlockIn.sceneMax - bvhBlockIn.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
+vec4 uniteBox   (in vec4 glb) { return point4(fma((glb - bvhBlockIn .sceneMin) / (bvhBlockIn .sceneMax - bvhBlockIn .sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
 vec4 uniteBoxTop(in vec4 glb) { return point4(fma((glb - bvhBlockTop.sceneMin) / (bvhBlockTop.sceneMax - bvhBlockTop.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
 #endif
 
+const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
 const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 
 
@@ -193,8 +185,6 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 #endif
 #endif
 #endif
-
-
 
 
 // single float 32-bit box intersection

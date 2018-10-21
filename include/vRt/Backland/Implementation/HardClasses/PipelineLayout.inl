@@ -16,23 +16,20 @@ namespace _vt {
         vtPipelineLayout->_device = _vtDevice;
         vtPipelineLayout->_type = type;
 
-        auto dsLayouts = type == VT_PIPELINE_LAYOUT_TYPE_RAYTRACING ?
-            std::vector<vk::DescriptorSetLayout>{
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]),
-            } : 
-            std::vector<vk::DescriptorSetLayout>{
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
-            };
-
-        if (vtPipelineLayoutCreateInfo.enableMaterialSet && type == VT_PIPELINE_LAYOUT_TYPE_RAYTRACING) {
+        std::vector<vk::DescriptorSetLayout> dsLayouts = {vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"])};
+        if (type == VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT) {
+            dsLayouts.push_back(vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]));
+            dsLayouts.push_back(vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]));
+        } else 
+        if (type == VT_PIPELINE_LAYOUT_TYPE_RAYTRACING && vtPipelineLayoutCreateInfo.enableMaterialSet) {
             dsLayouts.push_back(_vtDevice->_descriptorLayoutMap["materialSet"]);
-        }
+        };
 
         for (auto i = 0; i < vkPipelineLayout.setLayoutCount; i++) {
             dsLayouts.push_back(vkPipelineLayout.pSetLayouts[i]);
-        }
+        };
 
+        
         vkPipelineLayout.setLayoutCount = dsLayouts.size();
         vkPipelineLayout.pSetLayouts = dsLayouts.data();
 
@@ -42,7 +39,12 @@ namespace _vt {
             vkPipelineLayout.pushConstantRangeCount = 1;
         };
 
-        vtPipelineLayout->_pipelineLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo(vkPipelineLayout));
+        vtPipelineLayout->_vsLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo(vkPipelineLayout));
+        vtPipelineLayout->_rtLayout = vtPipelineLayout->_vsLayout;
+        if (type == VT_PIPELINE_LAYOUT_TYPE_VERTEXINPUT) {
+            dsLayouts[1] = vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"]), vkPipelineLayout.pSetLayouts = dsLayouts.data(); // replace inputs to hlbvh2 data (require for ray-tracing)
+            vtPipelineLayout->_rtLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo(vkPipelineLayout));
+        };
         return result;
     };
 

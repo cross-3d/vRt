@@ -45,7 +45,7 @@ namespace _vt {
         // ray groups shaders
         if (info.pGroupModules) {
             for (uint32_t i = 0; i < std::min(4u, info.groupModuleCount); i++) {
-                if (info.pGroupModules[i].module) vtPipeline->_groupPipelines.push_back(createCompute(vkDevice, info.pGroupModules[i], *vtPipeline->_pipelineLayout, vkPipelineCache));
+                if (info.pGroupModules[i].module) vtPipeline->_groupPipeline.push_back(createCompute(vkDevice, info.pGroupModules[i], *vtPipeline->_pipelineLayout, vkPipelineCache));
             }
         }
 
@@ -184,7 +184,7 @@ namespace _vt {
                 };
                 vk::Device(vkDevice).updateDescriptorSets(writes, {});
             };
-        }
+        };
 
         return result;
     };

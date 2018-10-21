@@ -22,11 +22,7 @@ const int VCOUNT = 3;
 // Geometry Zone
 #if (defined(ENABLE_VSTORAGE_DATA) || defined(BVH_CREATION) || defined(VERTEX_FILLING))
     #ifndef VTX_SET
-        #ifdef VERTEX_FILLING
-        #define VTX_SET 0
-        #else
         #define VTX_SET 2
-        #endif
     #endif
 
     #ifdef VERTEX_FILLING

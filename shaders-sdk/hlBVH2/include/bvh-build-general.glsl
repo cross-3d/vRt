@@ -6,10 +6,11 @@
 #define BIT_TPE uvec2
 #endif
 
+
 int prefixOf( in int a, in int b ) {
     const BIT_TPE acode = Mortoncodes[a], bcode = Mortoncodes[b]; const int pfx = nlz(acode^bcode);
     return ((a >= 0 && b >= 0) && (a < GSIZE && b < GSIZE)) ? (pfx + (pfx < BIT_FFT ? 0 : nlz(a^b))) : -1;
-}
+};
 
 int findSplit( in int left, in int right ) {
     const int commonPrefix = prefixOf(left, right);
@@ -22,16 +23,8 @@ int findSplit( in int left, in int right ) {
         } while (nstep > 1);
     };
     return clamp(split, left, right-1);
-}
-/*
-ivec2 determineRange( in int idx ) {
-    const int dir = clamp(prefixOf(idx,idx+1) - prefixOf(idx,idx-1), -1, 1), minPref = prefixOf(idx,idx-dir); int maxLen = 2, len = 0;
-    [[dependency_infinite]] while (prefixOf(idx, maxLen*dir+idx) > minPref) maxLen <<= 1;
-    [[dependency_infinite]] for (int t = maxLen>>1; t > 0; t>>=1) { [[flatten]] if (prefixOf(idx, (len+t)*dir+idx) > minPref) len+= t; }
+};
 
-    const int range = len * dir + idx;
-    return clamp(ivec2(min(idx,range), max(idx,range)), (0).xx, (GSIZE-1).xx);
-}*/
 
 // from top to bottom scheme (fine layout)
 void splitNode(in int pID) {
@@ -55,4 +48,4 @@ void splitNode(in int pID) {
         [[flatten]] if (isLeaf.x) { LeafIndices[split+0] = h.x+1; };
         [[flatten]] if (isLeaf.y) { LeafIndices[split+1] = h.y+1; };
     }
-}
+};

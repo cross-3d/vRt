@@ -113,7 +113,7 @@ namespace vrt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_INPUT_CREATE_INFO;
         const void* pNext = nullptr;
 
-        VtAttributePipeline attributePipeline;
+        VtAttributePipeline attributeAssembly = {};
         VtTopologyType topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
 
         // original block
@@ -196,8 +196,8 @@ namespace vrt { // store in official namespace
         const void* pNext = nullptr;
 
         //size_t maxPrimitives = 1024u * 256u;
-        VtPipelineLayout pipelineLayout;
-        VkPipelineShaderStageCreateInfo assemblyModule;
+        VtPipelineLayout pipelineLayout = {};
+        VkPipelineShaderStageCreateInfo assemblyModule = {}, interpolModule = {};
     };
 
     // planned to deprecate 
@@ -208,6 +208,8 @@ namespace vrt { // store in official namespace
         VkDeviceSize maxPrimitives = 1024ull * 256ull;
 
         // added in 10.10.2018 
+
+        VtAttributePipeline vertexAssembly = {};
         VkBuffer sharedVertexCacheBuffer = VK_NULL_HANDLE; VkDeviceSize sharedVertexCacheOffset = 0ull; // before building BVH, will stored into 
         VkBuffer sharedVertexInUseBuffer = VK_NULL_HANDLE; VkDeviceSize sharedVertexInUseOffset = 0ull; // will converted to traversable format 
         VkBuffer sharedBitfieldBuffer = VK_NULL_HANDLE; VkDeviceSize sharedBitfieldOffset = 0ull; // bitfields data buffer with pointing offset 

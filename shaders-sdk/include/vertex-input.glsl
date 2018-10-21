@@ -1,14 +1,10 @@
 #ifndef _VERTEX_INPUT_H
 #define _VERTEX_INPUT_H
 
-//#include "../include/vertex.glsl"
 
 #ifdef VERTEX_FILLING
-#define VTX_SET 0
-#else
-#define VTX_SET 2
-#endif
 layout ( binding = 3, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtxIn;
+#endif
 
 
 #if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SAMPLER_HACK) && defined(ENABLE_FP16_SUPPORT)
@@ -92,8 +88,6 @@ layout ( binding = 0, set = 1 ) uniform f16samplerBuffer bufferSpace[8]; // vert
 layout ( binding = 0, set = 1 ) uniform highp usamplerBuffer bufferSpace[8]; // vertex model v1.4
 #endif
 
-//layout ( binding = 0, set = 1 ) uniform mediump samplerBuffer bufferSpace[8];
-
 layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
 layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR {VtAccessor accessors[]; };
 layout ( binding = 4, set = 1, std430 ) readonly buffer VT_ATTRIB {VtAttributeBinding attributes[]; };
@@ -148,33 +142,32 @@ uvec4 readByAccessorLLW(in int accessor, in uint index, in uvec4 outpx) { readBy
 // vec4 getter
 void readByAccessor(in int accessor, in uint index, inout vec4 outp) {
     outp.xyzw = uintBitsToFloat(readByAccessorLLW(accessor, index, floatBitsToUint(outp)).xyzw);
-}
+};
 
 // vec3 getter
 void readByAccessor(in int accessor, in uint index, inout vec3 outp) {
     outp.xyz = uintBitsToFloat(readByAccessorLLW(accessor, index, floatBitsToUint(vec4(outp, 0.f.x))).xyz);
-}
+};
 
 // vec2 getter
 void readByAccessor(in int accessor, in uint index, inout vec2 outp) {
     outp.xy = uintBitsToFloat(readByAccessorLLW(accessor, index, floatBitsToUint(vec4(outp, 0.f.xx))).xy);
-}
+};
 
 // vec1 getter
 void readByAccessor(in int accessor, in uint index, inout float outp) {
     outp.x = uintBitsToFloat(readByAccessorLLW(accessor, index, floatBitsToUint(vec4(outp, 0.f.xxx))).x);
-}
+};
 
 // ivec1 getter
 void readByAccessor(in int accessor, in uint index, inout int outp) {
     outp.x = int(readByAccessorLLW(accessor, index, uvec4(outp, 0u.xxx)).x);
-}
+};
 
 // uvec1 getter
 void readByAccessor(in int accessor, in uint index, inout uint outp) {
     outp.x = readByAccessorLLW(accessor, index, uvec4(outp, 0u.xxx)).x;
-}
-
+};
 
 
 // planned read type directly from accessor
@@ -185,13 +178,14 @@ void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
         const uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
         [[flatten]] if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
     }
-}
+};
 
+// 
 void storePosition(in ivec2 cdata, in vec4 fval) {
     const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
     fval.xyz = mult4(vTransforms[inputID], fval);
     ISTORE(lvtxIn, cdata.x*3+cdata.y, fval);
-}
+};
 
 
 #endif
