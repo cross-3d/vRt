@@ -281,4 +281,14 @@ namespace vrt { // store in official namespace
         uint32_t familyIndex = 0;
     };
 
+
+    struct VtAcceleratorBuildInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_ACCELERATOR_BUILD_INFO;
+        const void* pNext = nullptr;
+
+        uint32_t flags = 0u; // reserved for future usage 
+        VkDeviceSize elementOffset = 0, elementSize = VK_WHOLE_SIZE;
+    };
+
+
 };

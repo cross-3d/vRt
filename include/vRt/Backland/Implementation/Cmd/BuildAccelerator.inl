@@ -182,7 +182,7 @@ namespace _vt {
 
     // building accelerator structure
     // TODO: enable AABB shaders for real support of multi-leveling (i.e. top level)
-    VtResult buildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, VkDeviceSize coveredCapacity = VK_WHOLE_SIZE) {
+    VtResult buildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, VtAcceleratorBuildInfo buildInfo = {}) {
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
         auto acclb = device->_acceleratorBuilder[0];
@@ -195,8 +195,8 @@ namespace _vt {
 
         //VtBuildConst _buildConstData = {};
         VtBuildConst& _buildConstData = acclb->_buildConstData;
-        _buildConstData.primitiveOffset = accel->_elementsOffset; // 
-        _buildConstData.primitiveCount = std::min((accel->_elementsCount != -1 && accel->_elementsCount >= 0) ? VkDeviceSize(accel->_elementsCount) : VkDeviceSize(vsize), std::min(coveredCapacity, accel->_capacity));
+        _buildConstData.primitiveOffset = buildInfo.elementOffset + accel->_elementsOffset; // 
+        _buildConstData.primitiveCount = std::min((accel->_elementsCount != -1 && accel->_elementsCount >= 0) ? VkDeviceSize(accel->_elementsCount) : VkDeviceSize(vsize), std::min(buildInfo.elementSize, accel->_capacity));
 
         // create BVH instance meta (linking with geometry) 
         //VtBvhBlock _bvhBlockData = {};

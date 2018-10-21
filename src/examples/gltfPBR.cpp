@@ -255,8 +255,11 @@ namespace rnd {
             tbCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qTBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, tbCmdBuf, &qTBCmdBuf);
 
+            VtAcceleratorBuildInfo buildInfo = {};
+            buildInfo.elementSize = BvhInstancedData.size();
+
             vtCmdBindAccelerator(qTBCmdBuf, acceleratorMain);
-            vtCmdBuildAccelerator(qTBCmdBuf, BvhInstancedData.size());
+            vtCmdBuildAccelerator(qTBCmdBuf, buildInfo);
             vkEndCommandBuffer(qTBCmdBuf);
         }
 

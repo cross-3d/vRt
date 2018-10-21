@@ -91,8 +91,12 @@ namespace vrt {
         return _vt::buildVertexSet(commandBuffer, useInstance, cb);
     };
 
-    VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer, VkDeviceSize coveredCapacity) {
-        return _vt::buildAccelerator(commandBuffer, coveredCapacity);
+    VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer, VtAcceleratorBuildInfo buildInfo) {
+        return _vt::buildAccelerator(commandBuffer, buildInfo);
+    };
+
+    VtResult vtCmdBuildAccelerator(VtCommandBuffer commandBuffer) {
+        return vtCmdBuildAccelerator(commandBuffer, {});
     };
 
     VtResult vtCmdBindVertexInputSets(VtCommandBuffer commandBuffer, uint32_t setCount, const VtVertexInputSet * sets) {

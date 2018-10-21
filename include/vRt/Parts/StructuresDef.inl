@@ -27,6 +27,7 @@ namespace vrt { // store in official namespace
     struct VtAttributePipelineCreateInfo;
     struct VtRayTracingSetCreateInfo;
     struct VtVertexAssemblySetCreateInfo;
+    struct VtAcceleratorBuildInfo;
 
     // advanced acceleration extension
     class VtDeviceAdvancedAccelerationExtension;
