@@ -38,24 +38,55 @@ bool validateTexture(in uint tbinding) { return tbinding > 0u && tbinding != -1u
 #endif
 
 
+// new texture fetcher with corner sampling 
+vec4 fetchTexNG(in uint tbinding, in vec2 ntxc) {
+#ifdef AMD_PLATFORM
+    ivec2 szi = (1).xx; bool found = false;
+    // planned Turing hardware version support 
+    for (uint i=0;i<Wave_Size_RT;i++) { // critical section, due AMD hardware has issues
+        [[flatten]] if (!found && subgroupBroadcast(tbinding, i) == tbinding) {
+            szi = textureSize(images[vtexures[tbinding-1].x-1],0), found = true;
+        };
+        [[flatten]] if (subgroupAll(found)) break;
+    };
+#else
+    const ivec2 szi = textureSize(images[nonuniformEXT(vtexures[tbinding-1].x-1)],0);
+#endif
+    
+    const vec2 sz = vec2(szi), tx = corneredCoordinates(ntxc,sz);
+    const vec2 is = 1.f/sz, tc = fma(tx,sz,-0.5f.xx), tm = (floor(tc+SFN)+0.5f)*is;
+    const vec4 il = vec4(fract(tc),1.f-fract(tc)), cf = vec4(il.z*il.y,il.x*il.y,il.x*il.w,il.z*il.w);
+
+    //vec4 fcol = 0.f.xxxx;
+    //[[unroll]] for (int i=0;i<4;i++) {
+    ///    fcol=fma(fetchTexture(tbinding,fma(offsetf[i],is,tm)),cf[i].xxxx,fcol);
+    ///};
+    //return fcol;
+
+    return fetchTexture(tbinding,tx); // or just use TPU
+};
+
+#define fetchTex(tbinding, tcoord) fetchTexNG(tbinding,tcoord)
+
+
+
 vec4 fetchDiffuse(in vec2 texcoord) {
     const uint tbinding = material.diffuseTexture;
-    const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.diffuse;
+    const vec4 rslt = validateTexture(tbinding) ? fetchTex(tbinding, texcoord) : material.diffuse;
     return rslt;
-}
+};
 
 vec4 fetchSpecular(in vec2 texcoord) {
     const uint tbinding = material.specularTexture;
-    const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.specular;
+    const vec4 rslt = validateTexture(tbinding) ? fetchTex(tbinding, texcoord) : material.specular;
     return rslt;
-}
+};
 
 vec4 fetchEmission(in vec2 texcoord) {
     const uint tbinding = material.emissiveTexture;
-    const vec4 rslt = validateTexture(tbinding) ? fetchTexture(tbinding, texcoord) : material.emissive;
+    const vec4 rslt = validateTexture(tbinding) ? fetchTex(tbinding, texcoord) : material.emissive;
     return rslt;
-}
-
+};
 
 
 
@@ -82,7 +113,7 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
 
     // parallax sample tracing 
     [[unroll]] for (int l=0;l<256;l++) {
-        float heightFromTexture = 1.f-fetchTexture(tbinding, chd_b.xy).z;
+        float heightFromTexture = 1.f-fetchTex(tbinding, chd_b.xy).z;
         if ( heightFromTexture <= chd_b.z ) break;
         chd_a = chd_b, chd_b += chv;
     }
@@ -90,13 +121,13 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
     // refinement
     [[unroll]] for (int l=0;l<refLayers;l++) {
         vec3 chd = mix(chd_a, chd_b, 0.5f);
-        float heightFromTexture = 1.f-fetchTexture(tbinding, chd.xy).z;
+        float heightFromTexture = 1.f-fetchTex(tbinding, chd.xy).z;
         if ( heightFromTexture <= chd.z ) { chd_b = chd; } else { chd_a = chd; }
     }
 
     // do occlusion
-    float nextH = (1.f-fetchTexture(tbinding, chd_b.xy).z) - chd_b.z;
-    float prevH = (1.f-fetchTexture(tbinding, chd_a.xy).z) - chd_a.z;
+    float nextH = (1.f-fetchTex(tbinding, chd_b.xy).z) - chd_b.z;
+    float prevH = (1.f-fetchTex(tbinding, chd_a.xy).z) - chd_a.z;
 
     float dvh = (nextH - prevH);
     float weight = nextH / (dvh);
@@ -108,10 +139,10 @@ vec2 parallaxMapping(in vec3 V, in vec2 T, out float parallaxHeight) {
 
 
 // generated normal mapping
-vec3 getUVH(in vec2 texcoord) { return vec3(texcoord, fetchTexture(material.bumpTexture, texcoord).x); }
+vec3 getUVH(in vec2 texcoord) { return vec3(texcoord, fetchTex(material.bumpTexture, texcoord).x); }
 vec4 getNormalMapping(in vec2 texcoordi) {
     const uint tbinding = material.bumpTexture;
-    const vec4 tc = validateTexture(tbinding) ? fetchTexture(tbinding, texcoordi) : vec4(0.5f, 0.5f, 1.f, 1.f);
+    const vec4 tc = validateTexture(tbinding) ? fetchTex(tbinding, texcoordi) : vec4(0.5f, 0.5f, 1.f, 1.f);
 
     vec4 normal = vec4(0.f,0.f,1.f,tc.w);
     if ( abs(tc.x-tc.y)<1e-4f && abs(tc.x-tc.z)<1e-4f ) {

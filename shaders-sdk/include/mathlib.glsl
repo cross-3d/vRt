@@ -406,6 +406,14 @@ vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     return fcol;
 };
 
+vec2 corneredCoordinates (in vec2 tvc, in vec2 tsize) {
+    const vec2 cornsze = (tsize-1.f+SFN);
+    const vec2 shifted = (tvc-(0.5f/cornsze));
+    const vec2 snormed = fma(shifted,2.f.xx,-1.f.xx);
+    return fma(((snormed*cornsze)/tsize),0.5f.xx,0.5f.xx)+(0.5f/tsize);
+};
+
+
 
 // Legacy imageLoad wrapper (early had imageLoad with LOD support)
 // TODO: deprecate and replace to better version 
