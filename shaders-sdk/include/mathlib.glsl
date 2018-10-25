@@ -407,11 +407,14 @@ vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
 };
 
 vec2 corneredCoordinates (in vec2 tvc, in vec2 tsize) {
-    const vec2 cornsze = (tsize-1.f+SFN);
-    const vec2 shifted = (tvc-(0.5f/cornsze));
-    const vec2 snormed = fma(shifted,2.f.xx,-1.f.xx);
-    return fma(((snormed*cornsze)/tsize),0.5f.xx,0.5f.xx)+(0.5f/tsize);
+    const vec2 cornsze = (tsize-1.f+SFN), snormed = fma(tvc,2.f.xx,-1.f.xx);
+    return fma(snormed*(cornsze/tsize),0.5f.xx,0.5f.xx);
 };
+
+//vec2 corneredCoordinates (in vec2 tvc, in vec2 tsize) {
+//    const vec2 offset = floor(tvc*16.f)/16.f, localc = fract(tvc*16.f);
+//    return offset+corneredCoordinatesRAW(localc, tsize)/16.f;
+//};
 
 
 
