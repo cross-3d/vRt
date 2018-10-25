@@ -184,6 +184,7 @@ float sqlen(in float v) { return v * v; }
 int modi(in int a, in int b) { return (a % b + b) % b; };
 //vec4 divW(in vec4 aw) { return aw / precIssue(aw.w); };
 vec4 divW(in vec4 aw) { return aw / (aw.w); };
+vec4 divW(in vec3 aw) { return vec4(aw,1.f); };
 vec3 rotate_vector( in vec4 quat, in vec3 vec ) { return vec + 2.0 * cross( cross( vec, quat.xyz ) + quat.w * vec, quat.xyz ); }
 vec4 rotation_quat( in vec3 axis, in float half_angle ) { return vec4(axis * sin(half_angle), cos(half_angle)); }
 

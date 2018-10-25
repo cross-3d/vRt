@@ -67,9 +67,10 @@ namespace vrt {
         int32_t width = 1, height = 1, lastIteration = 0, iteration = 0;
     };
 
+    // reduced to 4x6(x4) or 96 bytes
     struct VtBvhBlock {
         int32_t entryID = 0u, leafCount = 0u, primitiveCount = 0u, primitiveOffset = 0u;
-        VtMat4 transform = IdentifyMat4, transformInv = IdentifyMat4;
+        VtMat3x4 transform = IdentifyMat3x4;//, transformInv = IdentifyMat4;
         VtVec4 sceneMin = {}, sceneMax = {};
     };
 

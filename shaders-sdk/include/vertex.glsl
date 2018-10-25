@@ -38,7 +38,7 @@
 struct BvhBlockT {
     int entryID, leafCount; // leafCount reserved for ESC versions
     int primitiveCount, primitiveOffset; // first for default triangle limit, second for correct vertex data block ( because assembled set should have shared buffer )
-    mat4x4 transform, transformInv; // we resolved to save that row 
+    mat3x4 transform;//, transformInv; // we resolved to save that row 
     vec4 sceneMin, sceneMax;
 };
 

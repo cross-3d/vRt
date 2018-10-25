@@ -16,7 +16,7 @@
 struct BvhBlockT {
     int entryID, leafCount; // leafCount reserved for ESC versions
     int primitiveCount, primitiveOffset; // first for default triangle limit, second for correct vertex data block ( because assembled set should have shared buffer )
-    mat4x4 transform, transformInv; // we resolved to save that row 
+    mat3x4 transform;//, transformInv; // we resolved to save that row 
     vec4 sceneMin, sceneMax;
 };
 
@@ -41,9 +41,9 @@ void main() {
 
     // these operations calculating only on one ALU, so can be used more precised point
     // also, it no require so much free registers
-    [[flatten]] if (electedInvoc()) {
-        const mat4 inversedpj = inverse(mat4(transpose(bvhBlock.transform))); // set inversed version of projection
-        bvhBlock.transformInv = transpose(mat4(inversedpj)), bvhBlock.sceneMin = gmn, bvhBlock.sceneMax = gmx;
-    };
+    [[flatten]] if (electedInvoc()) { bvhBlock.sceneMin = gmn, bvhBlock.sceneMax = gmx; };
+    //    const mat4 inversedpj = inverse(mat4(transpose(bvhBlock.transform))); // set inversed version of projection
+    //    bvhBlock.transformInv = transpose(mat4(inversedpj)), bvhBlock.sceneMin = gmn, bvhBlock.sceneMax = gmx;
+    //};
     
 };
