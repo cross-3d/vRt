@@ -49,7 +49,7 @@ void main() {
             Leafs[I].pdata = ivec4((0).xxx, rI+1);
 
             // getting combined transformation for instance 
-            bvhInstance_[rI].transform = mult4( mat4(bvhBlockIn_[T].transform), transpose(inverse(transpose( bvhInstance_[rI].transformIn ))) );
+            bvhInstance_[rI].transform = mat3x4(mult4( mat4(bvhBlockIn_[T].transform), transpose(inverse(transpose( mat4(bvhInstance_[rI].transformIn) ))) ));
         };
     };
 };

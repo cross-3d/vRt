@@ -45,7 +45,7 @@ struct BvhBlockT {
 // 
 struct BvhInstanceT {
     int bvhBlockID, r0, r1, r2;
-    mat4x4 transform, transformIn; // row of traversion correction, combined with transforming to instance space 
+    mat3x4 transform, transformIn; // row of traversion correction, combined with transforming to instance space 
 };
 
 

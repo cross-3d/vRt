@@ -53,7 +53,7 @@ vec4 fetchTexNG(in uint tbinding, in vec2 ntxc) {
     const ivec2 szi = textureSize(images[nonuniformEXT(vtexures[tbinding-1].x-1)],0);
 #endif
     
-    const vec2 sz = vec2(szi), tx = corneredCoordinates(ntxc,sz);
+    const vec2 sz = vec2(szi), tx = ntxc;//corneredCoordinates(ntxc,sz);
     const vec2 is = 1.f/sz, tc = fma(tx,sz,-0.5f.xx), tm = (floor(tc+SFN)+0.5f)*is;
     const vec4 il = vec4(fract(tc),1.f-fract(tc)), cf = vec4(il.z*il.y,il.x*il.y,il.x*il.w,il.z*il.w);
 

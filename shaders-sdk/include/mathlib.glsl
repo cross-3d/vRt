@@ -411,12 +411,6 @@ vec2 corneredCoordinates (in vec2 tvc, in vec2 tsize) {
     return fma(snormed*(cornsze/tsize),0.5f.xx,0.5f.xx);
 };
 
-//vec2 corneredCoordinates (in vec2 tvc, in vec2 tsize) {
-//    const vec2 offset = floor(tvc*16.f)/16.f, localc = fract(tvc*16.f);
-//    return offset+corneredCoordinatesRAW(localc, tsize)/16.f;
-//};
-
-
 
 // Legacy imageLoad wrapper (early had imageLoad with LOD support)
 // TODO: deprecate and replace to better version 

@@ -76,7 +76,7 @@ namespace vrt {
 
     struct VtBvhInstance {
         int32_t bvhBlockID = 0u, entryID = 0u, r0 = 0u, r1 = 0u;
-        VtMat4 transform = IdentifyMat4, transformIn = IdentifyMat4; // combined transform 
+        VtMat3x4 transform = IdentifyMat3x4, transformIn = IdentifyMat3x4; // combined transform 
     };
 
     struct VtBuildConst {
