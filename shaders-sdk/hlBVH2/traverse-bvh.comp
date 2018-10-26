@@ -41,12 +41,8 @@ void main() {
         const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x), rayID = vtRayIdx(it);
         const bool overflow = it >= wsize; IFALL(overflow) break;
 
-        // 
-        currentState = bvhBlockTop.primitiveCount <= 1 ? BVH_STATE_BOTTOM : BVH_STATE_TOP, INSTANCE_ID = 0, LAST_INSTANCE = 0;
-        traverseState.entryIDBase = (!overflow ? bvhBlockTop.entryID : -1), traverseState.idx = traverseState.entryIDBase, traverseState.maxElements = !overflow ? 0x7FFFFFFF : 0, traverseState.diffOffset = floatBitsToInt(0.f), 
-        traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.saved = bvhBlockTop.primitiveCount <= 1;
-        traverseState.idxTop = traverseState.idx, traverseState.stackPtrTop = 0, traverseState.pageIDTop = -1;
-        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+        //
+        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO), traverseState.maxElements = !overflow ? 0x7FFFFFFF : 0;
         
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection
@@ -57,18 +53,24 @@ void main() {
             int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = mhit > 0u; // last possible found hit
             [[flatten]] if (found) primitiveState.lastIntersection = hits[hid].uvt;
             [[unroll]] for (int i=0;i<1;i++) {
+                {
+                    currentState = uint(bvhBlockTop.primitiveCount > 1), INSTANCE_ID = 0, LAST_INSTANCE = 0;
+                    traverseState.entryIDBase = (!overflow ? bvhBlockTop.entryID : -1), traverseState.idx = traverseState.entryIDBase, traverseState.diffOffset = floatBitsToInt(0.f), 
+                    traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.saved = bvhBlockTop.primitiveCount <= 1;
+                    traverseState.idxTop = traverseState.idx, traverseState.stackPtrTop = 0, traverseState.pageIDTop = -1;
+                };
 
                 // traversing triangles
                 const int ftrID = traverseBVH2(true)-1; // current found triangle
-                //traverseState.maxElements = min(traverseState.maxElements, ftrID);
+                traverseState.maxElements = min(traverseState.maxElements, ftrID);
 
                 // handle hit result 
                 const bool has = ftrID >= 0;
                 [[flatten]] if (has) found = true;
-                //[[flatten]] if (i == 0 || has) 
+                [[flatten]] if (i == 0 || has) 
                 { // resolve hit result 
                     [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // if required new
-                    hit.payloadID = 0, hit.rayID = rayID+1, hit.uvt = primitiveState.lastIntersection;
+                    hit.payloadID = 0, hit.rayID = rayID+1, hit.uvt = primitiveState.lastIntersection; primitiveState.lastIntersection.w = FINT_ZERO;
                     hit.vdat = 0.f.xxxx, hit.vdat.w = intBitsToFloat(LAST_INSTANCE);
                     
                     const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);

@@ -102,7 +102,7 @@ void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
 // triangle intersection, when it found
 void doIntersection(in bool isvalid) {
     const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
-    isvalid = isvalid && elementID >= 0;
+    isvalid = isvalid && elementID >= 0 && elementID < traverseState.maxElements;
 
     const uint CSTATE = currentState;
     [[flatten]] if (isvalid && CSTATE == BVH_STATE_TOP) { 
@@ -117,9 +117,9 @@ void doIntersection(in bool isvalid) {
             intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, elementID, uv.xy, isvalid);
 #endif
 
-        const float tdiff = nearT-d, tmax = 0.f;
+        const float tdiff = nearT-d, tmax = SFN;
         [[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
-            [[flatten]] if (abs(tdiff) > tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
+            [[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
                 primitiveState.lastIntersection = vec4(uv.xy, min(d.x, primitiveState.lastIntersection.z), intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
             };
         };
