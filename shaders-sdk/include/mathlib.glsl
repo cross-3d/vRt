@@ -406,9 +406,17 @@ vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     return fcol;
 };
 
+vec2 borderClamp(in vec2 tvc, in vec2 tsize) {
+    const vec2 cornsze = (tsize-1.f), incrnsz = (tsize-1.5f), snormed = fma((tvc*tsize/cornsze),2.f.xx,-1.f.xx);
+    return fma(snormed*(incrnsz/tsize),0.5f.xx,0.5f.xx);
+    //return tvc * tsize/(tsize-1.f);
+};
+
 vec2 corneredCoordinates (in vec2 tvc, in vec2 tsize) {
-    const vec2 cornsze = (tsize-1.f+SFN), snormed = fma(tvc,2.f.xx,-1.f.xx);
-    return fma(snormed*(cornsze/tsize),0.5f.xx,0.5f.xx);
+    //return borderClamp(tvc-0.5f/tsize, tsize);
+    //return borderClamp(tvc, tsize);
+    //return tvc-0.5f/tsize;
+    return tvc;
 };
 
 

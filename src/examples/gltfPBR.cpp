@@ -324,8 +324,8 @@ namespace rnd {
              //BvhInstancedData.push_back(VtBvhInstance{});
              for (int x = 0; x < 4; x++) {
                  for (int z = 0; z < 4; z++) {
-                     //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f))*glm::rotate(glm::radians(90.f * 0.f), glm::vec3(0.f, 1.f, 0.f)));
-                       glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f))*glm::rotate(glm::radians(90.f * (x + z)), glm::vec3(0.f, 1.f, 0.f))); 
+                     glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f))*glm::rotate(glm::radians(90.f * 0.f), glm::vec3(0.f, 1.f, 0.f)));
+                     //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f))*glm::rotate(glm::radians(90.f * (x + z)), glm::vec3(0.f, 1.f, 0.f))); 
                      //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*100.f, 0.f, z*100.f))*glm::rotate(glm::radians(90.f * (x + z)), glm::vec3(0.f, 1.f, 0.f)));
                      //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f)));
                      BvhInstancedData.push_back(VtBvhInstance{});
@@ -672,15 +672,15 @@ namespace rnd {
                 vk::SamplerCreateInfo samplerInfo = {};
                 samplerInfo.addressModeU = vk::SamplerAddressMode::eRepeat;
                 samplerInfo.addressModeV = vk::SamplerAddressMode::eRepeat;
-                samplerInfo.minFilter = vk::Filter::eLinear;
-                samplerInfo.magFilter = vk::Filter::eLinear;
+                samplerInfo.minFilter = vk::Filter::eNearest;
+                samplerInfo.magFilter = vk::Filter::eNearest;
                 samplerInfo.compareEnable = false;
 
                 // set filter and sampling modes
-                //if (S.magFilter == TINYGLTF_TEXTURE_FILTER_LINEAR) samplerInfo.magFilter = vk::Filter::eLinear;
-                //if (S.minFilter == TINYGLTF_TEXTURE_FILTER_LINEAR) samplerInfo.minFilter = vk::Filter::eLinear;
-                if (S.magFilter == TINYGLTF_TEXTURE_FILTER_NEAREST) samplerInfo.magFilter = vk::Filter::eNearest;
-                if (S.minFilter == TINYGLTF_TEXTURE_FILTER_NEAREST) samplerInfo.minFilter = vk::Filter::eNearest;
+                if (S.magFilter == TINYGLTF_TEXTURE_FILTER_LINEAR) samplerInfo.magFilter = vk::Filter::eLinear;
+                if (S.minFilter == TINYGLTF_TEXTURE_FILTER_LINEAR) samplerInfo.minFilter = vk::Filter::eLinear;
+                //if (S.magFilter == TINYGLTF_TEXTURE_FILTER_NEAREST) samplerInfo.magFilter = vk::Filter::eNearest;
+                //if (S.minFilter == TINYGLTF_TEXTURE_FILTER_NEAREST) samplerInfo.minFilter = vk::Filter::eNearest;
                 //if (S.wrapS == TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE) samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;
                 //if (S.wrapT == TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE) samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;
                 //if (S.wrapS == TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT) samplerInfo.addressModeU = vk::SamplerAddressMode::eMirroredRepeat;
