@@ -70,7 +70,7 @@
   #undef MemoryBarrier
 #endif
 
-static_assert( VK_HEADER_VERSION ==  88 , "Wrong VK_HEADER_VERSION!" );
+static_assert( VK_HEADER_VERSION ==  89 , "Wrong VK_HEADER_VERSION!" );
 
 // 32-bit vulkan is not typesafe for handles, so don't allow copy constructors on this platform by default.
 // To enable this feature on 32-bit platforms please define VULKAN_HPP_TYPESAFE_CONVERSION
@@ -41188,7 +41188,7 @@ public:
     Result getImageDrmFormatModifierPropertiesEXT( Image image, ImageDrmFormatModifierPropertiesEXT* pProperties, Dispatch const &d = Dispatch() ) const;
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
     template<typename Dispatch = DispatchLoaderStatic>
-    Result getImageDrmFormatModifierPropertiesEXT( Image image, Dispatch const &d = Dispatch() ) const;
+    ResultValueType<ImageDrmFormatModifierPropertiesEXT>::type getImageDrmFormatModifierPropertiesEXT( Image image, Dispatch const &d = Dispatch() ) const;
 #endif /*VULKAN_HPP_DISABLE_ENHANCED_MODE*/
 
 
@@ -44490,7 +44490,7 @@ public:
   }
 #ifndef VULKAN_HPP_DISABLE_ENHANCED_MODE
   template<typename Dispatch>
-  VULKAN_HPP_INLINE Result Device::getImageDrmFormatModifierPropertiesEXT( Image image, Dispatch const &d ) const
+  VULKAN_HPP_INLINE ResultValueType<ImageDrmFormatModifierPropertiesEXT>::type Device::getImageDrmFormatModifierPropertiesEXT( Image image, Dispatch const &d ) const
   {
     ImageDrmFormatModifierPropertiesEXT properties;
     Result result = static_cast<Result>( d.vkGetImageDrmFormatModifierPropertiesEXT( m_device, static_cast<VkImage>( image ), reinterpret_cast<VkImageDrmFormatModifierPropertiesEXT*>( &properties ) ) );
