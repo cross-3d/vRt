@@ -24,10 +24,18 @@ LOCAL_SIZE_LAYOUT;
 // re-calculate box after transforming 
 bbox_t calculateTransformedBox(in uint rI, in uint T, in vec4 bnds[2]) {
     vec3 tmin = INFINITY.xxx, tmax = -INFINITY.xxx;
-    [[unroll]] for (int x=0;x<2;x++) { [[unroll]] for (int y=0;y<2;y++) { [[unroll]] for (int z=0;z<2;z++) {
+    /*[[unroll]] for (int x=0;x<2;x++) { [[unroll]] for (int y=0;y<2;y++) { [[unroll]] for (int z=0;z<2;z++) {
         const vec3 point = divW(mult4(bvhBlockTop.transform, divW(mult4(bvhInstance_[rI].transformIn, vec4(bnds[x].x,bnds[y].y,bnds[z].z,1.f))))).xyz;
         //const vec3 point = divW(mult4(bvhBlockTop.transform, divW(mult4(bvhInstance_[rI].transformIn, divW(mult4(transpose(inverse(transpose(bvhBlockIn_[T].transform))), vec4(bnds[x].x,bnds[y].y,bnds[z].z,1.f))))))).xyz;
         tmin = min(tmin, point), tmax = max(tmax, point);
+    }}};*/
+
+    [[unroll]] for (int x=0;x<2;x++) { [[unroll]] for (int y=0;y<2;y++) {{
+        const vec3 point[2] = {
+            divW(mult4(bvhBlockTop.transform, divW(mult4(bvhInstance_[rI].transformIn, vec4(bnds[x].x,bnds[y].y,bnds[0].z,1.f))))).xyz, 
+            divW(mult4(bvhBlockTop.transform, divW(mult4(bvhInstance_[rI].transformIn, vec4(bnds[x].x,bnds[y].y,bnds[1].z,1.f))))).xyz
+        };
+        tmin = min3_wrap(tmin, point[0], point[1]), tmax = max3_wrap(tmax, point[0], point[1]);
     }}};
 
     bbox_t result;

@@ -75,8 +75,8 @@ const int _IZERO = 0;
 #define min3_wrap(a,b,c) min3(a,b,c)
 #define max3_wrap(a,b,c) max3(a,b,c)
 #else
-#define min3_wrap(a,b,c) min(min(a,b),c)
-#define max3_wrap(a,b,c) max(max(a,b),c)
+#define min3_wrap(a,b,c) min(min(b,c),a)
+#define max3_wrap(a,b,c) max(max(b,c),a)
 #endif
 #define max3_vec(a) max3_wrap(a.x,a.y,a.z)
 #define min3_vec(a) min3_wrap(a.x,a.y,a.z)
