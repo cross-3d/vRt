@@ -43,7 +43,7 @@ void main() {
              const utype_t radice = utype_t(rk) + utype_t(Radice_Idx);
              const bool owned = key.x == radice.x && validAddress;
              [[flatten]] if (owned) {
-                const uint btc = subgroupBallotBitCount(subgroupBallot(true)); 
+                const uint btc = subgroupAdd(1u);
                 [[flatten]] if (subgroupElect()) localHistogram[radice+0u] += btc;
              };
              IFALL ( radice >= RADICES || !validAddress ) break;

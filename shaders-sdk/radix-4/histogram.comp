@@ -48,7 +48,7 @@ void main() {
             const utype_t radice = utype_t(rk) + utype_t(Radice_Idx);
             const bvec4 owned = and(equal(utype_v(upfunc(key)), radice.xxxx), validAddress);
             [[unroll]] for (int w=0;w<4;w++) { [[flatten]] if (owned[w]) {
-                const uint btc = subgroupBallotBitCount(subgroupBallot(true)); 
+                const uint btc = subgroupAdd(1u);
                 [[flatten]] if (subgroupElect()) localHistogram[radice+0u] += btc;
             }};
             IFALL (all(or((radice >= RADICES).xxxx, not(validAddress)))) break;
