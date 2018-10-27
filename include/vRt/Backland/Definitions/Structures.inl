@@ -42,8 +42,8 @@ namespace vrt { // store in official namespace
         const void* pNext = nullptr;
         uint32_t mainQueueFamily = 0;
 
-        VkDeviceSize sharedCacheSize = 4096ull * 4096ull * 4ull;
-        VkDeviceSize maxPrimitives = 1024ull * 256ull;
+        VkDeviceSize sharedCacheSize = 64ull * 1024ull;
+        VkDeviceSize maxPrimitives = 1024ull * 1024ull;
         
 #ifdef VRT_ENABLE_STRING_VIEW
         std::string_view shaderPath = "./intrusive";
@@ -205,7 +205,7 @@ namespace vrt { // store in official namespace
         VtStructureType sType = VT_STRUCTURE_TYPE_VERTEX_ASSEMBLY_SET_CREATE_INFO;
         const void* pNext = nullptr;
 
-        VkDeviceSize maxPrimitives = 1024ull * 256ull;
+        VkDeviceSize maxPrimitives = 1024ull * 64ull;
 
         // added in 10.10.2018 
 
@@ -225,7 +225,7 @@ namespace vrt { // store in official namespace
 
         // passing a simple meta data for builders
         VtAcceleratorSetLevel structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
-        VkDeviceSize maxPrimitives = 1024ull * 256ull; VkBool32 secondary = false; // used for copying and storing only?
+        VkDeviceSize maxPrimitives = 1024ull * 64ull; VkBool32 secondary = false; // used for copying and storing only?
 
         // linking with shared space of vertex assembly 
         VkDeviceSize vertexPointingOffset = 0ull;

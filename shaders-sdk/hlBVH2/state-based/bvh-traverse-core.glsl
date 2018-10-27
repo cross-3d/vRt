@@ -33,15 +33,15 @@ void resetEntry(in bool VALID) {
 };
 
 
-bool validIdxTop(in int idx){
+bool validIdxTop(in int idx) {
     return bvhBlockTop.primitiveCount > 1 && bvhBlockTop.entryID >= 0 && idx > bvhBlockTop.entryID && (idx-bvhBlockTop.entryID)<(bvhBlockTop.leafCount<<1) && idx >= 0 && idx != -1;
 };
 
-bool validIdx(in int idx){
+bool validIdx(in int idx) {
     return traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && (idx-traverseState.entryIDBase)<(MAX_ELEMENTS<<1) && idx >= 0 && idx != -1;
 };
 
-vec4 uniteBoxLv(in vec4 pt){
+vec4 uniteBoxLv(in vec4 pt) {
     return (currentState == BVH_STATE_TOP ? uniteBoxTop(pt) : uniteBox(pt));
 };
 

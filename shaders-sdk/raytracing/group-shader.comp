@@ -44,7 +44,7 @@ void main() {
         const int hitIdc = vtFetchHitClosest(rayID);
         const int hitpId = hits[hitIdc].payloadID-1;
         const vec4 diffuse = hitp.albedo, reflc = hitp.specularGlossiness;
-        const float shiftLenght = SFN + sqrt(hit.uvt.z)*One1024; // TODO: advanced correction of ray starting
+        const float shiftLenght = fma(sqrt(hit.uvt.z),One1024,SFN); // TODO: advanced correction of ray starting
 
         // get output image 2D coord
         const uvec2 ucoord = vtFetchIndex(rayID);

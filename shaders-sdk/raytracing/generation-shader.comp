@@ -49,7 +49,7 @@ void main() {
            orig = divW(mult4(cameraUniform.camInv, mult4(cameraUniform.projInv, vec4(fma(coord, 2.0f.xx, -1.0f.xx),     SFN, 1.0f))));
 
         dir = co - orig; //vec4(normalize(co.xyz - orig.xyz)*vec3(1.f,1.f,1.f), 0.0f);
-    //}
+    //};
 
     ray.dcolor = uvec2(0u.xx);
     writeColor(ray.dcolor, 1.f.xxxx);
