@@ -110,7 +110,7 @@ namespace vrt {
 
 #pragma pack(push, 1)
     class uint24_u {
-        union { uint32_t _data : 24; uint24_p _parted; };
+        union { uint24_p _parted = { 0u, 0u }; uint32_t _data : 24; };
     public:
         uint24_u(const uint32_t& _input = 0u) : _data(_input) {};
         uint24_u(const uint24_p& _input) : _parted(_input) {};
@@ -132,11 +132,13 @@ namespace vrt {
     // NVidia Ray Tracing Instance Structure (we doesn't allow use "Vk" prefix for any custom definition, so named as "Vt")
     // Also used bit custom constructions, any holywars in issue trackers (such as prefix, suffixes) may cause "Intruder" status with users black-listing 
     // Yes, we can review proposals, but any wars or enforcements is inacceptable! 
+#pragma pack(push, 1)
     struct VtInstanceNVX {
         float transform[12] = {1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,  0.f, 0.f, 1.f, 0.f };
         uint24_vt instanceId = 0u; uint8_t mask = 0u;
         uint24_vt instanceOffset = 0u; uint8_t flags = 0u;
         uint64_t accelerationStructureHandle = 0ull;
     };
+#pragma pack(pop)
 
 };
