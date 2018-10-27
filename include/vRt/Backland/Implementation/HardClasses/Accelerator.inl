@@ -49,21 +49,21 @@ namespace _vt {
 
             // create pipelines (planned to unify between accelerator instances)
             {
-                vtAccelerator->_boxCalcPipeline.push_back(createComputeHC(vkDevice, hlbvh2::instance::boxCalc.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
-                vtAccelerator->_boxCalcPipeline.push_back(createComputeHC(vkDevice, hlbvh2::triangle::boxCalc.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
+                vtAccelerator->_boxCalcPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::instance::boxCalc, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
+                vtAccelerator->_boxCalcPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::triangle::boxCalc, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
 
-                vtAccelerator->_leafPipeline.push_back(createComputeHC(vkDevice, hlbvh2::instance::genLeafs.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
-                vtAccelerator->_leafPipeline.push_back(createComputeHC(vkDevice, hlbvh2::triangle::genLeafs.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
+                vtAccelerator->_leafPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::instance::genLeaf, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
+                vtAccelerator->_leafPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::triangle::genLeaf, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
 
-                vtAccelerator->_shorthandPipeline = createComputeHC(vkDevice, hlbvh2::shorthand.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_boundingPipeline = createComputeHC(vkDevice, hlbvh2::outerBox.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_buildPipeline = createComputeHC(vkDevice, hlbvh2::builder.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_buildPipelineFirst = createComputeHC(vkDevice, hlbvh2::builderFirst.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_fitPipeline = createComputeHC(vkDevice, hlbvh2::fitBox.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_shorthandPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::shorthand, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_boundingPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::outerBox, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_buildPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::builder, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_buildPipelineFirst = createComputeHC(vkDevice, getCorrectPath(hlbvh2::builderFirst, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_fitPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::fitBox, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
 
-                vtAccelerator->_leafLinkPipeline = createComputeHC(vkDevice, hlbvh2::linkLeafs.at(vendorName), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_intersectionPipeline = createComputeHC(vkDevice, hlbvh2::traverse.at(vendorName), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
-                //vtAccelerator->_interpolatorPipeline = createComputeHC(vkDevice, hlbvh2::interpolator.at(vendorName), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
+                vtAccelerator->_leafLinkPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::linkLeafs, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_intersectionPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::traverse, vendorName, _vtDevice->_shadersPath), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
+                //vtAccelerator->_interpolatorPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::interpolator, vendorName, _vtDevice->_shadersPath), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
             };
         };
 

@@ -46,9 +46,9 @@ namespace vrt { // store in official namespace
         VkDeviceSize maxPrimitives = 1024ull * 256ull;
         
 #ifdef VRT_ENABLE_STRING_VIEW
-        std::string_view shaderPath = "./";
+        std::string_view shaderPath = "./intrusive";
 #else
-        std::string shaderPath = "./";
+        std::string shaderPath = "./intrusive";
 #endif
 #ifndef AMD_VULKAN_MEMORY_ALLOCATOR_H
         const void* allocator = nullptr;

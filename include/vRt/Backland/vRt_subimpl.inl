@@ -13,11 +13,11 @@
 #include "Utilities/VkUtils.hpp"
 
 // implement these
-#ifdef VRT_ENABLE_HARDCODED_SPV_CORE
-#include "Utilities/HardCode.hpp"
-#else
+//#ifdef VRT_ENABLE_HARDCODED_SPV_CORE
+//#include "Utilities/HardCode.hpp"
+//#else
 #include "Utilities/SpvPaths.hpp"
-#endif
+//#endif
 
 #include "Definitions/Initializers.inl"
 #include "Definitions/Structures.inl"

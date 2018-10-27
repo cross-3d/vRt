@@ -67,10 +67,10 @@ namespace _vt {
         };
 
         vtRadix->_pipelineLayout = vk::Device(vkDevice).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
-        vtRadix->_histogramPipeline = createComputeHC(vkDevice, qradix::histogram.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
-        vtRadix->_workPrefixPipeline = createComputeHC(vkDevice, qradix::workPrefix.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
-        vtRadix->_permutePipeline = createComputeHC(vkDevice, qradix::permute.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
-        vtRadix->_copyhackPipeline = createComputeHC(vkDevice, qradix::copyhack.at(vendorName), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_histogramPipeline = createComputeHC(vkDevice, getCorrectPath(qradix::histogram, vendorName, _vtDevice->_shadersPath), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_workPrefixPipeline = createComputeHC(vkDevice, getCorrectPath(qradix::workPrefix, vendorName, _vtDevice->_shadersPath), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_permutePipeline = createComputeHC(vkDevice, getCorrectPath(qradix::permute, vendorName, _vtDevice->_shadersPath), vtRadix->_pipelineLayout, vkPipelineCache);
+        vtRadix->_copyhackPipeline = createComputeHC(vkDevice, getCorrectPath(qradix::copyhack, vendorName, _vtDevice->_shadersPath), vtRadix->_pipelineLayout, vkPipelineCache);
 
         const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
         vtRadix->_descriptorSet = std::move(dsc[0]);

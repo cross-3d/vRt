@@ -92,8 +92,8 @@ namespace rnd {
         std::cout << devProperties.vendorID << std::endl;
 
         // create combined device object
-        shaderPack = shaderPrefix + getShaderDir(devProperties.vendorID);
-        deviceQueue = appBase->createDeviceQueue(gpu, false, shaderPack); // create default graphical device
+        shaderPack = shaderPrefix + "shaders/" + getShaderDir(devProperties.vendorID);
+        deviceQueue = appBase->createDeviceQueue(gpu, false, shaderPrefix + "intrusive"); // create default graphical device
         renderpass = appBase->createRenderpass(deviceQueue);
         
         // create image output

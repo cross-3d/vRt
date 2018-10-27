@@ -253,12 +253,8 @@ namespace _vt {
         // 
         const auto vendorName = vtDevice->_vendorName;
         auto simfo = VtAttributePipelineCreateInfo{};
-//#ifdef VRT_ENABLE_HARDCODED_SPV_CORE
-//        simfo.assemblyModule = makeComputePipelineStageInfo(*vtDevice, natives::vertexAssembly.at(vendorName));
-//#else
-        simfo.assemblyModule = makeComputePipelineStageInfo(*vtDevice, _vt::readBinary(natives::vertexAssembly.at(vendorName)));
-        simfo.interpolModule = makeComputePipelineStageInfo(*vtDevice, _vt::readBinary(hlbvh2::interpolator.at(vendorName)));
-//#endif
+        simfo.assemblyModule = makeComputePipelineStageInfo(*vtDevice, _vt::readBinary(getCorrectPath(natives::vertexAssembly, vendorName, vtDevice->_shadersPath)));
+        simfo.interpolModule = makeComputePipelineStageInfo(*vtDevice, _vt::readBinary(getCorrectPath(hlbvh2::interpolator, vendorName, vtDevice->_shadersPath)));
 
         // native vertex input pipeline layout 
         auto vtpl = VtPipelineLayoutCreateInfo{};

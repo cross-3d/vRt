@@ -73,7 +73,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<AdvancedAcceleratorBase> _advancedAccelerator = {};
 
         uint32_t _mainFamilyIndex = 0;
-        std::string _shadersPath = "./";
+        std::string _shadersPath = "./intrusive";
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         VmaAllocator _allocator = {};

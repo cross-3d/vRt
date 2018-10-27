@@ -320,7 +320,7 @@ namespace rnd {
 
         // names and directories
         std::string title = "vRt pre-alpha";
-        std::string shaderPrefix = "./shaders/", shaderPack = "./shaders/";
+        std::string shaderPrefix = "./", shaderPack = "./shaders/";
         std::string bgTexName = "";
         std::string modelInput = "";
         std::string directory = "./";
