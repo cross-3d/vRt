@@ -105,30 +105,27 @@ namespace vrt {
 
 
 #pragma pack(push, 1)
-    struct uint24_packed { uint32_t _major : 16, _minor : 8; };
-    //struct uint24_packed { uint16_t _major = 0u; uint8_t _minor = 0u; };
+    struct uint24_p { uint16_t _major = 0u; uint8_t _minor = 0u; };
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-    class uint24_union {
-        union { uint32_t _data : 24; uint24_packed _parted; };
+    class uint24_u {
+        union { uint32_t _data : 24; uint24_p _parted; };
     public:
-        uint24_union(const uint32_t& _input = 0u) : _data(_input) {};
-        uint24_union(const uint16_t& _imj, const uint8_t& _imn) : _parted({ _imj, _imn }) {}; //{ _parted = { _imj, _imn }; };
+        uint24_u(const uint32_t& _input = 0u) : _data(_input) {};
+        uint24_u(const uint24_p& _input) : _parted(_input) {};
+        uint24_u(const uint16_t& _imj, const uint8_t& _imn) : _parted({ _imj, _imn }) {};
         operator uint32_t() const { return _data; };
-        operator const uint24_packed&() const { return _parted; };
+        operator const uint24_p&() const { return _parted; };
     };
 #pragma pack(pop)
 
 #pragma pack(push, 1)
     class uint24_vt {
-        uint16_t _major = 0u; uint8_t _minor = 0u;
+        uint24_p _data = {0u, 0u};
     public:
-        uint24_vt(const uint32_t& _input = 0u) {
-            const auto tp = uint24_packed(uint24_union(_input));
-            _major = tp._major, _minor = tp._minor;
-        };
-        operator uint32_t() const { return uint24_union(_major, _minor); };
+        uint24_vt(const uint32_t& _input = 0u) : _data(uint24_u(_input)) {};
+        operator uint32_t() const { return uint24_u(_data); };
     };
 #pragma pack(pop)
 
