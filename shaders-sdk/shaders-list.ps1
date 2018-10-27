@@ -8,7 +8,7 @@ $HRDDIR="../prebuilt/intrusive/$VNDR/"
 
 $NTVE="native/"
 $VRTX="vertex/"
-$RNDR="ray-tracing/"
+$RNDR="raytracing/"
 $HLBV="hlBVH2/"
 $RDXI="radix/"
 $OUTP="output/"

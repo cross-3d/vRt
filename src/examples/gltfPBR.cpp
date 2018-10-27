@@ -560,12 +560,12 @@ namespace rnd {
             vtCreateAttributePipeline(deviceQueue->device->rtDev, &vtpi, &vtxPipeline);
         }
         
-        auto closestShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/closest-hit-shader.comp.spv"));
-        auto missShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/miss-hit-shader.comp.spv"));
-        auto groupShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/group-shader.comp.spv"));
+        auto closestShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "raytracing/closest-hit-shader.comp.spv"));
+        auto missShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "raytracing/miss-hit-shader.comp.spv"));
+        auto groupShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "raytracing/group-shader.comp.spv"));
 
         {
-            auto genShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/generation-shader.comp.spv"));
+            auto genShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "raytracing/generation-shader.comp.spv"));
 
             // create ray tracing pipeline
             VtRayTracingPipelineCreateInfo rtpi = {};
@@ -583,7 +583,7 @@ namespace rnd {
         }
 
         {
-            auto genShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "ray-tracing/rfgen-shader.comp.spv"));
+            auto genShader = vte::makeComputePipelineStageInfo(deviceQueue->device->rtDev, vte::readBinary(shaderPack + "raytracing/rfgen-shader.comp.spv"));
 
             // create ray tracing pipeline
             VtRayTracingPipelineCreateInfo rtpi = {};

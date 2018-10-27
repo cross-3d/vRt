@@ -1,0 +1,3 @@
+# Will along-side with "hlBVH2"
+# When it enabled, "hlBVH2" stages will not working (disabled)
+# Can still working only "interpolation" stage
