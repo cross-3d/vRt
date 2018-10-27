@@ -232,6 +232,10 @@ vec3 mult4(in vec4 vec, in mat4x3 tmat) { return tmat * vec; };
 vec4 mult4(in mat4x3 tmat, in vec3 vec) { return vec * tmat; };
 //vec4 mult4(in mat4x3 tmat, in vec3 vec) { return vec4(dot(vec,tmat[0]),dot(vec,tmat[1]),dot(vec,tmat[2]),dot(vec,tmat[3])); };
 
+// it can be preferred in RTX shaders (column major)
+vec3 mult4(in mat4x3 tmat, in vec4 vec) { return tmat * vec; };
+vec4 mult4(in mat3x4 tmat, in vec3 vec) { return tmat * vec; };
+
 mat4 mult4(in mat4 tmat, in mat4 otmat) { return otmat*tmat; };
 
 
