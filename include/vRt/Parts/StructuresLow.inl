@@ -103,4 +103,62 @@ namespace vrt {
     };
 
 
+
+#pragma pack(push, 1)
+    struct uint24_packed {
+        union {
+            uint32_t _major : 16, _minor : 8;
+        };
+    };
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+    class uint24_union {
+        union {
+            uint32_t _data : 24;
+            uint24_packed _parted;
+        };
+    public:
+        uint24_union(uint32_t _input = 0u) {
+            _data = _input;
+        };
+        uint24_union(uint16_t _imj, uint8_t _imn) {
+            _parted._major = _imj, _parted._minor = _imn;
+        };
+        operator uint32_t() const {
+            return _data;
+        };
+        operator uint24_packed() const {
+            return _parted;
+        };
+    };
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+    class uint24_vt {
+        uint16_t _major = 0u; uint8_t _minor = 0u;
+    public:
+        uint24_vt(uint32_t _input = 0u) {
+            auto tp = uint24_packed(uint24_union(_input));
+            _major = tp._major, _minor = tp._minor;
+        };
+        operator uint32_t() const {
+            return uint24_union(_major, _minor);
+        };
+    };
+#pragma pack(pop)
+
+    // NVidia Ray Tracing Instance Structure (we doesn't allow use "Vk" prefix for any custom definition, so named as "Vt")
+    // Also used bit custom constructions, any holywars in issue trackers (such as prefix, suffixes) may cause "Intruder" status with users black-listing 
+    // Yes, we can review proposals, but any wars or enforcements is inacceptable! 
+    struct VtInstanceNVX {
+        float transform[12] = {1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,  0.f, 0.f, 1.f, 0.f };
+        uint24_vt instanceId = 0u;
+        uint8_t mask = 0u;
+        uint24_vt instanceOffset = 0u;
+        uint8_t flags = 0u;
+
+        uint64_t accelerationStructureHandle = 0ull;
+    };
+
 };
