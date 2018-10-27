@@ -41,12 +41,6 @@
 
 ## Roadmaps
 
-**October 2018**
-
-- De-vendorize today's possible features
-- Initial two-level BVH support
-- Fix common issues
-
 **November 2018**
 
 - Support for RTX graphics cards (RTX 2070, 2080, etc.)
