@@ -88,7 +88,7 @@ namespace _vt {
                 bfi.bufferSize = rayCount * MAX_RAY_GROUPS * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_groupIndicesBuffer);
-                createBufferRegion(bManager, bfi, vtRTSet->_groupIndicesBufferRead);
+                //createBufferRegion(bManager, bfi, vtRTSet->_groupIndicesBufferRead);
 
 
                 bfi.format = VK_FORMAT_UNDEFINED;
@@ -179,7 +179,8 @@ namespace _vt {
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(7).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_countersBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_taskBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(12).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupCountersBuffer->_descriptorInfo()),
-                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(13).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupIndicesBufferRead->_descriptorInfo()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(13).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupIndicesBuffer->_descriptorInfo()),
+                    //vk::WriteDescriptorSet(writeTmpl).setDstBinding(13).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupIndicesBufferRead->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(14).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupCountersBufferRead->_descriptorInfo()),
                 };
                 vk::Device(vkDevice).updateDescriptorSets(writes, {});

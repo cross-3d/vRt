@@ -43,15 +43,14 @@ void main() {
 
         //
         primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO), traverseState.maxElements = !overflow ? 0x7FFFFFFF : 0;
-        
+
         // planned multiple-hits support
         [[flatten]] if (!overflow) { // verify intersection
-            ORIGINAL_DIRECTION = rays[rayID].cdirect;
-            ORIGINAL_ORIGIN = rays[rayID].origin.xyz;
+            ORIGINAL_ORIGIN = rays[rayID].origin.xyz, ORIGINAL_DIRECTION = rays[rayID].cdirect;
 
             // traversing from front layer to back layers
             int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = mhit > 0u; // last possible found hit
-            [[flatten]] if (found) primitiveState.lastIntersection = hits[hid].uvt;
+            [[flatten]] if (found) { primitiveState.lastIntersection = hits[hid].uvt; found = found && floatBitsToInt(primitiveState.lastIntersection.w) > 0; };
             [[unroll]] for (int i=0;i<1;i++) {
                 {
                     currentState = uint(bvhBlockTop.primitiveCount > 1), INSTANCE_ID = 0, LAST_INSTANCE = 0;
@@ -70,18 +69,17 @@ void main() {
                 [[flatten]] if (i == 0 || has) 
                 { // resolve hit result 
                     [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // if required new
-                    hit.payloadID = 0, hit.rayID = rayID+1, hit.uvt = primitiveState.lastIntersection; primitiveState.lastIntersection.w = FINT_ZERO;
-                    hit.vdat = 0.f.xxxx, hit.vdat.w = intBitsToFloat(LAST_INSTANCE);
+                    hit.attribID = 0, hit.payloadID = 0, hit.rayID = rayID+1, hit.uvt = primitiveState.lastIntersection, hit.vdat = 0.f.xxxx, hit.vdat.w = intBitsToFloat(LAST_INSTANCE);
+                    primitiveState.lastIntersection.w = FINT_ZERO;
                     
                     const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);
                     [[flatten]] if ( has ) 
                         { hit.attribID = vtVerifyClosestHit(hid,-1)+1; } else 
-                    [[flatten]] if ( !found && lhit <= 0 && lhit == mhit ) 
+                    [[flatten]] if ( !found && lhit == mhit ) 
                         { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
                     
                     {mhit=max(mhit,hid+1);hid=-1;};
                 };
-                
             };
         };
     };
