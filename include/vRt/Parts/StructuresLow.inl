@@ -6,6 +6,7 @@
 namespace vrt {
 
     // system vectors of ray tracers
+    /*
     struct VtVec4 { float x = 0.f, y = 0.f, z = 0.f, w = 0.f; };
     struct VtVec3 { float x = 0.f, y = 0.f, z = 0.f; };
     struct VtVec2 { float x = 0.f, y = 0.f; };
@@ -14,21 +15,43 @@ namespace vrt {
     struct VtUVec2 { uint32_t x = 0u, y = 0u; };
     struct VtUVec4 { uint32_t x = 0u, y = 0u, z = 0u, w = 0u; };
     struct VtIVec4 {  int32_t x = 0u, y = 0u, z = 0u, w = 0u; };
+    */
+
+    //using VtVec4 = float[4];
+    //using VtVec3 = float[3];
+    //using VtVec2 = float[2];
+    //using VtMat4 = VtVec4[4];
+    //using VtMat3x4 = VtVec4[3];
+    //using VtUVec2 = uint32_t[2];
+    //using VtUVec4 = uint32_t[4];
+    //using VtIVec4 =  int32_t[4];
+
+    struct VtVec4 { float m[4] = { 0.f,0.f,0.f,0.f }; };
+    struct VtVec3 { float m[3] = { 0.f,0.f,0.f }; };
+    struct VtVec2 { float m[2] = { 0.f,0.f }; };
+    struct VtMat4 { VtVec4 m[4] = { {1.f,0.f,0.f,0.f}, {0.f,1.f,0.f,0.f}, {0.f,0.f,1.f,0.f}, {0.f,0.f,0.f,1.f} }; };
+    struct VtMat3x4 { VtVec4 m[3] = { {1.f,0.f,0.f,0.f}, {0.f,1.f,0.f,0.f}, {0.f,0.f,1.f,0.f} }; };
+    struct VtUVec2 { uint32_t m[2] = { 0u, 0u }; };
+    struct VtUVec4 { uint32_t m[4] = { 0u, 0u, 0u, 0u }; };
+    struct VtIVec4 { int32_t m[4] = { 0, 0, 0, 0 }; };
+
+    //using VtMat4 = VtVec4[4];
+    //using VtMat3x4 = VtVec4[3];
 
     // identified matrix 
-    constexpr inline static const VtMat4 IdentifyMat4 = {
+    constexpr inline static const VtMat4 IdentifyMat4{ {
         {1.f,0.f,0.f,0.f},
         {0.f,1.f,0.f,0.f},
         {0.f,0.f,1.f,0.f},
         {0.f,0.f,0.f,1.f},
-    };
+    } };
 
     // identified matrix 
-    constexpr inline static const VtMat3x4 IdentifyMat3x4 = {
+    constexpr inline static const VtMat3x4 IdentifyMat3x4{ {
         {1.f,0.f,0.f,0.f},
         {0.f,1.f,0.f,0.f},
         {0.f,0.f,1.f,0.f},
-    };
+    } };
 
 
     // in future planned custom ray structures support
@@ -134,7 +157,8 @@ namespace vrt {
     // Yes, we can review proposals, but any wars or enforcements is inacceptable! 
 #pragma pack(push, 1)
     struct VtInstanceNVX {
-        float transform[12] = {1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,  0.f, 0.f, 1.f, 0.f };
+        //float transform[12] = {1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,  0.f, 0.f, 1.f, 0.f };
+        VtMat3x4 transform = IdentifyMat3x4; // due this structure located in vRt namespace, prefer use VtMat3x4 type instead regular float[12]
         uint24_vt instanceId = 0u; uint8_t mask = 0u;
         uint24_vt instanceOffset = 0u; uint8_t flags = 0u;
         uint64_t accelerationStructureHandle = 0ull;

@@ -194,9 +194,7 @@ namespace _vt {
             bfi.bufferSize = (info.maxPrimitives * sizeof(VtBvhNodeStruct)) << 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer); 
         } else 
-        {
-            bfi.offset = info.bvhDataOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhDataBuffer, bfi, vtAccelerator->_bvhBoxBuffer, _vtDevice);
-        };
+        { bfi.offset = info.bvhDataOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhDataBuffer, bfi, vtAccelerator->_bvhBoxBuffer, _vtDevice); };
 
         // 
         if (!info.bvhMetaHeadBuffer) { 

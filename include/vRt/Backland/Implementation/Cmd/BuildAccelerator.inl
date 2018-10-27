@@ -211,8 +211,8 @@ namespace _vt {
         _bvhBlockData.entryID = accel->_entryID;
 
         // planned to merge instance buffer of linked set
-        _bvhBlockData.transform = VtMat3x4{ accel->_coverMatrice.m0, accel->_coverMatrice.m1, accel->_coverMatrice.m2 };
-        //_bvhBlockData.transformInv = IdentifyMat4;
+        _bvhBlockData.transform = VtMat3x4{ accel->_coverMatrice.m[0], accel->_coverMatrice.m[1], accel->_coverMatrice.m[2] };
+        //_bvhBlockData.transformInv = IdentifyMat4; 
 
         // updating meta buffers
         cmdUpdateBuffer(*cmdBuf, accel->_bvhHeadingBuffer, 0, sizeof(_bvhBlockData), &_bvhBlockData);
