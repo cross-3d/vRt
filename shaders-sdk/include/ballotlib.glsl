@@ -24,7 +24,7 @@
 #define Wave_Count_RT (gl_NumSubgroups.x)
 
 #ifndef OUR_INVOC_TERM
-    #define Global_Idx gl_GlobalInvocationID
+    #define Launch_Idx (gl_GlobalInvocationID.xy)
     #define Local_Idx (gl_LocalInvocationIndex)
     #define Local_2D (gl_LocalInvocationIndex.xy)
     //#define Global_Idx ()

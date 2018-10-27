@@ -44,6 +44,7 @@ vec4 fetchTexNG(in uint tbinding, in vec2 ntxc) {
     ivec2 szi = (1).xx; bool found = false;
     // planned Turing hardware version support 
     for (uint i=0;i<Wave_Size_RT;i++) { // critical section, due AMD hardware has issues
+        i = max(i, Wave_Size_RT-(1u+subgroupBallotFindMSB(subgroupBallot(!found))) );
         [[flatten]] if (!found && subgroupBroadcast(tbinding, i) == tbinding) {
             szi = textureSize(images[vtexures[tbinding-1].x-1],0), found = true;
         };

@@ -126,28 +126,31 @@ namespace vrt {
     };
 
 
+    class uint24_t;
 
 #pragma pack(push, 1)
-    struct uint24_p { uint16_t _major = 0u; uint8_t _minor = 0u; };
+    struct uint24_p { uint8_t _data[3] = { 0u, 0u, 0u }; };
 #pragma pack(pop)
 
 #pragma pack(push, 1)
     class uint24_u {
-        union { uint24_p _parted = { 0u, 0u }; uint32_t _data : 24; };
-    public:
+    private:
+        union { uint24_p _part; uint32_t _data : 24; };
+    protected:
+        uint24_u(const uint24_p& _input) : _part(_input) {};
+        operator const uint24_p&() const { return _part; };
+    public: friend uint24_t;
         uint24_u(const uint32_t& _input = 0u) : _data(_input) {};
-        uint24_u(const uint24_p& _input) : _parted(_input) {};
-        uint24_u(const uint16_t& _imj, const uint8_t& _imn) : _parted({ _imj, _imn }) {};
         operator uint32_t() const { return _data; };
-        operator const uint24_p&() const { return _parted; };
     };
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-    class uint24_vt {
-        uint24_p _data = {0u, 0u};
+    class uint24_t {
+    private:
+        uint24_p _data;
     public:
-        uint24_vt(const uint32_t& _input = 0u) : _data(uint24_u(_input)) {};
+        uint24_t(const uint32_t& _input = 0u) : _data(uint24_u(_input)) {};
         operator uint32_t() const { return uint24_u(_data); };
     };
 #pragma pack(pop)
@@ -159,8 +162,8 @@ namespace vrt {
     struct VtInstanceNVX {
         //float transform[12] = {1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,  0.f, 0.f, 1.f, 0.f };
         VtMat3x4 transform = IdentifyMat3x4; // due this structure located in vRt namespace, prefer use VtMat3x4 type instead regular float[12]
-        uint24_vt instanceId = 0u; uint8_t mask = 0u;
-        uint24_vt instanceOffset = 0u; uint8_t flags = 0u;
+        uint24_t instanceId = 0u; uint8_t mask = 0u;
+        uint24_t instanceOffset = 0u; uint8_t flags = 0u;
         uint64_t accelerationStructureHandle = 0ull;
     };
 #pragma pack(pop)
