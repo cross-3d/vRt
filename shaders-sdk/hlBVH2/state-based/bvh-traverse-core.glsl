@@ -28,7 +28,7 @@ void resetEntry(in bool VALID) {
     traverseState.entryIDBase = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.entryID : bvhBlockIn.entryID) : -1;
 
     [[flatten]] if (currentState == BVH_STATE_BOTTOM) {
-        traverseState.idx = traverseState.entryIDBase, traverseState.stackPtr = 0, traverseState.pageID = 0;
+        traverseState.idx = traverseState.entryIDBase, traverseState.stackPtr = 0, traverseState.pageID = 0, lstack[sidx] = -1;
     };
 };
 
