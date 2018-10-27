@@ -125,7 +125,7 @@ namespace vrt {
         uint16_t _major = 0u; uint8_t _minor = 0u;
     public:
         uint24_vt(const uint32_t& _input = 0u) {
-            auto tp = uint24_packed(uint24_union(_input));
+            const auto tp = uint24_packed(uint24_union(_input));
             _major = tp._major, _minor = tp._minor;
         };
         operator uint32_t() const { return uint24_union(_major, _minor); };
