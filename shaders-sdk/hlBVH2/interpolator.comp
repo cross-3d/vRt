@@ -45,12 +45,12 @@ void main() {
         const int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
         [[flatten]] if (!overflow && hitID >= 0) { // verify intersection
             // interpolate hit
-            const int triID = floatBitsToInt(hit.uvt.w)-1; INSTANCE_ID = floatBitsToInt(hit.vdat.w);
+            const int triID = floatBitsToInt(hit.uvt.w)-1; INSTANCE_ID = floatBitsToInt(hit.hitVD.w);
             [[flatten]] if (triID >= 0 && INSTANCE_ID >= 0) {
                 hit.uvt.w = intBitsToFloat(vmaterials[triID]); // set material ID to UVT (for backward compatibility)
-                hit.vdat = TLOAD(lnrm, triID); // pick-up pre-computed physical normal
+                hit.hitVD = TLOAD(lnrm, triID); // pick-up pre-computed physical normal
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-                hit.vdat.xyz = mult4(bvhInstance.transformIn, vec4(hit.vdat.xyz, 0.f)).xyz; // get correct transformation from instance 
+                hit.hitVD.xyz = mult4(bvhInstance.transformIn, vec4(hit.hitVD.xyz, 0.f)).xyz; // get correct transformation from instance 
 #endif
 
                 // additional hit data (18.10.2018)
@@ -63,7 +63,7 @@ void main() {
             };
 
             // re-group hit 
-            const lowp uint rID = floatBitsToUint(hit.vdat.w);
+            const lowp uint rID = floatBitsToUint(hit.hitVD.w);
             [[unroll]] for (lowp int i=0;i<4;i++) { [[flatten]] if (rID == i) { vtVerifyClosestHit(hitID, i); break; }; };
         };
     };

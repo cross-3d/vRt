@@ -33,7 +33,7 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    const uint wsize = min(rayCounter, MAX_RAYS); IFANY (wsize <= 0 || bvhBlockTop.primitiveCount <= 0) return;
+    const uint wsize  = min(rayCounter, MAX_RAYS); [[flatten]] IFANY (wsize <= 0 || bvhBlockTop.primitiveCount <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 1000000u);
 
     // planned task-based BVH traversing (for two-level BVH support)
@@ -41,46 +41,37 @@ void main() {
         const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x), rayID = vtRayIdx(it);
         const bool overflow = it >= wsize; IFALL(overflow) break;
 
-        //
-        primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO), traverseState.maxElements = !overflow ? 0x7FFFFFFF : 0;
-
         // planned multiple-hits support
-        [[flatten]] if (!overflow) { // verify intersection
-            ORIGINAL_ORIGIN = rays[rayID].origin.xyz, ORIGINAL_DIRECTION = rays[rayID].cdirect;
-
-            // traversing from front layer to back layers
-            int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = mhit > 0u; // last possible found hit
-            [[flatten]] if (found) { primitiveState.lastIntersection = hits[hid].uvt; found = found && floatBitsToInt(primitiveState.lastIntersection.w) > 0; };
-            [[unroll]] for (int i=0;i<1;i++) {
+        ORIGINAL_ORIGIN = rays[rayID].origin.xyz, ORIGINAL_DIRECTION = rays[rayID].cdirect;
+        currentState = BVH_STATE_TOP, traverseState.idx = -1, traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+        
+        [[flatten]] if (!overflow) {
+            int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
+            [[unroll]] for (int i=0;i<1;i++) { //[[flatten]] if (i == 0 || found) 
                 {
-                    currentState = uint(bvhBlockTop.primitiveCount > 1), INSTANCE_ID = 0, LAST_INSTANCE = 0;
-                    traverseState.entryIDBase = (!overflow ? bvhBlockTop.entryID : -1), traverseState.idx = traverseState.entryIDBase, traverseState.diffOffset = floatBitsToInt(0.f), 
-                    traverseState.defElementID = 0, traverseState.stackPtr = 0, traverseState.pageID = 0, traverseState.saved = bvhBlockTop.primitiveCount <= 1, lstack[sidx] = -1;
-                    traverseState.idxTop = traverseState.idx, traverseState.stackPtrTop = 0, traverseState.pageIDTop = -1;
+                    traverseState.idx = bvhBlockTop.entryID, lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
+                    traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = -1;
                 };
 
                 // traversing triangles
                 const int ftrID = traverseBVH2(true)-1; // current found triangle
                 traverseState.maxElements = min(traverseState.maxElements, ftrID);
 
-                // handle hit result 
-                const bool has = ftrID >= 0;
-                [[flatten]] if (has) found = true;
-                [[flatten]] if (i == 0 || has) 
                 { // resolve hit result 
-                    [[flatten]] if (hid < 0) hid = atomicIncHitCount(); // if required new
-                    hit.attribID = 0, hit.payloadID = 0, hit.rayID = rayID+1, hit.uvt = primitiveState.lastIntersection, hit.vdat = 0.f.xxxx, hit.vdat.w = intBitsToFloat(LAST_INSTANCE);
-                    primitiveState.lastIntersection.w = FINT_ZERO;
+                    [[flatten]] if (hid < 0) hid = atomicIncHitCount();
+                    hit.rayID = rayID+1, hit.attribID = 0, hit.payloadID = 0;
+                    hit.hitVD = vec4(0.f.xxx, intBitsToFloat(LAST_INSTANCE));
+                    hit.uvt = primitiveState.lastIntersection, primitiveState.lastIntersection.w = FINT_ZERO;
                     
                     const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);
-                    [[flatten]] if ( has ) 
-                        { hit.attribID = vtVerifyClosestHit(hid,-1)+1; } else 
+                    [[flatten]] if ( ftrID >= 0 ) 
+                        { hit.attribID = vtVerifyClosestHit(hid,-1)+1; found = true; }; 
                     [[flatten]] if ( !found && lhit == mhit ) 
                         { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
                     
-                    {mhit=max(mhit,hid+1);hid=-1;};
+                    {mhit=max(mhit,hid+1),hid=-1;};
                 };
-            };
+            };//};
         };
     };
 };
