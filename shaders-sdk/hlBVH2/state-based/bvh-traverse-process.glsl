@@ -7,9 +7,9 @@ int traverseBVH2( in bool validTop ) {
     [[flatten]] if (validTop) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
         [[flatten]] if (validIdx(traverseState.idx)) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) {
-            //IFANY (!validIdx(traverseState.idx) || traverseState.defElementID > 0) { break; }; // 
+            //IFANY (traverseState.idx < 0 || traverseState.defElementID > 0) { break; }; // 
 
-            bool _continue = false;
+            int primary = -1;
             #define bvhNode bvhNodes[traverseState.idx]
             const ivec2 cnode = validIdx(traverseState.idx) ? bvhNode.meta.xy : (0).xx;
             [[flatten]] if ( isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x; } else  // if leaf, defer for intersection 
@@ -35,9 +35,9 @@ int traverseBVH2( in bool validTop ) {
                 childIntersect &= binarize(lessThanEqual(nfe.xy, fma(primitiveState.lastIntersection.z,fpOne,fpInner).xx)); // it increase FPS by filtering nodes by first triangle intersection
 
                 //
-                int primary = -1, secondary = -1;
                 pbool_ fmask = pl_x(childIntersect)|(pl_y(childIntersect)<<true_);
                 [[flatten]] if (fmask > 0 && fmask != -1) {
+                    int secondary = -1;
                     [[flatten]] if (fmask == 3) { fmask &= true_<<pbool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
                     primary = traverseState.entryIDBase + (cnode.x^int(fmask&1u));
 
@@ -47,24 +47,22 @@ int traverseBVH2( in bool validTop ) {
                         const ivec2 snode = bvhNodes[traverseState.entryIDBase+secondary].meta.xy;
                         [[flatten]] if (isLeaf(snode)) { traverseState.defElementID = VTX_PTR + snode.x; secondary = -1; }; 
                     };
-                _continue = true; };
-
-                traverseState.idx = primary;
-                [[flatten]] if (secondary > 0) storeStack(traverseState.entryIDBase+secondary);
+                    [[flatten]] if (secondary > 0) storeStack(traverseState.entryIDBase+secondary);
+                };
             };
             
             // if all threads had intersection, or does not given any results, break for processing
-            [[flatten]] if (!_continue) 
-                { traverseState.idx = -1; loadStack(traverseState.idx); }; // load from stack
-            IFANY (!validIdx(traverseState.idx) || traverseState.defElementID > 0 || traverseState.idx == bvhBlockTop.entryID) { break; }; // 
+            traverseState.idx = primary;
+            [[flatten]] if (!validIdxincluse(traverseState.idx)) { loadStack(traverseState.idx); }; // load from stack
+            IFANY (traverseState.defElementID > 0 || !validIdxincluse(traverseState.idx)) { break; };
         }}};
         
         // every-step solving 
         [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( validTop ); };
-        [[flatten]] if (validIdxTop(traverseState.idxTop) && !validIdx(traverseState.idx) && traverseState.idx != bvhBlockTop.entryID) {
-            switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop);
+        [[flatten]] if (!validIdxincluse(traverseState.idx) && validIdxTop(traverseState.idxTop)) {
+            traverseState.idx = -1, switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop);
         };
-        [[flatten]] if (!validIdx(traverseState.idx) || traverseState.idx == bvhBlockTop.entryID) { break; };
+        [[flatten]] if (!validIdxincluse(traverseState.idx)) { break; };
     };
     return floatBitsToInt(primitiveState.lastIntersection.w);
 };
