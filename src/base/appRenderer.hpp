@@ -29,17 +29,22 @@ namespace rnd {
         glm::uint bumpTexture = 0;
         glm::uint emissiveTexture = 0;
 
-        int flags = 0;
-        int alphafunc = 0;
-        int binding = 0;
-        int bitfield = 0;
+        int32_t flags = 0;
+        int32_t alphafunc = 0;
+        int32_t binding = 0;
+        int32_t bitfield = 0;
     };
 
     struct VtCameraUniform {
         glm::mat4x4 camInv = glm::mat4x4(1.f), projInv = glm::mat4x4(1.f);
         glm::vec4 sceneRes = glm::vec4(1.f);
-        int enable360 = 0, variant = 0, r1 = 0, r2 = 0;
+        int32_t enable360 = 0, variant = 0, r1 = 0, r2 = 0;
     };
+
+    struct VtPartitionUniform {
+        uint32_t partID = 0, partSize = 1, r0 = 0, r1 = 0;
+    };
+
 
     struct VtBvhUniformDebug {
         glm::mat4x4 transform = glm::mat4x4(1.f), transformInv = glm::mat4x4(1.f);
@@ -383,10 +388,12 @@ namespace rnd {
         VtAcceleratorSet acceleratorGeometry = {};
         VtAcceleratorSet acceleratorMain = {};
 
+        const uint32_t rParts = 1u; // experimental: use less memory by dispatch sequences
         VtVertexAssemblySet vertexAssembly = {};
         VkCommandBuffer bCmdBuf = {}, tbCmdBuf, rtCmdBuf = {}, vxCmdBuf = {}, vxuCmdBuf = {};
-        VtDeviceBuffer rtUniformBuffer = {};
+        VtDeviceBuffer rtUniformBuffer = {}, rtPartitionBuffer = {};
         VtCameraUniform cameraUniformData = {};
+        VtPartitionUniform partitionUniformData = {};
 
         // vertex input buffer objects
         VtDeviceBuffer VBufferRegions = {}, VBufferView = {}, VAccessorSet = {}, VAttributes = {}, VTransforms = {};

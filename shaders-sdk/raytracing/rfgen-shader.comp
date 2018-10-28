@@ -21,6 +21,10 @@ layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
     int enable360, variant, r1, r2;
 } cameraUniform;
 
+layout ( binding = 3, set = 2, std430 ) readonly buffer VT_PARTITION {
+    int partID, partSize, r0, r1;
+} partitionUniform;
+
 layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 #define ColorOutput _devImages[0]
 #define NormalPass _devImages[1]
@@ -32,7 +36,8 @@ shared VtRay lrays[64];
 
 // planned ray generation shader example
 void main() {
-    ivec2 wh = stageUniform.size.xy, xy = ivec2(Launch_Idx.xy);
+    //ivec2 wh = stageUniform.size.xy, xy = ivec2(Launch_Idx.xy);
+    const ivec2 wh = /*stageUniform.size.xy*/ ivec2(cameraUniform.sceneRes.xy), xy = ivec2(Launch_Idx.xy) + ivec2(0, stageUniform.size.y*partitionUniform.partID);
 
     ray.dcolor = uvec2(0u.xx);
     writeColor(ray.dcolor, imageLoad(SpecularPass, xy));
@@ -51,7 +56,7 @@ void main() {
         ISTORE(NormalPass, xy, vec4(0.f.xxx, 0.f));
         ISTORE(OriginPass, xy, vec4(0.f.xxx, 1.f));
         ISTORE(SpecularPass, xy, vec4(0.f.xxx, 0.f));
-        vtReuseRays(ray, Launch_Idx.xy, 0, xy.y * wh.x + xy.x); // prefer strict layout
+        vtReuseRays(ray, uvec2(xy), 0, int(Launch_Idx.y * wh.x + Launch_Idx.x)); // prefer strict layout
     };
 
     //LGROUP_BARRIER;

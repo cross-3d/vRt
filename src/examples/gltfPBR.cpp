@@ -170,7 +170,10 @@ namespace rnd {
         {
             // create uniform buffer
             createBufferFast(deviceQueue, rtUniformBuffer, vte::strided<VtCameraUniform>(1));
+            createBufferFast(deviceQueue, rtPartitionBuffer, vte::strided<VtPartitionUniform>(1));
+            
             writeIntoBuffer<VtCameraUniform>(deviceQueue, { cameraUniformData }, rtUniformBuffer, 0);
+            writeIntoBuffer<VtPartitionUniform>(deviceQueue, { partitionUniformData }, rtPartitionBuffer, 0);
         }
 
         {
@@ -178,7 +181,8 @@ namespace rnd {
             auto _bindings = std::vector<vk::DescriptorSetLayoutBinding>{
                 vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // constants for generation shader
                 vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eCompute), // env map for miss shader
-                vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageImage, 4, vk::ShaderStageFlagBits::eCompute)
+                vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageImage, 4, vk::ShaderStageFlagBits::eCompute),
+                vk::DescriptorSetLayoutBinding(3, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute),
             };
             customedLayouts.push_back(deviceQueue->device->logical.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo().setPBindings(_bindings.data()).setBindingCount(_bindings.size())));
 
@@ -198,6 +202,7 @@ namespace rnd {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)(&rtUniformBuffer->_descriptorInfo())),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&imgdi),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo(passImages.data()).setDescriptorCount(passImages.size()),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)(&rtPartitionBuffer->_descriptorInfo())),
             };
             vk::Device(deviceQueue->device->rtDev).updateDescriptorSets(writes, {});
         }
@@ -281,6 +286,9 @@ namespace rnd {
             rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
             
+            // updator for buffer 
+
+
             vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST_BIT | VT_ENTRY_USAGE_MISS_BIT), materialSet);
             vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
             vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
@@ -296,11 +304,23 @@ namespace rnd {
 
             // primary rays generation
             vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipeline);
-            vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, std::max(transparencyLevel + 1, 1));
 
-            for ( int i = 0; i < reflectionLevel; i++ ) {
-                vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);
-                vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, canvasHeight, std::max(transparencyLevel + 1, 1));
+            
+            for (int32_t I = 0; I < rParts;I++) {
+                partitionUniformData.partID = I;
+                vkCmdUpdateBuffer(qRtCmdBuf, rtPartitionBuffer, 0, sizeof(VtPartitionUniform), &partitionUniformData);
+                _vt::updateCommandBarrier(qRtCmdBuf);
+                vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, _vt::tiled(canvasHeight, rParts*8u)*8u, std::max(transparencyLevel + 1, 1));
+            };
+
+            vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);
+            for (int i = 0; i < reflectionLevel; i++) {
+                for (int32_t I = 0; I < rParts; I++) {
+                    partitionUniformData.partID = I;
+                    vkCmdUpdateBuffer(qRtCmdBuf, rtPartitionBuffer, 0, sizeof(VtPartitionUniform), &partitionUniformData);
+                    _vt::updateCommandBarrier(qRtCmdBuf);
+                    vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, _vt::tiled(canvasHeight, rParts * 8u) * 8u, std::max(transparencyLevel + 1, 1));
+                };
             };
 
             vkEndCommandBuffer(qRtCmdBuf);
@@ -431,7 +451,7 @@ namespace rnd {
         {
             // create ray tracing set
             VtRayTracingSetCreateInfo rtsi = {};
-            rtsi.maxRays = canvasWidth * canvasHeight; // prefer that limit
+            rtsi.maxRays = canvasWidth * (_vt::tiled(canvasHeight, rParts * 8u) * 8u); // prefer that limit
             rtsi.maxHits = rtsi.maxRays * 2;
             vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &raytracingSet);
         }
