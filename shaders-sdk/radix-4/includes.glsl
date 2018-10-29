@@ -51,7 +51,8 @@
 
 // default values
 #ifndef BLOCK_SIZE
-#ifdef ENABLE_VEGA_INSTRUCTION_SET
+//#ifdef ENABLE_VEGA_INSTRUCTION_SET 
+#if defined(ENABLE_VEGA_INSTRUCTION_SET) || defined(ENABLE_TURING_INSTRUCTION_SET) // prefer full-mode in Turing's 
 #define BLOCK_SIZE 1024u
 #else
 #define BLOCK_SIZE 768u
