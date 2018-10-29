@@ -599,6 +599,7 @@ namespace _vt { // store in undercover namespace
 
     protected:
         std::weak_ptr<Device> _device = {};
+        std::weak_ptr<AcceleratorSet> _accelSet = {};
         //std::shared_ptr<AcceleratorSetExtensionDataBase> _dataPtr = {};
 
     public:
@@ -624,6 +625,7 @@ namespace _vt { // store in undercover namespace
 
     protected:
         std::weak_ptr<Device> _device = {};
+        std::weak_ptr<VertexAssemblySet> _assemblySet = {};
         //std::shared_ptr<VertexAssemblyExtensionDataBase> _dataPtr = {};
 
     public:
