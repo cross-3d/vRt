@@ -219,8 +219,8 @@ namespace _vt {
         cmdUpdateBuffer(*cmdBuf, acclb->_constBuffer, 0, sizeof(_buildConstData), &_buildConstData);
 
         // if has advanced accelerator
-        if (device->_advancedAccelerator) {
-            result = device->_advancedAccelerator->_BuildAccelerator(cmdBuf, accel);
+        if (device->_hExtensionAccelerator.size() > 0 && device->_hExtensionAccelerator[0]) {
+            result = device->_hExtensionAccelerator[0]->_BuildAccelerator(cmdBuf, accel);
         }
         else {
             // building hlBVH2 process

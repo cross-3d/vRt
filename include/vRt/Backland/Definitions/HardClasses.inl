@@ -75,7 +75,6 @@ namespace _vt { // store in undercover namespace
         VkDevice _device = {};
         std::shared_ptr<DeviceFeatures> _features = {};
         std::shared_ptr<PhysicalDevice> _physicalDevice = {};
-        std::shared_ptr<AdvancedAcceleratorBase> _advancedAccelerator = {};
 
         uint32_t _mainFamilyIndex = 0;
         std::string _shadersPath = "./intrusive";
@@ -89,12 +88,15 @@ namespace _vt { // store in undercover namespace
         VkDescriptorPool _descriptorPool = {};
         VkDescriptorSet _emptyDS = {};
 
-        // TODO: much better support of multi-threaded processing by multiple instances
+        // TODO: optional when enabled extensions 
         uint32_t _supportedThreadCount = 1u;
         std::vector<std::shared_ptr<RadixSort>> _radixSort = {}; // 
         std::vector<std::shared_ptr<AcceleratorHLBVH2>> _acceleratorBuilder = {}; // planned to rename
         std::vector<std::shared_ptr<AssemblyPipeline>> _nativeVertexAssembler = {};
         std::vector<std::shared_ptr<BufferTraffic>> _bufferTraffic = {};
+
+        // accelerator by extension
+        std::vector<std::shared_ptr<AdvancedAcceleratorBase>> _hExtensionAccelerator = {};
 
         // descriptor layout map in ray tracing system
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap = {};
@@ -287,7 +289,6 @@ namespace _vt { // store in undercover namespace
         friend Device;
         const VkPipeline _dullPipeline = {}; // protect from stupid casting
         std::weak_ptr<Device> _device = {};
-        std::shared_ptr<AdvancedAcceleratorBase> _hExtension = {};
 
         // traverse pipeline
         VkPipeline _intersectionPipeline = {};

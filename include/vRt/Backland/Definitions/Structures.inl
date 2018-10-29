@@ -25,10 +25,10 @@ namespace vrt { // store in official namespace
 
     public: // API in-runtime implementation (dynamic polymorphism)
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; }; // in-runtime return acceleration extension name
-        virtual VkBool32 _Criteria(std::shared_ptr<_vt::Device> lwDevice) const {
-            return false;
+        virtual VtResult _Criteria(std::shared_ptr<_vt::DeviceFeatures> lwFeatures) const {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
         };
-        virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice) {
+        virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice, std::shared_ptr<_vt::AdvancedAcceleratorBase>& _hExtensionAccelerator) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         };
 

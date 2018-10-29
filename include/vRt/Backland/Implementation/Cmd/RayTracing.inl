@@ -93,7 +93,8 @@ namespace _vt {
                 auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
                 cmdFillBuffer<-1>(*cmdBuf, rtset->_traverseCache);
 
-                if (device->_advancedAccelerator) { result = device->_advancedAccelerator->_DoIntersections(cmdBuf, accel, rtset); } else // extension-based
+                if (device->_hExtensionAccelerator.size() > 0 && device->_hExtensionAccelerator[0])
+                { result = device->_hExtensionAccelerator[0]->_DoIntersections(cmdBuf, accel, rtset); } else // extension-based
                 { // stock software BVH traverse (i.e. shader-based)
                     std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
                     vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
