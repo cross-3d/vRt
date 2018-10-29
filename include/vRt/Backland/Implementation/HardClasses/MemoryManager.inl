@@ -174,7 +174,7 @@ namespace _vt {
 
     // create buffer region by exist buffer
     inline VtResult createBufferRegion(std::shared_ptr<DeviceBuffer> gBuffer, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion) {
-        VkDeviceSize correctedSize = bri.bufferSize;//((bri.bufferSize >> 5ull) << 5ull) + 32ull;
+        const auto correctedSize = bri.bufferSize;//((bri.bufferSize >> 5ull) << 5ull) + 32ull;
         bRegion = std::make_shared<BufferRegion>();
         bRegion->_device = gBuffer->_device;
         bRegion->_format = bri.format;
@@ -189,7 +189,7 @@ namespace _vt {
     // create buffer region by exist buffer
     inline VtResult createBufferRegion(VkBuffer vkBuffer, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion, std::shared_ptr<Device> gDevice) {
         const auto gBuffer = std::make_shared<DeviceBuffer>(); gBuffer->_device = gDevice;
-        VkDeviceSize correctedSize = bri.bufferSize;//((bri.bufferSize >> 5ull) << 5ull) + 32ull;
+        const auto correctedSize = bri.bufferSize;//((bri.bufferSize >> 5ull) << 5ull) + 32ull;
         bRegion = std::make_shared<BufferRegion>();
         bRegion->_device = gDevice;
         bRegion->_format = bri.format;
@@ -203,7 +203,7 @@ namespace _vt {
 
     // create structuring 
     inline VtResult BufferManager::_prealloc(VtBufferRegionCreateInfo cinfo, std::shared_ptr<BufferRegion>& bRegion) {
-        const auto correctedSize = ((cinfo.bufferSize >> 5ull) << 5ull) + 32ull, offset = this->_size; this->_size += correctedSize;
+        const VkDeviceSize correctedSize = ((cinfo.bufferSize >> 5ull) << 5ull) + 32ull, offset = this->_size; this->_size += correctedSize;
         _bufferRegions.push_back(std::make_shared<BufferRegion>());
         bRegion = _bufferRegions[_bufferRegions.size() - 1];
         bRegion->_device = _device;
