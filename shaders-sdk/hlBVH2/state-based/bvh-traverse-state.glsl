@@ -12,10 +12,11 @@
   const float fpInner = 0.0000152587890625f, fpOne = 1.f;
 #endif
 
-#ifdef ENABLE_VEGA_INSTRUCTION_SET
+#if defined(ENABLE_VEGA_INSTRUCTION_SET) || defined(ENABLE_TURING_INSTRUCTION_SET) // prefer to run in Turing's too
+//#ifdef ENABLE_VEGA_INSTRUCTION_SET
   const  lowp  int localStackSize = 8, pageCount = 4; // 256-bit global memory stack pages
 #else
-  const  lowp  int localStackSize = 4, pageCount = 8; // 128-bit capable (minor GPU, GDDR6 two-channels)
+  const  lowp  int localStackSize = 4, pageCount = 8; // 128-bit capable 
 #endif
   //const highp uint maxIterations  = 8192u;
   const highp uint maxIterations  = 16384u;
