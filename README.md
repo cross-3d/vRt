@@ -63,3 +63,7 @@
 - First implementations for games, engines, applications, blockchains
 - Make custom GLSL/HLSL compiler for unified compatibility
 - Support of PowerVR Wizard Ray Tracing, Intel Larrabee 2019
+
+## RTX 2070 new winner
+
+Gigabyte RTX 2070 unexpectedly faster than RX Vega 64 in that ray-tracing, even without RTX mode (up to 10% or, probably, more). 
