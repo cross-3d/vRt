@@ -75,7 +75,7 @@ namespace _vt {
 
         std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
         { // solve building BVH conflicts by creation in accelerator set
-            bfi.bufferSize = std::max(sizeof(uint32_t) * 64ull, sizeof(VtBuildConst));
+            bfi.bufferSize = std::max(VkDeviceSize(sizeof(uint32_t) * 64ull), VkDeviceSize(sizeof(VtBuildConst)));
             bfi.format = VK_FORMAT_UNDEFINED;
             createBufferRegion(bManager, bfi, vtAccelerator->_constBuffer);
 
