@@ -403,7 +403,7 @@ namespace rnd {
 
             // create vertex assembly
             VtVertexAssemblySetCreateInfo vtsi = {};
-            vtsi.maxPrimitives = 1024 * 2048;
+            vtsi.maxPrimitives = 1024ull * 2048ull;
             vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
             // dispatch image barrier for vertex assembly

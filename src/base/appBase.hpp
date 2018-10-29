@@ -398,7 +398,7 @@ namespace NSM
                 dbi.mainQueueFamily = deviceQueuePtr->familyIndex;
                 dbi.shaderPath = shaderPath;
                 dbi.sharedCacheSize = 4096ull * 4096ull * 4ull;
-                dbi.maxPrimitives = 1024ull * 1024ull * 4ull;
+                dbi.maxPrimitives = 1024ull * 2048ull;
                 vrt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
 
                 //devicePtr->allocator = deviceQueuePtr->device->rtDev->_allocator;
