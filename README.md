@@ -32,10 +32,11 @@
 
 - RX Vega 64
 - GTX 1070 (need new tests)
+- RTX 2070 (non-RTX mode, aka. generic mode)
 
 ## Uncomfirmed
 
-- RTX 2070, 2080, 2080 Ti (non-RTX mode only)
+- 2080, 2080 Ti (non-RTX mode only)
 - GTX 1080, 1080 Ti, 980, 980 Ti
 - RX Vega 56 and Raven Ridge
 - RX 580, 570 series
