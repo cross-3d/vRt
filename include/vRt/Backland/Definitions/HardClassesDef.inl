@@ -46,9 +46,13 @@ namespace _vt { // store in undercover namespace
 
     // will inherits
     class AdvancedAcceleratorBase;
-    class AdvancedAcceleratorDataBase;
+    //class AdvancedAcceleratorDataBase;
 
     // extension for accelerator sets
     class AcceleratorSetExtensionBase;
-    class AcceleratorSetExtensionDataBase;
+    //class AcceleratorSetExtensionDataBase;
+
+    // extension for vertex assembly
+    class VertexAssemblyExtensionBase;
+    //class VertexAssemblyExtensionDataBase;
 };

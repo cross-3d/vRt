@@ -49,13 +49,18 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<Device> _device = {};
 
         // extensions
+        std::vector<VkExtensionProperties> _extensions = {};
+        VkPhysicalDeviceProperties2 _properties = {};
         VkPhysicalDevice16BitStorageFeatures _storage16 = {};
         VkPhysicalDevice8BitStorageFeaturesKHR _storage8 = {};
         VkPhysicalDeviceDescriptorIndexingFeaturesEXT _descriptorIndexing = {};
+        VkPhysicalDeviceRaytracingPropertiesNVX _raytracingNVX = {};
 
         // features linking
         operator VkPhysicalDeviceFeatures2&() { return _features; };
         operator VkPhysicalDeviceFeatures2() const { return _features; };
+        operator VkPhysicalDeviceProperties2&() { return _properties; };
+        operator VkPhysicalDeviceProperties2() const { return _properties; };
 
         auto _parent() const { return _physicalDevice; };
         auto& _parent() { return _physicalDevice; };
@@ -211,6 +216,7 @@ namespace _vt { // store in undercover namespace
         ~VertexAssemblySet();
         VkDescriptorSet _descriptorSet = {};
         std::shared_ptr<Device> _device = {};
+        std::shared_ptr<VertexAssemblyExtensionBase> _hExtension = {};
 
         // DEPRECATED, planned to fully remove, since need merge to dedicated descriptor set 
         std::shared_ptr<DeviceImage> _attributeTexelBuffer = {};
@@ -250,10 +256,9 @@ namespace _vt { // store in undercover namespace
         friend Device;
         ~AcceleratorSet();
         VkDescriptorSet _descriptorSet = {};
-        VtAcceleratorSetLevel _level = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
-
         std::shared_ptr<Device> _device = {};
-        std::shared_ptr<AcceleratorSetExtensionBase> _EXtension = {};
+        std::shared_ptr<AcceleratorSetExtensionBase> _hExtension = {};
+
         std::shared_ptr<VertexAssemblySet> _vertexAssemblySet = {}; // in-bound vertex assembly
         std::vector<std::shared_ptr<AcceleratorSet>> _usedAcceleratorSets = {};
 
@@ -263,6 +268,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<BufferRegion> _bvhHeadingInBuffer = {}, _bvhInstancedBuffer = {}; // shared buffer with multiple BVH data 
 
         // planned to rework building system  
+        VtAcceleratorSetLevel _level = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
         uint32_t _entryID = 0, _elementsCount = -1, _elementsOffset = 0;
         VtMat4 _coverMatrice = IdentifyMat4;
         VtBvhBlock _bvhBlockData = {};
@@ -281,6 +287,7 @@ namespace _vt { // store in undercover namespace
         friend Device;
         const VkPipeline _dullPipeline = {}; // protect from stupid casting
         std::weak_ptr<Device> _device = {};
+        std::shared_ptr<AdvancedAcceleratorBase> _hExtension = {};
 
         // traverse pipeline
         VkPipeline _intersectionPipeline = {};
@@ -530,7 +537,7 @@ namespace _vt { // store in undercover namespace
         auto& uniform() { return _uniformBlock; };
     };
 
-
+    /*
     // 
     class AdvancedAcceleratorDataBase : public std::enable_shared_from_this<AdvancedAcceleratorDataBase> {
     public:
@@ -545,14 +552,23 @@ namespace _vt { // store in undercover namespace
         virtual ~AcceleratorSetExtensionDataBase() {}; // with overridabable virtual desctructor
     };
 
-    // unused, planned in 2019 
+    // 
+    class VertexAssemblyExtensionDataBase : public std::enable_shared_from_this<VertexAssemblyExtensionDataBase> {
+    public:
+        friend Device;
+        virtual ~VertexAssemblyExtensionDataBase() {}; // with overridabable virtual desctructor
+    };
+    */
+
+
+    // 
     class AdvancedAcceleratorBase : public std::enable_shared_from_this<AdvancedAcceleratorBase> {
     public:
         friend Device;
 
     protected:
         std::weak_ptr<Device> _device = {};
-        std::shared_ptr<AdvancedAcceleratorDataBase> _dataPtr = {};
+        //std::shared_ptr<AdvancedAcceleratorDataBase> _dataPtr = {};
 
     public:
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
@@ -567,27 +583,28 @@ namespace _vt { // store in undercover namespace
         virtual VtResult _Init(const VtDeviceAdvancedAccelerationExtension* extensionStructure = nullptr) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }; // initialize by extension 
+        virtual VtResult _Criteria(const std::shared_ptr<DeviceFeatures>& supportedFeatures) {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        };
 
          // built-in method's
-        auto* operator->() { return _dataPtr.get(); };
-        auto* operator->() const { return _dataPtr.get(); };
+        //auto* operator->() { return _dataPtr.get(); };
+        //auto* operator->() const { return _dataPtr.get(); };
     };
 
-    // planned in 2019
+    // 
     class AcceleratorSetExtensionBase : public std::enable_shared_from_this<AcceleratorSetExtensionBase> {
     public:
         friend Device;
 
     protected:
         std::weak_ptr<Device> _device = {};
-        std::shared_ptr<AcceleratorSetExtensionDataBase> _dataPtr = {};
+        //std::shared_ptr<AcceleratorSetExtensionDataBase> _dataPtr = {};
 
     public:
         //operator VkDescriptorSet() const { return _descriptorSet; };
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
-        virtual VtResult _Init(const void* extensionStructure = nullptr) {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        }; // initialize by extension (TODO)
+
         virtual VtResult _Construction(std::shared_ptr<AcceleratorSet> accelSet = {}) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }; // accessing by same address
@@ -596,8 +613,35 @@ namespace _vt { // store in undercover namespace
         auto& _parent() { return _device; };
 
         // built-in method's
-        auto* operator->() { return _dataPtr.get(); };
-        auto* operator->() const { return _dataPtr.get(); };
+        //auto* operator->() { return _dataPtr.get(); };
+        //auto* operator->() const { return _dataPtr.get(); };
     };
+
+    // 
+    class VertexAssemblyExtensionBase : public std::enable_shared_from_this<VertexAssemblyExtensionBase> {
+    public:
+        friend Device;
+
+    protected:
+        std::weak_ptr<Device> _device = {};
+        //std::shared_ptr<VertexAssemblyExtensionDataBase> _dataPtr = {};
+
+    public:
+        //operator VkDescriptorSet() const { return _descriptorSet; };
+        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
+
+        virtual VtResult _Construction(std::shared_ptr<VertexAssemblySet> accelSet = {}) {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        }; // accessing by same address
+
+        auto  _parent() const { return _device; };
+        auto& _parent() { return _device; };
+
+        // built-in method's
+        //auto* operator->() { return _dataPtr.get(); };
+        //auto* operator->() const { return _dataPtr.get(); };
+    };
+
+
 
 };

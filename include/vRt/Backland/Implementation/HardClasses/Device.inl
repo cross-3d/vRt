@@ -20,14 +20,30 @@ namespace _vt {
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
         auto gpu = vk::PhysicalDevice(physicalDevice->_physicalDevice);
 
-        // minimal features
-        auto features = (vtDevice->_features = std::make_shared<DeviceFeatures>());
-        features->_features = vk::PhysicalDeviceFeatures2{};
-        features->_storage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
-        features->_storage16 = vk::PhysicalDevice16BitStorageFeatures{};
-        features->_descriptorIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
-        features->_features.pNext = &features->_storage16, features->_storage16.pNext = &features->_storage8, features->_storage8.pNext = &features->_descriptorIndexing;
-        gpu.getFeatures2((vk::PhysicalDeviceFeatures2*)&features->_features); // get features support by physical devices
+        
+        { // get device properties 
+            auto features = (vtDevice->_features = std::make_shared<DeviceFeatures>());
+
+            // extensions support list 
+            const auto extList = gpu.enumerateDeviceExtensionProperties();
+            features->_extensions = std::vector<VkExtensionProperties>(extList.begin(), extList.end());
+
+            // features support list
+            features->_features = vk::PhysicalDeviceFeatures2{};
+            features->_storage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
+            features->_storage16 = vk::PhysicalDevice16BitStorageFeatures{};
+            features->_descriptorIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
+            features->_features.pNext = &features->_storage16, features->_storage16.pNext = &features->_storage8, features->_storage8.pNext = &features->_descriptorIndexing; //features->_descriptorIndexing.pNext = &features->_raytracingNVX;
+            gpu.getFeatures2((vk::PhysicalDeviceFeatures2*)&features->_features); // 
+
+            // properties list 
+            features->_properties = vk::PhysicalDeviceProperties2{};
+            features->_raytracingNVX = vk::PhysicalDeviceRaytracingPropertiesNVX{};
+            features->_properties.pNext = &features->_raytracingNVX;
+            gpu.getProperties2((vk::PhysicalDeviceProperties2*)&features->_properties); // 
+        };
+
+
 
         // device vendoring
         vtDevice->_device = device;
