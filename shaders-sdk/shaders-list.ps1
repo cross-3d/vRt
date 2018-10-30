@@ -12,6 +12,7 @@ $RNDR="raytracing/"
 $HLBV="hlBVH2/"
 $RDXI="radix/"
 $OUTP="output/"
+$RTXI="accelNVX/"
 
 $CMPPROF="-S comp"
 $FRGPROF="-S frag"
@@ -61,6 +62,18 @@ function BuildVertex($Name, $InDir = "", $OutDir = "", $AddArg = "") {
     $process.WaitForExit()
     $process.Close()
 }
+
+
+
+function BuildEXT($Name, $InDir = "", $OutDir = "", $AddArg = "", $AltName = $Name) {
+    $ARGS = "$CFLAGSV $InDir$Name -o $OutDir$AltName.spv $AddArg"
+    $process = start-process -NoNewWindow -Filepath "glslangValidator" -ArgumentList "$ARGS" -PassThru
+    $process.PriorityClass = 'BelowNormal'
+    $process.WaitForExit()
+    $process.Close()
+}
+
+
 
 function OptimizeMainline($Pfx = "") {
     # optimize accelerator structure (hlBVH2)
@@ -156,7 +169,18 @@ function BuildAllShaders($Pfx = "") {
     OptimizeMainline
 
     [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
+}
+
+
+function BuildRTXShaders($Pfx = "") {
+    [System.Threading.Thread]::CurrentThread.Priority = 'BelowNormal'
+
+    new-item -Name $HRDDIR$RTXI -itemtype directory              -Force | Out-Null
+
+    BuildEXT "traverse.rgen" "$INDIR$RTXI" "$HRDDIR$RTXI" ""
+    BuildEXT "traverse.rahit" "$INDIR$RTXI" "$HRDDIR$RTXI" ""
+    BuildEXT "traverse.rchit" "$INDIR$RTXI" "$HRDDIR$RTXI" ""
+    BuildEXT "traverse.rmiss" "$INDIR$RTXI" "$HRDDIR$RTXI" ""
     
-    #pause for check compile errors
-    Pause 
+    [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
 }

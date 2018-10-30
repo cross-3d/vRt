@@ -1,8 +1,8 @@
 #pragma once
 
-#ifndef VMA_IMPLEMENTATION
-#define VMA_IMPLEMENTATION // implement VMA there
-#endif
+//#ifndef VMA_IMPLEMENTATION
+//#define VMA_IMPLEMENTATION // implement VMA there
+//#endif
 
 #ifndef NOMINMAX
 #define NOMINMAX

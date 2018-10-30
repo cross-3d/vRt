@@ -7,3 +7,6 @@ $VNDR="amd"
 . "./shaders-list.ps1"
 
 BuildAllShaders ""
+
+#pause for check compile errors
+Pause

@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef VMA_IMPLEMENTATION
+#define VMA_IMPLEMENTATION // implement VMA there
+#endif
+
 #include "vRt_subimpl.inl"
 
 // implementations 

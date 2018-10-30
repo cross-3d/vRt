@@ -6,3 +6,6 @@ $VNDR="nvidia"
 . "./shaders-list.ps1"
 
 BuildAllShaders ""
+
+#pause for check compile errors
+Pause

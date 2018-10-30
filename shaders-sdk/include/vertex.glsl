@@ -44,8 +44,8 @@ struct BvhBlockT {
 
 // 
 struct BvhInstanceT {
+    mat3x4 transformIn; // row of traversion correction, combined with transforming to instance space 
     int bvhBlockID, r0, r1, r2;
-    mat3x4 transform, transformIn; // row of traversion correction, combined with transforming to instance space 
 };
 
 
@@ -74,9 +74,11 @@ layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { Bvh
 #ifdef BVH_CREATION
 layout ( binding = 2, set = 1, std430 ) restrict buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
 layout ( binding = 3, set = 1, std430 ) restrict buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
+layout ( binding = 4, set = 1, std430 ) restrict buffer BvhTransformB { mat3x4 transformData_[]; };
 #else
 layout ( binding = 2, set = 1, std430 ) readonly restrict buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
 layout ( binding = 3, set = 1, std430 ) readonly restrict buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
+layout ( binding = 4, set = 1, std430 ) readonly restrict buffer BvhTransformB { mat3x4 transformData_[]; };
 #endif
 #endif
 
@@ -92,9 +94,11 @@ layout ( binding = 1, set = 1, std430 ) readonly restrict buffer bvhBoxesB { BTY
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 int INSTANCE_ID = 0;
 #define bvhInstance bvhInstance_[INSTANCE_ID]
+#define instanceTransform transformData_[INSTANCE_ID]
 #define bvhBlockIn bvhBlockIn_[bvhInstance.bvhBlockID]
 #define bvhBlockTop bvhBlock_[0] 
 #else
+#define instanceTransform transformData_[0]
 #define bvhBlockIn bvhBlock_[0] 
 #define bvhBlockTop bvhBlock_[0] 
 #endif

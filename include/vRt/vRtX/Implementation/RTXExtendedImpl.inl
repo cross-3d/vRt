@@ -21,8 +21,6 @@ namespace vrt {
         return accelerationExtension->_Init(lwDevice, this);
     };
 
-
-
     // required for RTX top level support 
     VtResult vtGetAcceleratorHandleNVX(VtAcceleratorSet accSet, VtHandleRTX * acceleratorHandleNVX) {
         if (accSet->_hExtension && accSet->_hExtension->_AccelerationName() == VT_ACCELERATION_NAME_RTX) {

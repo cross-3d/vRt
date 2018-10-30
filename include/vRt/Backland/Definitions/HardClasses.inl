@@ -268,7 +268,7 @@ namespace _vt { // store in undercover namespace
         // vertex and bvh export 
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
         std::shared_ptr<BufferRegion> _bvhBoxBuffer = {}, _bvhHeadingBuffer = {}; // 
-        std::shared_ptr<BufferRegion> _bvhHeadingInBuffer = {}, _bvhInstancedBuffer = {}; // shared buffer with multiple BVH data 
+        std::shared_ptr<BufferRegion> _bvhHeadingInBuffer = {}, _bvhInstancedBuffer = {}, _bvhTransformBuffer = {}; // shared buffer with multiple BVH data 
 
         // planned to rework building system  
         VtAcceleratorSetLevel _level = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;

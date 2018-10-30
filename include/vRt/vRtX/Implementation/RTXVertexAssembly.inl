@@ -12,14 +12,12 @@ namespace _vt {
         _vertexProxyNVX.vertexStride = sizeof(float) * 4ull;
         _vertexProxyNVX.vertexData = *_assemblySet->_verticeBufferCached;
         _vertexProxyNVX.vertexCount = _assemblySet->_calculatedPrimitiveCount;
-
-
-
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
+        return VK_SUCCESS;
+        //return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
 
     // helper for connection
-    VtResult RTXAcceleratorExtension::_ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet = {}) {
+    VtResult RTXAcceleratorExtension::_ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet) {
         auto assemblySetExt = std::make_shared<RTXVertexAssemblyExtension>();
         assemblySet->_hExtension = assemblySetExt;
         return assemblySetExt->_Construction(assemblySet);

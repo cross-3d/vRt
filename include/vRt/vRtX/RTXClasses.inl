@@ -18,6 +18,7 @@ namespace _vt {
         VmaAllocation _vmaAllocation = {}, _vmaScratchAllocation = {};
         VmaAllocationInfo _vmaAllocationInfo = {}, _vmaScratchAllocationInfo = {};
         VkDescriptorAccelerationStructureInfoNVX _accelDescriptorNVX = {};
+        VkDescriptorSet _accelDescriptorSetNVX = {}; // additional descriptor set
 
         // scratch buffers
         std::shared_ptr<BufferRegion> _scratchBuffer = {}; // 
@@ -39,7 +40,12 @@ namespace _vt {
         virtual VtResult _ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet = {}) override;
 
         //  
+        VkDescriptorSetLayout _raytracingDescriptorLayout = {};
+        VkPipelineLayout _raytracingPipelineLayout = {};
         VkPipeline _intersectionPipelineNVX = {}; // native RTX intersection system 
+        VkPhysicalDeviceRaytracingPropertiesNVX _raytracingProperties = {};
+        std::shared_ptr<HostToDeviceBuffer> _sbtBuffer = {};
+
     };
 
     // 

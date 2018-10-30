@@ -218,6 +218,12 @@ namespace _vt {
         } else
         { bfi.offset = info.bvhInstanceOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhInstanceBuffer, bfi, vtAccelerator->_bvhInstancedBuffer, _vtDevice); };
 
+        { // add special cache for changed transform data 
+            bfi.bufferSize = sizeof(VtMat3x4) * info.maxPrimitives;
+            createBufferRegion(bManager, bfi, vtAccelerator->_bvhTransformBuffer);
+        };
+        
+
         { // build final shared buffer for this class
             VtDeviceBufferCreateInfo bfic = {};
             bfic.familyIndex = _vtDevice->_mainFamilyIndex;
@@ -241,6 +247,7 @@ namespace _vt {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhBoxBuffer->_descriptorInfo())),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhInstancedBuffer->_descriptorInfo())),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingInBuffer->_descriptorInfo())),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhTransformBuffer->_descriptorInfo())),
             };
             vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };

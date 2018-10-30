@@ -1,0 +1,7 @@
+#version 460 core
+#extension GL_NVX_raytracing : require
+#extension GL_GOOGLE_include_directive : enable
+
+void main()
+{
+};

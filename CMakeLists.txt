@@ -29,6 +29,8 @@ set(SOURCES_LIST
     "./include/vulkan/*/*.cpp"
     "./include/vRt/*.c"
     "./include/vRt/*.cpp"
+    "./include/vRt/vRtX/*.c"
+    "./include/vRt/vRtX/*.cpp"
 
     "./include/*.h"
     "./include/*.hpp"

@@ -1,0 +1,66 @@
+#version 460 core
+#extension GL_NVX_raytracing : require
+#extension GL_GOOGLE_include_directive : enable
+
+// enable it, when you will ready...
+#define ENABLE_STACK_SWITCH // still has glitches, when is enabled, will used unified stack (may no enough)
+#define EXPERIMENTAL_INSTANCING_SUPPORT
+
+#define VRT_USE_FAST_INTERSECTION
+#define USE_SINGLE_THREAD_RAY_MANAGMENT
+#define SIMPLIFIED_RAY_MANAGMENT
+#define DISCARD_SHARED_CACHING
+#define ENABLE_TRAVERSE_DATA
+#define ENABLE_VSTORAGE_DATA
+#define DMA_HIT
+
+#define EXTEND_LOCAL_GROUPS
+//#define WORK_SIZE 64u
+
+#include "../include/driver.glsl"
+#include "../include/mathlib.glsl"
+#include "../include/ballotlib.glsl"
+#include "../include/structs.glsl"
+#include "../include/rayslib.glsl"
+
+struct VtCustomPayloadNVX {
+    vec4 lastIntersection;
+    uvec4 binaryData128;
+};
+#define LAST_INSTANCE primitiveState.binaryData128.x
+
+layout(binding  = 0, set = 1) uniform accelerationStructureNVX accelStructureNVX;
+layout(location = 0) rayPayloadNVX VtCustomPayloadNVX primitiveState;
+
+#define r4ID (rayID<<2)
+#define hit hits[hid]
+
+void main() {
+    // planned task-based BVH traversing (for two-level BVH support)
+    const uint wsize  = min(rayCounter, MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
+    for (uint it=gl_LaunchIDNVX.x;it<wsize;it+=gl_LaunchSizeNVX.x) {
+        const int rayID = vtRayIdx(int(it)); const bool overflow = it >= wsize; IFALL(overflow) break;
+        const vec3 ORIGINAL_ORIGIN = rays[rayID].origin.xyz; const dirtype_t ORIGINAL_DIRECTION = rays[rayID].cdirect;
+        const uint rayFlags = gl_RayFlagsOpaqueNVX, cullMask = 0xff;
+        if (!overflow) {
+            primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+            traceNVX(accelStructureNVX, rayFlags, cullMask, 0, 0, 0, ORIGINAL_ORIGIN, SFN, dcts(ORIGINAL_DIRECTION), INFINITY, 0);
+            const int ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
+            int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false;
+            { // resolve hit result 
+                [[flatten]] if (hid < 0) hid = atomicIncHitCount();
+                hit.rayID = rayID+1, hit.attribID = 0, hit.payloadID = 0;
+                hit.hitVD = vec4(0.f.xxx, uintBitsToFloat(LAST_INSTANCE));
+                hit.uvt = primitiveState.lastIntersection, primitiveState.lastIntersection.w = FINT_ZERO;
+                
+                const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);
+                [[flatten]] if ( ftrID >= 0 ) 
+                    { hit.attribID = vtVerifyClosestHit(hid,-1)+1; found = true; }; 
+                [[flatten]] if ( !found && lhit == mhit ) 
+                    { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
+                
+                {mhit=max(mhit,hid+1),hid=-1;};
+            };
+        };
+    };
+};

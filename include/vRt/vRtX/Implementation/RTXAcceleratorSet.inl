@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include "../../Backland/vRt_subimpl.inl"
 #include "../RTXClasses.inl"
 
@@ -23,7 +24,7 @@ namespace _vt {
 
         // creation of accelerator structure
         VkAccelerationStructureCreateInfoNVX _accelerationCreate = vk::AccelerationStructureCreateInfoNVX{};
-        _accelerationCreate.instanceCount = accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE ? uint32_t(accelSet->_elementsCount) : 0u;
+        _accelerationCreate.instanceCount = accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE ? uint32_t(accelSet->_capacity) : 0u;
         _accelerationCreate.type = accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE ? VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NVX : VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NVX;
         _accelerationCreate.geometryCount = accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? 1u : 0u;
         _accelerationCreate.pGeometries = accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? &_vDataNVX : nullptr;
@@ -94,11 +95,22 @@ namespace _vt {
             vmaBindBufferMemory(accelSet->_device->_allocator, _vmaScratchAllocation, scratchMemoryBuffer);
         };
 
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
+
+        {
+            auto hAccExtension = std::dynamic_pointer_cast<RTXAcceleratorExtension>(accelSet->_device->_hExtensionAccelerator[0]);
+            _accelDescriptorSetNVX = vk::Device(VkDevice(*accelSet->_device)).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(accelSet->_device->_descriptorPool).setPSetLayouts((vk::DescriptorSetLayout*)&hAccExtension->_raytracingDescriptorLayout).setDescriptorSetCount(1))[0];
+
+            std::vector<vk::WriteDescriptorSet> writes = { vk::WriteDescriptorSet(_accelDescriptorSetNVX, 0, 0, 1, vk::DescriptorType::eAccelerationStructureNVX).setPNext(&_accelDescriptorNVX) };
+            vk::Device(VkDevice(*accelSet->_device)).updateDescriptorSets(writes, {});
+        };
+
+
+        return VK_SUCCESS;
+        //return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
 
 
-    VtResult RTXAcceleratorExtension::_ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet = {}) {
+    VtResult RTXAcceleratorExtension::_ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet) {
         auto accelSetExt = std::make_shared<RTXAcceleratorSetExtension>();
         accelSet->_hExtension = accelSetExt;
         return accelSetExt->_Construction(accelSet);

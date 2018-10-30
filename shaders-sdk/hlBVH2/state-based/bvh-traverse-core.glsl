@@ -60,7 +60,7 @@ vec4 uniteBoxLv(in vec4 pt) {
 void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir ) {
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
-    const mat3x4 TRANSFORM_IN = currentState == BVH_STATE_TOP ? mat3x4(bvhBlockTop.transform) : mat3x4(bvhInstance.transform);
+    const mat3x4 TRANSFORM_IN = currentState == BVH_STATE_TOP ? mat3x4(bvhBlockTop.transform) : mat3x4(instanceTransform);
     const vec4 
         torig   = -uniteBoxLv(vec4(mult4(TRANSFORM_IN, vec4(orig, 1.f)).xyz, 1.f)), 
         torigTo =  uniteBoxLv(vec4(mult4(TRANSFORM_IN, vec4(orig, 1.f) + vec4(dcts(pdir).xyz, 0.f)).xyz, 1.f)), 

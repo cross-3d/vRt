@@ -121,7 +121,15 @@ namespace _vt {
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampler).setDescriptorCount(64 * mult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eCombinedImageSampler).setDescriptorCount(256 * mult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageTexelBuffer).setDescriptorCount(256 * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(256 * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(256 * mult)
+        };
+
+        // if ray tracing NVX supported, add additional descriptor pool types 
+        const auto raytracingNVX = "VK_NVX_raytracing";
+        for (auto i : vtDevice->_features->_extensions) {
+            if (std::string(i.extensionName).compare(raytracingNVX) == 0) {
+                dps.push_back(vk::DescriptorPoolSize().setType(vk::DescriptorType::eAccelerationStructureNVX).setDescriptorCount(16 * mult)); break;
+            };
         };
 
         vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(1024).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size()).setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBindEXT)));
@@ -191,6 +199,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // bvh nodes 
                 vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // bvh instances
                 vk::DescriptorSetLayoutBinding(3, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute), // bvh blocks  
+                vk::DescriptorSetLayoutBinding(4, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eCompute)  // bvh transform buffer
             };
             vtDevice->_descriptorLayoutMap["hlbvh2"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         };
