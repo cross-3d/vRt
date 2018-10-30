@@ -5,6 +5,7 @@
 namespace _vt {
 
     // create shader module
+    /*
     static inline auto makePipelineStageInfo(VkDevice device, const std::vector<uint32_t>& code, const char * entry = "main", VkShaderStageFlagBits stage = VK_SHADER_STAGE_RAYGEN_BIT_NVX) {
         VkPipelineShaderStageCreateInfo spi = vk::PipelineShaderStageCreateInfo{};
         spi.module = {};
@@ -14,10 +15,19 @@ namespace _vt {
         spi.stage = stage;
         spi.pSpecializationInfo = {};
         return spi;
-    };
+    };*/
 
     static inline auto makePipelineStageInfo(VkDevice device, std::string fpath = "", const char * entry = "main", VkShaderStageFlagBits stage = VK_SHADER_STAGE_RAYGEN_BIT_NVX) {
-        return makePipelineStageInfo(device, readBinary(fpath), entry, stage);
+        std::vector<uint32_t> code = readBinary(fpath);
+
+        VkPipelineShaderStageCreateInfo spi = vk::PipelineShaderStageCreateInfo{};
+        spi.module = {};
+        spi.flags = {};
+        createShaderModuleIntrusive(device, code, spi.module);
+        spi.pName = entry;
+        spi.stage = stage;
+        spi.pSpecializationInfo = {};
+        return spi;
     };
 
     static inline VkDeviceSize sMin(VkDeviceSize a, VkDeviceSize b) { return a > b ? a : b; };
@@ -30,14 +40,19 @@ namespace _vt {
 
         std::vector<uint32_t> _offsets = {};
         std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNVX, (accel->_vertexAssemblySet)->_descriptorSet };
+
+        
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
+        cmdRaytracingBarrierNVX(cmdBufVk);
         cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRaytracingNVX, accelertExt->_intersectionPipelineNVX);
         cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRaytracingNVX, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
         cmdBufVk.traceRaysNVX(
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull,
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull, _raytracingProperties.shaderHeaderSize,
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull, _raytracingProperties.shaderHeaderSize,
-            uint32_t(RV_INTENSIVITY), 1u);
+            uint32_t(RV_INTENSIVITY)*uint32_t(768u), 1u);
+        cmdRaytracingBarrierNVX(cmdBufVk);
+
 
         return VK_SUCCESS;
         //return VK_ERROR_EXTENSION_NOT_PRESENT;
@@ -54,7 +69,7 @@ namespace _vt {
         };
 
         VkGeometryDataNVX _vertexDataNVX = vk::GeometryDataNVX{};
-        _vertexDataNVX.aabbs = {};
+        _vertexDataNVX.aabbs = vk::GeometryAABBNVX{};
         _vertexDataNVX.triangles = geometryInput;
 
         VkGeometryNVX _vDataNVX = vk::GeometryNVX{};
@@ -66,15 +81,22 @@ namespace _vt {
 
         const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NVX;
         const auto extendedSet = std::dynamic_pointer_cast<RTXAcceleratorSetExtension>(accelSet->_hExtension);
-        vkCmdBuildAccelerationStructureNVX(*cmdBuf,
+        
+        
+        auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
+        cmdRaytracingBarrierNVX(cmdBufVk);
+        vkCmdBuildAccelerationStructureNVX(cmdBufVk,
             accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE ? VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NVX : VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NVX,
             accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE ? dsize : 0u,
             accelSet->_bvhInstancedBuffer ? *accelSet->_bvhInstancedBuffer : VkBuffer{},
             accelSet->_bvhInstancedBuffer ?  accelSet->_bvhInstancedBuffer->_offset() : 0ull,
-            dsize, accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? &_vDataNVX : nullptr, buildFlags, true,
+            accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? 1 : 0,
+            accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? &_vDataNVX : nullptr, buildFlags, true,
              extendedSet->_accelStructureNVX, extendedSet->_accelStructureNVX,
             *extendedSet->_scratchBuffer, extendedSet->_scratchBuffer->_offset()
         );
+        cmdRaytracingBarrierNVX(cmdBufVk);
+        
 
         return VK_SUCCESS;
         //return VK_ERROR_EXTENSION_NOT_PRESENT;
@@ -129,7 +151,7 @@ namespace _vt {
             VkRaytracingPipelineCreateInfoNVX rayPipelineInfo = vk::RaytracingPipelineCreateInfoNVX{};
             rayPipelineInfo.stageCount = (uint32_t)stages.size();
             rayPipelineInfo.pStages = stages.data();
-            rayPipelineInfo.pGroupNumbers = groupNumbers;
+            rayPipelineInfo.pGroupNumbers = &groupNumbers[0];
             rayPipelineInfo.layout = _raytracingPipelineLayout;
             rayPipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
             rayPipelineInfo.basePipelineIndex = 0;

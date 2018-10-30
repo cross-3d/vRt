@@ -88,6 +88,7 @@ namespace _vt { // store in undercover namespace
         VkPipelineCache _pipelineCache = {}; // store native pipeline cache
         VkDescriptorPool _descriptorPool = {};
         VkDescriptorSet _emptyDS = {};
+        VkShaderStageFlags _descriptorAccess = VK_SHADER_STAGE_COMPUTE_BIT;
 
         // TODO: optional when enabled extensions 
         uint32_t _supportedThreadCount = 1u;

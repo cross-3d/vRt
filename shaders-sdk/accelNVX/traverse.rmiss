@@ -11,7 +11,7 @@ struct VtCustomPayloadNVX {
 };
 #define LAST_INSTANCE primitiveState.binaryData128
 
-layout(location = 0) rayPayloadNVX VtCustomPayloadNVX primitiveState;
+layout(location = 0) rayPayloadInNVX VtCustomPayloadNVX primitiveState;
 
 void main()
 {

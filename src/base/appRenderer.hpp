@@ -108,6 +108,7 @@ namespace rnd {
     inline auto createBufferFast(vte::Queue deviceQueue, vrt::VtDeviceBuffer& dBuffer, VkDeviceSize byteSize = 1024 * 16) {
         vrt::VtDeviceBufferCreateInfo dbs = {};
         dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+        if (deviceQueue->RTXEnabled) dbs.usageFlag |= VK_BUFFER_USAGE_RAYTRACING_BIT_NVX;
         dbs.bufferSize = byteSize;
         dbs.familyIndex = deviceQueue->familyIndex;
         dbs.format = VK_FORMAT_R16G16_UINT;
@@ -351,7 +352,7 @@ namespace rnd {
         vk::Pipeline firstGenPipeline = {};
 
 
-
+        std::vector<VtInstanceNVX> BvhInstancedDataRTX = {};
         std::vector<VtBvhInstance> BvhInstancedData = {};
         std::vector<VtBvhBlock> BvhHeadersData = {};
         VtDeviceBuffer BvhDataBuffer = {};

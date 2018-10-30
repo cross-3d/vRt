@@ -8,7 +8,7 @@ struct VtCustomPayloadNVX {
 };
 
 layout(location = 1) hitAttributeNVX vec3 attribs;
-layout(location = 0) rayPayloadNVX VtCustomPayloadNVX primitiveState;
+layout(location = 0) rayPayloadInNVX VtCustomPayloadNVX primitiveState;
 
 void main()
 {

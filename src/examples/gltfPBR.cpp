@@ -339,6 +339,30 @@ namespace rnd {
              createBufferFast(deviceQueue, BvhInstancedBuffer, sizeof(VtBvhInstance) * 256ull);
          };
 
+
+         {
+             // box matrix optimizer ( by default 16.f geometry density per 1.f unit, not bound by global box ) 
+ //const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
+             //const auto optMat = glm::transpose(glm::rotate(glm::radians(60.f), glm::vec3(1.f, 0.f, 0.f)));
+
+             // create accelerator set in bottom level 
+             VtAcceleratorSetCreateInfo acci = {};
+             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
+             acci.coverMat = IdentifyMat4;
+             //acci.coverMat = *((VtMat4*)&optMat);
+             acci.maxPrimitives = 1024ull * 2048ull;
+             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
+             acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
+             acci.bvhDataBuffer = BvhDataBuffer;
+             acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(1024u);
+             acci.traversingEntryID = 1024u; // this information will known when will traversing 
+             acci.vertexPointingOffset = 0u;
+             vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorGeometry);
+         };
+
+
+
+
          {
              // instances
              //BvhInstancedData.push_back(VtBvhInstance{});
@@ -350,6 +374,12 @@ namespace rnd {
                      //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f)));
                      BvhInstancedData.push_back(VtBvhInstance{});
                      BvhInstancedData[BvhInstancedData.size()-1].transformIn = *((VtMat3x4*)&movedFW);
+
+                     BvhInstancedDataRTX.push_back(VtInstanceNVX{});
+                     BvhInstancedDataRTX[BvhInstancedDataRTX.size()-1].transform = *((VtMat3x4*)&movedFW);
+
+                     // if available, get handle 
+                     if (deviceQueue->RTXEnabled) vtGetAcceleratorHandleNVX(acceleratorGeometry, &BvhInstancedDataRTX[BvhInstancedDataRTX.size() - 1].accelerationStructureHandle);
                  }
              }
 
@@ -359,7 +389,13 @@ namespace rnd {
 
              // write entire into buffers 
              writeIntoBuffer(deviceQueue, BvhHeadersData, BvhHeadersBuffer);
-             writeIntoBuffer(deviceQueue, BvhInstancedData, BvhInstancedBuffer);
+
+             if (deviceQueue->RTXEnabled) {
+                 writeIntoBuffer(deviceQueue, BvhInstancedDataRTX, BvhInstancedBuffer);
+             }
+             else {
+                 writeIntoBuffer(deviceQueue, BvhInstancedData, BvhInstancedBuffer);
+             };
          };
 
 
@@ -367,7 +403,7 @@ namespace rnd {
         {
             // box matrix optimizer ( by default 16.f geometry density per 1.f unit, not bound by global box ) 
              //const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
-             const auto optMat = glm::transpose( glm::rotate(glm::radians(60.f), glm::vec3(1.f, 0.f, 0.f)) );
+             //const auto optMat = glm::transpose( glm::rotate(glm::radians(60.f), glm::vec3(1.f, 0.f, 0.f)) );
 
             // create accelerator set in bottom level 
             VtAcceleratorSetCreateInfo acci = {};
@@ -381,11 +417,10 @@ namespace rnd {
             acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(1024u);
             acci.traversingEntryID = 1024u; // this information will known when will traversing 
             acci.vertexPointingOffset = 0u;
-            vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorGeometry);
 
             // create accelerator set in top level 
             //acci.coverMat = IdentifyMat4;
-            acci.coverMat = *((VtMat4*)&optMat);
+            //acci.coverMat = *((VtMat4*)&optMat);
             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_INSTANCE;
             acci.maxPrimitives = 1024ull;
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
@@ -927,6 +962,7 @@ namespace rnd {
             auto viewport = vk::Viewport(0.0f, 0.0f, appBase->size().width, appBase->size().height, 0, 1.0f);
 
             // create command buffer (with rewrite)
+            
             auto commandBuffer = (currentContext->framebuffers[n_semaphore].commandBuffer = vte::createCommandBuffer(currentContext->queue->device->logical, currentContext->queue->commandPool, false)); // do reference of cmd buffer
             commandBuffer.beginRenderPass(vk::RenderPassBeginInfo(currentContext->renderpass, currentContext->framebuffers[currentBuffer].frameBuffer, renderArea, clearValues.size(), clearValues.data()), vk::SubpassContents::eInline);
             commandBuffer.setViewport(0, std::vector<vk::Viewport> { viewport });

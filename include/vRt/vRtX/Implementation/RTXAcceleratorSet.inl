@@ -15,7 +15,7 @@ namespace _vt {
         _vertexProxyNVX.vertexCount = accelSet->_capacity;
 
         VkGeometryDataNVX _vertexDataNVX = vk::GeometryDataNVX{};
-        _vertexDataNVX.aabbs = {};
+        _vertexDataNVX.aabbs = vk::GeometryAABBNVX{};
         _vertexDataNVX.triangles = _vertexProxyNVX;
 
         VkGeometryNVX _vDataNVX = vk::GeometryNVX{};

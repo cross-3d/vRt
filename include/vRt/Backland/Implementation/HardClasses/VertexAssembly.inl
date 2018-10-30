@@ -107,9 +107,6 @@ namespace _vt {
         { // create desciptor set
             auto vkDevice = _vtDevice->_device;
 
-            std::vector<vk::PushConstantRange> constRanges = {
-                vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(12))
-            };
             std::vector<vk::DescriptorSetLayout> dsLayouts = {
                 vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
                 vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),

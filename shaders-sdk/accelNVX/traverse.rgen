@@ -38,13 +38,16 @@ layout(location = 0) rayPayloadNVX VtCustomPayloadNVX primitiveState;
 void main() {
     // planned task-based BVH traversing (for two-level BVH support)
     const uint wsize  = min(rayCounter, MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
-    for (uint it=gl_LaunchIDNVX.x;it<wsize;it+=gl_LaunchSizeNVX.x) {
-        const int rayID = vtRayIdx(int(it)); const bool overflow = it >= wsize; IFALL(overflow) break;
+    for (uint W=gl_LaunchIDNVX.x;W<wsize;W+=gl_LaunchSizeNVX.x) {
+        //const uint it = W;//gl_LaunchIDNVX.x + w;
+        
+        const int rayID = vtRayIdx(int(W)); const bool overflow = W >= wsize; IFALL(overflow) break;
         const vec3 ORIGINAL_ORIGIN = rays[rayID].origin.xyz; const dirtype_t ORIGINAL_DIRECTION = rays[rayID].cdirect;
         const uint rayFlags = gl_RayFlagsOpaqueNVX, cullMask = 0xff;
         if (!overflow) {
             primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
             traceNVX(accelStructureNVX, rayFlags, cullMask, 0, 0, 0, ORIGINAL_ORIGIN, SFN, dcts(ORIGINAL_DIRECTION), INFINITY, 0);
+            
             const int ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
             int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false;
             { // resolve hit result 
@@ -61,6 +64,8 @@ void main() {
                 
                 {mhit=max(mhit,hid+1),hid=-1;};
             };
+            
         };
+        
     };
 };

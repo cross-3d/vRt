@@ -394,12 +394,21 @@ namespace NSM
                 vrt::VtPhysicalDevice pdevice = {};
                 vrt::vtConvertPhysicalDevice(cinstance, gpu, &pdevice);
 
+                // RTX extension structure
+                const auto rtxExtensionPass = vrt::VtRTXAcceleratorExtension{};
+
+
                 vrt::VtArtificalDeviceExtension dbi = {};
                 dbi.mainQueueFamily = deviceQueuePtr->familyIndex;
                 dbi.shaderPath = shaderPath;
                 dbi.sharedCacheSize = 4096ull * 4096ull * 4ull;
                 dbi.maxPrimitives = 1024ull * 2048ull;
+                dbi.enableAdvancedAcceleration = true;
+                //dbi.pAccelerationExtension = (vrt::VtDeviceAdvancedAccelerationExtension*)&rtxExtensionPass;
                 vrt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
+                if (deviceQueuePtr->device->rtDev->_hExtensionAccelerator.size() > 0 && deviceQueuePtr->device->rtDev->_hExtensionAccelerator[0]) {
+                    deviceQueuePtr->RTXEnabled = true;
+                };
 
                 //devicePtr->allocator = deviceQueuePtr->device->rtDev->_allocator;
             }

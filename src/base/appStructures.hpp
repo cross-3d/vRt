@@ -47,6 +47,7 @@ namespace NSM {
     // combined device, command pool and queue
     struct QueueType : public std::enable_shared_from_this<QueueType> {
         Device device = {};
+        bool RTXEnabled = false;
         vk::CommandPool commandPool = {};
         vk::Queue queue = {};
         vk::Fence fence = {};
