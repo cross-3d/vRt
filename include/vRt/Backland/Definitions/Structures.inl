@@ -24,13 +24,9 @@ namespace vrt { // store in official namespace
         const void* pNext = nullptr;
 
     public: // API in-runtime implementation (dynamic polymorphism)
-        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; }; // in-runtime return acceleration extension name
-        virtual VtResult _Criteria(std::shared_ptr<_vt::DeviceFeatures> lwFeatures) const {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        };
-        virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice, std::shared_ptr<_vt::AdvancedAcceleratorBase>& _hExtensionAccelerator) {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        };
+        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERATION_NAME_UNKNOWN; }; // in-runtime return acceleration extension name
+        virtual VtResult _Criteria(std::shared_ptr<_vt::DeviceFeatures> lwFeatures) const { return VK_ERROR_EXTENSION_NOT_PRESENT; };
+        virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice, std::shared_ptr<_vt::AdvancedAcceleratorBase>& _hExtensionAccelerator) { return VK_ERROR_EXTENSION_NOT_PRESENT; };
 
     public: // can have custom data...
         
@@ -55,7 +51,9 @@ namespace vrt { // store in official namespace
 #else
         const VmaAllocator* allocator = nullptr;
 #endif
+
         VkBool32 enableAdvancedAcceleration = false; // such as RTX, in current moment have no any support 
+        const VtDeviceAdvancedAccelerationExtension* pAccelerationExtension = nullptr; // inline structure isn't acceptable 
     };
 
 

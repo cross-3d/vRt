@@ -1,2 +1,4 @@
 // static library of RTX support (WIP)
-#include "../vRt_internal.hpp"
+#include "../Backland/vRt_subimpl.inl"
+#include "RTXImplemented.inl"
+

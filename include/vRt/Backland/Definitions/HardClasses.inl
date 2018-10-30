@@ -572,7 +572,7 @@ namespace _vt { // store in undercover namespace
         //std::shared_ptr<AdvancedAcceleratorDataBase> _dataPtr = {};
 
     public:
-        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
+        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERATION_NAME_UNKNOWN; };
 
         // 
         virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) {
@@ -605,7 +605,7 @@ namespace _vt { // store in undercover namespace
 
     public:
         //operator VkDescriptorSet() const { return _descriptorSet; };
-        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
+        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERATION_NAME_UNKNOWN; };
 
         virtual VtResult _Construction(std::shared_ptr<AcceleratorSet> accelSet = {}) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
@@ -631,7 +631,7 @@ namespace _vt { // store in undercover namespace
 
     public:
         //operator VkDescriptorSet() const { return _descriptorSet; };
-        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERAION_NAME_UNKNOWN; };
+        virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERATION_NAME_UNKNOWN; };
 
         virtual VtResult _Construction(std::shared_ptr<VertexAssemblySet> accelSet = {}) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;

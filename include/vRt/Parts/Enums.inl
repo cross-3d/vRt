@@ -80,7 +80,7 @@ namespace vrt { // store in official namespace
     } VtVendor;
 
     typedef enum VtAccelerationName : uint32_t {
-        VT_ACCELERAION_NAME_UNKNOWN = 0,
+        VT_ACCELERATION_NAME_UNKNOWN = 0,
     } VtAccelerationName;
 
     // VMA compatible
