@@ -88,11 +88,11 @@ namespace _vt {
         vkCmdBuildAccelerationStructureNVX(cmdBufVk,
             accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE ? VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NVX : VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NVX,
             accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE ? dsize : 0u,
-            accelSet->_bvhInstancedBuffer ? *accelSet->_bvhInstancedBuffer : VkBuffer{},
-            accelSet->_bvhInstancedBuffer ?  accelSet->_bvhInstancedBuffer->_offset() : 0ull,
+            accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE && accelSet->_bvhInstancedBuffer ? *accelSet->_bvhInstancedBuffer : VkBuffer{},
+            accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE && accelSet->_bvhInstancedBuffer ?  accelSet->_bvhInstancedBuffer->_offset() : 0ull,
             accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? 1 : 0,
-            accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? &_vDataNVX : nullptr, buildFlags, true,
-             extendedSet->_accelStructureNVX, extendedSet->_accelStructureNVX,
+            accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? &_vDataNVX : nullptr, buildFlags, VK_FALSE,
+             extendedSet->_accelStructureNVX, VK_NULL_HANDLE,
             *extendedSet->_scratchBuffer, extendedSet->_scratchBuffer->_offset()
         );
         cmdRaytracingBarrierNVX(cmdBufVk);
@@ -156,7 +156,7 @@ namespace _vt {
             rayPipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
             rayPipelineInfo.basePipelineIndex = 0;
             rayPipelineInfo.maxRecursionDepth = 1;
-            vkCreateRaytracingPipelinesNVX(VkDevice(*device), device->_pipelineCache, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNVX);
+            vkCreateRaytracingPipelinesNVX(VkDevice(*device), {}, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNVX);
             vkGetRaytracingShaderHandlesNVX(VkDevice(*device), _intersectionPipelineNVX, 0, groupCount, _raytracingProperties.shaderHeaderSize * groupCount, _sbtBuffer->_hostMapped());
         };
 
