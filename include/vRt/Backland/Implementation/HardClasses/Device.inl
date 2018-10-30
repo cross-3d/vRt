@@ -18,11 +18,15 @@ namespace _vt {
         //auto vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice = std::make_shared<Device>();
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
+        vtDevice->_device = device;
         auto gpu = vk::PhysicalDevice(physicalDevice->_physicalDevice);
 
+        // device vendoring
+        vtDevice->_vendorName = getVendorName(gpu.getProperties().vendorID);
         
         { // get device properties 
             auto features = (vtDevice->_features = std::make_shared<DeviceFeatures>());
+            features->_device = vtDevice;
 
             // extensions support list 
             const auto extList = gpu.enumerateDeviceExtensionProperties();
@@ -43,11 +47,15 @@ namespace _vt {
             gpu.getProperties2((vk::PhysicalDeviceProperties2*)&features->_properties); // 
         };
 
+        if (vtExtension.enableAdvancedAcceleration && vtExtension.pAccelerationExtension) {
+            if (vtExtension.pAccelerationExtension->_Criteria(vtDevice->_features) == VK_SUCCESS) {
+                vtDevice->_hExtensionAccelerator.push_back({});
+                vtExtension.pAccelerationExtension->_Initialization(vtDevice, vtDevice->_hExtensionAccelerator[0]);
+            };
+        };
 
-
-        // device vendoring
-        vtDevice->_device = device;
-        vtDevice->_vendorName = getVendorName(gpu.getProperties().vendorID);
+        
+        
 
 
         VtResult result = VK_SUCCESS;

@@ -2,6 +2,7 @@
 
 // implementable weak classes
 #include "HardClassesDef.inl"
+#include "../../Parts/StructuresDef.inl"
 
 // C++ hard interfaces (which will storing)
 namespace _vt { // store in undercover namespace
@@ -96,7 +97,7 @@ namespace _vt { // store in undercover namespace
         std::vector<std::shared_ptr<BufferTraffic>> _bufferTraffic = {};
 
         // accelerator by extension
-        std::vector<std::shared_ptr<AdvancedAcceleratorBase>> _hExtensionAccelerator = {};
+        std::vector<std::shared_ptr<AcceleratorExtensionBase>> _hExtensionAccelerator = {};
 
         // descriptor layout map in ray tracing system
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap = {};
@@ -271,7 +272,7 @@ namespace _vt { // store in undercover namespace
 
         // planned to rework building system  
         VtAcceleratorSetLevel _level = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
-        uint32_t _entryID = 0, _elementsCount = -1, _elementsOffset = 0;
+        VkDeviceSize _entryID = 0, _elementsCount = -1, _elementsOffset = 0;
         VtMat4 _coverMatrice = IdentifyMat4;
         VtBvhBlock _bvhBlockData = {};
         VkDeviceSize _capacity = 0ull;
@@ -538,32 +539,10 @@ namespace _vt { // store in undercover namespace
         auto& uniform() { return _uniformBlock; };
     };
 
-    /*
-    // 
-    class AdvancedAcceleratorDataBase : public std::enable_shared_from_this<AdvancedAcceleratorDataBase> {
-    public:
-        friend Device;
-        virtual ~AdvancedAcceleratorDataBase() {}; // with overridabable virtual desctructor
-    };
-
-    // 
-    class AcceleratorSetExtensionDataBase : public std::enable_shared_from_this<AcceleratorSetExtensionDataBase> {
-    public:
-        friend Device;
-        virtual ~AcceleratorSetExtensionDataBase() {}; // with overridabable virtual desctructor
-    };
-
-    // 
-    class VertexAssemblyExtensionDataBase : public std::enable_shared_from_this<VertexAssemblyExtensionDataBase> {
-    public:
-        friend Device;
-        virtual ~VertexAssemblyExtensionDataBase() {}; // with overridabable virtual desctructor
-    };
-    */
 
 
     // 
-    class AdvancedAcceleratorBase : public std::enable_shared_from_this<AdvancedAcceleratorBase> {
+    class AcceleratorExtensionBase : public std::enable_shared_from_this<AcceleratorExtensionBase> {
     public:
         friend Device;
 
@@ -578,7 +557,7 @@ namespace _vt { // store in undercover namespace
         virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         };
-        virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet) {
+        virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, VtAcceleratorBuildInfo buildInfo = {}) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         };
         virtual VtResult _Init(std::shared_ptr<Device> device, VtDeviceAdvancedAccelerationExtension extensionInfo) {

@@ -220,7 +220,7 @@ namespace _vt {
 
         // if has advanced accelerator
         if (device->_hExtensionAccelerator.size() > 0 && device->_hExtensionAccelerator[0]) {
-            result = device->_hExtensionAccelerator[0]->_BuildAccelerator(cmdBuf, accel);
+            result = device->_hExtensionAccelerator[0]->_BuildAccelerator(cmdBuf, accel, buildInfo);
         }
         else {
             // building hlBVH2 process

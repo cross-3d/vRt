@@ -45,14 +45,11 @@ namespace _vt { // store in undercover namespace
     class DeviceFeatures;
 
     // will inherits
-    class AdvancedAcceleratorBase;
-    //class AdvancedAcceleratorDataBase;
+    class AcceleratorExtensionBase;
 
     // extension for accelerator sets
     class AcceleratorSetExtensionBase;
-    //class AcceleratorSetExtensionDataBase;
 
     // extension for vertex assembly
     class VertexAssemblyExtensionBase;
-    //class VertexAssemblyExtensionDataBase;
 };

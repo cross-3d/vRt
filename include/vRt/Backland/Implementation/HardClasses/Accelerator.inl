@@ -180,8 +180,9 @@ namespace _vt {
         vtAccelerator->_device = _vtDevice;
         vtAccelerator->_coverMatrice = info.coverMat;
         vtAccelerator->_elementsOffset = info.vertexPointingOffset;
-        vtAccelerator->_entryID = info.traversingEntryID;
+        //vtAccelerator->_elementsCount = info.maxPrimitives;
         vtAccelerator->_capacity = info.maxPrimitives;
+        vtAccelerator->_entryID = info.traversingEntryID;
         vtAccelerator->_level = info.structureLevel;
 
         // planned import from descriptor
