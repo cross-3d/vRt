@@ -560,10 +560,18 @@ namespace _vt { // store in undercover namespace
         virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, VtAcceleratorBuildInfo buildInfo = {}) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         };
-        virtual VtResult _Init(std::shared_ptr<Device> device, VtDeviceAdvancedAccelerationExtension extensionInfo) {
+        virtual VtResult _Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         };
         virtual VtResult _Criteria(std::shared_ptr<DeviceFeatures> supportedFeatures) {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        };
+
+        // connectors with extension classes
+        virtual VtResult _ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet = {}) {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        };
+        virtual VtResult _ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet = {}) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         };
 

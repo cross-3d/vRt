@@ -49,8 +49,9 @@ namespace _vt {
 
         if (vtExtension.enableAdvancedAcceleration && vtExtension.pAccelerationExtension) {
             if (vtExtension.pAccelerationExtension->_Criteria(vtDevice->_features) == VK_SUCCESS) {
-                vtDevice->_hExtensionAccelerator.push_back({});
-                vtExtension.pAccelerationExtension->_Initialization(vtDevice, vtDevice->_hExtensionAccelerator[0]);
+                std::shared_ptr<AcceleratorExtensionBase> hExtensionAccelerator = {};
+                vtExtension.pAccelerationExtension->_Initialization(vtDevice, hExtensionAccelerator);
+                vtDevice->_hExtensionAccelerator.push_back(hExtensionAccelerator);
             };
         };
 

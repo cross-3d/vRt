@@ -138,6 +138,13 @@ namespace _vt {
             vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };
 
+
+        // use extension
+        if (_vtDevice->_hExtensionAccelerator.size() > 0 && _vtDevice->_hExtensionAccelerator[0]) {
+            _vtDevice->_hExtensionAccelerator[0]->_ConstructVertexAssembly(_assemblySet);
+        };
+
+
         return result;
     };
 };

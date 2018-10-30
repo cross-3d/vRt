@@ -173,10 +173,10 @@ namespace _vt {
 
 
     // planned advanced accelerator construction too
-    VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, VtAcceleratorSetCreateInfo info, std::shared_ptr<AcceleratorSet>& _vtAccelerator) {
+    VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, VtAcceleratorSetCreateInfo info, std::shared_ptr<AcceleratorSet>& vtAccelerator) {
         VtResult result = VK_SUCCESS;
-        auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorSet>());
         auto vkDevice = _vtDevice->_device;
+        vtAccelerator = std::make_shared<AcceleratorSet>();
         vtAccelerator->_device = _vtDevice;
         vtAccelerator->_coverMatrice = info.coverMat;
         vtAccelerator->_elementsOffset = info.vertexPointingOffset;
@@ -245,12 +245,12 @@ namespace _vt {
             vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };
 
+        // use extension
+        if (_vtDevice->_hExtensionAccelerator.size() > 0 && _vtDevice->_hExtensionAccelerator[0]) {
+            _vtDevice->_hExtensionAccelerator[0]->_ConstructAcceleratorSet(vtAccelerator);
+        };
+
         return result;
     };
 
-
-    //AcceleratorLinkedSet::~AcceleratorLinkedSet() {
-    //    if (_descriptorSet) vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
-    //    _descriptorSet = {};
-    //};
 };

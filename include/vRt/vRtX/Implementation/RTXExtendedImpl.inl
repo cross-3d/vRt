@@ -5,7 +5,7 @@
 
 namespace vrt {
 
-
+    // make sure that RTX really supported
     VtResult VtRTXAcceleratorExtension::_Criteria(std::shared_ptr<_vt::DeviceFeatures> lwFeatures) const {
         const auto raytracingNVX = "VK_NVX_raytracing";
         for (auto i : lwFeatures->_extensions) {
@@ -14,11 +14,11 @@ namespace vrt {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
 
+    // initialize RTX extension
     VtResult VtRTXAcceleratorExtension::_Initialization(std::shared_ptr<_vt::Device> lwDevice, std::shared_ptr<_vt::AcceleratorExtensionBase>& _hExtensionAccelerator) const {
         auto accelerationExtension = std::make_shared<_vt::RTXAcceleratorExtension>();
-        lwDevice->_hExtensionAccelerator.push_back(_hExtensionAccelerator = std::dynamic_pointer_cast<_vt::AcceleratorExtensionBase>(accelerationExtension));
-        
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
+        _hExtensionAccelerator = std::dynamic_pointer_cast<_vt::AcceleratorExtensionBase>(accelerationExtension);
+        return accelerationExtension->_Init(lwDevice, this);
     };
 
 

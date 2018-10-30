@@ -97,4 +97,12 @@ namespace _vt {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
 
+
+    VtResult RTXAcceleratorExtension::_ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet = {}) {
+        auto accelSetExt = std::make_shared<RTXAcceleratorSetExtension>();
+        accelSet->_hExtension = accelSetExt;
+        return accelSetExt->_Construction(accelSet);
+    };
+
+
 };
