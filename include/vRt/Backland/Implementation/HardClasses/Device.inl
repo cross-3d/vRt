@@ -226,6 +226,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(5 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // readonly vertices
                 vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // readonly attributes (DEPRECATED row)
                 vk::DescriptorSetLayoutBinding(7 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // precomputed normals
+                vk::DescriptorSetLayoutBinding(8 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
             };
             vtDevice->_descriptorLayoutMap["vertexData"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         };

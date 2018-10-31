@@ -6,6 +6,9 @@
 #include "../include/morton.glsl"
 #include "../include/ballotlib.glsl"
 
+#ifndef RS_SET
+#define RS_SET 0
+#endif
 
 
 struct VtHitPayload {
@@ -17,15 +20,15 @@ struct VtHitPayload {
 };
 
 // basic ray tracing buffers
-layout ( binding = 0, set = 0, std430 ) coherent buffer VT_RAYS { VtRay rays[]; };
-layout ( binding = 1, set = 0, std430 ) coherent buffer VT_HITS { VtHitData hits[]; };
-layout ( binding = 2, set = 0, std430 ) coherent buffer VT_CLOSEST_HITS { int closestHits[]; };
-layout ( binding = 3, set = 0, std430 ) coherent buffer VT_MISS_HITS { int missHits[]; };
-layout ( binding = 4, set = 0, std430 ) coherent buffer VT_HIT_PAYLOAD { VtHitPayload hitPayload[]; };
-layout ( binding = 5, set = 0, std430 ) coherent buffer VT_RAY_INDICES { int rayGroupIndices[]; };
+layout ( binding = 0, set = RS_SET, std430 ) coherent buffer VT_RAYS { VtRay rays[]; };
+layout ( binding = 1, set = RS_SET, std430 ) coherent buffer VT_HITS { VtHitData hits[]; };
+layout ( binding = 2, set = RS_SET, std430 ) coherent buffer VT_CLOSEST_HITS { int closestHits[]; };
+layout ( binding = 3, set = RS_SET, std430 ) coherent buffer VT_MISS_HITS { int missHits[]; };
+layout ( binding = 4, set = RS_SET, std430 ) coherent buffer VT_HIT_PAYLOAD { VtHitPayload hitPayload[]; };
+layout ( binding = 5, set = RS_SET, std430 ) coherent buffer VT_RAY_INDICES { int rayGroupIndices[]; };
 
 // system canvas info
-layout ( binding = 6, set = 0, std430 ) readonly restrict buffer VT_CANVAS_INFO {
+layout ( binding = 6, set = RS_SET, std430 ) readonly restrict buffer VT_CANVAS_INFO {
     int currentGroup, maxRayCount, maxHitCount, closestHitOffset;
     ivec2 size; int lastIteration, iteration;
 } stageUniform;
@@ -35,21 +38,20 @@ layout ( binding = 6, set = 0, std430 ) readonly restrict buffer VT_CANVAS_INFO 
 
 
 // counters
-layout ( binding = 7, set = 0, std430 ) restrict buffer VT_RT_COUNTERS { int vtCounters[8]; };
-layout ( binding = 8, set = 0, rg32ui ) uniform uimageBuffer taskList;
+layout ( binding = 7, set = RS_SET, std430 ) restrict buffer VT_RT_COUNTERS { int vtCounters[8]; };
+layout ( binding = 8, set = RS_SET, rg32ui ) uniform uimageBuffer taskList;
 
 // ray and hit linking buffer
-//layout ( rgba32ui, binding = 10, set = 0 ) uniform uimageBuffer rayLink;
-layout ( binding = 10, set = 0, r32ui ) uniform uimageBuffer rayLink;
-layout ( binding = 11, set = 0, rgba32f ) uniform imageBuffer attributes;
-layout ( binding = 12, set = 0, std430 ) restrict buffer VT_GROUPS_COUNTERS {
+layout ( binding = 10, set = RS_SET, r32ui ) uniform uimageBuffer rayLink;
+layout ( binding = 11, set = RS_SET, rgba32f ) uniform imageBuffer attributes;
+layout ( binding = 12, set = RS_SET, std430 ) restrict buffer VT_GROUPS_COUNTERS {
     int rayTypedCounter[4];
     int closestHitTypedCounter[4];
     int missHitTypedCounter[4];
 };
 
-layout ( binding = 13, set = 0, std430 ) readonly coherent buffer VT_RAY_INDICES_READ {int rayGroupIndicesRead[];};
-layout ( binding = 14, set = 0, std430 ) readonly restrict buffer VT_GROUPS_COUNTERS_READ {
+layout ( binding = 13, set = RS_SET, std430 ) readonly coherent buffer VT_RAY_INDICES_READ {int rayGroupIndicesRead[];};
+layout ( binding = 14, set = RS_SET, std430 ) readonly restrict buffer VT_GROUPS_COUNTERS_READ {
     int rayTypedCounterRead[4];
     int closestHitTypedCounterRead[4];
     int missHitTypedCounterRead[4];

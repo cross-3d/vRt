@@ -194,35 +194,38 @@ namespace _vt {
         auto vertx = cmdBuf->_vertexSet.lock();
         if (vertx) accel->_vertexAssemblySet = vertx; // bind vertex assembly with accelerator structure (planned to deprecate)
         
-        // if geometry level, limit by vertex assembly set 
-        VkDeviceSize vsize = vertx && accel->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? VkDeviceSize(vertx->_calculatedPrimitiveCount) : VK_WHOLE_SIZE;
-
-        //VtBuildConst _buildConstData = {};
-        VtBuildConst& _buildConstData = acclb->_buildConstData;
-        _buildConstData.primitiveOffset = buildInfo.elementOffset + accel->_elementsOffset; // 
-        _buildConstData.primitiveCount = std::min((accel->_elementsCount != -1 && accel->_elementsCount >= 0) ? VkDeviceSize(accel->_elementsCount) : VkDeviceSize(vsize), std::min(buildInfo.elementSize, accel->_capacity));
-
-        // create BVH instance meta (linking with geometry) 
-        //VtBvhBlock _bvhBlockData = {};
-        VtBvhBlock& _bvhBlockData = accel->_bvhBlockData;
-        _bvhBlockData.primitiveOffset = _buildConstData.primitiveOffset;
-        _bvhBlockData.primitiveCount = _buildConstData.primitiveCount;
-        _bvhBlockData.leafCount = _buildConstData.primitiveCount;
-        _bvhBlockData.entryID = accel->_entryID;
-
-        // planned to merge instance buffer of linked set
-        _bvhBlockData.transform = VtMat3x4{ accel->_coverMatrice.m[0], accel->_coverMatrice.m[1], accel->_coverMatrice.m[2] };
-        //_bvhBlockData.transformInv = IdentifyMat4; 
-
-        // updating meta buffers
-        cmdUpdateBuffer(*cmdBuf, accel->_bvhHeadingBuffer, 0, sizeof(_bvhBlockData), &_bvhBlockData);
-        cmdUpdateBuffer(*cmdBuf, acclb->_constBuffer, 0, sizeof(_buildConstData), &_buildConstData);
 
         // if has advanced accelerator
         if (device->_hExtensionAccelerator.size() > 0 && device->_hExtensionAccelerator[0]) {
             result = device->_hExtensionAccelerator[0]->_BuildAccelerator(cmdBuf, accel, buildInfo);
         }
         else {
+
+            // if geometry level, limit by vertex assembly set 
+            VkDeviceSize vsize = vertx && accel->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? VkDeviceSize(vertx->_calculatedPrimitiveCount) : VK_WHOLE_SIZE;
+
+            //VtBuildConst _buildConstData = {};
+            VtBuildConst& _buildConstData = acclb->_buildConstData;
+            _buildConstData.primitiveOffset = buildInfo.elementOffset + accel->_elementsOffset; // 
+            _buildConstData.primitiveCount = std::min((accel->_elementsCount != -1 && accel->_elementsCount >= 0) ? VkDeviceSize(accel->_elementsCount) : VkDeviceSize(vsize), std::min(buildInfo.elementSize, accel->_capacity));
+
+            // create BVH instance meta (linking with geometry) 
+            //VtBvhBlock _bvhBlockData = {};
+            VtBvhBlock& _bvhBlockData = accel->_bvhBlockData;
+            _bvhBlockData.primitiveOffset = _buildConstData.primitiveOffset;
+            _bvhBlockData.primitiveCount = _buildConstData.primitiveCount;
+            _bvhBlockData.leafCount = _buildConstData.primitiveCount;
+            _bvhBlockData.entryID = accel->_entryID;
+
+            // planned to merge instance buffer of linked set
+            _bvhBlockData.transform = VtMat3x4{ accel->_coverMatrice.m[0], accel->_coverMatrice.m[1], accel->_coverMatrice.m[2] };
+            //_bvhBlockData.transformInv = IdentifyMat4; 
+
+            // updating meta buffers
+            cmdUpdateBuffer(*cmdBuf, accel->_bvhHeadingBuffer, 0, sizeof(_bvhBlockData), &_bvhBlockData);
+            cmdUpdateBuffer(*cmdBuf, acclb->_constBuffer, 0, sizeof(_buildConstData), &_buildConstData);
+
+
             // building hlBVH2 process
             // planned to use secondary buffer for radix sorting
             //auto bounder = accel;

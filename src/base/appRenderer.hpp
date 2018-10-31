@@ -352,7 +352,7 @@ namespace rnd {
         vk::Pipeline firstGenPipeline = {};
 
 
-        std::vector<VtInstanceNVX> BvhInstancedDataRTX = {};
+        std::vector<VtInstanceNVX> RTXInstancedData = {};
         std::vector<VtBvhInstance> BvhInstancedData = {};
         std::vector<VtBvhBlock> BvhHeadersData = {};
         VtDeviceBuffer BvhDataBuffer = {};

@@ -227,7 +227,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<AssemblyPipeline> _vertexAssembly = {}; //
 
         // vertex for BVH export
-        std::shared_ptr<BufferRegion> _verticeBufferCached = {}, _verticeBufferInUse = {}, _materialBuffer = {}, _bitfieldBuffer = {}, _countersBuffer = {}, _normalBuffer = {};
+        std::shared_ptr<BufferRegion> _verticeBufferCached = {}, _verticeBufferInUse = {}, _materialBuffer = {}, _bitfieldBuffer = {}, _countersBuffer = {}, _normalBuffer = {}, _indexBuffer = {};
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
 
         // input of vertex source data 

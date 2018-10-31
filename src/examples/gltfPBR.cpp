@@ -286,15 +286,13 @@ namespace rnd {
             rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
             
-            // updator for buffer 
-
-
+            // updator for buffer
             vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST_BIT | VT_ENTRY_USAGE_MISS_BIT), materialSet);
             vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
             vtCmdBindRayTracingSet(qRtCmdBuf, raytracingSet);
 
             //  low levels
-            vtCmdBindAccelerator(qRtCmdBuf, acceleratorGeometry);
+            //vtCmdBindAccelerator(qRtCmdBuf, acceleratorGeometry);
 
             //  top levels (have issues at now, low performance problems)
             vtCmdBindAccelerator(qRtCmdBuf, acceleratorMain);
@@ -366,6 +364,7 @@ namespace rnd {
          {
              // instances
              //BvhInstancedData.push_back(VtBvhInstance{});
+             uint32_t InstCounter = 0;
              for (int x = 0; x < 4; x++) {
                  for (int z = 0; z < 4; z++) {
                      //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f))*glm::rotate(glm::radians(90.f * 0.f), glm::vec3(0.f, 1.f, 0.f)));
@@ -375,13 +374,21 @@ namespace rnd {
                      BvhInstancedData.push_back(VtBvhInstance{});
                      BvhInstancedData[BvhInstancedData.size()-1].transformIn = *((VtMat3x4*)&movedFW);
 
-                     BvhInstancedDataRTX.push_back(VtInstanceNVX{});
-                     BvhInstancedDataRTX[BvhInstancedDataRTX.size()-1].transform = *((VtMat3x4*)&movedFW);
+                     RTXInstancedData.push_back(VtInstanceNVX{}); 
+                     auto & RTXInstanceRef = RTXInstancedData[RTXInstancedData.size() - 1];
+                     memcpy(&RTXInstanceRef.transform, &movedFW, sizeof(VtMat3x4));
+                     RTXInstanceRef.instanceId = InstCounter++;
+                     RTXInstanceRef.mask = 0xff;
+                     RTXInstanceRef.instanceOffset = 0;
+                     RTXInstanceRef.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NVX;
 
                      // if available, get handle 
-                     if (deviceQueue->RTXEnabled) vtGetAcceleratorHandleNVX(acceleratorGeometry, &BvhInstancedDataRTX[BvhInstancedDataRTX.size() - 1].accelerationStructureHandle);
+                     if (deviceQueue->RTXEnabled) vtGetAcceleratorHandleNVX(acceleratorGeometry, &RTXInstanceRef.accelerationStructureHandle);
                  }
              }
+
+             const uint32_t debugStructSize = sizeof(VtInstanceNVX);
+             std::cout << debugStructSize << std::endl;
 
              // headers 
              BvhHeadersData.push_back(VtBvhBlock{});
@@ -391,7 +398,7 @@ namespace rnd {
              writeIntoBuffer(deviceQueue, BvhHeadersData, BvhHeadersBuffer);
 
              if (deviceQueue->RTXEnabled) {
-                 writeIntoBuffer(deviceQueue, BvhInstancedDataRTX, BvhInstancedBuffer);
+                 writeIntoBuffer(deviceQueue, RTXInstancedData, BvhInstancedBuffer);
              }
              else {
                  writeIntoBuffer(deviceQueue, BvhInstancedData, BvhInstancedBuffer);

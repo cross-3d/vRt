@@ -53,40 +53,52 @@ namespace _vt {
             // vertex data buffers
             bfi.bufferSize = maxPrimitives * sizeof(uint32_t);
             bfi.format = VK_FORMAT_R32_UINT;
+            bfi.offset = 0ull;
 
             // bitfield data per vertex node
             if (info.sharedBitfieldBuffer) { bfi.offset = info.sharedBitfieldOffset; createBufferRegion(info.sharedBitfieldBuffer, bfi, _assemblySet->_bitfieldBuffer, _vtDevice); } else 
             { createBufferRegion(bManager, bfi, _assemblySet->_bitfieldBuffer); };
 
             // material indexing buffer 
+            bfi.offset = 0ull;
             if (info.sharedMaterialIndexedBuffer) { bfi.offset = info.sharedMaterialIndexedOffset; createBufferRegion(info.sharedMaterialIndexedBuffer, bfi, _assemblySet->_materialBuffer, _vtDevice); } else 
             { createBufferRegion(bManager, bfi, _assemblySet->_materialBuffer); };
 
             // accelerate normal calculation by storing of
             bfi.bufferSize = maxPrimitives * sizeof(float) * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+            bfi.offset = 0ull;
             if (info.sharedNormalBuffer) { bfi.offset = info.sharedNormalOffset; createBufferRegion(info.sharedNormalBuffer, bfi, _assemblySet->_normalBuffer, _vtDevice); } else 
             { createBufferRegion(bManager, bfi, _assemblySet->_normalBuffer); };
 
             // vertex data in use
             bfi.bufferSize = maxPrimitives * 3ull * sizeof(float) * 4ull;
             bfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+            bfi.offset = 0ull;
             if (info.sharedVertexInUseBuffer) { bfi.offset = info.sharedVertexInUseOffset; createBufferRegion(info.sharedVertexInUseBuffer, bfi, _assemblySet->_verticeBufferInUse, _vtDevice); } else 
             { createBufferRegion(bManager, bfi, _assemblySet->_verticeBufferInUse); };
-
+             
             // vertex data for caching
+            bfi.offset = 0ull;
             if (info.sharedVertexCacheBuffer) { bfi.offset = info.sharedVertexCacheOffset; createBufferRegion(info.sharedVertexCacheBuffer, bfi, _assemblySet->_verticeBufferCached, _vtDevice); } else 
             { createBufferRegion(bManager, bfi, _assemblySet->_verticeBufferCached); };
+
+            // 
+            bfi.bufferSize = maxPrimitives * 3ull * sizeof(uint32_t);
+            bfi.format = VK_FORMAT_R32_UINT;
+            bfi.offset = 0ull;
+            { createBufferRegion(bManager, bfi, _assemblySet->_indexBuffer); };
 
             // counters for assembling ( no using in traversing or interpolation )
             bfi.bufferSize = sizeof(uint32_t) * 8ull;
             bfi.format = VK_FORMAT_R32_UINT;
+            bfi.offset = 0ull;
             { createBufferRegion(bManager, bfi, _assemblySet->_countersBuffer); };
 
             { // build final shared buffer for this class
                 VtDeviceBufferCreateInfo bfic = {};
                 bfic.familyIndex = _vtDevice->_mainFamilyIndex;
-                bfic.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+                bfic.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
                 createSharedBuffer(bManager, bfic, _assemblySet->_sharedBuffer);
             };
 
@@ -131,6 +143,7 @@ namespace _vt {
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_verticeBufferInUse->_bufferView()),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&attrbView),
                 vk::WriteDescriptorSet(writeTmpl).setDstBinding(7).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_normalBuffer->_bufferView()),
+                vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_indexBuffer->_bufferView()),
             };
             vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };

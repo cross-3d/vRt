@@ -16,4 +16,5 @@ layout(location = 0) rayPayloadInNVX VtCustomPayloadNVX primitiveState;
 void main()
 {
     primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+    //primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, intBitsToFloat(1));
 };

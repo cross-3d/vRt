@@ -21,10 +21,13 @@ namespace _vt {
         VkDescriptorSet _accelDescriptorSetNVX = {}; // additional descriptor set
 
         // scratch buffers
-        std::shared_ptr<BufferRegion> _scratchBuffer = {}; // 
+        std::shared_ptr<DeviceBuffer> _scratchBuffer = {}; // 
+        std::shared_ptr<BufferRegion> _scratchRegion = {}; // 
     };
 
     // 
+    struct RTXShaderBindingTable { uint64_t data[4] = { 0u,0u,0u,0u }; };
+
     class RTXAcceleratorExtension : public AcceleratorExtensionBase, std::enable_shared_from_this<RTXAcceleratorExtension> {
     public:
         friend Device;
@@ -44,7 +47,9 @@ namespace _vt {
         VkPipelineLayout _raytracingPipelineLayout = {};
         VkPipeline _intersectionPipelineNVX = {}; // native RTX intersection system 
         VkPhysicalDeviceRaytracingPropertiesNVX _raytracingProperties = {};
-        std::shared_ptr<HostToDeviceBuffer> _sbtBuffer = {};
+        std::shared_ptr<DeviceBuffer> _sbtBuffer = {};
+        RTXShaderBindingTable _sbtData[4] = {};
+        //std::shared_ptr<HostToDeviceBuffer> _sbtBuffer = {};
 
     };
 
@@ -57,7 +62,7 @@ namespace _vt {
         virtual VtResult _Construction(std::shared_ptr<VertexAssemblySet> _assemblySet = {}) override;
 
         // 
-        VkGeometryTrianglesNVX _vertexProxyNVX = {};
+        VkGeometryNVX _vDataNVX = {};
     };
 
 };

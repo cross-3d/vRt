@@ -3,8 +3,10 @@
 #extension GL_GOOGLE_include_directive : enable
 
 // enable it, when you will ready...
+//#define RS_SET 1
 #define ENABLE_STACK_SWITCH // still has glitches, when is enabled, will used unified stack (may no enough)
 #define EXPERIMENTAL_INSTANCING_SUPPORT
+//#define REGULAR_ATOMIC_INC
 
 #define VRT_USE_FAST_INTERSECTION
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
@@ -28,33 +30,35 @@ struct VtCustomPayloadNVX {
     uvec4 binaryData128;
 };
 #define LAST_INSTANCE primitiveState.binaryData128.x
+#define LAST_INTERSECTION primitiveState.lastIntersection
 
-layout(binding  = 0, set = 1) uniform accelerationStructureNVX accelStructureNVX;
-layout(location = 0) rayPayloadNVX VtCustomPayloadNVX primitiveState;
+layout (binding  = 0, set = 1) uniform accelerationStructureNVX accelStructure;
+layout (location = 0) rayPayloadNVX VtCustomPayloadNVX primitiveState;
 
 #define r4ID (rayID<<2)
 #define hit hits[hid]
 
 void main() {
     // planned task-based BVH traversing (for two-level BVH support)
-    const uint wsize  = min(rayCounter, MAX_RAYS); //[[flatten]] IFANY (wsize <= 0) return;
+    const uint wsize = min(rayCounter, MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
     for (uint Wi=0u;Wi<wsize;Wi+=gl_LaunchSizeNVX.x) {
         const uint W = gl_LaunchIDNVX.x + Wi;
         
-        const int rayID = vtRayIdx(int(W)); const bool overflow = W >= wsize; //IFALL(overflow) break;
+        const int rayID = vtRayIdx(int(W)); const bool overflow = W >= wsize; IFALL(overflow) break;
         const vec3 ORIGINAL_ORIGIN = rays[rayID].origin.xyz; const dirtype_t ORIGINAL_DIRECTION = rays[rayID].cdirect;
         const uint rayFlags = gl_RayFlagsOpaqueNVX, cullMask = 0xff;
-        //if (!overflow) {
-            primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
-            traceNVX(accelStructureNVX, rayFlags, cullMask, 0, 0, 0, ORIGINAL_ORIGIN, SFN, dcts(ORIGINAL_DIRECTION), INFINITY, 0);
-            
-            const int ftrID = floatBitsToInt(primitiveState.lastIntersection.w)-1;
+        if (!overflow) {
+            //LAST_INTERSECTION = vec4(0.f.xx, INFINITY, FINT_ZERO);
+            traceNVX(accelStructure, rayFlags, cullMask, 0, 0, 0, ORIGINAL_ORIGIN, SFN, dcts(ORIGINAL_DIRECTION), INFINITY, 0);
+            //memoryBarrier();
+
+            const int ftrID = floatBitsToInt(LAST_INTERSECTION.w)-1;
             int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false;
             { // resolve hit result 
                 [[flatten]] if (hid < 0) hid = atomicIncHitCount();
                 hit.rayID = rayID+1, hit.attribID = 0, hit.payloadID = 0;
                 hit.hitVD = vec4(0.f.xxx, uintBitsToFloat(LAST_INSTANCE));
-                hit.uvt = primitiveState.lastIntersection, primitiveState.lastIntersection.w = FINT_ZERO;
+                hit.uvt = LAST_INTERSECTION;
                 
                 const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);
                 [[flatten]] if ( ftrID >= 0 ) 
@@ -65,7 +69,6 @@ void main() {
                 {mhit=max(mhit,hid+1),hid=-1;};
             };
             
-        //};
-        
+        };
     };
 };

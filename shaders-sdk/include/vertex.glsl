@@ -24,11 +24,13 @@
     #endif
 
     #if (defined(LEAF_GEN) || defined(VERTEX_FILLING))
-    layout ( binding = 5, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtx;
-    layout ( binding = 7, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lnrm;
+    layout ( binding = 5, set = VTX_SET, rgba32f ) coherent uniform  imageBuffer lvtx;
+    layout ( binding = 7, set = VTX_SET, rgba32f ) coherent uniform  imageBuffer lnrm;
+    layout ( binding = 8, set = VTX_SET, r32ui )   coherent uniform uimageBuffer indx;
     #else
-    layout ( binding = 5, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lvtx;
-    layout ( binding = 7, set = VTX_SET, rgba32f ) readonly uniform imageBuffer lnrm;
+    layout ( binding = 5, set = VTX_SET, rgba32f ) readonly uniform  imageBuffer lvtx;
+    layout ( binding = 7, set = VTX_SET, rgba32f ) readonly uniform  imageBuffer lnrm;
+    layout ( binding = 8, set = VTX_SET, r32ui )   readonly uniform uimageBuffer indx;
     #endif
 
 #endif

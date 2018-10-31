@@ -97,6 +97,11 @@ namespace NSM
             "VK_LAYER_LUNARG_standard_validation",
             "VK_LAYER_LUNARG_parameter_validation",
             "VK_LAYER_LUNARG_core_validation",
+            //"VK_LAYER_LUNARG_api_dump",
+            //"VK_LAYER_LUNARG_object_tracker",
+            //"VK_LAYER_LUNARG_device_simulation",
+            //"VK_LAYER_GOOGLE_threading",
+            //"VK_LAYER_GOOGLE_unique_objects"
             //"VK_LAYER_RENDERDOC_Capture"
         };
 
@@ -395,7 +400,7 @@ namespace NSM
                 vrt::vtConvertPhysicalDevice(cinstance, gpu, &pdevice);
 
                 // RTX extension structure
-                const auto rtxExtensionPass = vrt::VtRTXAcceleratorExtension{};
+                const auto rtxExtensionPassport = vrt::VtRTXAcceleratorExtension{};
 
 
                 vrt::VtArtificalDeviceExtension dbi = {};
@@ -404,7 +409,7 @@ namespace NSM
                 dbi.sharedCacheSize = 4096ull * 4096ull * 4ull;
                 dbi.maxPrimitives = 1024ull * 2048ull;
                 dbi.enableAdvancedAcceleration = true;
-                //dbi.pAccelerationExtension = (vrt::VtDeviceAdvancedAccelerationExtension*)&rtxExtensionPass;
+                dbi.pAccelerationExtension = (vrt::VtDeviceAdvancedAccelerationExtension*)&rtxExtensionPassport;
                 vrt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
                 if (deviceQueuePtr->device->rtDev->_hExtensionAccelerator.size() > 0 && deviceQueuePtr->device->rtDev->_hExtensionAccelerator[0]) {
                     deviceQueuePtr->RTXEnabled = true;

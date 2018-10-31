@@ -23,6 +23,7 @@ namespace vrt {
     // NVidia Ray Tracing Instance Structure (we doesn't allow use "Vk" prefix for any custom definition, so named as "Vt")
     // Also used bit custom constructions, any holywars in issue trackers (such as prefix, suffixes) may cause "Intruder" status with users black-listing 
     // Yes, we can review proposals, but any wars or enforcements is inacceptable! 
+    
 #pragma pack(push, 1)
     struct VtInstanceNVX {
         //float transform[12] = {1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,  0.f, 0.f, 1.f, 0.f };
@@ -32,6 +33,20 @@ namespace vrt {
         VtHandleRTX accelerationStructureHandle = 0ull;
     };
 #pragma pack(pop)
+
+    /*
+#pragma pack(push, 1)
+    struct VtInstanceNVX
+    {
+        float transform[12];
+        uint32_t instanceId : 24;
+        uint32_t mask : 8;
+        uint32_t instanceOffset : 24;
+        uint32_t flags : 8;
+        uint64_t accelerationStructureHandle;
+    };
+#pragma pack(pop)
+*/
 
     // required for RTX top level support 
     VtResult vtGetAcceleratorHandleNVX(VtAcceleratorSet accSet, VtHandleRTX * acceleratorHandleNVX);

@@ -13,5 +13,6 @@ layout(location = 0) rayPayloadInNVX VtCustomPayloadNVX primitiveState;
 void main()
 {
     primitiveState.lastIntersection = vec4(attribs.xy, gl_HitTNVX, intBitsToFloat(gl_PrimitiveID+1));
+    //primitiveState.lastIntersection = vec4(attribs.xy, gl_HitTNVX, intBitsToFloat(1));
     primitiveState.binaryData128.x = gl_InstanceID;
 };

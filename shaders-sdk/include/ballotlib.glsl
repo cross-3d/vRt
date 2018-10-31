@@ -75,6 +75,12 @@ T fname() {\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 }
 
+#ifdef REGULAR_ATOMIC_INC
+#define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
+T fname(in uint WHERE) {\
+    return atomicAdd(mem, T(1u));\
+}
+#else
 // statically multiplied
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in uint WHERE) {\
@@ -83,6 +89,7 @@ T fname(in uint WHERE) {\
     if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 }
+#endif
 
 // statically multiplied
 #define initSubgroupIncFunctionTarget(mem, fname, by, T)\
