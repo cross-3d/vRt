@@ -118,7 +118,6 @@ namespace _vt {
 
         { // build final shared buffer for this class
             VtDeviceBufferCreateInfo bfic = {};
-            bfic.familyIndex = _vtDevice->_mainFamilyIndex;
             bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
             createSharedBuffer(bManager, bfic, vtAccelerator->_sharedBuffer);
         };
@@ -226,7 +225,6 @@ namespace _vt {
 
         { // build final shared buffer for this class
             VtDeviceBufferCreateInfo bfic = {};
-            bfic.familyIndex = _vtDevice->_mainFamilyIndex;
             bfic.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
             createSharedBuffer(bManager, bfic, vtAccelerator->_sharedBuffer);
         };

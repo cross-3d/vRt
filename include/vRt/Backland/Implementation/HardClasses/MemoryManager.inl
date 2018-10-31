@@ -108,8 +108,8 @@ namespace _vt {
         binfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 #endif
 
-        binfo.queueFamilyIndexCount = 1;
-        binfo.pQueueFamilyIndices = &device->_mainFamilyIndex;//&cinfo.familyIndex;
+        binfo.queueFamilyIndexCount = device->_familyIndices.size();
+        binfo.pQueueFamilyIndices = device->_familyIndices.data();
 
         binfo.size = cinfo.bufferSize;//((cinfo.bufferSize >> 5ull) << 5ull) + 32ull;
         binfo.usage = usageFlag;
@@ -289,8 +289,8 @@ namespace _vt {
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageInfo.usage = usage;
 
-        imageInfo.queueFamilyIndexCount = 1;
-        imageInfo.pQueueFamilyIndices = &device->_mainFamilyIndex;//&cinfo.familyIndex;
+        imageInfo.queueFamilyIndexCount = device->_familyIndices.size();
+        imageInfo.pQueueFamilyIndices = device->_familyIndices.data();
 
         
 

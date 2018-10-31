@@ -103,7 +103,6 @@ namespace rnd {
 
         // super sampled output image
         VtDeviceImageCreateInfo dii = {};
-        dii.familyIndex = deviceQueue->familyIndex;
         dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
         dii.layout = VK_IMAGE_LAYOUT_GENERAL;
         dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -141,9 +140,8 @@ namespace rnd {
 
         {
             // create env image
-            VtDeviceImageCreateInfo dii;
+            VtDeviceImageCreateInfo dii = {};
             dii.format = VK_FORMAT_R32G32B32A32_UINT;
-            dii.familyIndex = deviceQueue->familyIndex;
             dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             dii.layout = VK_IMAGE_LAYOUT_GENERAL;
             dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -700,7 +698,6 @@ namespace rnd {
 
                 VtDeviceImageCreateInfo dii = {};
                 dii.format = VK_FORMAT_R8G8B8A8_UNORM;
-                dii.familyIndex = deviceQueue->familyIndex;
                 dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
                 dii.layout = VK_IMAGE_LAYOUT_GENERAL;
                 dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -715,7 +712,6 @@ namespace rnd {
 
             VtDeviceImageCreateInfo dii = {};
             dii.format = VK_FORMAT_R8G8B8A8_UNORM;
-            dii.familyIndex = deviceQueue->familyIndex;
             dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
             dii.layout = VK_IMAGE_LAYOUT_GENERAL;
             dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;

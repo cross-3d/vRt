@@ -29,7 +29,6 @@ namespace _vt {
         createBufferManager(_vtDevice, bManager);
 
         VtDeviceBufferCreateInfo bfic = {};
-        bfic.familyIndex = _vtDevice->_mainFamilyIndex;
         bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
 
         VtBufferRegionCreateInfo bfi = {};

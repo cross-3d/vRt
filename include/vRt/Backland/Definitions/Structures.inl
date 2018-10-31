@@ -36,7 +36,9 @@ namespace vrt { // store in official namespace
     struct VtArtificalDeviceExtension {
         VtStructureType sType = VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION;
         const void* pNext = nullptr;
-        uint32_t mainQueueFamily = 0;
+        
+        uint32_t familyIndiceCount = 0u;
+        const uint32_t* pFamilyIndices = nullptr;
 
         VkDeviceSize sharedCacheSize = 64ull * 1024ull;
         VkDeviceSize maxPrimitives = 1024ull * 1024ull;
@@ -253,7 +255,6 @@ namespace vrt { // store in official namespace
         VkBufferUsageFlags usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
         VkDeviceSize bufferSize = 0;
         VkFormat format = VK_FORMAT_UNDEFINED;
-        uint32_t familyIndex = 0;
     };
 
 
@@ -278,7 +279,6 @@ namespace vrt { // store in official namespace
         VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT;
 
         uint32_t mipLevels = 1;
-        uint32_t familyIndex = 0;
     };
 
 

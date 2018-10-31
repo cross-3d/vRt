@@ -129,9 +129,14 @@ namespace _vt {
         };
 
         vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(1024).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size()).setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBindEXT)));
-        vtDevice->_mainFamilyIndex = vtExtension.mainQueueFamily;
+        //vtDevice->_mainFamilyIndex = vtExtension.mainQueueFamily;
         vtDevice->_shadersPath = vtExtension.shaderPath;
 
+        if (vtExtension.pFamilyIndices) {
+            for (uint32_t i = 0; i < vtExtension.familyIndiceCount; i++) {
+                vtDevice->_familyIndices.push_back(vtExtension.pFamilyIndices[i]);
+            };
+        };
 
 
 
@@ -143,7 +148,6 @@ namespace _vt {
         VtDeviceBufferCreateInfo dbfi = {};
         dbfi.bufferSize = strided<uint32_t>(vtExtension.sharedCacheSize);
         dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
-        dbfi.familyIndex = vtExtension.mainQueueFamily;
 
         vtDevice->_bufferTraffic[t]->_device = vtDevice;
         createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uploadBuffer);
@@ -155,7 +159,6 @@ namespace _vt {
         VtDeviceBufferCreateInfo dbfi = {};
         dbfi.format = VK_FORMAT_UNDEFINED;
         dbfi.bufferSize = strided<VtUniformBlock>(1024);
-        dbfi.familyIndex = vtExtension.mainQueueFamily;
         createDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uniformVIBuffer);
         };
 

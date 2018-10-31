@@ -77,7 +77,8 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceFeatures> _features = {};
         std::shared_ptr<PhysicalDevice> _physicalDevice = {};
 
-        uint32_t _mainFamilyIndex = 0;
+        //uint32_t _mainFamilyIndex = 0;
+        std::vector<uint32_t> _familyIndices = {};
         std::string _shadersPath = "./intrusive";
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H

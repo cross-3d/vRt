@@ -97,7 +97,6 @@ namespace _vt {
 
             { // build final shared buffer for this class
                 VtDeviceBufferCreateInfo bfic = {};
-                bfic.familyIndex = _vtDevice->_mainFamilyIndex;
                 bfic.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
                 createSharedBuffer(bManager, bfic, _assemblySet->_sharedBuffer);
             };
@@ -105,7 +104,6 @@ namespace _vt {
             // create vertex attribute buffer
             if (!info.sharedAttributeImageDescriptor.imageView) {
                 VtDeviceImageCreateInfo tfi = {};
-                tfi.familyIndex = _vtDevice->_mainFamilyIndex;
                 tfi.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                 tfi.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 tfi.imageViewType = VK_IMAGE_VIEW_TYPE_2D;

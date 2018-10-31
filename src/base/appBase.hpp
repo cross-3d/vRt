@@ -402,9 +402,15 @@ namespace NSM
                 // RTX extension structure
                 const auto rtxExtensionPassport = vrt::VtRTXAcceleratorExtension{};
 
+                std::vector<uint32_t> queueIndices = {};
+                for (auto& q : devicePtr->queues) {
+                    queueIndices.push_back(q->familyIndex);
+                }
 
                 vrt::VtArtificalDeviceExtension dbi = {};
-                dbi.mainQueueFamily = deviceQueuePtr->familyIndex;
+                dbi.pFamilyIndices = queueIndices.data();
+                dbi.familyIndiceCount = queueIndices.size();
+
                 dbi.shaderPath = shaderPath;
                 dbi.sharedCacheSize = 4096ull * 4096ull * 4ull;
                 dbi.maxPrimitives = 1024ull * 2048ull;
