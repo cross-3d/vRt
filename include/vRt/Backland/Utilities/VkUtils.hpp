@@ -37,7 +37,7 @@ namespace _vt {
     constexpr const static inline auto INTENSIVITY = 2048ull;
     constexpr const static inline auto ATTRIB_EXTENT = 4ull;
     constexpr const static inline auto VRT_USE_MORTON_32 = true;
-    constexpr const static inline auto RV_INTENSIVITY = 256ull;
+    constexpr const static inline auto RV_INTENSIVITY = 64ull;//256ull;
     constexpr const static inline auto VX_INTENSIVITY = 64ull;
     constexpr const static inline auto MAX_RAY_GROUPS = 2ull;
 

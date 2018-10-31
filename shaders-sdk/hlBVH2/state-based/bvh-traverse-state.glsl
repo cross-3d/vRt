@@ -22,7 +22,7 @@
   const highp uint maxIterations  = 16384u;
 
 
-const uint GridSize = 256; // specialization for future implementation 
+const uint GridSize = 64; // specialization for future implementation 
 layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYSTEM {
     int stack[WORK_SIZE*GridSize][localStackSize];
     int pages[][localStackSize];
