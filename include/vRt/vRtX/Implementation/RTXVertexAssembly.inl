@@ -16,7 +16,7 @@ namespace _vt {
         _vertexProxyNVX.indexType = VK_INDEX_TYPE_UINT32;
         _vertexProxyNVX.indexCount = _assemblySet->_calculatedPrimitiveCount * 3ull;
         _vertexProxyNVX.indexOffset = _assemblySet->_indexBuffer->_offset();
-        _vertexProxyNVX.indexData = VkBuffer(*_assemblySet->_indexBuffer);
+        _vertexProxyNVX.indexData = VK_NULL_HANDLE; //VkBuffer(*_assemblySet->_indexBuffer);
 
         VkGeometryDataNVX _vertexDataNVX = vk::GeometryDataNVX{};
         _vertexDataNVX.aabbs = vk::GeometryAABBNVX{};

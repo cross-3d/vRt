@@ -75,7 +75,7 @@ namespace _vt {
         //vertexAssemblyExtension->_vertexProxyNVX.indexType = VK_INDEX_TYPE_UINT32;
         _trianglesProxy.indexCount = accelSet->_vertexAssemblySet->_calculatedPrimitiveCount * 3ull;
         _trianglesProxy.indexOffset = accelSet->_vertexAssemblySet->_indexBuffer->_offset();
-        _trianglesProxy.indexData = VkBuffer(*accelSet->_vertexAssemblySet->_indexBuffer);
+        _trianglesProxy.indexData = VK_NULL_HANDLE;//VkBuffer(*accelSet->_vertexAssemblySet->_indexBuffer);
         
 
         const auto vsize = accelSet->_vertexAssemblySet && accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? VkDeviceSize(accelSet->_vertexAssemblySet->_calculatedPrimitiveCount) : VK_WHOLE_SIZE;
