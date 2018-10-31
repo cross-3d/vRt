@@ -43,7 +43,7 @@ namespace _vt {
         std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNVX };
         
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
-        cmdRaytracingBarrierNVX(cmdBufVk);
+        //cmdRaytracingBarrierNVX(cmdBufVk);
         //cmdUpdateBuffer(cmdBufVk, VkBuffer(*_sbtBuffer), 0ull, _raytracingProperties.shaderHeaderSize * _RTXgroupCount, &_sbtData);
         cmdRaytracingBarrierNVX(cmdBufVk);
         cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRaytracingNVX, accelertExt->_intersectionPipelineNVX);
@@ -87,7 +87,7 @@ namespace _vt {
 
 
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
-        cmdRaytracingBarrierNVX(cmdBufVk);
+        //cmdRaytracingBarrierNVX(cmdBufVk);
 
         if (accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE) {
             vkCmdBuildAccelerationStructureNVX(cmdBufVk,
