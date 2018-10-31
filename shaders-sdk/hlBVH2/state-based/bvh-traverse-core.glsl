@@ -52,7 +52,11 @@ bool validIdxincluse(inout int idx) {
 
 
 vec4 uniteBoxLv(in vec4 pt) {
+#ifdef EXPERIMENTAL_UNORM16_BVH
     return (currentState == BVH_STATE_TOP ? uniteBoxTop(pt) : uniteBox(pt));
+#else
+    return pt;
+#endif
 };
 
 
@@ -76,9 +80,12 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
 
     // initial traversing state
-    [[flatten]] if ((currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) > 1) {
-        valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe);
-    }; resetEntry(valid);
+//#ifdef EXPERIMENTAL_UNORM16_BVH
+//    [[flatten]] if ((currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) > 1) {
+//        valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe);
+//    };
+//#endif
+    resetEntry(valid);
 
     // traversing inputs
     traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(vec4(fma(fvec4_(torig), traverseState.directInv, ftype_(intBitsToFloat(traverseState.diffOffset)).xxxx)));

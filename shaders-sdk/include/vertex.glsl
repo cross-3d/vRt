@@ -125,8 +125,8 @@ vec4 uniteBoxTop(in vec4 glb) { return point4(fma((glb - bvhBlockTop.sceneMin) /
 
 const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
 const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
-
-
+const float SFNa = SFN *1.f;
+const float SFOa = SFNa+1.f;
 
 #ifndef VERTEX_FILLING
 #ifndef BVH_CREATION
@@ -167,20 +167,20 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         [[flatten]] if (abs(a) <= 0.f) { _valid = false; };
         IFANY (_valid) {
             const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1);
-            const vec3 uvt = vec3(dot(s,h),dot(dir.xyz,q), dot(e2,q))/precIssue(a);
+            const vec3 uvt = vec3(dot(s,h),dot(dir.xyz,q), dot(e2,q))/(a);
             uv = uvt.xy, T = uvt.z;
-            [[flatten]] if (any(lessThan(uv, -SFN.xx)) || (uv.x+uv.y) > (SFO)) { _valid = false; };
+            [[flatten]] if (any(lessThan(vec3(1.f-uv.x-uv.y, uv), -SFNa.xxx))) { _valid = false; };
             [[flatten]] if ( T >= N_INFINITY || T > cdist || T < (-SFN) ) { _valid = false; };
         }
 #else
         // intersect triangle by transform
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
         const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
-        const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/dz;
+        const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/precIssue(dz);
         [[flatten]] if ( T >= N_INFINITY || T > cdist || T < (-SFN) || abs(dz) <= 0.f ) { _valid = false; };
         IFANY (_valid) {
             const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
-            [[flatten]] if (any(lessThan(uv, -SFN.xx)) || (uv.x+uv.y) > (SFO)) { _valid = false; };
+            [[flatten]] if (any(lessThan(vec3(1.f-uv.x-uv.y, uv), -SFNa.xxx))) { _valid = false; };
         }
 #endif
     }
