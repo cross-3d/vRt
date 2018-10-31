@@ -44,7 +44,7 @@ namespace _vt {
         
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
         cmdRaytracingBarrierNVX(cmdBufVk);
-        cmdUpdateBuffer(cmdBufVk, VkBuffer(*_sbtBuffer), 0ull, _raytracingProperties.shaderHeaderSize * _RTXgroupCount, &_sbtData);
+        //cmdUpdateBuffer(cmdBufVk, VkBuffer(*_sbtBuffer), 0ull, _raytracingProperties.shaderHeaderSize * _RTXgroupCount, &_sbtData);
         cmdRaytracingBarrierNVX(cmdBufVk);
         cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRaytracingNVX, accelertExt->_intersectionPipelineNVX);
         cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRaytracingNVX, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
@@ -123,7 +123,7 @@ namespace _vt {
         VtDeviceBufferCreateInfo dbi = {};
         dbi.bufferSize = _raytracingProperties.shaderHeaderSize * _RTXgroupCount;
         dbi.usageFlag = VK_BUFFER_USAGE_RAYTRACING_BIT_NVX;
-        createDeviceBuffer(device, dbi, _sbtBuffer);
+        createHostToDeviceBuffer(device, dbi, _sbtBuffer);
 
         //
         auto pbindings = vk::DescriptorBindingFlagBitsEXT::ePartiallyBound | vk::DescriptorBindingFlagBitsEXT::eUpdateAfterBind | vk::DescriptorBindingFlagBitsEXT::eVariableDescriptorCount | vk::DescriptorBindingFlagBitsEXT::eUpdateUnusedWhilePending;
@@ -169,7 +169,7 @@ namespace _vt {
             rayPipelineInfo.basePipelineIndex = 0;
             rayPipelineInfo.maxRecursionDepth = 1;
             vkCreateRaytracingPipelinesNVX(VkDevice(*device), device->_pipelineCache, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNVX);
-            vkGetRaytracingShaderHandlesNVX(VkDevice(*device), _intersectionPipelineNVX, 0, _RTXgroupCount, size_t(_raytracingProperties.shaderHeaderSize * _RTXgroupCount), &_sbtData);
+            vkGetRaytracingShaderHandlesNVX(VkDevice(*device), _intersectionPipelineNVX, 0, _RTXgroupCount, size_t(_raytracingProperties.shaderHeaderSize * _RTXgroupCount), _sbtBuffer->_hostMapped());
         };
 
         return VK_SUCCESS;

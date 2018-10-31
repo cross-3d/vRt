@@ -22,7 +22,7 @@ namespace _vt {
 
         // scratch buffers
         std::shared_ptr<DeviceBuffer> _scratchBuffer = {}; // 
-        std::shared_ptr<BufferRegion> _scratchRegion = {}; // 
+        //std::shared_ptr<BufferRegion> _scratchRegion = {}; // 
     };
 
     // 
@@ -47,9 +47,9 @@ namespace _vt {
         VkPipelineLayout _raytracingPipelineLayout = {};
         VkPipeline _intersectionPipelineNVX = {}; // native RTX intersection system 
         VkPhysicalDeviceRaytracingPropertiesNVX _raytracingProperties = {};
-        std::shared_ptr<DeviceBuffer> _sbtBuffer = {};
-        RTXShaderBindingTable _sbtData[4] = {};
-        //std::shared_ptr<HostToDeviceBuffer> _sbtBuffer = {};
+        //std::shared_ptr<DeviceBuffer> _sbtBuffer = {};
+        //RTXShaderBindingTable _sbtData[4] = {};
+        std::shared_ptr<HostToDeviceBuffer> _sbtBuffer = {};
 
     };
 

@@ -67,3 +67,5 @@
 ## RTX 2070 new winner
 
 Gigabyte RTX 2070 unexpectedly faster than RX Vega 64 in that ray-tracing, even without RTX mode (up to 10% or, probably, more). 
+With RTX mode can overtake up to 2.5x faster (support added by extension, and not enabled by default feature set)
+Also, RTX mode fully disabling native BVH building and traversing mechanism, so you can be faster by that (still has only initialized buffer)
