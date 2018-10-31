@@ -9,7 +9,9 @@
 
 
 #ifndef fpInner
-  const float fpInner = 0.0000152587890625f, fpOne = 1.f;
+//const float fpInner = 0.0000152587890625f, fpOne = 1.f;
+#define fpInner 0.0000152587890625f
+#define fpOne 1.f
 #endif
 
 #ifdef ENABLE_VEGA_INSTRUCTION_SET

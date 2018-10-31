@@ -63,8 +63,9 @@ void main() {
             };
 
             // re-group hit 
-            const lowp uint rID = floatBitsToUint(hit.hitVD.w);
-            [[unroll]] for (lowp int i=0;i<4;i++) { [[flatten]] if (rID == i) { vtVerifyClosestHit(hitID, i); break; }; };
+            //const lowp uint rID = floatBitsToUint(hit.hitVD.w);
+            //[[unroll]] for (lowp int i=0;i<4;i++) { [[flatten]] if (rID == i) { vtVerifyClosestHit(hitID, i); break; }; };
+            vtVerifyClosestHit(hitID, 0); // use only one hit group (fast-mode)
         };
     };
 };

@@ -110,7 +110,7 @@ namespace rnd {
         dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
         if (deviceQueue->RTXEnabled) dbs.usageFlag |= VK_BUFFER_USAGE_RAYTRACING_BIT_NVX;
         dbs.bufferSize = byteSize;
-        dbs.familyIndex = deviceQueue->familyIndex;
+        //dbs.familyIndex = deviceQueue->familyIndex;
         dbs.format = VK_FORMAT_R16G16_UINT;
         vrt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
     };

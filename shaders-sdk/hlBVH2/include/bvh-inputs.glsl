@@ -55,7 +55,8 @@ layout ( binding = 2, set = 0, std430 ) readonly restrict buffer BuildConstB {
 
 // precision control of boxes
 #ifndef fpInner
-const float fpInner = InZero;
+//const float fpInner = InZero;
+#define fpInner InZero
 #endif
 
 //#define fpCorrect 0.0000152587890625f
