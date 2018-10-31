@@ -81,11 +81,11 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
     const mat3x2 bndsf2 = mat3x2( bside2*interm.x, bside2*interm.y, bside2*interm.z );
 
     // initial traversing state
-//#ifdef EXPERIMENTAL_UNORM16_BVH
-//    [[flatten]] if ((currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) > 1) {
-//        valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe);
-//    };
-//#endif
+#ifdef EXPERIMENTAL_UNORM16_BVH
+    [[flatten]] if ((currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) > 1) {
+        valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe);
+    };
+#endif
     resetEntry(valid);
 
     // traversing inputs
