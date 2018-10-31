@@ -168,7 +168,7 @@ namespace _vt {
             rayPipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
             rayPipelineInfo.basePipelineIndex = 0;
             rayPipelineInfo.maxRecursionDepth = 1;
-            vkCreateRaytracingPipelinesNVX(VkDevice(*device), {}, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNVX);
+            vkCreateRaytracingPipelinesNVX(VkDevice(*device), device->_pipelineCache, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNVX);
             vkGetRaytracingShaderHandlesNVX(VkDevice(*device), _intersectionPipelineNVX, 0, _RTXgroupCount, size_t(_raytracingProperties.shaderHeaderSize * _RTXgroupCount), &_sbtData);
         };
 
