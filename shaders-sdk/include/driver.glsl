@@ -115,6 +115,7 @@
 // packing as unorm16x2 (experimental)
 #define EXPERIMENTAL_UNORM16_DIRECTION
 #define EXPERIMENTAL_UNORM16_BVH
+#define VTX_USE_MOLLER_TRUMBORE
 
 #ifdef ENABLE_INT16_SUPPORT
 //#define ENABLE_INT16_BOOL_PAIR // use RPM based booleans

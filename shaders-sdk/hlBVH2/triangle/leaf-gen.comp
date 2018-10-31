@@ -41,7 +41,7 @@ void main() {
                 const mat4x3 triverts = transpose(triverts);
                 ISTORE(lvtx, int(tri*3+0), point4(triverts[0])), ISTORE(lvtx, int(tri*3+1), point4(triverts[1])), ISTORE(lvtx, int(tri*3+2), point4(triverts[2]));
     #else
-    #ifdef VTX_USE_LEGACY_METHOD
+    #ifdef VTX_USE_MOLLER_TRUMBORE
                 ISTORE(lvtx, int(tri*3+0), triverts[0]), ISTORE(lvtx, int(tri*3+1), triverts[1]), ISTORE(lvtx, int(tri*3+2), triverts[2]);
     #else
 
@@ -58,19 +58,19 @@ void main() {
                 const vec3 e2d = e2.zxy*ni, e2m = -e2.yzx*ni, e1d = e1.yzx*ni, e1m = -e1.zxy*ni, n1f = nl.yzx*ni, n2f = nl.zxy*ni;
                 
                 mat4x3 TVI = { vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f) };
-                [[flatten]] if ( na.x > na.y && na.x > na.z ) {
+                [[flatten]] if ( na.x >= na.y && na.x >= na.z ) {
                     TVI[0] = vec3(0.f,0.f,1.f);
                     TVI[1] = vec3(e2d.x,e1m.x,n1f.x);
                     TVI[2] = vec3(e2m.x,e1d.x,n2f.x);
                     TVI[3] = vec3(v2n.x,v1n.x,v0n.x);
                 } else 
-                [[flatten]] if ( na.y > na.z ) {
+                [[flatten]] if ( na.y >= na.z ) {
                     TVI[0] = vec3(e2m.y,e1d.y,n2f.y);
                     TVI[1] = vec3(0.f,0.f,1.f);
                     TVI[2] = vec3(e2d.y,e1m.y,n1f.y);
                     TVI[3] = vec3(v2n.y,v1n.y,v0n.y);
                 } else 
-                [[flatten]] if ( na.z > 0.f ) {
+                {
                     TVI[0] = vec3(e2d.z,e1m.z,n1f.z);
                     TVI[1] = vec3(e2m.z,e1d.z,n2f.z);
                     TVI[2] = vec3(0.f,0.f,1.f);

@@ -61,6 +61,7 @@ vec4 uniteBoxLv(in vec4 pt) {
 
 
 // initialize state 
+// TODO: reincarnate watertight triangle intersection method
 void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir ) {
     // relative origin and vector ( also, preparing mat3x4 support ) 
     // in task-based traversing will have universal transformation for BVH traversing and transforming in dimensions 
