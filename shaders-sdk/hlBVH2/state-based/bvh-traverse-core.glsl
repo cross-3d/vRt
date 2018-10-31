@@ -137,9 +137,9 @@ void doIntersection(in bool isvalid) {
 
         const float tdiff = nearT-d, tmax = SFN;
         [[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
-            [[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
+            //[[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
                 primitiveState.lastIntersection = vec4(uv.xy, min(d.x, primitiveState.lastIntersection.z), intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
-            };
+            //};
         };
     };
 };

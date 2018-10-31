@@ -43,11 +43,12 @@ void main() {
 
         // planned multiple-hits support
         ORIGINAL_ORIGIN = rays[rayID].origin.xyz, ORIGINAL_DIRECTION = rays[rayID].cdirect;
-        currentState = BVH_STATE_TOP, traverseState.idx = -1, traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
-        
+        //currentState = BVH_STATE_TOP, traverseState.idx = -1, traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+        traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+
         [[flatten]] if (!overflow) {
             int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
-            [[unroll]] for (int i=0;i<1;i++) { //[[flatten]] if (i == 0 || found) 
+            //[[unroll]] for (int i=0;i<1;i++) { //[[flatten]] if (i == 0 || found) 
                 {
                     traverseState.idx = bvhBlockTop.entryID, lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
                     traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = -1;
@@ -61,7 +62,7 @@ void main() {
                     [[flatten]] if (hid < 0) hid = atomicIncHitCount();
                     hit.rayID = rayID+1, hit.attribID = 0, hit.payloadID = 0;
                     hit.hitVD = vec4(0.f.xxx, intBitsToFloat(LAST_INSTANCE));
-                    hit.uvt = primitiveState.lastIntersection, primitiveState.lastIntersection.w = FINT_ZERO;
+                    hit.uvt = primitiveState.lastIntersection;//, primitiveState.lastIntersection.w = FINT_ZERO;
                     
                     const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);
                     [[flatten]] if ( ftrID >= 0 ) 
@@ -71,7 +72,7 @@ void main() {
                     
                     {mhit=max(mhit,hid+1),hid=-1;};
                 };
-            };//};
+            //};//};
         };
     };
 };
