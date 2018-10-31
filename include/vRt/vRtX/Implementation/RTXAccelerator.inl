@@ -52,7 +52,7 @@ namespace _vt {
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull,
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 2ull * _raytracingProperties.shaderHeaderSize, _raytracingProperties.shaderHeaderSize,
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 1ull * _raytracingProperties.shaderHeaderSize, _raytracingProperties.shaderHeaderSize,
-            4096u, 1u);
+            4608u, 1u);
         cmdRaytracingBarrierNVX(cmdBufVk);
 
 
