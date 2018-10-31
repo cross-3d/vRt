@@ -14,6 +14,7 @@
 - Support by modern graphics/compute accelerators (NVidia Pascal, AMD Radeon Vega, next-gens...)
 - Can reach 100Mrays/s in top GPU's (without native or specific hardware acceleration)
 - Unified library for desktop dedicated GPU's
+- Extensions for accelerations
 
 ## Repository mirrors
 
@@ -31,8 +32,8 @@
 ## Compatibility Confirmed
 
 - RX Vega 64
+- RTX 2070 
 - GTX 1070 (need new tests)
-- RTX 2070 (non-RTX mode, aka. generic mode)
 
 ## Uncomfirmed
 
