@@ -263,19 +263,6 @@ namespace rnd {
             vkEndCommandBuffer(qBCmdBuf);
         }
 
-        /*{
-            // make accelerator and vertex builder command
-            tbCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
-            VtCommandBuffer qTBCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, tbCmdBuf, &qTBCmdBuf);
-
-            VtAcceleratorBuildInfo buildInfo = {};
-            buildInfo.elementSize = BvhInstancedData.size();
-
-            vtCmdBindAccelerator(qTBCmdBuf, acceleratorMain);
-            vtCmdBuildAccelerator(qTBCmdBuf, buildInfo);
-            vkEndCommandBuffer(qTBCmdBuf);
-        }*/
-
         {
             // use single layer only (for experimenting, can changed)
             const auto transparencyOrders = transparencyLevel;//6;
@@ -322,9 +309,8 @@ namespace rnd {
             vkEndCommandBuffer(qRtCmdBuf);
         }
 
-        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { vxuCmdBuf });
+        vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { vxCmdBuf });
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
-        //vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { tbCmdBuf });
     };
 
 
@@ -491,7 +477,7 @@ namespace rnd {
         {
             // create ray tracing set
             VtRayTracingSetCreateInfo rtsi = {};
-            rtsi.maxRays = canvasWidth * (_vt::tiled(canvasHeight, rParts * 8u) * 8u); // prefer that limit
+            rtsi.maxRays = VkDeviceSize(canvasWidth) * VkDeviceSize(_vt::tiled(VkDeviceSize(canvasHeight), VkDeviceSize(rParts) * 8ull) * 8ull); // prefer that limit
             rtsi.maxHits = rtsi.maxRays * 2;
             vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &raytracingSet);
         }
@@ -944,14 +930,13 @@ namespace rnd {
      void Renderer::ComputeRayTracing(){
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { vxuCmdBuf });
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { bCmdBuf });
-        //vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { tbCmdBuf });
         vte::submitCmd(deviceQueue->device->rtDev, deviceQueue->queue, { rtCmdBuf });
     };
 
 
      void Renderer::Draw(){
         auto n_semaphore = currSemaphore;
-        auto c_semaphore = (currSemaphore + 1) % currentContext->framebuffers.size();
+        auto c_semaphore = int32_t((size_t(currSemaphore) + 1ull) % currentContext->framebuffers.size());
         currSemaphore = c_semaphore;
 
         // acquire next image where will rendered (and get semaphore when will presented finally)
