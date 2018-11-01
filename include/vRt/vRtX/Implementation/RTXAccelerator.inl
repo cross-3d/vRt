@@ -75,6 +75,7 @@ namespace _vt {
         //vertexAssemblyExtension->_vertexProxyNVX.indexType = VK_INDEX_TYPE_UINT32;
         _trianglesProxy.indexCount = accelSet->_vertexAssemblySet->_calculatedPrimitiveCount * 3ull;
         _trianglesProxy.indexOffset = accelSet->_vertexAssemblySet->_indexBuffer->_offset();
+        _trianglesProxy.indexOffset += (buildInfo.elementOffset + accelSet->_elementsOffset)*(3ull*sizeof(uint32_t));
         _trianglesProxy.indexData = VK_NULL_HANDLE;//VkBuffer(*accelSet->_vertexAssemblySet->_indexBuffer);
         
 
