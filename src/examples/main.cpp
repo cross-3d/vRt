@@ -4,6 +4,7 @@
 
 // initial renderer
 const uint32_t canvasWidth = 640, canvasHeight = 360; // 
+//const uint32_t canvasWidth = 960, canvasHeight = 540;
 const bool enableSuperSampling = true;
 std::shared_ptr<rnd::Renderer> renderer = nullptr;
 

@@ -47,6 +47,7 @@ namespace _vt {
 
         // create acceleration structure (no memory bind)
         vkCreateAccelerationStructureNVX(*accelSet->_device, &_accelerationCreate, nullptr, &_accelStructureNVX);
+        _WasBuild = false;
 
 
         // allocate and bind acceleration structure memory 

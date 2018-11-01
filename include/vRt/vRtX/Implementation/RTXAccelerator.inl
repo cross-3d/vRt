@@ -93,19 +93,21 @@ namespace _vt {
             vkCmdBuildAccelerationStructureNVX(cmdBufVk,
                 VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NVX,
                 dsize, *accelSet->_bvhInstancedBuffer, accelSet->_bvhInstancedBuffer->_offset(), 
-                0, nullptr, buildFlags, VK_FALSE,
+                0, nullptr, buildFlags, extendedSet->_WasBuild,
                 extendedSet->_accelStructureNVX, VK_NULL_HANDLE,
                 *extendedSet->_scratchBuffer, extendedSet->_scratchBuffer->_offset()
             );
+            extendedSet->_WasBuild = true;
         }
         else {
             vkCmdBuildAccelerationStructureNVX(cmdBufVk,
                 VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NVX,
                 0, nullptr, 0,
-                1, &vertexAssemblyExtension->_vDataNVX, buildFlags, VK_FALSE,
+                1, &vertexAssemblyExtension->_vDataNVX, buildFlags, extendedSet->_WasBuild,
                 extendedSet->_accelStructureNVX, VK_NULL_HANDLE,
                 *extendedSet->_scratchBuffer, extendedSet->_scratchBuffer->_offset()
             );
+            extendedSet->_WasBuild = true;
         };
 
         cmdRaytracingBarrierNVX(cmdBufVk);
