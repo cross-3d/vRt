@@ -404,10 +404,11 @@ vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     const vec2 sz = textureSize(SMP,LOD), is = 1.f/sz, tc = fma(TXL,sz,-0.5f.xx), tm = (floor(tc+SFN)+0.5f)*is;
     const vec4 il = vec4(fract(tc),1.f-fract(tc)), cf = vec4(il.z*il.y,il.x*il.y,il.x*il.w,il.z*il.w);
 
-    vec4 fcol = 0.f.xxxx;
+    //vec4 fcol = 0.f.xxxx;
     //[[unroll]] for (int i=0;i<4;i++) fcol=fma(textureLod(SMP,fma(offsetf[i],is,tm),LOD),cf[i].xxxx,fcol);
-    [[unroll]] for (int i=0;i<4;i++) fcol[i]=dot(sifonGather(SMP,tm,i),cf); // tensor capable production 
-    return fcol;
+    //[[unroll]] for (int i=0;i<4;i++) fcol[i]=dot(sifonGather(SMP,tm,i),cf); // tensor capable production 
+    //return fcol;
+    return mult4(mat4(textureGather(SMP,tm,0),textureGather(SMP,tm,1),textureGather(SMP,tm,2),textureGather(SMP,tm,3)),cf);
 };
 
 vec2 borderClamp(in vec2 tvc, in vec2 tsize) {

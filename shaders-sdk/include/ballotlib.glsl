@@ -57,6 +57,7 @@ const uint UONE = 1u;
 lowp uvec2 bPrefixSum(in bool val) { return uvec2(subgroupAdd(uint(val)), subgroupExclusiveAdd(uint(val))); };
 lowp uvec2 bPrefixSum() { return uvec2(subgroupAdd(UONE), subgroupExclusiveAdd(UONE)); };
 
+/*
 // advanced version
 void bPrefixSum(in bvec4 val, inout lowp uvec4 sums, inout lowp uvec4 pfxs) { 
     {uvec4 blt = subgroupBallot(val.x); sums.x = subgroupBallotBitCount(blt), pfxs.x = subgroupBallotExclusiveBitCount(blt);};
@@ -64,6 +65,7 @@ void bPrefixSum(in bvec4 val, inout lowp uvec4 sums, inout lowp uvec4 pfxs) {
     {uvec4 blt = subgroupBallot(val.z); sums.z = subgroupBallotBitCount(blt), pfxs.z = subgroupBallotExclusiveBitCount(blt);};
     {uvec4 blt = subgroupBallot(val.w); sums.w = subgroupBallotBitCount(blt), pfxs.w = subgroupBallotExclusiveBitCount(blt);};
 };
+*/
 
 
 // statically multiplied
@@ -74,13 +76,13 @@ T fname() {\
     if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 }
-
+/*
 #ifdef REGULAR_ATOMIC_INC
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in uint WHERE) {\
     return atomicAdd(mem, T(1u));\
 }
-#else
+#else*/
 // statically multiplied
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in uint WHERE) {\
@@ -89,7 +91,8 @@ T fname(in uint WHERE) {\
     if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 }
-#endif
+//#endif
+//
 
 // statically multiplied
 #define initSubgroupIncFunctionTarget(mem, fname, by, T)\
@@ -100,7 +103,7 @@ T fname(in uint WHERE) {\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 }
 
-
+/*
 // statically multiplied
 #define initSubgroupIncFunctionTargetDual(mem, fname, by, T, T2)\
 T2 fname(in uint WHERE, in bvec2 a) {\
@@ -122,7 +125,7 @@ T4 fname(in uint WHERE, in bvec4 a) {\
     if (subgroupElect() && any(greaterThan(pfx[0], (0u).xxxx))) {gadd = add(mem, T(pfx[0].x+pfx[0].y+pfx[0].z+pfx[0].w)*T(by));}\
     return T(by).xxxx * (T4(pfx[1]) + T4(0u, pfx[0].xyz) + T4(0u.xx, pfx[0].xy) + T4(0u.xxx, pfx[0].x)) + readFLane(gadd).xxxx;\
 }
-
+*/
 
 
 

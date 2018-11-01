@@ -40,6 +40,8 @@ bool validateTexture(in uint tbinding) { return tbinding > 0u && tbinding != -1u
 
 // new texture fetcher with corner sampling 
 vec4 fetchTexNG(in uint tbinding, in vec2 ntxc) {
+    
+    /*
 #ifdef AMD_PLATFORM
     ivec2 szi = (1).xx; bool found = false;
     // planned Turing hardware version support 
@@ -59,14 +61,10 @@ vec4 fetchTexNG(in uint tbinding, in vec2 ntxc) {
     const vec2 sz = vec2(szi), tx = corneredCoordinates(ntxc, sz);
     const vec2 is = 1.f/sz, tc = fma(tx,sz,-0.5f.xx), tm = (floor(tc+SFN)+0.5f)*is;
     const vec4 il = vec4(fract(tc),1.f-fract(tc)), cf = vec4(il.z*il.y,il.x*il.y,il.x*il.w,il.z*il.w);
+    return mult4(mat4(textureGather(sampler2Dv(tbinding-1),tm,0),textureGather(sampler2Dv(tbinding-1),tm,1),textureGather(sampler2Dv(tbinding-1),tm,2),textureGather(sampler2Dv(tbinding-1),tm,3)),cf);
+    */
 
-    //vec4 fcol = 0.f.xxxx;
-    //[[unroll]] for (int i=0;i<4;i++) {
-    //    fcol=fma(fetchTexture(tbinding,fma(offsetf[i],is,tm)),cf[i].xxxx,fcol);
-    //};
-    //return fcol;
-
-    return fetchTexture(tbinding,tx); // or just use TPU
+    return fetchTexture(tbinding,ntxc); // or just use TPU
 };
 
 #define fetchTex(tbinding, tcoord) fetchTexNG(tbinding,tcoord)
