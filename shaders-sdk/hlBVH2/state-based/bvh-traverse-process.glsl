@@ -32,7 +32,8 @@ int traverseBVH2( in bool validTop ) {
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 
                 // also, they uses hit queue, but it can very overload stacks, so saving only indices...
-                childIntersect &= binarize(lessThanEqual(nfe.xy, fma(primitiveState.lastIntersection.z,fpOne,fpInner).xx)); // it increase FPS by filtering nodes by first triangle intersection
+                //childIntersect &= binarize(lessThanEqual(nfe.xy, fma(primitiveState.lastIntersection.z,fpOne,fpInner).xx)); // it increase FPS by filtering nodes by first triangle intersection
+                childIntersect &= binarize(lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz));
 
                 //
                 pbool_ fmask = pl_x(childIntersect)|(pl_y(childIntersect)<<true_);

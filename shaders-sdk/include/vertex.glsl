@@ -133,7 +133,7 @@ const float SFOa = SFNa+1.f;
 #ifdef ENABLE_VSTORAGE_DATA
 
 #ifndef VRT_USE_FAST_INTERSECTION
-float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, in bool _valid) {
+float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, inout bool _valid) {
     float T = INFINITY;
     IFANY (_valid) {
         const mat3 ABC = mat3((TLOAD(lvtx, tri*3+0)+orig.x).xyz, (TLOAD(lvtx, tri*3+1)+orig.y).xyz, (TLOAD(lvtx, tri*3+2)+orig.z).xyz)*M;
@@ -154,7 +154,7 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
 
 
 #ifdef VRT_USE_FAST_INTERSECTION
-float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in bool _valid, in float cdist) {
+float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, inout bool _valid) {
     float T = INFINITY;
     IFANY (_valid) {
 #ifdef VTX_USE_MOLLER_TRUMBORE
@@ -168,14 +168,14 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         IFANY (_valid) {
             const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1), uvt = vec3(dot(s,h),dot(dir.xyz,q), dot(e2,q))/(a);
             uv = uvt.xy, T = uvt.z;
-            [[flatten]] if (T >= N_INFINITY || T > cdist || any(lessThan(vec4(1.f-uv.x-uv.y, uv, T), -SFN.xxxx))) { _valid = false; };
+            [[flatten]] if (T >= N_INFINITY || any(lessThan(vec4(1.f-uv.x-uv.y, uv, T), -SFN.xxxx))) { _valid = false; };
         };
 #else
         // intersect triangle by transform
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
         const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
         const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/(dz);
-        [[flatten]] if ( T >= N_INFINITY || T > cdist || abs(dz) <= 0.f ) { _valid = false; };
+        [[flatten]] if ( T >= N_INFINITY || abs(dz) <= 0.f ) { _valid = false; };
         IFANY (_valid) {
             const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
             [[flatten]] if (any(lessThan(vec4(1.f-uv.x-uv.y, uv, T), -SFN.xxxx))) { _valid = false; };

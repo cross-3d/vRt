@@ -128,19 +128,21 @@ void doIntersection(in bool isvalid) {
     };
 
     [[flatten]] if (isvalid && CSTATE == BVH_STATE_BOTTOM) {
-        vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
+        //vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
+        vec2 uv = vec2(0.f.xx); const float d = 
 #ifdef VRT_USE_FAST_INTERSECTION
-            intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid, nearT);
+            intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid);
 #else
             intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, elementID, uv.xy, isvalid);
 #endif
 
-        const float tdiff = nearT-d, tmax = SFN;
-        [[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
+        //const float tdiff = nearT-d, tmax = SFN;
+        //[[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
             //[[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
-                primitiveState.lastIntersection = vec4(uv.xy, min(d.x, primitiveState.lastIntersection.z), intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
-            //};
-        };
+            [[flatten]] if ( isvalid && (primitiveState.lastIntersection.z = min(primitiveState.lastIntersection.z, d.x)) == d.x ) {
+                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
+            };
+        //};
     };
 };
 
