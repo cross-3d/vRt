@@ -7,7 +7,7 @@ struct VtCustomPayloadNVX {
     uvec4 binaryData128;
 };
 
-layout(location = 1) hitAttributeNVX vec3 attribs;
+layout(location = 0) hitAttributeNVX vec2 attribs;
 layout(location = 0) rayPayloadInNVX VtCustomPayloadNVX primitiveState;
 
 void main()
