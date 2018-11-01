@@ -23,6 +23,7 @@ namespace _vt {
         _vertexDataNVX.triangles = _vertexProxyNVX;
 
         _vDataNVX = vk::GeometryNVX{};
+        _vDataNVX.flags = VK_GEOMETRY_OPAQUE_BIT_NVX | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NVX;
         _vDataNVX.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NVX;
         _vDataNVX.geometry = _vertexDataNVX;
 

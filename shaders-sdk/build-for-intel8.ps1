@@ -1,4 +1,5 @@
 #!/snap/bin/pwsh-preview
+# NOT SUPPORTED OFFICIALLY!
 
 $CFLAGSV="--target-env vulkan1.1 -V -d -t --aml --nsf -DUSE_MORTON_32 -DUSE_F32_BVH -DINTEL_PLATFORM"
 
