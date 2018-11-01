@@ -110,11 +110,11 @@ set (CMAKE_C_STANDARD 11)
 
 # compiler specific options
 if (MSVC) # Clang in Visual Studio 2017
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest /arch:AVX2 /fp:strict /permissive- /Ot /W3 /NODEFAULTLIB:library") # Native compiler of Visual Studio 2017
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest /arch:AVX2 /fp:strict /permissive- /JMC /Oy /Oi /Ot /Ox /GT /GL /Gy /Qpar /Qspectre /W3 /NODEFAULTLIB:library") # Native compiler of Visual Studio 2017
     set (CMAKE_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")
 else()
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -std=c++2a -march=skylake -fpermissive -w ")
-    set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -m64 -std=c1x   -march=skylake -fpermissive -w ")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -std=c++2a -march=skylake -fpermissive -w -Ofast")
+    set (CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -m64 -std=c1x   -march=skylake -fpermissive -w -Ofast")
     if (WIN32)
         set (CMAKE_CXX_FLAGS "${CMAK_CXX_FLAGS} -Wa,-mbig-obj")
         set (CMAKE_C_FLAGS "${CMAK_C_FLAGS} -Wa,-mbig-obj")
