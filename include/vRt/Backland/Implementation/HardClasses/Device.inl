@@ -341,4 +341,31 @@ namespace _vt {
     };
 
 
+
+
+
+
+
+    // 
+     VtResult AcceleratorExtensionBase::_DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    };
+     VtResult AcceleratorExtensionBase::_BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, VtAcceleratorBuildInfo buildInfo) {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    };
+     VtResult AcceleratorExtensionBase::_Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    };
+     VtResult AcceleratorExtensionBase::_Criteria(std::shared_ptr<DeviceFeatures> supportedFeatures) {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    };
+
+    // connectors with extension classes
+     VtResult AcceleratorExtensionBase::_ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet) {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    };
+     VtResult AcceleratorExtensionBase::_ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet) {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    };
+
 };

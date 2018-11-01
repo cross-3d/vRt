@@ -556,26 +556,14 @@ namespace _vt { // store in undercover namespace
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERATION_NAME_UNKNOWN; };
 
         // 
-        virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        };
-        virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, VtAcceleratorBuildInfo buildInfo = {}) {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        };
-        virtual VtResult _Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        };
-        virtual VtResult _Criteria(std::shared_ptr<DeviceFeatures> supportedFeatures) {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        };
+        virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet);
+        virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, VtAcceleratorBuildInfo buildInfo);
+        virtual VtResult _Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo);
+        virtual VtResult _Criteria(std::shared_ptr<DeviceFeatures> supportedFeatures);
 
         // connectors with extension classes
-        virtual VtResult _ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet = {}) {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        };
-        virtual VtResult _ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet = {}) {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        };
+        virtual VtResult _ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet = {});
+        virtual VtResult _ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet = {});
 
          // built-in method's
         //auto* operator->() { return _dataPtr.get(); };
