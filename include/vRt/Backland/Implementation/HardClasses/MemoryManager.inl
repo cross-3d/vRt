@@ -288,6 +288,7 @@ namespace _vt {
         imageInfo.mipLevels = cinfo.mipLevels;
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageInfo.usage = usage;
+        imageInfo.flags = cinfo.flags;
 
         imageInfo.queueFamilyIndexCount = device->_familyIndices.size();
         imageInfo.pQueueFamilyIndices = device->_familyIndices.data();
