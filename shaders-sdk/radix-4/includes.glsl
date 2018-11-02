@@ -24,12 +24,7 @@
 //#define RADICES 256
 //#define RADICES_MASK 0xFF
 
-//#define AFFINITION 1
-#ifdef AMD_PLATFORM
-#define AFFINITION 16
-#else
-#define AFFINITION 8
-#endif
+
 
 // general work groups
 #define Wave_Size_RX Wave_Size_RT
@@ -44,20 +39,11 @@
     #define U8v4 uvec4
 #endif
 
-// match by default
-#ifndef BLOCK_SIZE
-#define BLOCK_SIZE WORK_SIZE 
-#endif
-
 // default values
 #ifndef BLOCK_SIZE
-#ifdef ENABLE_VEGA_INSTRUCTION_SET 
-//#if defined(ENABLE_VEGA_INSTRUCTION_SET) || defined(ENABLE_TURING_INSTRUCTION_SET) // prefer full-mode in Turing's 
-#define BLOCK_SIZE 1024u
-#else
-#define BLOCK_SIZE 512u
+#define BLOCK_SIZE (Wave_Size*16u)
 #endif
-#endif
+
 
 #define BLOCK_SIZE_RT (gl_WorkGroupSize.x)
 #define WRK_SIZE_RT (gl_NumWorkGroups.y * Wave_Count_RX)
