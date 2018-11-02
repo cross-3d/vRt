@@ -59,8 +59,8 @@ void main() {
             // additional validation of hit (hit point interpolated offset test)
 
             const uint chit = (hitID+1), ghit = imageAtomicMin(rayLink,r4ID,chit.x);
-            [[flatten]] if (ghit >= chit && hit.uvt.z <= fma(hits[ghit-1].uvt.z,SFO,SFN)) { // also, required range checking for correct more results
-                [[flatten]] if (imageAtomicCompSwap(rayLink,r4ID|2,0xFFFFFFFFu,chit.x) == 0xFFFFFFFFu) 
+            [[flatten]] if (ghit >= chit && hit.uvt.z <= fma(hits[ghit-1].uvt.z,1.f,SFN)) { // also, required range checking for correct more results
+                //[[flatten]] if (imageAtomicCompSwap(rayLink,r4ID|2,0xFFFFFFFFu,chit.x) == 0xFFFFFFFFu) 
                 {
                     const int pid = atomicIncPayloadHitCount();
                     hit.payloadID = pid+1;

@@ -147,9 +147,9 @@ void main() {
             // z-fighting by hashing (if fail to alpha test, back layers will still showing)
             [[flatten]] if (hrand(uvec4( vtFetchCode(rayID), stageUniform.iteration, packSnorm4x16(vec4(rdirect, 0.f)) )) <= hitp.albedo.w) {
                 const uint chit = hitID+1, ghit = imageAtomicMin(rayLink,r4ID,chit.x);
-                [[flatten]] if (ghit >= chit && hit.uvt.z <= fma(hits[ghit-1].uvt.z,SFO,SFN))  // also, required range checking for correct more results
+                [[flatten]] if (ghit >= chit && hit.uvt.z <= fma(hits[ghit-1].uvt.z,1.f,SFN))  // also, required range checking for correct more results
                 {
-                    [[flatten]] if (imageAtomicMin(rayLink,r4ID|2,chit.x) >= chit) 
+                    //[[flatten]] if (imageAtomicMin(rayLink,r4ID|2,chit.x) >= chit) 
                     {
                         int pid = atomicIncPayloadHitCount();
                         hit.payloadID = pid+1;

@@ -58,7 +58,7 @@ void main() {
 
                 // store minimal possible hit (first operation required, because MAX will haven't no effect)
                 // required for correct alpha channels support 
-                imageAtomicCompSwap(rayLink,r4ID|2,0xFFFFFFFFu,hitID+1), imageAtomicMax(rayLink,r4ID|2,hitID+1);
+                //imageAtomicCompSwap(rayLink,r4ID|2,0xFFFFFFFFu,hitID+1), imageAtomicMax(rayLink,r4ID|2,hitID+1);
                 interpolateMeshData(hitID, triID); // 
             };
 
