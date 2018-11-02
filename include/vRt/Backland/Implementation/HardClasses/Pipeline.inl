@@ -177,7 +177,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_constBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(7).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_countersBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_taskBuffer->_descriptorInfo()),
-                    
+
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(5 ).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupIndicesBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(13).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_groupIndicesBufferRead->_descriptorInfo()),
                     

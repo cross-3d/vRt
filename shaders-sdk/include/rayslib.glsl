@@ -130,10 +130,4 @@ int vtVerifyMissedHit(in int missId, in lowp int g) {
 int vtClosestId(in int id, in lowp int g) {return closestHits[(g+1)*MAX_HITS + id]-1; }
 int vtMissId(in int id, in lowp int g) { return missHits[id]-1; }
 
-
-//#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-ivec2 vtFetchTask(in int lidx) { return ivec2(imageLoad(taskList, lidx).xy)-1; }; // 
-//#endif
-
-
 #endif

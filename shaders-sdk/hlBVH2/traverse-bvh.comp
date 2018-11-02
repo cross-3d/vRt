@@ -33,7 +33,7 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    const uint wsize  = min(rayCounter, MAX_RAYS); [[flatten]] IFANY (wsize <= 0 || bvhBlockTop.primitiveCount <= 0) return;
+    const uint wsize  = min(rayCounter, MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 2097152u);
 
     // planned task-based BVH traversing (for two-level BVH support)

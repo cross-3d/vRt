@@ -56,7 +56,6 @@ void main() {
             //int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
             int hid = vtFetchHitIdc(rayID);
 
-            //[[flatten]] if (hid < 0) hid = rayID;
             { // resolve hit result 
                 [[flatten]] if (hid < 0) hid = atomicIncHitCount();
                 hit.rayID = rayID+1, hit.attribID = 0, hit.payloadID = 0;

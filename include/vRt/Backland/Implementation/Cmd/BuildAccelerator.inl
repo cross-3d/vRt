@@ -270,7 +270,7 @@ namespace _vt {
             cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
             cmdDispatch(*cmdBuf, acclb->_fitPipeline, INTENSIVITY);
         };
-        commandBarrier(*cmdBuf);
+        //commandBarrier(*cmdBuf);
 
         return result;
     };
