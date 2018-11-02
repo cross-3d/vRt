@@ -48,6 +48,7 @@ void main() {
 
         [[flatten]] if (!overflow) {
             int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
+            //[[flatten]] if (hid < 0) hid = rayID;
             //[[unroll]] for (int i=0;i<1;i++) { //[[flatten]] if (i == 0 || found) 
                 {
                     traverseState.idx = bvhBlockTop.entryID, lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 

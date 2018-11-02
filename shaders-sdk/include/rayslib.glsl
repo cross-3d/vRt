@@ -91,24 +91,18 @@ int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayI
         
         const int rID = atomicIncRayCount();
         rayID = rayID < 0 ? rID : rayID; rays[rayID] = ray;
-        
-        const int gID = atomicIncRayTypedCount(type);
-        [[flatten]] if (gID < MAX_RAYS) rayGroupIndices[MAX_RAYS*(type+1)+gID] = (rayID+1);
-        [[flatten]] if (rID < MAX_RAYS) rayGroupIndices[rID] = (rayID+1);
+        [[flatten]] if (rID < MAX_RAYS) {
+            const int gID = atomicIncRayTypedCount(type);
+            [[flatten]] if (gID < MAX_RAYS) {
+                rayGroupIndices[MAX_RAYS*(type+1)+gID] = (rayGroupIndices[rID] = (rayID+1));
+            };
+        };
     };
     [[flatten]] if (rayID >= 0 && rayID < MAX_RAYS) {
         imageStore(rayLink, (rayID<<2)|0, 0u.xxxx);
         imageStore(rayLink, (rayID<<2)|1, p2x_16(c2d).xxxx);
         imageStore(rayLink, (rayID<<2)|2, 0xFFFFFFFFu.xxxx);
         imageStore(rayLink, (rayID<<2)|3, 0u.xxxx);
-        
-        // save hit here 
-        //const int hitID = rayID;
-            //atomicIncHitCount();
-        //[[flatten]] if (hitID < MAX_HITS) {
-        //    rHIT.attribID = 0, rHIT.payloadID = 0, rHIT.rayID = rayID+1, rHIT.hitVD = 0.f.xxxx, rHIT.uvt = vec4(0.f.xx, INFINITY, FINT_ZERO);
-        //    imageStore(rayLink, (rayID<<2)|0, (hitID+1).xxxx);
-        //};
     };
     return rayID;
 };
