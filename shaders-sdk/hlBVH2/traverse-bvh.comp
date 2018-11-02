@@ -48,7 +48,7 @@ void main() {
 
         [[flatten]] if (!overflow) {
             //int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
-            int hid = vtFetchHitIdc(rayID);
+            int hid = it;//vtFetchHitIdc(rayID);
 
             //[[flatten]] if (hid < 0) hid = rayID;
             //[[unroll]] for (int i=0;i<1;i++) { //[[flatten]] if (i == 0 || found) 
@@ -62,7 +62,7 @@ void main() {
                 //traverseState.maxElements = min(traverseState.maxElements, ftrID);
 
                 { // resolve hit result 
-                    [[flatten]] if (hid < 0) hid = atomicIncHitCount();
+                    //[[flatten]] if (hid < 0) hid = atomicIncHitCount();
                     hit.rayID = rayID+1, hit.attribID = 0, hit.payloadID = 0;
                     hit.hitVD = vec4(0.f.xxx, intBitsToFloat(LAST_INSTANCE));
                     hit.uvt = primitiveState.lastIntersection;//, primitiveState.lastIntersection.w = FINT_ZERO;
@@ -70,8 +70,8 @@ void main() {
                     imageAtomicMax(rayLink,r4ID,(hid+1).x);
                     [[flatten]] if ( ftrID >= 0 ) 
                         { hit.attribID = vtVerifyClosestHit(hid,-1)+1; }
-                    else
-                    //[[flatten]] if ( ftrID < 0 ) 
+                    //else
+                    [[flatten]] if ( ftrID < 0 ) 
                         { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
 
                     /*

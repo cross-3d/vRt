@@ -5,7 +5,7 @@
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
 //#define CACHE_HIT_PAYLOAD
-#define DMA_HIT // unpreferred
+//#define DMA_HIT // unpreferred
 
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
@@ -26,12 +26,12 @@ VtHitPayload hitp;
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    const uint wsize = min(missHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS); IFANY (wsize <= 0) return;
+    const uint wsize = min(missHitTypedCounterRead[ stageUniform.currentGroup], MAX_HITS); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
     for (uint w=0;w<wcount;w+=wgs) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         const bool overflow = globalID >= wsize || globalID < 0; IFALL(overflow) break;
-        const int hitID = overflow ? -1 : vtMissId(globalID, stageUniform.currentGroup);
+        const int hitID = overflow ? -1 : vtMissId(globalID,  stageUniform.currentGroup);
 
 #ifdef DMA_HIT
         #define hit hits[hitID]
@@ -39,7 +39,6 @@ void main() {
         VtHitData hit = hits[hitID];
 #endif
 
-        uint ghit = hitID+1;
         [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0 && vtFetchHitIdc(rayID) == hitID) { // if hit is valid and not overriden
             const vec3 viewVec = dcts(cray.cdirect), rorigin = cray.origin.xyz;
             globalInvocationSMP = globalID;

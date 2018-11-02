@@ -73,6 +73,7 @@ namespace _vt {
 
         // run rays generation (if have)
         if (rtppl->_generationPipeline.size() > 0 && rtppl->_generationPipeline[0]) {
+            cmdFillBuffer<0u>(*cmdBuf, rtset->_groupCountersBufferRead);
             cmdClean(), cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform), updateCommandBarrier(*cmdBuf);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_rtLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, rtppl->_tiling.width), tiled(y, rtppl->_tiling.height));
@@ -110,6 +111,7 @@ namespace _vt {
 
                 // multiple-time traversing no more needed since added instancing 
                 //cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), sizeof(uint32_t)) });
+                //cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(1), sizeof(uint32_t), &zero); //reset collection hit counter
             }
 
             // reload to caches and reset counters (if has group shaders)
@@ -124,6 +126,9 @@ namespace _vt {
                 }
             }
             
+
+
+
             // handling hits in groups
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
                 if (rtppl->_closestHitPipeline[i]) {
@@ -141,7 +146,7 @@ namespace _vt {
             }
 
             // clear counters for pushing newer data
-            //if (hasGroupShaders) cmdFillBuffer<0u>(*cmdBuf, rtset->_countersBuffer);
+            if (hasGroupShaders) cmdFillBuffer<0u>(*cmdBuf, rtset->_countersBuffer);
 
             // use resolve shader for resolve ray output or pushing secondaries
             for (auto i = 0u; i < std::min(std::size_t(4ull), rtppl->_groupPipeline.size()); i++) {

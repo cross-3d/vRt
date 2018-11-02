@@ -143,6 +143,7 @@ namespace _vt { // store in undercover namespace
 
     // copy buffer command with inner "DeviceBuffer"
     inline void cmdCopyBuffer(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> srcBuffer, std::shared_ptr<BufferRegion> dstBuffer, std::vector<vk::BufferCopy> regions) {
+        regions[0].size = std::min(regions[0].size, std::min(dstBuffer->_size() - regions[0].dstOffset, srcBuffer->_size() - regions[0].srcOffset));
         regions[0].srcOffset += srcBuffer->_offset(), regions[0].dstOffset += dstBuffer->_offset();
         cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions);
     };
@@ -150,14 +151,16 @@ namespace _vt { // store in undercover namespace
     // copy to host buffer
     // you can't use it for form long command buffer to host
     inline void cmdCopyBufferToHost(VkCommandBuffer cmd, std::shared_ptr<BufferRegion> srcBuffer, std::shared_ptr<DeviceToHostBuffer> dstBuffer, std::vector<vk::BufferCopy> regions) {
-        regions[0].srcOffset += srcBuffer->_offset();
+        regions[0].size = std::min(regions[0].size, std::min(dstBuffer->_size() - regions[0].dstOffset, srcBuffer->_size() - regions[0].srcOffset));
+        regions[0].srcOffset += srcBuffer->_offset(), regions[0].dstOffset += dstBuffer->_offset();
         cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions, toHostCommandBarrier);
     };
 
     // copy from host buffer
     // you can't use it for form long command buffer from host
     inline void cmdCopyBufferFromHost(VkCommandBuffer cmd, std::shared_ptr<HostToDeviceBuffer> srcBuffer, std::shared_ptr<BufferRegion> dstBuffer, std::vector<vk::BufferCopy> regions) {
-        regions[0].dstOffset += dstBuffer->_offset();
+        regions[0].size = std::min(regions[0].size, std::min(dstBuffer->_size() - regions[0].dstOffset, srcBuffer->_size() - regions[0].srcOffset));
+        regions[0].srcOffset += srcBuffer->_offset(), regions[0].dstOffset += dstBuffer->_offset();
         cmdCopyBufferL(cmd, VkBuffer(*srcBuffer), VkBuffer(*dstBuffer), regions, fromHostCommandBarrier);
     };
 

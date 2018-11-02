@@ -54,10 +54,12 @@ void main() {
             const int ftrID = floatBitsToInt(LAST_INTERSECTION.w)-1;
 
             //int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
-            int hid = vtFetchHitIdc(rayID);
+            int hid = int(W);//vtFetchHitIdc(rayID);
 
             { // resolve hit result 
-                [[flatten]] if (hid < 0) hid = atomicIncHitCount();
+                //[[flatten]] if (hid < 0) hid = atomicIncHitCount();
+                //hid = atomicIncHitCount();
+                
                 hit.rayID = rayID+1, hit.attribID = 0, hit.payloadID = 0;
                 hit.hitVD = vec4(0.f.xxx, uintBitsToFloat(LAST_INSTANCE));
                 hit.uvt = LAST_INTERSECTION;
