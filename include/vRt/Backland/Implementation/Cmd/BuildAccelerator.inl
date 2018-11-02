@@ -264,7 +264,7 @@ namespace _vt {
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             };
             cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
-            if (_bvhBlockData.leafCount > 4) { // useless step for too fews 
+            if (_bvhBlockData.leafCount > workGroupSize) { // useless step for too fews 
                 cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
             };
             cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs
