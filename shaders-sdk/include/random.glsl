@@ -85,7 +85,7 @@ vec3 randomCosine(in uvec2 superseed) {
     vec2 hmsm = randf2x(superseed);
 #endif
     float up = sqrt(1.f-hmsm.x), over = sqrt(1.f - up * up), around = hmsm.y * TWO_PI;
-    return normalize(vec3( cos(around) * over, sin(around) * over, up ));
+    return normalize(vec3( cos(around) * over, up, sin(around) * over )); // 02.11.2018 updated (move up vector to Y)
 }
 
 /*
