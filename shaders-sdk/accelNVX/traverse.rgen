@@ -1,5 +1,5 @@
 #version 460 core
-#extension GL_NVX_raytracing : require
+#extension GL_NV_ray_tracing : require
 #extension GL_GOOGLE_include_directive : enable
 
 // enable it, when you will ready...
@@ -25,15 +25,15 @@
 #include "../include/structs.glsl"
 #include "../include/rayslib.glsl"
 
-struct VtCustomPayloadNVX {
+struct VtCustomPayload {
     vec4 lastIntersection;
     uvec4 binaryData128;
 };
 #define LAST_INSTANCE primitiveState.binaryData128.x
 #define LAST_INTERSECTION primitiveState.lastIntersection
 
-layout (binding  = 0, set = 1) uniform accelerationStructureNVX accelStructure;
-layout (location = 0) rayPayloadNVX VtCustomPayloadNVX primitiveState;
+layout (binding  = 0, set = 1) uniform accelerationStructureNV accelStructure;
+layout (location = 0) rayPayloadNV VtCustomPayload primitiveState;
 
 #define r4ID (rayID<<2)
 #define hit hits[hid]
@@ -41,15 +41,15 @@ layout (location = 0) rayPayloadNVX VtCustomPayloadNVX primitiveState;
 void main() {
     // planned task-based BVH traversing (for two-level BVH support)
     const uint wsize = min(rayCounter, MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
-    for (uint Wi=0u;Wi<wsize;Wi+=gl_LaunchSizeNVX.x) {
-        const uint W = gl_LaunchIDNVX.x + Wi;
+    for (uint Wi=0u;Wi<wsize;Wi+=gl_LaunchSizeNV.x) {
+        const uint W = gl_LaunchIDNV.x + Wi;
         
         const int rayID = vtRayIdx(int(W)); const bool overflow = W >= wsize; IFALL(overflow) break;
         const vec3 ORIGINAL_ORIGIN = rays[rayID].origin.xyz; const dirtype_t ORIGINAL_DIRECTION = rays[rayID].cdirect;
-        const uint rayFlags = gl_RayFlagsOpaqueNVX, cullMask = 0xff;
+        const uint rayFlags = gl_RayFlagsOpaqueNV, cullMask = 0xff;
         [[flatten]] if (!overflow) {
             //LAST_INTERSECTION = vec4(0.f.xx, INFINITY, FINT_ZERO);
-            traceNVX(accelStructure, rayFlags, cullMask, 0, 0, 0, ORIGINAL_ORIGIN, SFN, dcts(ORIGINAL_DIRECTION), INFINITY, 0);
+            traceNV(accelStructure, rayFlags, cullMask, 0, 0, 0, ORIGINAL_ORIGIN, SFN, dcts(ORIGINAL_DIRECTION), INFINITY, 0);
 
             const int ftrID = floatBitsToInt(LAST_INTERSECTION.w)-1;
 

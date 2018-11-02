@@ -1,17 +1,17 @@
 #version 460 core
-#extension GL_NVX_raytracing : require
+#extension GL_NV_ray_tracing : require
 #extension GL_GOOGLE_include_directive : enable
 
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
 
-struct VtCustomPayloadNVX {
+struct VtCustomPayload {
     vec4 lastIntersection;
     uvec4 binaryData128;
 };
 #define LAST_INSTANCE primitiveState.binaryData128
 
-layout(location = 0) rayPayloadInNVX VtCustomPayloadNVX primitiveState;
+layout(location = 0) rayPayloadInNV VtCustomPayload primitiveState;
 
 void main()
 {
