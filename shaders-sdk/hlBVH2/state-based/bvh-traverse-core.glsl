@@ -41,7 +41,7 @@ bool validIdx(inout int idx) {
     return idx >= 0 && idx >= traverseState.entryIDBase;
 };
 
-bool validIdxincluse(inout int idx) {
+bool validIdxIncluse(inout int idx) {
     return validIdx(idx) && idx != bvhBlockTop.entryID;
 };
 

@@ -3,6 +3,7 @@
 int traverseBVH2( in bool validTop ) {
     [[flatten]] if (validTop) {
         INSTANCE_ID = 0, LAST_INSTANCE = 0, currentState = uint(bvhBlockTop.primitiveCount <= 1), initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+        //INSTANCE_ID = 0, LAST_INSTANCE = 0, currentState = BVH_STATE_TOP, initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     };
     [[flatten]] if (validTop) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
         [[flatten]] if (validIdx(traverseState.idx)) {
@@ -54,16 +55,17 @@ int traverseBVH2( in bool validTop ) {
             
             // if all threads had intersection, or does not given any results, break for processing
             traverseState.idx = primary;
-            [[flatten]] if (!validIdxincluse(traverseState.idx)) { loadStack(traverseState.idx); }; // load from stack
-            IFANY (traverseState.defElementID > 0 || !validIdxincluse(traverseState.idx)) { break; };
+            [[flatten]] if (!validIdx(traverseState.idx)) { loadStack(traverseState.idx); }; // load from stack
+            IFANY (traverseState.defElementID > 0 || !validIdx(traverseState.idx)) { break; };
         }}};
         
         // every-step solving 
-        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( validTop ); };
-        [[flatten]] if (!validIdxincluse(traverseState.idx) && validIdxTop(traverseState.idxTop)) {
-            traverseState.idx = -1, switchStateTo(BVH_STATE_TOP, INSTANCE_ID, validTop);
+        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true ); };
+        [[flatten]] if (!validIdx(traverseState.idx)) {
+            [[flatten]] if (validIdxTop(traverseState.idxTop)) switchStateTo(BVH_STATE_TOP, INSTANCE_ID, true);
         };
-        [[flatten]] if (!validIdxincluse(traverseState.idx)) { break; };
+        [[flatten]] if (!validIdx(traverseState.idx)) { break; };
     };
+    currentState = uint(bvhBlockTop.primitiveCount <= 1);
     return floatBitsToInt(primitiveState.lastIntersection.w);
 };
