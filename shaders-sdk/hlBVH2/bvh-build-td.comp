@@ -94,11 +94,11 @@ void main() {
     
     // building BVH
     IFALL (asize_inv_ <= 0 && asize_ <= 0) return;
-    [[dependency_infinite]] for (int m=0;m<65536;m++) {
+    [[dependency_infinite]] for (uint m=0u;m<131072u;m++) {
         LGROUP_BARRIER
 
 #ifdef FIRST_STEP
-        IFANY ( asize>=WGS && (m&1)==1 ) break; // limit by few elements
+        IFANY ( asize>=WGS && (m&1u)==1u ) break; // limit by few elements
 #endif
 
         // swap buffers emulation

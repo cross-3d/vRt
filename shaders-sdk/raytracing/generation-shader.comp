@@ -43,7 +43,7 @@ shared VtRay lrays[64];
 void main() {
     const ivec2 wh = /*stageUniform.size.xy*/ ivec2(cameraUniform.sceneRes.xy), xy = ivec2(Launch_Idx.xy) + ivec2(0, stageUniform.size.y*partitionUniform.partID);
     //const vec2 rnd = center_p.xx;
-    const vec2 rnd = 0.5f.xx;//unorm16x2Construct(hash(uvec2(p2x_16(uvec2(xy)), 1u)));
+    const vec2 rnd = unorm16x2Construct(hash(uvec2(p2x_16(uvec2(xy)), 1u)));
     const vec2 coord = vec2(vec2(xy)+rnd)/vec2(wh);
 
     vec4 dir = vec4(0.f), orig = mult4(cameraUniform.camInv, vec4(vec3(0.0f), 1.0f)), eye = orig;

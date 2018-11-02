@@ -91,7 +91,7 @@ void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
     const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
     const mat3x4 transformNrm = mat3x4(transpose(inverse(mat4(vTransforms[inputID]))));
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {

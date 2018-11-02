@@ -30,7 +30,7 @@ void main() {
         const utype_t radice = utype_t(rk) + utype_t(Radice_Idx);
         [[flatten]] if (radice < RADICES) localHistogram[radice+0u] = 0u;
     };
-    [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 524288u);
+    [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 1048576u);
     LGROUP_BARRIER
     [[flatten]] IFANY (bcount <= 0) return;
 

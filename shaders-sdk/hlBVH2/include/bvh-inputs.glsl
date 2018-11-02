@@ -55,23 +55,22 @@ layout ( binding = 2, set = 0, std430 ) readonly restrict buffer BuildConstB {
 
 // precision control of boxes
 #ifndef fpInner
-//const float fpInner = InZero;
 #define fpInner InZero
 #endif
 
-//#define fpCorrect 0.0000152587890625f
-const float fpCorrect = 0.0000152587890625f;
+#define fpCorrect 0.0000152587890625f
+//const float fpCorrect = 0.0000152587890625f;
 
 bbox_t calcTriBox(in mat3x4 triverts) {
     bbox_t result;
-    result.mn = -fpInner + min3_wrap(triverts[0], triverts[1], triverts[2]);
-    result.mx =  fpInner + max3_wrap(triverts[0], triverts[1], triverts[2]);
+    result.mn = -float(fpInner) + min3_wrap(triverts[0], triverts[1], triverts[2]);
+    result.mx =  float(fpInner) + max3_wrap(triverts[0], triverts[1], triverts[2]);
     return result;
 };
 
 bbox_t calcTriBox(in mat3x4 triverts, in vec4 vRange) {
     bbox_t result;
-    result.mn = fma(vRange, -fpInner.xxxx, min3_wrap(triverts[0], triverts[1], triverts[2]));
-    result.mx = fma(vRange, +fpInner.xxxx, max3_wrap(triverts[0], triverts[1], triverts[2]));
+    result.mn = fma(vRange, -float(fpInner).xxxx, min3_wrap(triverts[0], triverts[1], triverts[2]));
+    result.mx = fma(vRange, +float(fpInner).xxxx, max3_wrap(triverts[0], triverts[1], triverts[2]));
     return result;
 };

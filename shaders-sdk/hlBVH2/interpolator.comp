@@ -35,7 +35,7 @@ LOCAL_SIZE_LAYOUT;
 // TODO: support of custom attribute shaders 
 void main() {
     const uint wsize = min(closestHitCounterCurrent, MAX_HITS); IFANY (wsize <= 0) return;
-    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
 
     // accumulate closest hits
     [[flatten]] if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(closestHitCounter, closestHitCounterCurrent); }

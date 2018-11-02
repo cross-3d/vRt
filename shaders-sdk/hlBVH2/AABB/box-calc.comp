@@ -46,7 +46,7 @@ bbox_t calculateTransformedBox(in uint rI, in uint T, in vec4 bnds[2]) {
 
 // TODO: complete transformations support
 void main() {
-    IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 1000000u);
+    IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         const uint I = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x, rI = buildBlock.primitiveOffset+I; IFALL (I >= wsize) break;
         [[flatten]] if (I < wsize) {

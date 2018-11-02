@@ -53,7 +53,7 @@ void main() {
     for (uint w=gS*gl_WorkGroupID.x;w<wsize;w+=rng) {
         const uint globalID = (w + lID); IFALL (globalID >= wsize) break; // add to queue list parent node
                int idx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
-        [[dependency_infinite]] for (int l=0;l<65536;l++) {
+        [[dependency_infinite]] for (uint l=0u;l<131072u;l++) {
             [[flatten]] if ( idx < 0 || idx == _NULL ) { break; };
             const int pid = (idx >= 0 ? bvhNodes[idx].meta.z : 0)-1; idx = _NULL;
             [[flatten]] if ( pid >= 0 ) { int ecp = 0; ecp = atomicCompSwap(Flags[pid], 0, 1); idx = (ecp == 1 && ecp != 0) ? pid : _NULL; } else { idx = _NULL; };
