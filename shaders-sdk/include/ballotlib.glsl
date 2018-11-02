@@ -73,7 +73,7 @@ void bPrefixSum(in bvec4 val, inout lowp uvec4 sums, inout lowp uvec4 pfxs) {
 T fname() {\
     const lowp uvec2 pfx = bPrefixSum();\
     T gadd = 0;\
-    if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
+    [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 }
 /*
@@ -88,7 +88,7 @@ T fname(in uint WHERE) {\
 T fname(in uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
     T gadd = 0;\
-    if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
+    [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 }
 //#endif
@@ -99,7 +99,7 @@ T fname(in uint WHERE) {\
 T fname(in uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
     T gadd = 0;\
-    if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));}\
+    [[flatten]] if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));}\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 }
 
