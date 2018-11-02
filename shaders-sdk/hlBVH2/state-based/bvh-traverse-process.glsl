@@ -1,10 +1,8 @@
 
 // 
 int traverseBVH2( in bool validTop ) {
-    [[flatten]] if (validTop) {
-        INSTANCE_ID = 0, LAST_INSTANCE = 0, currentState = uint(bvhBlockTop.primitiveCount <= 1), initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
-        //INSTANCE_ID = 0, LAST_INSTANCE = 0, currentState = BVH_STATE_TOP, initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
-    };
+    INSTANCE_ID = 0, LAST_INSTANCE = 0, currentState = uint(bvhBlockTop.primitiveCount <= 1);
+    [[flatten]] if (validTop) { initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION); } else { traverseState.idx = -1; };
     [[flatten]] if (validTop) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
         [[flatten]] if (validIdx(traverseState.idx)) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) {
@@ -66,6 +64,6 @@ int traverseBVH2( in bool validTop ) {
         };
         [[flatten]] if (!validIdx(traverseState.idx)) { break; };
     };
-    currentState = uint(bvhBlockTop.primitiveCount <= 1);
+    //currentState = uint(bvhBlockTop.primitiveCount <= 1);
     return floatBitsToInt(primitiveState.lastIntersection.w);
 };
