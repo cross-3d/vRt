@@ -34,21 +34,16 @@ void resetEntry(in bool VALID) {
 
 
 bool validIdxTop(inout int idx) {
-    return bvhBlockTop.primitiveCount > 1 && bvhBlockTop.entryID >= 0 && idx > bvhBlockTop.entryID && (idx-bvhBlockTop.entryID)<(bvhBlockTop.leafCount<<1) && idx >= 0 && idx != -1;
+    return idx >= 0 && idx > bvhBlockTop.entryID;
 };
 
 bool validIdx(inout int idx) {
-    //return traverseState.entryIDBase >= 0 && idx >= traverseState.entryIDBase && (idx-traverseState.entryIDBase)<(MAX_ELEMENTS<<1) && idx >= 0 && idx != -1;
-    return !(idx < traverseState.entryIDBase || idx < 0 || idx == -1);
+    return idx >= 0 && idx >= traverseState.entryIDBase;
 };
 
 bool validIdxincluse(inout int idx) {
-    return idx != bvhBlockTop.entryID && validIdx(idx);
+    return validIdx(idx) && idx != bvhBlockTop.entryID;
 };
-
-//bool invalidateStatus(inout int idx) {
-//    return idx == bvhBlockTop.entryID || idx < traverseState.entryIDBase || idx < 0 || idx == -1;
-//};
 
 
 vec4 uniteBoxLv(in vec4 pt) {
