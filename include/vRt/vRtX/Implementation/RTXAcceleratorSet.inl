@@ -60,16 +60,28 @@ namespace _vt {
             VkMemoryRequirements2 mRequirements = vk::MemoryRequirements2{};
             vkGetAccelerationStructureMemoryRequirementsNVX(*accelSet->_device, &sMem, &mRequirements);
 
-            // allocate by VMA 
-            VmaAllocationCreateInfo vmaAlloc = {};
-            vmaAlloc.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-            vmaAllocateMemory(accelSet->_device->_allocator, &mRequirements.memoryRequirements, &vmaAlloc, &_vmaAllocation, &_vmaAllocationInfo);
-
-            // bind memory with acceleration structure 
+            // 
             VkBindAccelerationStructureMemoryInfoNVX mBind = vk::BindAccelerationStructureMemoryInfoNVX{};
             mBind.accelerationStructure = _accelStructureNVX;
-            mBind.memory = _vmaAllocationInfo.deviceMemory;
-            mBind.memoryOffset = _vmaAllocationInfo.offset;
+
+            if (mRequirements.memoryRequirements.size > accelSet->_bvhBoxBuffer->_size() || !accelSet->_bvhBoxBuffer->_boundBuffer.lock()) {
+                // allocate by VMA 
+                VmaAllocationCreateInfo vmaAlloc = {};
+                vmaAlloc.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+                vmaAllocateMemory(accelSet->_device->_allocator, &mRequirements.memoryRequirements, &vmaAlloc, &_vmaAllocation, &_vmaAllocationInfo);
+
+                // bind memory with acceleration structure 
+                mBind.memory = _vmaAllocationInfo.deviceMemory;
+                mBind.memoryOffset = _vmaAllocationInfo.offset;
+            }
+            else {
+                // bind memory with acceleration structure
+                auto cbuffer = accelSet->_bvhBoxBuffer->_boundBuffer.lock();
+                mBind.memory = cbuffer->_allocationInfo.deviceMemory;
+                mBind.memoryOffset = cbuffer->_allocationInfo.offset + accelSet->_bvhBoxBuffer->_offset();
+            };
+
+            // bind memory 
             vkBindAccelerationStructureMemoryNVX(*accelSet->_device, 1, &mBind);
         };
 
