@@ -76,7 +76,10 @@ namespace vrt { // store in official namespace
         VT_VENDOR_UNIVERSAL = 0,
         VT_VENDOR_AMD,
         VT_VENDOR_NVIDIA,
-        VT_VENDOR_INTEL
+        VT_VENDOR_INTEL,
+
+        VT_VENDOR_AMD_VEGA,
+        VT_VENDOR_NV_TURING,
     } VtVendor;
 
     typedef enum VtAccelerationName : uint32_t {

@@ -47,10 +47,14 @@ namespace _vt {
             gpu.getProperties2((vk::PhysicalDeviceProperties2*)&features->_properties); // 
         };
 
-
+        // only next-gen GPU can have native uint16_t support
+        if (vtDevice->_features->_features.features.shaderInt16) {
+            if (vtDevice->_vendorName == VT_VENDOR_AMD) vtDevice->_vendorName = VT_VENDOR_AMD_VEGA;
+            if (vtDevice->_vendorName == VT_VENDOR_NVIDIA) vtDevice->_vendorName = VT_VENDOR_NV_TURING;
+        };
 
         
-        
+
 
 
         VtResult result = VK_SUCCESS;

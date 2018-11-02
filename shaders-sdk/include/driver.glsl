@@ -23,9 +23,11 @@
 #extension GL_ARB_gpu_shader_int64 : enable
 #extension GL_EXT_shader_atomic_int64 : enable
 #extension GL_EXT_shader_8bit_storage : enable
+#extension GL_EXT_shader_16bit_storage : enable
 #extension GL_EXT_control_flow_attributes : enable
 #extension GL_EXT_shader_image_load_formatted : enable
 #extension GL_KHR_memory_scope_semantics : enable // no actual support
+#extension GL_KHX_shader_explicit_arithmetic_types : enable
 
 // subgroup operations
 #extension GL_KHR_shader_subgroup_basic            : require
@@ -79,15 +81,6 @@
 // if int16 no supported, use plain int32
 #ifndef ENABLE_INT16_SUPPORT
     #undef USE_INT16_FOR_MORTON
-#endif
-
-// enable 16-bit strictly
-#if (defined(ENABLE_FP16_SUPPORT) || defined(ENABLE_INT16_SUPPORT))
-#extension GL_KHX_shader_explicit_arithmetic_types : require
-#extension GL_EXT_shader_16bit_storage : require
-#else
-#extension GL_KHX_shader_explicit_arithmetic_types : enable
-#extension GL_EXT_shader_16bit_storage : enable
 #endif
 
 // platform-oriented compute

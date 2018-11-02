@@ -5,7 +5,7 @@
 namespace _vt {
     using namespace vrt;
     
-    static inline const std::array<std::string, 4> pathNames{ "universal", "amd", "nvidia", "intel" };
+    static inline const std::array<std::string, 6> pathNames{ "universal", "amd", "nvidia", "intel", "vega", "turing" };
 
     namespace hlbvh2 {
         static inline constexpr const auto builderFirst = "hlBVH2/bvh-build-first.comp";

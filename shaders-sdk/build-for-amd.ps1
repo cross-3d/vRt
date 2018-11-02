@@ -1,0 +1,1 @@
+LegacyGPU/build-for-amd.ps1
