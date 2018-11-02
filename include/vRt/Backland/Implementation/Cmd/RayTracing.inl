@@ -89,6 +89,9 @@ namespace _vt {
 
             // run traverse processing (single accelerator supported at now)
             if (vertx && vertx->_calculatedPrimitiveCount > 0) {
+                if (vertx->_descriptorSetGenerator) vertx->_descriptorSetGenerator();
+                if (accel->_descriptorSetGenerator) accel->_descriptorSetGenerator();
+
                 // reset hit counter before new intersections
                 auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
                 cmdFillBuffer<-1>(*cmdBuf, rtset->_traverseCache);

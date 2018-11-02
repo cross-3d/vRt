@@ -233,6 +233,7 @@ namespace _vt { // store in undercover namespace
 
         // input of vertex source data 
         std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs = {};
+        std::function<void()> _descriptorSetGenerator = {};
 
         // primitive count 
         uint32_t _calculatedPrimitiveCount = 0;
@@ -271,6 +272,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
         std::shared_ptr<BufferRegion> _bvhBoxBuffer = {}, _bvhHeadingBuffer = {}; // 
         std::shared_ptr<BufferRegion> _bvhHeadingInBuffer = {}, _bvhInstancedBuffer = {}, _bvhTransformBuffer = {}; // shared buffer with multiple BVH data 
+        std::function<void()> _descriptorSetGenerator = {};
 
         // planned to rework building system  
         VtAcceleratorSetLevel _level = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
@@ -529,9 +531,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _uniformBlockBuffer = {}; // binding of uniform arrays
         std::shared_ptr<AssemblyPipeline> _attributeAssembly = {}; //
         std::shared_ptr<DeviceBuffer> _inlineTransformBuffer = {}; // if have no required
-
-        // TODO: RTX capable buffers 
-        // Will contains of single VkGeometryTrianglesNVX 
+        std::function<void()> _descriptorSetGenerator = {};
 
         auto  _parent() const { return _device; };
         auto& _parent() { return _device; };

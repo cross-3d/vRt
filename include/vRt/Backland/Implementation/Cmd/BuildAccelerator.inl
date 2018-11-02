@@ -69,11 +69,13 @@ namespace _vt {
         updateCommandBarrier(*cmdBuf);
 
         vertx->_calculatedPrimitiveCount = calculatedPrimitiveCount;
+        if (vertx->_descriptorSetGenerator) vertx->_descriptorSetGenerator();
         if (useInstance) {
             const uint32_t _bnd = 0, _szi = cmdBuf->_vertexInputs.size();
             auto iV = cmdBuf->_vertexInputs[_bnd];
 
             // native descriptor sets
+            if (iV->_descriptorSetGenerator) iV->_descriptorSetGenerator();
             std::vector<VkDescriptorSet> _sets = { device->_emptyDS, iV->_descriptorSet, vertx->_descriptorSet };
 
             // user defined descriptor sets
@@ -91,6 +93,7 @@ namespace _vt {
                 const uint32_t _bnd = _bndc++;
 
                 // native descriptor sets
+                if (iV->_descriptorSetGenerator) iV->_descriptorSetGenerator();
                 std::vector<VkDescriptorSet> _sets = { device->_emptyDS, iV->_descriptorSet, vertx->_descriptorSet };
 
                 // user defined descriptor sets
@@ -138,6 +141,7 @@ namespace _vt {
         } _bndc = 0;
         updateCommandBarrier(*cmdBuf);
         
+        if (vertx->_descriptorSetGenerator) vertx->_descriptorSetGenerator();
         if (useInstance || !multiple) {
             const uint32_t _bnd = inputSet;
             const uint32_t _szi = cmdBuf->_vertexInputs.size() - inputSet;
@@ -146,6 +150,8 @@ namespace _vt {
             // native descriptor sets
             const auto pLayout = (iV->_attributeAssembly ? iV->_attributeAssembly : vasmp)->_pipelineLayout;
             //auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
+
+            if (iV->_descriptorSetGenerator) iV->_descriptorSetGenerator(); // generate descriptor set
             std::vector<VkDescriptorSet> _sets = { device->_emptyDS, iV->_descriptorSet, vertx->_descriptorSet };
 
             // user defined descriptor sets
@@ -164,6 +170,8 @@ namespace _vt {
                     // native descriptor sets
                     const auto pLayout = (iV->_attributeAssembly ? iV->_attributeAssembly : vasmp)->_pipelineLayout;
                     //auto vertb = iV->_vertexAssembly ? iV->_vertexAssembly : vertbd;
+
+                    if (iV->_descriptorSetGenerator) iV->_descriptorSetGenerator(); // generate descriptor set
                     std::vector<VkDescriptorSet> _sets = { device->_emptyDS, iV->_descriptorSet, vertx->_descriptorSet };
 
                     // user defined descriptor sets
@@ -242,6 +250,7 @@ namespace _vt {
             updateCommandBarrier(*cmdBuf);
 
             const auto workGroupSize = 16u;
+            if (accel->_descriptorSetGenerator) accel->_descriptorSetGenerator();
             std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet };
             if (vertx && accel->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY) _sets.push_back(vertx->_descriptorSet);
             

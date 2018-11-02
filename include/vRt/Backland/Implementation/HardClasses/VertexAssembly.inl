@@ -27,6 +27,7 @@ namespace _vt {
     };
 
     VertexAssemblySet::~VertexAssemblySet() {
+        _descriptorSetGenerator = {};
         if (_descriptorSet) vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
         _descriptorSet = {};
     };
@@ -114,36 +115,39 @@ namespace _vt {
             };
         };
 
-        { // create desciptor set
-            auto vkDevice = _vtDevice->_device;
+        _assemblySet->_descriptorSetGenerator = [=]() { // create caller for generate descriptor set
+            if (!_assemblySet->_descriptorSet) { // create desciptor set
+                auto vkDevice = _vtDevice->_device;
 
-            std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
+                std::vector<vk::DescriptorSetLayout> dsLayouts = {
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
+                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]),
+                };
+                const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                _assemblySet->_descriptorSet = std::move(dsc[0]);
+
+                vk::Sampler attributeSampler = vk::Device(vkDevice).createSampler(vk::SamplerCreateInfo()
+                    .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
+                    .setMagFilter(vk::Filter::eNearest).setMinFilter(vk::Filter::eNearest).setAddressModeU(vk::SamplerAddressMode::eRepeat)
+                    //.setMagFilter(vk::Filter::eLinear ).setMinFilter(vk::Filter::eLinear ).setAddressModeU(vk::SamplerAddressMode::eClampToEdge).setUnnormalizedCoordinates(VK_TRUE)
+                );
+
+                const auto writeTmpl = vk::WriteDescriptorSet(_assemblySet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+                const auto attrbView = vk::DescriptorImageInfo(info.sharedAttributeImageDescriptor.imageView ? info.sharedAttributeImageDescriptor : _assemblySet->_attributeTexelBuffer->_descriptorInfo()).setSampler(attributeSampler);
+                std::vector<vk::WriteDescriptorSet> writes = {
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_countersBuffer->_descriptorInfo()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_materialBuffer->_descriptorInfo()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_bitfieldBuffer->_descriptorInfo()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_verticeBufferCached->_bufferView()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo((vk::DescriptorImageInfo*)&_assemblySet->_attributeTexelBuffer->_descriptorInfo()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_verticeBufferInUse->_bufferView()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&attrbView),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(7).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_normalBuffer->_bufferView()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_indexBuffer->_bufferView()),
+                };
+                vk::Device(vkDevice).updateDescriptorSets(writes, {});
             };
-            const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-            _assemblySet->_descriptorSet = std::move(dsc[0]);
-
-            vk::Sampler attributeSampler = vk::Device(vkDevice).createSampler(vk::SamplerCreateInfo()
-                .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
-                .setMagFilter(vk::Filter::eNearest).setMinFilter(vk::Filter::eNearest).setAddressModeU(vk::SamplerAddressMode::eRepeat)
-                //.setMagFilter(vk::Filter::eLinear ).setMinFilter(vk::Filter::eLinear ).setAddressModeU(vk::SamplerAddressMode::eClampToEdge).setUnnormalizedCoordinates(VK_TRUE)
-            );
-
-            const auto writeTmpl = vk::WriteDescriptorSet(_assemblySet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
-            const auto attrbView = vk::DescriptorImageInfo( info.sharedAttributeImageDescriptor.imageView ? info.sharedAttributeImageDescriptor : _assemblySet->_attributeTexelBuffer->_descriptorInfo() ).setSampler(attributeSampler);
-            std::vector<vk::WriteDescriptorSet> writes = {
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eStorageBuffer).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_countersBuffer->_descriptorInfo()),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_materialBuffer->_descriptorInfo()),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_bitfieldBuffer->_descriptorInfo()),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_verticeBufferCached->_bufferView()),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setDescriptorType(vk::DescriptorType::eStorageImage).setPImageInfo((vk::DescriptorImageInfo*)&_assemblySet->_attributeTexelBuffer->_descriptorInfo()),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_verticeBufferInUse->_bufferView()),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&attrbView),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(7).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_normalBuffer->_bufferView()),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_indexBuffer->_bufferView()),
-            };
-            vk::Device(vkDevice).updateDescriptorSets(writes, {});
+            _assemblySet->_descriptorSetGenerator = {};
         };
 
 

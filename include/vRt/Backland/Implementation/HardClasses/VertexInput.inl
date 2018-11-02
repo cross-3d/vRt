@@ -7,6 +7,7 @@ namespace _vt {
     using namespace vrt;
 
     VertexInputSet::~VertexInputSet() {
+        _descriptorSetGenerator = {};
         if (_descriptorSet) vk::Device(VkDevice(*_device)).freeDescriptorSets(_device->_descriptorPool, { vk::DescriptorSet(_descriptorSet) });
         _descriptorSet = {};
     };
@@ -48,42 +49,48 @@ namespace _vt {
         for (auto i = 0u; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }
         for (auto i = sourceBufferCount; i < inputCount; i++) { sourceBuffers.push_back(sourceBuffers[sourceBufferCount-1]); }
 
-
         if (!info.bitfieldDetail.secondary) {
+            vtVertexInput->_descriptorSetGenerator = [=]() { // create caller for generate descriptor set
+                if (!vtVertexInput->_descriptorSet) {
 
-            // create descriptor sets
-            std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
-            const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-            vtVertexInput->_descriptorSet = std::move(dsc[0]);
+                    // create descriptor sets
+                    std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
+                    const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                    vtVertexInput->_descriptorSet = std::move(dsc[0]);
 
-            // write descriptors
-             auto d1 = vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset);
-             auto d2 = vk::DescriptorBufferInfo(info.bBufferViews, 0, VK_WHOLE_SIZE).setOffset(info.bufferViewByteOffset);
-             auto d3 = vk::DescriptorBufferInfo(info.bBufferAccessors, 0, VK_WHOLE_SIZE).setOffset(info.bufferAccessorByteOffset);
-             auto d4 = vk::DescriptorBufferInfo(info.bBufferAttributeBindings, 0, VK_WHOLE_SIZE).setOffset(info.attributeByteOffset);
-             auto d5 = vk::DescriptorBufferInfo(vtVertexInput->_uniformBlockBuffer->_descriptorInfo());
-             auto d6 = vk::DescriptorBufferInfo(info.bTransformData, 0, VK_WHOLE_SIZE).setOffset(info.transformOffset);
+                    // write descriptors
+                    auto d1 = vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset);
+                    auto d2 = vk::DescriptorBufferInfo(info.bBufferViews, 0, VK_WHOLE_SIZE).setOffset(info.bufferViewByteOffset);
+                    auto d3 = vk::DescriptorBufferInfo(info.bBufferAccessors, 0, VK_WHOLE_SIZE).setOffset(info.bufferAccessorByteOffset);
+                    auto d4 = vk::DescriptorBufferInfo(info.bBufferAttributeBindings, 0, VK_WHOLE_SIZE).setOffset(info.attributeByteOffset);
+                    auto d5 = vk::DescriptorBufferInfo(vtVertexInput->_uniformBlockBuffer->_descriptorInfo());
+                    auto d6 = vk::DescriptorBufferInfo(info.bTransformData, 0, VK_WHOLE_SIZE).setOffset(info.transformOffset);
 
-            // inline transform buffer create
-            if (!d6.buffer) {
-                VtDeviceBufferCreateInfo dbi = {};
-                dbi.bufferSize = 16ull * sizeof(float);
-                createBuffer(_vtDevice, dbi, vtVertexInput->_inlineTransformBuffer); // TODO - add support of constant shared buffer
-                d6.setBuffer(vtVertexInput->_inlineTransformBuffer->_buffer);
+                    // inline transform buffer create
+                    if (!d6.buffer) {
+                        VtDeviceBufferCreateInfo dbi = {};
+                        dbi.bufferSize = 16ull * sizeof(float);
+                        createBuffer(_vtDevice, dbi, vtVertexInput->_inlineTransformBuffer); // TODO - add support of constant shared buffer
+                        d6.setBuffer(vtVertexInput->_inlineTransformBuffer->_buffer);
+                    };
+
+                    // 
+                    const auto writeTmpl = vk::WriteDescriptorSet(vtVertexInput->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+                    std::vector<vk::WriteDescriptorSet> writes = {
+                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(inputCount).setPTexelBufferView(sourceBuffers.data()),
+                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(&d1),
+                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo(&d2),
+                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo(&d3),
+                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setPBufferInfo(&d4),
+                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setPBufferInfo(&d5),
+                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setPBufferInfo(&d6),
+                    };
+                    vk::Device(vkDevice).updateDescriptorSets(writes, {});
+                };
+
+                // was generated, flush
+                vtVertexInput->_descriptorSetGenerator = {};
             };
-
-            // 
-            const auto writeTmpl = vk::WriteDescriptorSet(vtVertexInput->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
-            std::vector<vk::WriteDescriptorSet> writes = {
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(inputCount).setPTexelBufferView(sourceBuffers.data()),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(&d1),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo(&d2),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo(&d3),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setPBufferInfo(&d4),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setPBufferInfo(&d5),
-                vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setPBufferInfo(&d6),
-            };
-            vk::Device(vkDevice).updateDescriptorSets(writes, {});
         };
 
         return result;
