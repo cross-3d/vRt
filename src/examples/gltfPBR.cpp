@@ -688,6 +688,7 @@ namespace rnd {
                 dii.layout = VK_IMAGE_LAYOUT_GENERAL;
                 dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
                 dii.size = { uint32_t(I.width), uint32_t(I.height), 1 };
+                dii.layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                 vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
                 writeIntoImage<uint8_t>(deviceQueue, I.image, image, 0);
             }
@@ -702,6 +703,7 @@ namespace rnd {
             dii.layout = VK_IMAGE_LAYOUT_GENERAL;
             dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
             dii.size = { 2, 2, 1 };
+            dii.layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
             vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
         };
 

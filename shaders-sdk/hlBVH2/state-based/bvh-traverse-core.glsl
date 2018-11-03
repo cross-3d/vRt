@@ -15,7 +15,7 @@ struct PrimitiveState {
 
 // used for re-init traversing 
 vec3 ORIGINAL_ORIGIN = vec3(0.f); dirtype_t ORIGINAL_DIRECTION = dirtype_t(0);
-int LAST_INSTANCE = 0, MAX_ELEMENTS = 0;
+int LAST_INSTANCE = 0;//, MAX_ELEMENTS = 0;
 
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1 && (currentState == BVH_STATE_TOP || mem.x <= traverseState.maxElements); };
@@ -23,7 +23,7 @@ bool isnLeaf(in ivec2 mem) { return mem.x!=mem.y && mem.x >= 1; };
 
 
 void resetEntry(in bool VALID) {
-    VALID = VALID && INSTANCE_ID >= 0, MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0, VALID = VALID && MAX_ELEMENTS > 0;
+    VALID = VALID && INSTANCE_ID >= 0;//, MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0, VALID = VALID && MAX_ELEMENTS > 0;
     traverseState.defElementID = 0, traverseState.diffOffset = floatBitsToInt(0.f);
     traverseState.entryIDBase = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.entryID : bvhBlockIn.entryID) : -1;
     [[flatten]] if (currentState == BVH_STATE_BOTTOM || !VALID) {
@@ -76,8 +76,8 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 
     // initial traversing state
 #ifdef EXPERIMENTAL_UNORM16_BVH
-    [[flatten]] if ((currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) > 1) {
-        valid = valid && intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe);
+    [[flatten]] if (valid) {
+        valid = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe);
     };
 #endif
     resetEntry(valid);
