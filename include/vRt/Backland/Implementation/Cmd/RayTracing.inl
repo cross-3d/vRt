@@ -146,7 +146,7 @@ namespace _vt {
             }
 
             // clear counters for pushing newer data
-            if (hasGroupShaders) cmdFillBuffer<0u>(*cmdBuf, rtset->_countersBuffer);
+            //if (hasGroupShaders) cmdFillBuffer<0u>(*cmdBuf, rtset->_countersBuffer);
 
             // use resolve shader for resolve ray output or pushing secondaries
             for (auto i = 0u; i < std::min(std::size_t(4ull), rtppl->_groupPipeline.size()); i++) {

@@ -32,13 +32,14 @@
 
 LOCAL_SIZE_LAYOUT;
 
-// TODO: support of custom attribute shaders 
+// can be replaced by custom interpolation shader with custom vertex assembly pipeline
 void main() {
     const uint wsize = min(closestHitCounterCurrent, MAX_HITS); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
+    const uint hitGroupDirection = 0u;
 
     // accumulate closest hits
-    [[flatten]] if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(closestHitCounter, closestHitCounterCurrent); }
+    [[flatten]] if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(closestHitCounter, closestHitCounterCurrent), atomicAdd(closestHitTypedCounter[hitGroupDirection], closestHitCounterCurrent); }
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         const bool overflow = globalID >= wsize; IFALL(overflow) break;
@@ -65,7 +66,9 @@ void main() {
             // re-group hit 
             //const lowp uint rID = floatBitsToUint(hit.hitVD.w);
             //[[unroll]] for (lowp int i=0;i<4;i++) { [[flatten]] if (rID == i) { vtVerifyClosestHit(hitID, i); break; }; };
-            vtVerifyClosestHit(hitID, 0); // use only one hit group (fast-mode)
+            const uint gPrefix = (1+hitGroupDirection)*MAX_HITS;
+            closestHits[gPrefix + globalID] = hitID+1;
+            //vtVerifyClosestHit(hitID, 0); // use only one hit group (fast-mode)
         };
     };
 };

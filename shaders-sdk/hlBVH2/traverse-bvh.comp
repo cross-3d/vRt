@@ -46,7 +46,7 @@ void main() {
         //currentState = BVH_STATE_TOP, traverseState.idx = -1, traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
         traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
 
-        [[flatten]] if (!overflow) {
+        [[flatten]] if (!overflow && rayID >= 0) {
             //int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
             int hid = it;//vtFetchHitIdc(rayID);
 
@@ -70,8 +70,8 @@ void main() {
                     imageAtomicMax(rayLink,r4ID,(hid+1).x);
                     [[flatten]] if ( ftrID >= 0 ) 
                         { hit.attribID = vtVerifyClosestHit(hid,-1)+1; }
-                    //else
-                    [[flatten]] if ( ftrID < 0 ) 
+                    else
+                    //[[flatten]] if ( ftrID < 0 ) 
                         { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
 
                     /*

@@ -86,9 +86,8 @@ int atomicIncAttribCount() {return atomicIncVtCounters(7);}
 
 #define rHIT hits[hitID]
 int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayID) {
-    [[flatten]] if (max3_vec(f16_f32(ray.dcolor)) >= 1e-3f) {
+    [[flatten]] if (max3_vec(f16_f32(ray.dcolor)) >= 1e-4f) {
         parameteri(RAY_TYPE, ray.dcolor.y, int(type));
-        
         const int rID = atomicIncRayCount();
         rayID = rayID < 0 ? rID : rayID; rays[rayID] = ray;
         [[flatten]] if (rID < MAX_RAYS) {
@@ -116,19 +115,19 @@ int vtFetchHitClosest(in int lidx) { return vtFetchHitIdc(lidx); };
 //
 uint vtFetchCode(in int lidx) { return imageLoad(rayLink, (lidx<<2)|1).x; };
 highp uvec2 vtFetchIndex(in int lidx) { return up2x_16(vtFetchCode(lidx)); };
-int vtRayIdx(in int lidx) { return rayGroupIndices[lidx]-1; };
+int vtRayIdx(in int lidx) { return (lidx >= 0 && lidx < MAX_RAYS ? rayGroupIndices[lidx] : 0)-1; };
 
 int vtVerifyClosestHit(in int closestId, in lowp int g) {
     const int id = g < 0 ? atomicIncClosestHitCount() : atomicIncClosestHitTypedCount(g);
-    [[flatten]] if (id < MAX_HITS) closestHits[(g+1)*MAX_HITS + id] = closestId+1; return id;
+    [[flatten]] if (id >= 0 && id < MAX_HITS) closestHits[(g+1)*MAX_HITS + id] = closestId+1; return id;
 };
 
 int vtVerifyMissedHit(in int missId, in lowp int g) {
     const int id = atomicIncMissHitTypedCount(g);
-    [[flatten]] if (id < MAX_HITS) missHits[id] = missId+1; return id;
+    [[flatten]] if (id >= 0 && id < MAX_HITS) missHits[id] = missId+1; return id;
 };
 
-int vtClosestId(in int id, in lowp int g) {return closestHits[(g+1)*MAX_HITS + id]-1; }
-int vtMissId(in int id, in lowp int g) { return missHits[id]-1; }
+int vtClosestId(in int id, in lowp int g) {return (id >= 0 && id < MAX_HITS ? closestHits[(g+1)*MAX_HITS + id] : 0)-1; };
+int vtMissId(in int id, in lowp int g) { return (id >= 0 && id < MAX_HITS ? missHits[id] : 0)-1; };
 
 #endif
