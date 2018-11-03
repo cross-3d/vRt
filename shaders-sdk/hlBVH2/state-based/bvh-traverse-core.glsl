@@ -26,8 +26,7 @@ void resetEntry(in bool VALID) {
     VALID = VALID && INSTANCE_ID >= 0, MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0, VALID = VALID && MAX_ELEMENTS > 0;
     traverseState.defElementID = 0, traverseState.diffOffset = floatBitsToInt(0.f);
     traverseState.entryIDBase = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.entryID : bvhBlockIn.entryID) : -1;
-
-    [[flatten]] if (currentState == BVH_STATE_BOTTOM) {
+    [[flatten]] if (currentState == BVH_STATE_BOTTOM || !VALID) {
         traverseState.idx = traverseState.entryIDBase, traverseState.stackPtr = 0, traverseState.pageID = 0, lstack[sidx] = -1;
     };
 };

@@ -44,7 +44,7 @@ void main() {
         // planned multiple-hits support
         ORIGINAL_ORIGIN = rays[rayID].origin.xyz, ORIGINAL_DIRECTION = rays[rayID].cdirect;
         //currentState = BVH_STATE_TOP, traverseState.idx = -1, traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
-        traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+        traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO), traverseState.idx = -1, traverseState.entryIDBase = -1;
 
         [[flatten]] if (!overflow && rayID >= 0) {
             //int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
@@ -53,7 +53,7 @@ void main() {
             //[[flatten]] if (hid < 0) hid = rayID;
             //[[unroll]] for (int i=0;i<1;i++) { //[[flatten]] if (i == 0 || found) 
                 {
-                    traverseState.defElementID = -1, traverseState.idx = bvhBlockTop.entryID, lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
+                    traverseState.defElementID = -1, traverseState.idx = (traverseState.entryIDBase = bvhBlockTop.entryID), lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
                     traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = -1;
                 };
 

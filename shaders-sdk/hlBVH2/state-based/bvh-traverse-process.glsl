@@ -2,11 +2,11 @@
 // 
 int traverseBVH2( in bool validTop ) {
     INSTANCE_ID = 0, LAST_INSTANCE = 0, currentState = uint(bvhBlockTop.primitiveCount <= 1);
-    [[flatten]] if (validTop) { initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION); } else { traverseState.idx = -1; };
-    [[flatten]] if (validTop) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
+    initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+    
+    [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
         [[flatten]] if (validIdx(traverseState.idx)) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) {
-            //IFANY (traverseState.idx < 0 || traverseState.defElementID > 0) { break; }; // 
 
             int primary = -1;
             #define bvhNode bvhNodes[traverseState.idx]
@@ -26,8 +26,8 @@ int traverseBVH2( in bool validTop ) {
 
                 vec4 nfe = vec4(0.f.xx, INFINITY.xx);
                 pbvec2_ childIntersect = bool(cnode.x&1) ? intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe) : false2_;
+                //pbvec2_ childIntersect = mix(false2_, intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe), bool(cnode.x&1));
                 
-
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 
                 // also, they uses hit queue, but it can very overload stacks, so saving only indices...
@@ -54,16 +54,16 @@ int traverseBVH2( in bool validTop ) {
             // if all threads had intersection, or does not given any results, break for processing
             traverseState.idx = primary;
             [[flatten]] if (!validIdx(traverseState.idx)) { loadStack(traverseState.idx); }; // load from stack
-            IFANY (traverseState.defElementID > 0 || !validIdx(traverseState.idx)) { break; };
+            IFANY (traverseState.defElementID > 0 || !validIdxIncluse(traverseState.idx)) { break; };
         }}};
         
         // every-step solving 
         [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true ); };
-        [[flatten]] if (!validIdx(traverseState.idx)) {
-            [[flatten]] if (validIdxTop(traverseState.idxTop)) switchStateTo(BVH_STATE_TOP, INSTANCE_ID, true);
+        [[flatten]] if (!validIdx(traverseState.idx) && validIdxTop(traverseState.idxTop) && traverseState.idx != bvhBlockTop.entryID) {
+            switchStateTo(BVH_STATE_TOP, INSTANCE_ID, true);
         };
-        [[flatten]] if (!validIdx(traverseState.idx)) { break; };
+        [[flatten]] if (!validIdxIncluse(traverseState.idx)) { break; };
     };
-    //currentState = uint(bvhBlockTop.primitiveCount <= 1);
+    
     return floatBitsToInt(primitiveState.lastIntersection.w);
 };
