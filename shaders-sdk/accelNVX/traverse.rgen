@@ -64,7 +64,7 @@ void main() {
                 hit.hitVD = vec4(0.f.xxx, uintBitsToFloat(LAST_INSTANCE));
                 hit.uvt = LAST_INTERSECTION;
                 
-                imageAtomicMax(rayLink,r4ID,(hid+1).x);
+                //imageAtomicMax(rayLink,r4ID,(hid+1).x);
                 [[flatten]] if ( ftrID >= 0 ) 
                     { hit.attribID = vtVerifyClosestHit(hid,-1)+1; }
                 else
