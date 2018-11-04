@@ -64,7 +64,8 @@ initAtomicSubgroupIncFunctionTarget(missHitTypedCounter[WHERE], atomicIncMissHit
 
 
 // aliased values
-#define rayCounter vtCounters[0]
+const uint rGroupDefault = 0u;
+#define rayCounter rayTypedCounter[rGroupDefault] //vtCounters[0]
 #define hitCounter vtCounters[1]
 #define closestHitCounterCurrent vtCounters[2]
 #define closestHitCounter vtCounters[3]
@@ -88,10 +89,10 @@ int atomicIncAttribCount() {return atomicIncVtCounters(7);}
 int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayID) {
     [[flatten]] if (max3_vec(f16_f32(ray.dcolor)) >= 1e-4f) {
         parameteri(RAY_TYPE, ray.dcolor.y, int(type));
-        const int rID = atomicIncRayCount();
+        const int rID = atomicIncRayTypedCount(rGroupDefault);//atomicIncRayCount();
         rayID = rayID < 0 ? rID : rayID; rays[rayID] = ray;
         [[flatten]] if (rID < MAX_RAYS) {
-            const int gID = atomicIncRayTypedCount(type);
+            const int gID = rID;//atomicIncRayTypedCount(type);
             [[flatten]] if (gID < MAX_RAYS) {
                 rayGroupIndices[MAX_RAYS*(type+1)+gID] = (rayGroupIndices[rID] = (rayID+1));
             };
