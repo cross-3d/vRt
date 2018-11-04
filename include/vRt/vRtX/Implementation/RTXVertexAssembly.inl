@@ -6,7 +6,7 @@ namespace _vt {
 
     // construction of extended vertex assembly
     VtResult RTXVertexAssemblyExtension::_Construction(std::shared_ptr<VertexAssemblySet> _assemblySet) {
-        VkGeometryTrianglesNVX _vertexProxyNVX = vk::GeometryTrianglesNVX{};
+        VkGeometryTrianglesNV _vertexProxyNVX = vk::GeometryTrianglesNV{};
         _vertexProxyNVX.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
         _vertexProxyNVX.vertexOffset = _assemblySet->_verticeBufferCached->_offset();
         _vertexProxyNVX.vertexStride = sizeof(float) * 4ull;
@@ -18,14 +18,14 @@ namespace _vt {
         _vertexProxyNVX.indexOffset = _assemblySet->_indexBuffer->_offset();
         _vertexProxyNVX.indexData = VK_NULL_HANDLE; //VkBuffer(*_assemblySet->_indexBuffer);
 
-        VkGeometryDataNVX _vertexDataNVX = vk::GeometryDataNVX{};
-        _vertexDataNVX.aabbs = vk::GeometryAABBNVX{};
+        VkGeometryDataNV _vertexDataNVX = vk::GeometryDataNV{};
+        _vertexDataNVX.aabbs = vk::GeometryAABBNV{};
         _vertexDataNVX.triangles = _vertexProxyNVX;
 
-        _vDataNVX = vk::GeometryNVX{};
-        _vDataNVX.flags = VK_GEOMETRY_OPAQUE_BIT_NVX | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NVX;
-        _vDataNVX.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NVX;
-        _vDataNVX.geometry = _vertexDataNVX;
+        _vDataNV = vk::GeometryNV{};
+        _vDataNV.flags = VK_GEOMETRY_OPAQUE_BIT_NV | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
+        _vDataNV.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NV;
+        _vDataNV.geometry = _vertexDataNVX;
 
         return VK_SUCCESS;
         //return VK_ERROR_EXTENSION_NOT_PRESENT;

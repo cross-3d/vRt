@@ -364,7 +364,7 @@ namespace rnd {
                      RTXInstanceRef.instanceId = InstCounter++;
                      RTXInstanceRef.mask = 0xff;
                      RTXInstanceRef.instanceOffset = 0;
-                     RTXInstanceRef.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NVX;
+                     RTXInstanceRef.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NV;
 
                      // if available, get handle 
                      if (deviceQueue->RTXEnabled) vtGetAcceleratorHandleNVX(acceleratorGeometry, &RTXInstanceRef.accelerationStructureHandle);

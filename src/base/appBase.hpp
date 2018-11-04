@@ -84,11 +84,14 @@ namespace NSM
             "VK_KHR_shader_atomic_int64",
             "VK_KHR_shader_float16_int8",
             "VK_KHR_shader_float_controls",
-            "VK_NVX_raytracing",
+            
             "VK_NV_compute_shader_derivatives",
             "VK_NV_corner_sampled_image",
             "VK_NV_shader_image_footprint",
             "VK_NV_shader_subgroup_partitioned",
+
+            "VK_NV_ray_tracing",
+            "VK_NVX_raytracing",
         };
 
         // instance layers

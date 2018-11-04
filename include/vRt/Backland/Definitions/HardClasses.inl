@@ -55,7 +55,7 @@ namespace _vt { // store in undercover namespace
         VkPhysicalDevice16BitStorageFeatures _storage16 = {};
         VkPhysicalDevice8BitStorageFeaturesKHR _storage8 = {};
         VkPhysicalDeviceDescriptorIndexingFeaturesEXT _descriptorIndexing = {};
-        VkPhysicalDeviceRaytracingPropertiesNVX _raytracingNVX = {};
+        VkPhysicalDeviceRayTracingPropertiesNV _rayTracingNV = {};
 
         // features linking
         operator VkPhysicalDeviceFeatures2&() { return _features; };

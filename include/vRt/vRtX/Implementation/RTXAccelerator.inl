@@ -17,7 +17,7 @@ namespace _vt {
         return spi;
     };*/
 
-    static inline auto makePipelineStageInfo(VkDevice device, std::string fpath = "", const char * entry = "main", VkShaderStageFlagBits stage = VK_SHADER_STAGE_RAYGEN_BIT_NVX) {
+    static inline auto makePipelineStageInfo(VkDevice device, std::string fpath = "", const char * entry = "main", VkShaderStageFlagBits stage = VK_SHADER_STAGE_RAYGEN_BIT_NV) {
         std::vector<uint32_t> code = readBinary(fpath);
 
         VkPipelineShaderStageCreateInfo spi = vk::PipelineShaderStageCreateInfo{};
@@ -39,20 +39,21 @@ namespace _vt {
         const auto accelertExt = std::dynamic_pointer_cast<RTXAcceleratorExtension>(accel->_device->_hExtensionAccelerator[0]);
 
         std::vector<uint32_t> _offsets = {};
-        //std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNVX, (accel->_vertexAssemblySet)->_descriptorSet };
-        std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNVX };
+        //std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNV, (accel->_vertexAssemblySet)->_descriptorSet };
+        std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNV };
         
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
         //cmdRaytracingBarrierNVX(cmdBufVk);
         //cmdUpdateBuffer(cmdBufVk, VkBuffer(*_sbtBuffer), 0ull, _raytracingProperties.shaderHeaderSize * _RTXgroupCount, &_sbtData);
         cmdRaytracingBarrierNVX(cmdBufVk);
-        cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRaytracingNVX, accelertExt->_intersectionPipelineNVX);
-        cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRaytracingNVX, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
-        cmdBufVk.traceRaysNVX(
+        cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRayTracingNV, accelertExt->_intersectionPipelineNVX);
+        cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRayTracingNV, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
+        cmdBufVk.traceRaysNV(
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull,
-            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 2ull * _raytracingProperties.shaderHeaderSize, _raytracingProperties.shaderHeaderSize,
-            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 1ull * _raytracingProperties.shaderHeaderSize, _raytracingProperties.shaderHeaderSize,
-            4608u, 1u);
+            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 2ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
+            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 1ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
+            {}, 0, 0,
+            4608u, 1u, 1u);
         cmdRaytracingBarrierNVX(cmdBufVk);
 
 
@@ -67,7 +68,7 @@ namespace _vt {
 
         auto vertexAssemblyExtension = std::dynamic_pointer_cast<RTXVertexAssemblyExtension>(accelSet->_vertexAssemblySet->_hExtension);
 
-        auto& _trianglesProxy = vertexAssemblyExtension->_vDataNVX.geometry.triangles;
+        auto& _trianglesProxy = vertexAssemblyExtension->_vDataNV.geometry.triangles;
         _trianglesProxy.vertexCount = accelSet->_vertexAssemblySet->_calculatedPrimitiveCount * 3ull;
         _trianglesProxy.vertexOffset = accelSet->_vertexAssemblySet->_verticeBufferCached->_offset();
         _trianglesProxy.vertexData = VkBuffer(*accelSet->_vertexAssemblySet->_verticeBufferCached);
@@ -82,7 +83,7 @@ namespace _vt {
         const auto vsize = accelSet->_vertexAssemblySet && accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? VkDeviceSize(accelSet->_vertexAssemblySet->_calculatedPrimitiveCount) : VK_WHOLE_SIZE;
         const auto dsize = uint32_t(sMin((accelSet->_elementsCount != -1 && accelSet->_elementsCount >= 0) ? VkDeviceSize(accelSet->_elementsCount) : VkDeviceSize(vsize), sMin(buildInfo.elementSize, accelSet->_capacity)));
 
-        const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NVX | VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_NVX | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NVX | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NVX;
+        const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
         const auto extendedSet = std::dynamic_pointer_cast<RTXAcceleratorSetExtension>(accelSet->_hExtension);
 
 
@@ -90,25 +91,16 @@ namespace _vt {
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
         //cmdRaytracingBarrierNVX(cmdBufVk);
 
+        
         if (accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE) {
-            vkCmdBuildAccelerationStructureNVX(cmdBufVk,
-                VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NVX,
-                dsize, *accelSet->_bvhInstancedBuffer, accelSet->_bvhInstancedBuffer->_offset(), 
-                0, nullptr, buildFlags, extendedSet->_WasBuild,
-                extendedSet->_accelStructureNVX, VK_NULL_HANDLE,
-                *extendedSet->_scratchBuffer, extendedSet->_scratchBuffer->_offset()
-            );
+            extendedSet->_accelInfoNV.instanceCount = dsize;
             extendedSet->_WasBuild = true;
+            vkCmdBuildAccelerationStructureNV(cmdBufVk, &extendedSet->_accelInfoNV, *accelSet->_bvhInstancedBuffer, accelSet->_bvhInstancedBuffer->_offset(), extendedSet->_WasBuild, extendedSet->_accelStructureNV, VK_NULL_HANDLE, *extendedSet->_scratchBuffer, extendedSet->_scratchBuffer->_offset());
         }
         else {
-            vkCmdBuildAccelerationStructureNVX(cmdBufVk,
-                VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NVX,
-                0, nullptr, 0,
-                1, &vertexAssemblyExtension->_vDataNVX, buildFlags, extendedSet->_WasBuild,
-                extendedSet->_accelStructureNVX, VK_NULL_HANDLE,
-                *extendedSet->_scratchBuffer, extendedSet->_scratchBuffer->_offset()
-            );
+            extendedSet->_accelInfoNV.pGeometries = &vertexAssemblyExtension->_vDataNV;
             extendedSet->_WasBuild = true;
+            vkCmdBuildAccelerationStructureNV(cmdBufVk, &extendedSet->_accelInfoNV, VK_NULL_HANDLE, 0ull, extendedSet->_WasBuild, extendedSet->_accelStructureNV, VK_NULL_HANDLE, *extendedSet->_scratchBuffer, extendedSet->_scratchBuffer->_offset());
         };
 
         cmdRaytracingBarrierNVX(cmdBufVk);
@@ -120,12 +112,12 @@ namespace _vt {
 
     VtResult RTXAcceleratorExtension::_Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) {
         const auto * extensionInfo = (VtRTXAcceleratorExtension*)(extensionBasedInfo);
-        _raytracingProperties = device->_features->_raytracingNVX; // planned to merge here
+        _raytracingProperties = device->_features->_rayTracingNV; // planned to merge here
 
         // create SBT buffer
         VtDeviceBufferCreateInfo dbi = {};
-        dbi.bufferSize = _raytracingProperties.shaderHeaderSize * _RTXgroupCount;
-        dbi.usageFlag = VK_BUFFER_USAGE_RAYTRACING_BIT_NVX;
+        dbi.bufferSize = _raytracingProperties.shaderGroupHandleSize * _RTXgroupCount;
+        dbi.usageFlag = VK_BUFFER_USAGE_RAY_TRACING_BIT_NV;
         createHostToDeviceBuffer(device, dbi, _sbtBuffer);
 
         //
@@ -135,7 +127,7 @@ namespace _vt {
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
-                vk::DescriptorSetLayoutBinding(0u, vk::DescriptorType::eAccelerationStructureNVX, 1, vk::ShaderStageFlagBits::eRaygenNVX), // rays
+                vk::DescriptorSetLayoutBinding(0u, vk::DescriptorType::eAccelerationStructureNV, 1, vk::ShaderStageFlagBits::eRaygenNV), // rays
             };
             _raytracingDescriptorLayout = vk::Device(VkDevice(*device)).createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         };
@@ -154,25 +146,33 @@ namespace _vt {
         {
             const auto vendorName = device->_vendorName;
             //const uint32_t groupNumbers[] = { 0, 1, 2 };
-            const uint32_t groupNumbers[] = { 0, 1, 1, 2 };
+            //const uint32_t groupNumbers[] = { 0, 1, 1, 2 };
 
-            std::vector<VkPipelineShaderStageCreateInfo> stages = {
-                makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rgen", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_RAYGEN_BIT_NVX),
-                makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rchit", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_CLOSEST_HIT_BIT_NVX),
-                makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rahit", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_ANY_HIT_BIT_NVX),
-                makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rmiss", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_MISS_BIT_NVX),
+            std::vector<VkRayTracingShaderGroupCreateInfoNV> groups = {
+                vk::RayTracingShaderGroupCreateInfoNV().setType(vk::RayTracingShaderGroupTypeNV::eGeneral).setGeneralShader(0),
+                vk::RayTracingShaderGroupCreateInfoNV().setType(vk::RayTracingShaderGroupTypeNV::eTrianglesHitGroup).setClosestHitShader(1).setAnyHitShader(2),
+                vk::RayTracingShaderGroupCreateInfoNV().setType(vk::RayTracingShaderGroupTypeNV::eGeneral).setGeneralShader(3)
             };
 
-            VkRaytracingPipelineCreateInfoNVX rayPipelineInfo = vk::RaytracingPipelineCreateInfoNVX{};
+            std::vector<VkPipelineShaderStageCreateInfo> stages = {
+                makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rgen", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_RAYGEN_BIT_NV),
+                makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rchit", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV),
+                makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rahit", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_ANY_HIT_BIT_NV),
+                makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rmiss", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_MISS_BIT_NV),
+            };
+
+            VkRayTracingPipelineCreateInfoNV rayPipelineInfo = vk::RayTracingPipelineCreateInfoNV{};
             rayPipelineInfo.stageCount = (uint32_t)stages.size();
+            rayPipelineInfo.groupCount = (uint32_t)groups.size();
             rayPipelineInfo.pStages = stages.data();
-            rayPipelineInfo.pGroupNumbers = &groupNumbers[0];
+            rayPipelineInfo.pGroups = groups.data();
             rayPipelineInfo.layout = _raytracingPipelineLayout;
             rayPipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
             rayPipelineInfo.basePipelineIndex = 0;
             rayPipelineInfo.maxRecursionDepth = 1;
-            vkCreateRaytracingPipelinesNVX(VkDevice(*device), {}, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNVX);
-            vkGetRaytracingShaderHandlesNVX(VkDevice(*device), _intersectionPipelineNVX, 0, _RTXgroupCount, size_t(_raytracingProperties.shaderHeaderSize * _RTXgroupCount), _sbtBuffer->_hostMapped());
+            
+            vkCreateRayTracingPipelinesNV(VkDevice(*device), {}, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNVX);
+            vkGetRayTracingShaderGroupHandlesNV(VkDevice(*device), _intersectionPipelineNVX, 0, _RTXgroupCount, size_t(_raytracingProperties.shaderGroupHandleSize * _RTXgroupCount), _sbtBuffer->_hostMapped());
         };
 
         return VK_SUCCESS;

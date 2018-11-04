@@ -14,19 +14,22 @@ namespace _vt {
         virtual VtResult _Construction(std::shared_ptr<AcceleratorSet> accelSet = {}) override;
 
         // acceleration structure
-        VkAccelerationStructureNVX _accelStructureNVX = {};
+        VkAccelerationStructureNV _accelStructureNV = {};
+        VkAccelerationStructureInfoNV _accelInfoNV = {};
+
         VmaAllocation _vmaAllocation = {}, _vmaScratchAllocation = {};
         VmaAllocationInfo _vmaAllocationInfo = {}, _vmaScratchAllocationInfo = {};
-        VkDescriptorAccelerationStructureInfoNVX _accelDescriptorNVX = {};
-        VkDescriptorSet _accelDescriptorSetNVX = {}; // additional descriptor set
+        VkWriteDescriptorSetAccelerationStructureNV _accelDescriptorNV = {};
+        VkDescriptorSet _accelDescriptorSetNV = {}; // additional descriptor set
+
 
         // scratch buffers
         bool _WasBuild = false;
           std::shared_ptr<DeviceBuffer> _scratchBuffer = {}; // 
         //std::shared_ptr<BufferRegion> _scratchRegion = {}; // 
 
-        operator VkAccelerationStructureNVX() const { return _accelStructureNVX; };
-        operator VkAccelerationStructureNVX&() { return _accelStructureNVX; };
+        operator VkAccelerationStructureNV() const { return _accelStructureNV; };
+        operator VkAccelerationStructureNV&() { return _accelStructureNV; };
     };
 
     // 
@@ -51,7 +54,7 @@ namespace _vt {
         VkDescriptorSetLayout _raytracingDescriptorLayout = {};
         VkPipelineLayout _raytracingPipelineLayout = {};
         VkPipeline _intersectionPipelineNVX = {}; // native RTX intersection system 
-        VkPhysicalDeviceRaytracingPropertiesNVX _raytracingProperties = {};
+        VkPhysicalDeviceRayTracingPropertiesNV _raytracingProperties = {};
         //std::shared_ptr<DeviceBuffer> _sbtBuffer = {};
         //RTXShaderBindingTable _sbtData[4] = {};
         std::shared_ptr<HostToDeviceBuffer> _sbtBuffer = {};
@@ -66,9 +69,9 @@ namespace _vt {
         virtual VtResult _Construction(std::shared_ptr<VertexAssemblySet> _assemblySet = {}) override;
 
         // 
-        VkGeometryNVX _vDataNVX = {};
-        operator VkGeometryNVX() const { return _vDataNVX; };
-        operator VkGeometryNVX&() { return _vDataNVX; };
+        VkGeometryNV _vDataNV = {};
+        operator VkGeometryNV() const { return _vDataNV; };
+        operator VkGeometryNV&() { return _vDataNV; };
     };
 
 };

@@ -42,8 +42,8 @@ namespace _vt {
 
             // properties list 
             features->_properties = vk::PhysicalDeviceProperties2{};
-            features->_raytracingNVX = vk::PhysicalDeviceRaytracingPropertiesNVX{};
-            features->_properties.pNext = &features->_raytracingNVX;
+            features->_rayTracingNV = vk::PhysicalDeviceRayTracingPropertiesNV{};
+            features->_properties.pNext = &features->_rayTracingNV;
             gpu.getProperties2((vk::PhysicalDeviceProperties2*)&features->_properties); // 
         };
 
@@ -122,12 +122,12 @@ namespace _vt {
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(256 * mult)
         };
 
-        // if ray tracing NVX supported, add additional descriptor pool types 
-        const auto raytracingNVX = "VK_NVX_raytracing";
+        // if ray tracing NV supported, add additional descriptor pool types 
+        const auto raytracingEXT = "VK_NV_ray_tracing";
         for (auto i : vtDevice->_features->_extensions) {
-            if (std::string(i.extensionName).compare(raytracingNVX) == 0) {
-                vtDevice->_descriptorAccess = VK_SHADER_STAGE_RAYGEN_BIT_NVX | VK_SHADER_STAGE_COMPUTE_BIT;
-                dps.push_back(vk::DescriptorPoolSize().setType(vk::DescriptorType::eAccelerationStructureNVX).setDescriptorCount(16 * mult)); 
+            if (std::string(i.extensionName).compare(raytracingEXT) == 0) {
+                vtDevice->_descriptorAccess = VK_SHADER_STAGE_RAYGEN_BIT_NV | VK_SHADER_STAGE_COMPUTE_BIT;
+                dps.push_back(vk::DescriptorPoolSize().setType(vk::DescriptorType::eAccelerationStructureNV).setDescriptorCount(16 * mult)); 
                 break;
             };
         };

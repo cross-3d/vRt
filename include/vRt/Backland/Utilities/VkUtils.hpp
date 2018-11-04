@@ -353,10 +353,12 @@ namespace _vt {
         "VK_KHR_dedicated_allocation",
         "VK_KHR_driver_properties",
         "VK_KHR_vulkan_memory_model",
-        "VK_NVX_raytracing",
         "VK_NV_compute_shader_derivatives",
         "VK_NV_corner_sampled_image",
         "VK_NV_shader_image_footprint",
         "VK_NV_shader_subgroup_partitioned",
+
+        "VK_NV_ray_tracing",
+        "VK_NVX_raytracing",
     };
 };

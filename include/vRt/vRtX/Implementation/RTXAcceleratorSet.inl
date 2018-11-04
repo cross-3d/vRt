@@ -7,7 +7,7 @@ namespace _vt {
 
     // constructor for accelerator set when enabled extension
     VtResult RTXAcceleratorSetExtension::_Construction(std::shared_ptr<AcceleratorSet> accelSet) {
-        VkGeometryTrianglesNVX _vertexProxyNVX = vk::GeometryTrianglesNVX{};
+        VkGeometryTrianglesNV _vertexProxyNVX = vk::GeometryTrianglesNV{};
         _vertexProxyNVX.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
         _vertexProxyNVX.vertexOffset = 0ull;
         _vertexProxyNVX.vertexStride = sizeof(float) * 4ull;
@@ -19,50 +19,52 @@ namespace _vt {
         _vertexProxyNVX.indexOffset = 0ull;
         _vertexProxyNVX.indexData = VK_NULL_HANDLE;
 
-        VkGeometryDataNVX _vertexDataNVX = vk::GeometryDataNVX{};
-        _vertexDataNVX.aabbs = vk::GeometryAABBNVX{};
+        VkGeometryDataNV _vertexDataNVX = vk::GeometryDataNV{};
+        _vertexDataNVX.aabbs = vk::GeometryAABBNV{};
         _vertexDataNVX.triangles = _vertexProxyNVX;
 
-        VkGeometryNVX _vDataNVX = vk::GeometryNVX{};
-        _vDataNVX.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NVX;
+        VkGeometryNV _vDataNVX = vk::GeometryNV{};
+        _vDataNVX.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NV;
         _vDataNVX.geometry = _vertexDataNVX;
-        _vDataNVX.flags = VK_GEOMETRY_OPAQUE_BIT_NVX | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NVX;
+        _vDataNVX.flags = VK_GEOMETRY_OPAQUE_BIT_NV | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
 
 
          
         // creation of accelerator structure
-        VkAccelerationStructureCreateInfoNVX _accelerationCreate = vk::AccelerationStructureCreateInfoNVX{};
+        VkAccelerationStructureCreateInfoNV _accelerationCreate = vk::AccelerationStructureCreateInfoNV{};
+        _accelerationCreate.info = _accelInfoNV;
+
         if (accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE) {
-            _accelerationCreate.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NVX;
-            _accelerationCreate.instanceCount = uint32_t(accelSet->_capacity);
+            _accelInfoNV.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NV;
+            _accelInfoNV.instanceCount = uint32_t(accelSet->_capacity);
         }
         else {
-            _accelerationCreate.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NVX;
-            _accelerationCreate.geometryCount = 1u;
-            _accelerationCreate.pGeometries = &_vDataNVX;
+            _accelInfoNV.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NV;
+            _accelInfoNV.geometryCount = 1u;
+            _accelInfoNV.pGeometries = &_vDataNVX;
         };
 
-        const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NVX | VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_NVX | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NVX | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NVX;
-        _accelerationCreate.flags = buildFlags;
+        const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
+        _accelInfoNV.flags = buildFlags;
 
 
         // create acceleration structure (no memory bind)
-        vkCreateAccelerationStructureNVX(*accelSet->_device, &_accelerationCreate, nullptr, &_accelStructureNVX);
+        vkCreateAccelerationStructureNV(*accelSet->_device, &_accelerationCreate, nullptr, &_accelStructureNV);
         _WasBuild = false;
 
 
         // allocate and bind acceleration structure memory 
         { // VMA doesn't have native RTX memory support, so try to allocate manually
-            VkAccelerationStructureMemoryRequirementsInfoNVX sMem = vk::AccelerationStructureMemoryRequirementsInfoNVX{};
-            sMem.accelerationStructure = _accelStructureNVX;
+            VkAccelerationStructureMemoryRequirementsInfoNV sMem = vk::AccelerationStructureMemoryRequirementsInfoNV{};
+            sMem.accelerationStructure = _accelStructureNV;
 
             // get memory requirements 
             VkMemoryRequirements2 mRequirements = vk::MemoryRequirements2{};
-            vkGetAccelerationStructureMemoryRequirementsNVX(*accelSet->_device, &sMem, &mRequirements);
+            vkGetAccelerationStructureMemoryRequirementsNV(*accelSet->_device, &sMem, &mRequirements);
 
             // 
-            VkBindAccelerationStructureMemoryInfoNVX mBind = vk::BindAccelerationStructureMemoryInfoNVX{};
-            mBind.accelerationStructure = _accelStructureNVX;
+            VkBindAccelerationStructureMemoryInfoNV mBind = vk::BindAccelerationStructureMemoryInfoNV{};
+            mBind.accelerationStructure = _accelStructureNV;
 
             if (mRequirements.memoryRequirements.size > accelSet->_bvhBoxBuffer->_size() || !accelSet->_bvhBoxBuffer->_boundBuffer.lock()) {
                 // allocate by VMA 
@@ -82,37 +84,39 @@ namespace _vt {
             };
 
             // bind memory 
-            vkBindAccelerationStructureMemoryNVX(*accelSet->_device, 1, &mBind);
+            vkBindAccelerationStructureMemoryNV(*accelSet->_device, 1, &mBind);
         };
 
 
         // scratch memory allocation
         { // VMA doesn't have native RTX memory support, so try to allocate manually
-            VkAccelerationStructureMemoryRequirementsInfoNVX sMem = vk::AccelerationStructureMemoryRequirementsInfoNVX{};
-            sMem.accelerationStructure = _accelStructureNVX;
+            VkAccelerationStructureMemoryRequirementsInfoNV sMem = vk::AccelerationStructureMemoryRequirementsInfoNV{};
+            sMem.accelerationStructure = _accelStructureNV;
+            sMem.type = VK_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_TYPE_BUILD_SCRATCH_NV;
 
             // get scratch memory requirements
             VkMemoryRequirements2 mRequirements = {};
-            vkGetAccelerationStructureScratchMemoryRequirementsNVX(*accelSet->_device, &sMem, &mRequirements);
+            vkGetAccelerationStructureMemoryRequirementsNV(*accelSet->_device, &sMem, &mRequirements);
+            //vkGetAccelerationStructureScratchMemoryRequirementsNV(*accelSet->_device, &sMem, &mRequirements);
 
             // just create scratch memory
             VtDeviceBufferCreateInfo dbs = {};
             dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-            dbs.usageFlag |= VK_BUFFER_USAGE_RAYTRACING_BIT_NVX;
+            dbs.usageFlag |= VK_BUFFER_USAGE_RAY_TRACING_BIT_NV;
             dbs.bufferSize = mRequirements.memoryRequirements.size;
             createDeviceBuffer(accelSet->_device, dbs, _scratchBuffer);
         };
 
         if (accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE) {
             // create description of structure to bind into descriptor set
-            _accelDescriptorNVX = vk::DescriptorAccelerationStructureInfoNVX{};
-            _accelDescriptorNVX.accelerationStructureCount = 1;
-            _accelDescriptorNVX.pAccelerationStructures = &_accelStructureNVX;
+            _accelDescriptorNV = vk::WriteDescriptorSetAccelerationStructureNV{};
+            _accelDescriptorNV.accelerationStructureCount = 1;
+            _accelDescriptorNV.pAccelerationStructures = &_accelStructureNV;
 
             auto hAccExtension = std::dynamic_pointer_cast<RTXAcceleratorExtension>(accelSet->_device->_hExtensionAccelerator[0]);
-            _accelDescriptorSetNVX = vk::Device(VkDevice(*accelSet->_device)).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(accelSet->_device->_descriptorPool).setPSetLayouts((vk::DescriptorSetLayout*)&hAccExtension->_raytracingDescriptorLayout).setDescriptorSetCount(1))[0];
+            _accelDescriptorSetNV = vk::Device(VkDevice(*accelSet->_device)).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(accelSet->_device->_descriptorPool).setPSetLayouts((vk::DescriptorSetLayout*)&hAccExtension->_raytracingDescriptorLayout).setDescriptorSetCount(1))[0];
 
-            std::vector<vk::WriteDescriptorSet> writes = { vk::WriteDescriptorSet(_accelDescriptorSetNVX, 0, 0, 1, vk::DescriptorType::eAccelerationStructureNVX).setPNext(&_accelDescriptorNVX).setDstBinding(0u) };
+            std::vector<vk::WriteDescriptorSet> writes = { vk::WriteDescriptorSet(_accelDescriptorSetNV, 0, 0, 1, vk::DescriptorType::eAccelerationStructureNV).setPNext(&_accelDescriptorNV).setDstBinding(0u) };
             vk::Device(VkDevice(*accelSet->_device)).updateDescriptorSets(writes, {});
         };
 
