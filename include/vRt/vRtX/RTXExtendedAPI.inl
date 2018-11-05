@@ -25,7 +25,7 @@ namespace vrt {
     // Yes, we can review proposals, but any wars or enforcements is inacceptable! 
     
 #pragma pack(push, 1)
-    struct VtInstanceNVX {
+    struct VtRTXInstance {
         //float transform[12] = {1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,  0.f, 0.f, 1.f, 0.f };
         VtMat3x4 transform = IdentifyMat3x4; // due this structure located in vRt namespace, prefer use VtMat3x4 type instead regular float[12]
         uint24_t instanceId = 0u; uint8_t mask = 0xFFu;
@@ -34,21 +34,7 @@ namespace vrt {
     };
 #pragma pack(pop)
 
-    /*
-#pragma pack(push, 1)
-    struct VtInstanceNVX
-    {
-        float transform[12];
-        uint32_t instanceId : 24;
-        uint32_t mask : 8;
-        uint32_t instanceOffset : 24;
-        uint32_t flags : 8;
-        uint64_t accelerationStructureHandle;
-    };
-#pragma pack(pop)
-*/
-
     // required for RTX top level support 
-    VtResult vtGetAcceleratorHandleNVX(VtAcceleratorSet accSet, VtHandleRTX * acceleratorHandleNVX);
+    VtResult vtGetAcceleratorHandleNV(VtAcceleratorSet accSet, VtHandleRTX * acceleratorHandleNVX);
 
 };

@@ -358,7 +358,7 @@ namespace rnd {
                      BvhInstancedData.push_back(VtBvhInstance{});
                      BvhInstancedData[BvhInstancedData.size()-1].transformIn = *((VtMat3x4*)&movedFW);
 
-                     RTXInstancedData.push_back(VtInstanceNVX{}); 
+                     RTXInstancedData.push_back(VtRTXInstance{});
                      auto & RTXInstanceRef = RTXInstancedData[RTXInstancedData.size() - 1];
                      memcpy(&RTXInstanceRef.transform, &movedFW, sizeof(VtMat3x4));
                      RTXInstanceRef.instanceId = InstCounter++;
@@ -367,11 +367,11 @@ namespace rnd {
                      RTXInstanceRef.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NV;
 
                      // if available, get handle 
-                     if (deviceQueue->RTXEnabled) vtGetAcceleratorHandleNVX(acceleratorGeometry, &RTXInstanceRef.accelerationStructureHandle);
+                     if (deviceQueue->RTXEnabled) vtGetAcceleratorHandleNV(acceleratorGeometry, &RTXInstanceRef.accelerationStructureHandle);
                  }
              }
 
-             const uint32_t debugStructSize = sizeof(VtInstanceNVX);
+             const uint32_t debugStructSize = sizeof(VtRTXInstance);
              std::cout << debugStructSize << std::endl;
 
              // headers 

@@ -53,7 +53,7 @@ namespace _vt {
         // 
         VkDescriptorSetLayout _raytracingDescriptorLayout = {};
         VkPipelineLayout _raytracingPipelineLayout = {};
-        VkPipeline _intersectionPipelineNVX = {}; // native RTX intersection system 
+        VkPipeline _intersectionPipelineNV = {}; // native RTX intersection system 
         VkPhysicalDeviceRayTracingPropertiesNV _raytracingProperties = {};
         //std::shared_ptr<DeviceBuffer> _sbtBuffer = {};
         //RTXShaderBindingTable _sbtData[4] = {};

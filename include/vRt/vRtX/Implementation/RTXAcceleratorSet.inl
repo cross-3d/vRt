@@ -7,26 +7,26 @@ namespace _vt {
 
     // constructor for accelerator set when enabled extension
     VtResult RTXAcceleratorSetExtension::_Construction(std::shared_ptr<AcceleratorSet> accelSet) {
-        VkGeometryTrianglesNV _vertexProxyNVX = vk::GeometryTrianglesNV{};
-        _vertexProxyNVX.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
-        _vertexProxyNVX.vertexOffset = 0ull;
-        _vertexProxyNVX.vertexStride = sizeof(float) * 4ull;
-        _vertexProxyNVX.vertexData = VK_NULL_HANDLE;
-        _vertexProxyNVX.vertexCount = accelSet->_capacity * 3ull;
+        VkGeometryTrianglesNV _vertexProxyNV = vk::GeometryTrianglesNV{};
+        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+        _vertexProxyNV.vertexOffset = 0ull;
+        _vertexProxyNV.vertexStride = sizeof(float) * 4ull;
+        _vertexProxyNV.vertexData = VK_NULL_HANDLE;
+        _vertexProxyNV.vertexCount = accelSet->_capacity * 3ull;
 
-        _vertexProxyNVX.indexType = VK_INDEX_TYPE_UINT32;
-        _vertexProxyNVX.indexCount = accelSet->_capacity * 3ull;
-        _vertexProxyNVX.indexOffset = 0ull;
-        _vertexProxyNVX.indexData = VK_NULL_HANDLE;
+        _vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
+        _vertexProxyNV.indexCount = accelSet->_capacity * 3ull;
+        _vertexProxyNV.indexOffset = 0ull;
+        _vertexProxyNV.indexData = VK_NULL_HANDLE;
 
-        VkGeometryDataNV _vertexDataNVX = vk::GeometryDataNV{};
-        _vertexDataNVX.aabbs = vk::GeometryAABBNV{};
-        _vertexDataNVX.triangles = _vertexProxyNVX;
+        VkGeometryDataNV _vertexDataNV = vk::GeometryDataNV{};
+        _vertexDataNV.aabbs = vk::GeometryAABBNV{};
+        _vertexDataNV.triangles = _vertexProxyNV;
 
-        VkGeometryNV _vDataNVX = vk::GeometryNV{};
-        _vDataNVX.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NV;
-        _vDataNVX.geometry = _vertexDataNVX;
-        _vDataNVX.flags = VK_GEOMETRY_OPAQUE_BIT_NV | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
+        VkGeometryNV _vDataNV = vk::GeometryNV{};
+        _vDataNV.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NV;
+        _vDataNV.geometry = _vertexDataNV;
+        _vDataNV.flags = VK_GEOMETRY_OPAQUE_BIT_NV | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
 
 
          
@@ -41,7 +41,7 @@ namespace _vt {
         else {
             _accelInfoNV.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NV;
             _accelInfoNV.geometryCount = 1u;
-            _accelInfoNV.pGeometries = &_vDataNVX;
+            _accelInfoNV.pGeometries = &_vDataNV;
         };
 
         const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
@@ -56,6 +56,7 @@ namespace _vt {
         // allocate and bind acceleration structure memory 
         { // VMA doesn't have native RTX memory support, so try to allocate manually
             VkAccelerationStructureMemoryRequirementsInfoNV sMem = vk::AccelerationStructureMemoryRequirementsInfoNV{};
+            sMem.type = VK_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_TYPE_OBJECT_NV;
             sMem.accelerationStructure = _accelStructureNV;
 
             // get memory requirements 
@@ -91,8 +92,8 @@ namespace _vt {
         // scratch memory allocation
         { // VMA doesn't have native RTX memory support, so try to allocate manually
             VkAccelerationStructureMemoryRequirementsInfoNV sMem = vk::AccelerationStructureMemoryRequirementsInfoNV{};
-            sMem.accelerationStructure = _accelStructureNV;
             sMem.type = VK_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_TYPE_BUILD_SCRATCH_NV;
+            sMem.accelerationStructure = _accelStructureNV;
 
             // get scratch memory requirements
             VkMemoryRequirements2 mRequirements = {};
