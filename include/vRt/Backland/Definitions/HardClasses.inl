@@ -55,7 +55,11 @@ namespace _vt { // store in undercover namespace
         VkPhysicalDevice16BitStorageFeatures _storage16 = {};
         VkPhysicalDevice8BitStorageFeaturesKHR _storage8 = {};
         VkPhysicalDeviceDescriptorIndexingFeaturesEXT _descriptorIndexing = {};
+#ifdef VT_LEGACY_RAYTRACING_NVX
+        VkPhysicalDeviceRaytracingPropertiesNVX _rayTracingNV = {};
+#else
         VkPhysicalDeviceRayTracingPropertiesNV _rayTracingNV = {};
+#endif
 
         // features linking
         operator VkPhysicalDeviceFeatures2&() { return _features; };

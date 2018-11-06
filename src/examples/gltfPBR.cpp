@@ -364,7 +364,12 @@ namespace rnd {
                      RTXInstanceRef.instanceId = InstCounter++;
                      RTXInstanceRef.mask = 0xff;
                      RTXInstanceRef.instanceOffset = 0;
+
+#ifdef VT_LEGACY_RAYTRACING_NVX
+                     RTXInstanceRef.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NVX;
+#else
                      RTXInstanceRef.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NV;
+#endif
 
                      // if available, get handle 
                      if (deviceQueue->RTXEnabled) vtGetAcceleratorHandleNV(acceleratorGeometry, &RTXInstanceRef.accelerationStructureHandle);

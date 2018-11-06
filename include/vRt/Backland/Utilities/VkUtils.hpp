@@ -358,6 +358,7 @@ namespace _vt {
         "VK_NV_shader_image_footprint",
         "VK_NV_shader_subgroup_partitioned",
 
+        "VK_NV_raytracing",
         "VK_NV_ray_tracing",
         "VK_NVX_raytracing",
     };

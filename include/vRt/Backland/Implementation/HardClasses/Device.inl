@@ -122,10 +122,9 @@ namespace _vt {
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(256 * mult)
         };
 
-        // if ray tracing NV supported, add additional descriptor pool types 
-        const auto raytracingEXT = "VK_NV_ray_tracing";
+        // if ray tracing NV supported, add additional descriptor pool types
         for (auto i : vtDevice->_features->_extensions) {
-            if (std::string(i.extensionName).compare(raytracingEXT) == 0) {
+            if (std::string(i.extensionName).compare("VK_NV_raytracing") == 0 || std::string(i.extensionName).compare("VK_NV_ray_tracing") == 0 || std::string(i.extensionName).compare("VK_NVX_raytracing") == 0) {
                 vtDevice->_descriptorAccess = VK_SHADER_STAGE_RAYGEN_BIT_NV | VK_SHADER_STAGE_COMPUTE_BIT;
                 dps.push_back(vk::DescriptorPoolSize().setType(vk::DescriptorType::eAccelerationStructureNV).setDescriptorCount(16 * mult)); 
                 break;

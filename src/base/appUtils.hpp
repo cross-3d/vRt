@@ -43,7 +43,7 @@
 #include "vRt/vRt.hpp"
 
 // include extensions
-#include "vRt/vRtX/RTXAcceleratorExtension.hpp"
+#include "vRt/vRtX-NVX/RTXAcceleratorExtension.hpp"
 
 // include inner utils from library (for development purpose)
 #include "vRt/Backland/Utilities/VkUtils.hpp"
