@@ -1,18 +1,23 @@
 
 // 
 int traverseBVH2( in bool validTop ) {
+    {
+        traverseState.idx = (traverseState.entryIDBase = bvhBlockTop.entryID), lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
+        traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = -1, traverseState.defElementID = 0;
+    };
+
     INSTANCE_ID = 0, LAST_INSTANCE = 0, currentState = uint(bvhBlockTop.primitiveCount <= 1);
     initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     
     [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
-        int defElementID = 0;
+        
         [[flatten]] if (validIdx(traverseState.idx)) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) {
 
             int primary = -1;
             #define bvhNode bvhNodes[traverseState.idx]
             const ivec2 cnode = validIdx(traverseState.idx) ? bvhNode.meta.xy : (0).xx;
-            [[flatten]] if ( isLeaf(cnode.xy)) { defElementID = VTX_PTR + cnode.x; } else  // if leaf, defer for intersection 
+            [[flatten]] if ( isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x; } else  // if leaf, defer for intersection 
             [[flatten]] if (isnLeaf(cnode.xy)) { // if not leaf, intersect with nodes
 
 #ifdef EXPERIMENTAL_UNORM16_BVH
@@ -46,7 +51,7 @@ int traverseBVH2( in bool validTop ) {
                     // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
                     [[flatten]] if (currentState == BVH_STATE_BOTTOM && secondary > 0) {
                         const ivec2 snode = bvhNodes[traverseState.entryIDBase+secondary].meta.xy;
-                        [[flatten]] if (isLeaf(snode)) { defElementID = VTX_PTR + snode.x; secondary = -1; }; 
+                        [[flatten]] if (isLeaf(snode)) { traverseState.defElementID = VTX_PTR + snode.x; secondary = -1; }; 
                     };
                     [[flatten]] if (secondary > 0) storeStack(traverseState.entryIDBase+secondary);
                 };
@@ -55,11 +60,11 @@ int traverseBVH2( in bool validTop ) {
             // if all threads had intersection, or does not given any results, break for processing
             traverseState.idx = primary;
             [[flatten]] if (!validIdx(traverseState.idx)) { loadStack(traverseState.idx); }; // load from stack
-            IFANY (defElementID > 0 || !validIdxIncluse(traverseState.idx)) { break; };
+            IFANY (traverseState.defElementID > 0 || !validIdxIncluse(traverseState.idx)) { break; };
         }}};
         
         // every-step solving 
-        [[flatten]] IFANY (defElementID > 0) { doIntersection( primitiveState.orig, primitiveState.dir, primitiveState.lastIntersection, defElementID, true ); };
+        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( primitiveState.orig, primitiveState.dir, primitiveState.lastIntersection, traverseState.defElementID, true ); };
         [[flatten]] if (!validIdx(traverseState.idx) && validIdxTop(traverseState.idxTop) && traverseState.idx != bvhBlockTop.entryID) {
             switchStateTo(BVH_STATE_TOP, INSTANCE_ID, true);
         };

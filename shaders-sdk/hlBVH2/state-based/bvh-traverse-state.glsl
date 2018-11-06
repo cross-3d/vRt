@@ -40,7 +40,7 @@ uint currentState = BVH_STATE_TOP;
 // BVH traversing state
 #define _cacheID gl_GlobalInvocationID.x
 struct BvhTraverseState {
-    int maxElements, entryIDBase, diffOffset; bool saved;
+    int maxElements, entryIDBase, diffOffset, defElementID; bool saved;
     int idx;    lowp int stackPtr   , pageID;
     int idxTop; lowp int stackPtrTop, pageIDTop;
     fvec4_ directInv, minusOrig;
