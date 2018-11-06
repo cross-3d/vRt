@@ -64,7 +64,7 @@ int traverseBVH2( in bool validTop ) {
         }}};
         
         // every-step solving 
-        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( primitiveState.orig, primitiveState.dir, primitiveState.lastIntersection, traverseState.defElementID, true ); };
+        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true ); };
         [[flatten]] if (!validIdx(traverseState.idx) && validIdxTop(traverseState.idxTop) && traverseState.idx != bvhBlockTop.entryID) {
             switchStateTo(BVH_STATE_TOP, INSTANCE_ID, true);
         };

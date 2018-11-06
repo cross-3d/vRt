@@ -112,8 +112,8 @@ void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
 };
 
 // triangle intersection, when it found
-void doIntersection(in vec4 orig, in vec4 dir, inout vec4 lastIntersection, inout int defElementID, in bool isvalid) {
-    const int elementID = defElementID-1; defElementID = 0;
+void doIntersection( in bool isvalid ) {
+    const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
     isvalid = isvalid && elementID >= 0; //&& elementID < traverseState.maxElements;
 
     const uint CSTATE = currentState;
@@ -122,14 +122,14 @@ void doIntersection(in vec4 orig, in vec4 dir, inout vec4 lastIntersection, inou
     };
 
     [[flatten]] if (isvalid && CSTATE == BVH_STATE_BOTTOM) {
-        //vec2 uv = vec2(0.f.xx); const float nearT = fma(lastIntersection.z,fpOne,fpInner), d = 
-        vec2 uv = vec2(0.f.xx); const float d = intersectTriangle(orig, dir, elementID, uv.xy, isvalid);
+        //vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
+        vec2 uv = vec2(0.f.xx); const float d = intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid);
 
         //const float tdiff = nearT-d, tmax = SFN;
         //[[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
-            //[[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(lastIntersection.w)) {
-            [[flatten]] if ( isvalid && min(lastIntersection.z, d.x) == d.x ) {
-                lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
+            //[[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
+            [[flatten]] if ( isvalid && min(primitiveState.lastIntersection.z, d.x) == d.x ) {
+                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
             };
         //};
     };
