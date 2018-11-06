@@ -24,7 +24,7 @@ bool isnLeaf(in ivec2 mem) { return mem.x!=mem.y && mem.x >= 1; };
 
 void resetEntry(in bool VALID) {
     VALID = VALID && INSTANCE_ID >= 0;//, MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0, VALID = VALID && MAX_ELEMENTS > 0;
-    traverseState.defElementID = 0, traverseState.diffOffset = floatBitsToInt(0.f);
+    traverseState.diffOffset = floatBitsToInt(0.f);
     traverseState.entryIDBase = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.entryID : bvhBlockIn.entryID) : -1;
     [[flatten]] if (currentState == BVH_STATE_BOTTOM || !VALID) {
         traverseState.idx = traverseState.entryIDBase, traverseState.stackPtr = 0, traverseState.pageID = 0, lstack[sidx] = -1;
@@ -112,9 +112,9 @@ void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
 };
 
 // triangle intersection, when it found
-void doIntersection(in bool isvalid) {
-    const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
-    isvalid = isvalid && elementID >= 0 && elementID < traverseState.maxElements;
+void doIntersection(in vec4 orig, in vec4 dir, inout vec4 lastIntersection, inout int defElementID, in bool isvalid) {
+    const int elementID = defElementID-1; defElementID = 0;
+    isvalid = isvalid && elementID >= 0; //&& elementID < traverseState.maxElements;
 
     const uint CSTATE = currentState;
     [[flatten]] if (isvalid && CSTATE == BVH_STATE_TOP) { 
@@ -122,22 +122,18 @@ void doIntersection(in bool isvalid) {
     };
 
     [[flatten]] if (isvalid && CSTATE == BVH_STATE_BOTTOM) {
-        //vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
-        vec2 uv = vec2(0.f.xx); const float d = 
-#ifdef VRT_USE_FAST_INTERSECTION
-            intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid);
-#else
-            intersectTriangle(primitiveState.orig, primitiveState.iM, primitiveState.axis, elementID, uv.xy, isvalid);
-#endif
+        //vec2 uv = vec2(0.f.xx); const float nearT = fma(lastIntersection.z,fpOne,fpInner), d = 
+        vec2 uv = vec2(0.f.xx); const float d = intersectTriangle(orig, dir, elementID, uv.xy, isvalid);
 
         //const float tdiff = nearT-d, tmax = SFN;
         //[[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
-            //[[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
-            [[flatten]] if ( isvalid && min(primitiveState.lastIntersection.z, d.x) == d.x ) {
-                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
+            //[[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(lastIntersection.w)) {
+            [[flatten]] if ( isvalid && min(lastIntersection.z, d.x) == d.x ) {
+                lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
             };
         //};
     };
 };
 
+// 
 #include "./bvh-traverse-process.glsl"
