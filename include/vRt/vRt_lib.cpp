@@ -1,5 +1,7 @@
 //#pragma once
 
+#define VT_LEGACY_RAYTRACING_NVX
+
 // for correct VMA
 #ifndef NOMINMAX
 #define NOMINMAX

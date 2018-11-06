@@ -5,7 +5,7 @@
 #endif
 
 #include "../vRt.hpp"
-#include "RTXAcceleratorExtension.hpp"
+//#include "RTXAcceleratorExtension.hpp"
 #include "RTXHandlers.inl"
 #include "RTXExtendedAPI.inl"
 

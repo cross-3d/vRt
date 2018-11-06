@@ -1,5 +1,7 @@
 #pragma once
 
+//#define VT_LEGACY_RAYTRACING_NVX
+
 // definitions and implementables
 #include "Parts/Headers.inl"
 #include "Parts/StructuresLow.inl"
