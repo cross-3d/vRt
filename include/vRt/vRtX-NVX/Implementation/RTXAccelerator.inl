@@ -45,7 +45,7 @@ namespace _vt {
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
         //cmdRaytracingBarrierNVX(cmdBufVk);
         //cmdUpdateBuffer(cmdBufVk, VkBuffer(*_sbtBuffer), 0ull, _raytracingProperties.shaderHeaderSize * _RTXgroupCount, &_sbtData);
-        cmdRaytracingBarrierNVX(cmdBufVk);
+
         cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRaytracingNVX, accelertExt->_intersectionPipelineNVX);
         cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRaytracingNVX, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
         cmdBufVk.traceRaysNVX(
