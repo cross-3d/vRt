@@ -22,11 +22,14 @@ namespace _vt {
         for (auto i = 0u; i < STEPS; i++) {
             std::vector<uint32_t> _values = { primCount, i };
             vkCmdPushConstants(*cmdBuf, radix->_pipelineLayout, VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(uint32_t) * _values.size(), _values.data());
-            
-            cmdDispatch(*cmdBuf, radix->_histogramPipeline, WG_COUNT, RADICE_AFFINE);
-            cmdDispatch(*cmdBuf, radix->_workPrefixPipeline);
-            cmdDispatch(*cmdBuf, radix->_permutePipeline, WG_COUNT, RADICE_AFFINE);
-            cmdDispatch(*cmdBuf, radix->_copyhackPipeline, INTENSIVITY);
+
+            cmdFillBuffer<0u>(*cmdBuf, radix->_histogramBuffer);
+            cmdFillBuffer<0u>(*cmdBuf, radix->_prefixSumBuffer);
+            commandBarrier(*cmdBuf);
+            cmdDispatch(*cmdBuf, radix->_histogramPipeline, WG_COUNT, RADICE_AFFINE, 1u, true);
+            cmdDispatch(*cmdBuf, radix->_workPrefixPipeline, 1u, 1u, 1u, true);
+            cmdDispatch(*cmdBuf, radix->_permutePipeline, WG_COUNT, RADICE_AFFINE, 1u, true);
+            cmdDispatch(*cmdBuf, radix->_copyhackPipeline, INTENSIVITY, 1u, 1u, true);
         }
         return result;
     }
