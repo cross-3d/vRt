@@ -36,11 +36,11 @@ namespace _vt {
         //cmdUpdateBuffer(cmdBufVk, VkBuffer(*_sbtBuffer), 0ull, _raytracingProperties.shaderHeaderSize * _RTXgroupCount, &_sbtData); 
         cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRayTracingNV, accelertExt->_intersectionPipelineNV);
         cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRayTracingNV, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
-        cmdBufVk.pushConstants<uint32_t>(vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), vk::ShaderStageFlagBits::eRaygenNV, 0u, { 0u, _raytracingProperties.shaderGroupHandleSize*3u, 0u, 0u });
+        cmdBufVk.pushConstants<uint32_t>(vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), vk::ShaderStageFlagBits::eRaygenNV, 0u, { _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize*3u, 2u, 0u });
         cmdBufVk.traceRaysNV(
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull * _raytracingProperties.shaderGroupHandleSize,
-            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 2ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
-            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 1ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
+            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize * 3ull,
+            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize * 3ull,
             {}, 0ull, 0ull,
             4608u, 1u, 1u);
         cmdRaytracingBarrierNV(cmdBufVk);

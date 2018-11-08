@@ -8,8 +8,7 @@ namespace _vt {
     // constructor for accelerator set when enabled extension
     VtResult RTXAcceleratorSetExtension::_Construction(std::shared_ptr<AcceleratorSet> accelSet) {
         VkGeometryTrianglesNV _vertexProxyNV = vk::GeometryTrianglesNV{};
-        //_vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
-        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
+        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
         _vertexProxyNV.vertexOffset = 0ull;
         _vertexProxyNV.vertexStride = sizeof(float) * 4ull;
         _vertexProxyNV.vertexData = VK_NULL_HANDLE;
