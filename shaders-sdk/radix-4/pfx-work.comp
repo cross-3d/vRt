@@ -34,7 +34,7 @@ void main() {
             };
         };
         [[flatten]] if (electedInvoc()) localHistogram[radice] = radcount; // collect all radice counts
-    }
+    };
 
     LGROUP_BARRIER
 

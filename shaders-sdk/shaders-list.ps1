@@ -17,7 +17,7 @@ $RTXI="accelNVX/"
 $CMPPROF="-S comp"
 $FRGPROF="-S frag"
 $VRTPROF="-S vert"
-$OPTFLAGS="-O"
+$OPTFLAGS="-O --inline-entry-points-exhaustive "
 
 function Pause ($Message = "Press any key to continue . . . ") {
     if ((Test-Path variable:psISE) -and $psISE) {
@@ -78,7 +78,7 @@ function BuildEXT($Name, $InDir = "", $OutDir = "", $AddArg = "", $AltName = $Na
 function OptimizeMainline($Pfx = "") {
     # optimize accelerator structure (hlBVH2)
     Optimize "interpolator.comp" "$HRDDIR$HLBV"
-    #Optimize "traverse-bvh.comp" "$HRDDIR$HLBV" 
+    Optimize "traverse-bvh.comp" "$HRDDIR$HLBV" 
     
     Optimize "bvh-build-first.comp" "$HRDDIR$HLBV" 
     Optimize "bvh-build.comp" "$HRDDIR$HLBV" 
@@ -166,7 +166,7 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "copyhack.comp"   "$INDIR$RDXI" "$HRDDIR$RDXI"
 
     # optimize built shaders
-    #OptimizeMainline
+    OptimizeMainline
 
     [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
 }
