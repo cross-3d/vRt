@@ -61,7 +61,7 @@ void loadStack(inout int rsl) {
     [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0 ) { // make store/load deferred 
         lstack = traverseCache.pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize;
     };
-    [[flatten]] if (sidx > 0) { rsl = lstack[cmpt(--sidx)], lstack[sidx] = -1; };
+    [[flatten]] if (sidx > 0) { rsl = exchange(lstack[cmpt(--sidx)],-1); };
 };
 
 void storeStack(in int rsl) {

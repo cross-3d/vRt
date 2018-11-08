@@ -32,15 +32,15 @@ void resetEntry(in bool VALID) {
 };
 
 
-bool validIdxTop(inout int idx) {
+bool validIdxTop(in int idx) {
     return idx >= 0 && idx > bvhBlockTop.entryID;
 };
 
-bool validIdx(inout int idx) {
+bool validIdx(in int idx) {
     return idx >= 0 && idx >= traverseState.entryIDBase;
 };
 
-bool validIdxIncluse(inout int idx) {
+bool validIdxIncluse(in int idx) {
     return validIdx(idx) && idx != bvhBlockTop.entryID;
 };
 
@@ -113,7 +113,7 @@ void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
 
 // triangle intersection, when it found
 void doIntersection( in bool isvalid ) {
-    const int elementID = traverseState.defElementID-1; traverseState.defElementID = 0;
+    const int elementID = exchange(traverseState.defElementID,0)-1;
     isvalid = isvalid && elementID >= 0; //&& elementID < traverseState.maxElements;
 
     const uint CSTATE = currentState;

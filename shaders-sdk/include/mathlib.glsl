@@ -191,14 +191,14 @@ vec3 rotate_vector( in vec4 quat, in vec3 vec ) { return vec + 2.0 * cross( cros
 vec4 rotation_quat( in vec3 axis, in float half_angle ) { return vec4(axis * sin(half_angle), cos(half_angle)); }
 
 // memory managment
-void swap(inout  int a, inout  int b) {  int t = a; a = b; b = t; }
-void swap(inout uint a, inout uint b) { uint t = a; a = b; b = t; }
+void swap(inout  int a, inout  int b) { const  int t = a; a = b; b = t; }
+void swap(inout uint a, inout uint b) { const uint t = a; a = b; b = t; }
 
-uint exchange(inout uint mem, in uint v) { uint tmp = mem; mem = v; return tmp; }
- int exchange(inout  int mem, in  int v) {  int tmp = mem; mem = v; return tmp; }
+uint exchange(inout uint mem, in uint v) { const uint tmp = mem; mem = v; return tmp; }
+ int exchange(inout  int mem, in  int v) { const  int tmp = mem; mem = v; return tmp; }
 
-uint add(inout uint mem, in uint ops) { uint tmp = mem; mem += ops; return tmp; }
- int add(inout  int mem, in  int ops) {  int tmp = mem; mem += ops; return tmp; }
+uint add(inout uint mem, in uint ops) { const uint tmp = mem; mem += ops; return tmp; }
+ int add(inout  int mem, in  int ops) { const  int tmp = mem; mem += ops; return tmp; }
 
 
 // logical functions (bvec2)
