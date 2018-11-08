@@ -8,7 +8,8 @@ namespace _vt {
     // constructor for accelerator set when enabled extension
     VtResult RTXAcceleratorSetExtension::_Construction(std::shared_ptr<AcceleratorSet> accelSet) {
         VkGeometryTrianglesNV _vertexProxyNV = vk::GeometryTrianglesNV{};
-        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+        //_vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
         _vertexProxyNV.vertexOffset = 0ull;
         _vertexProxyNV.vertexStride = sizeof(float) * 4ull;
         _vertexProxyNV.vertexData = VK_NULL_HANDLE;
@@ -28,12 +29,10 @@ namespace _vt {
         _vDataNV.geometry = _vertexDataNV;
         _vDataNV.flags = VK_GEOMETRY_OPAQUE_BIT_NV | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
 
-
-         
         // creation of accelerator structure
         VkAccelerationStructureCreateInfoNV _accelerationCreate = vk::AccelerationStructureCreateInfoNV{};
-        _accelerationCreate.info = _accelInfoNV;
-
+        
+        _accelInfoNV = vk::AccelerationStructureInfoNV{};
         if (accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE) {
             _accelInfoNV.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NV;
             _accelInfoNV.instanceCount = uint32_t(accelSet->_capacity);
@@ -50,6 +49,7 @@ namespace _vt {
 
 
         // create acceleration structure (no memory bind)
+        _accelerationCreate.info = _accelInfoNV;
         vkCreateAccelerationStructureNV(*accelSet->_device, &_accelerationCreate, nullptr, &_accelStructureNV);
         _WasBuild = false;
 

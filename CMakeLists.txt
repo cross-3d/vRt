@@ -29,11 +29,12 @@ set(SOURCES_LIST
     "./include/vulkan/*/*.cpp"
     "./include/vRt/*.c"
     "./include/vRt/*.cpp"
-    #"./include/vRt/vRtX/*.c"
-    #"./include/vRt/vRtX/*.cpp"
-    "./include/vRt/vRtX-NVX/*.c"
-    "./include/vRt/vRtX-NVX/*.cpp"
-    "./include/vRt/vRtX-NVX/vulkan/*.c"
+    
+    "./include/vRt/vRtX/*.c"
+    "./include/vRt/vRtX/*.cpp"
+    #"./include/vRt/vRtX-NVX/*.c"
+    #"./include/vRt/vRtX-NVX/*.cpp"
+    #"./include/vRt/vRtX-NVX/vulkan/*.c"
     
     "./include/*.h"
     "./include/*.hpp"

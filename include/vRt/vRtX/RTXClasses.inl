@@ -33,7 +33,7 @@ namespace _vt {
     };
 
     // 
-    //struct RTXShaderBindingTable { uint64_t data[4] = { 0u,0u,0u,0u }; };
+    struct RTXShaderBindingTable { uint32_t data[4] = { 0u,0u,0u,0u }; };
 
     // 
     class RTXAcceleratorExtension : public AcceleratorExtensionBase, std::enable_shared_from_this<RTXAcceleratorExtension> {
@@ -56,7 +56,8 @@ namespace _vt {
         VkPipeline _intersectionPipelineNV = {}; // native RTX intersection system 
         VkPhysicalDeviceRayTracingPropertiesNV _raytracingProperties = {};
         //std::shared_ptr<DeviceBuffer> _sbtBuffer = {};
-        //RTXShaderBindingTable _sbtData[4] = {};
+
+        RTXShaderBindingTable _sbtDebugData[4] = {};
         std::shared_ptr<HostToDeviceBuffer> _sbtBuffer = {};
     };
 

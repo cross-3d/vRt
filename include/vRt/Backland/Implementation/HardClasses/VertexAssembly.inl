@@ -85,7 +85,7 @@ namespace _vt {
             { createBufferRegion(bManager, bfi, _assemblySet->_verticeBufferCached); };
 
             // 
-            bfi.bufferSize = sizeof(uint32_t) * 4ull;//maxPrimitives * 3ull * sizeof(uint32_t);
+            bfi.bufferSize = maxPrimitives * 3ull * sizeof(uint32_t);
             bfi.format = VK_FORMAT_R32_UINT;
             bfi.offset = 0ull;
             { createBufferRegion(bManager, bfi, _assemblySet->_indexBuffer); };

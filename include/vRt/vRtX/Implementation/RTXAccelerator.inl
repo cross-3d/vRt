@@ -30,15 +30,18 @@ namespace _vt {
         //std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNV, (accel->_vertexAssemblySet)->_descriptorSet };
         std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNV };
         
+        
+
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
         //cmdUpdateBuffer(cmdBufVk, VkBuffer(*_sbtBuffer), 0ull, _raytracingProperties.shaderHeaderSize * _RTXgroupCount, &_sbtData); 
         cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRayTracingNV, accelertExt->_intersectionPipelineNV);
         cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRayTracingNV, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
+        cmdBufVk.pushConstants<uint32_t>(vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), vk::ShaderStageFlagBits::eRaygenNV, 0u, { 0u, _raytracingProperties.shaderGroupHandleSize*3u, 0u, 0u });
         cmdBufVk.traceRaysNV(
-            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull,
+            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull * _raytracingProperties.shaderGroupHandleSize,
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 2ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 1ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
-            {}, 0, 0,
+            {}, 0ull, 0ull,
             4608u, 1u, 1u);
         cmdRaytracingBarrierNV(cmdBufVk);
 
@@ -63,7 +66,7 @@ namespace _vt {
         _trianglesProxy.indexCount = accelSet->_vertexAssemblySet->_calculatedPrimitiveCount * 3ull;
         _trianglesProxy.indexOffset = accelSet->_vertexAssemblySet->_indexBuffer->_offset();
         _trianglesProxy.indexOffset += (buildInfo.elementOffset + accelSet->_elementsOffset)*(3ull*sizeof(uint32_t));
-        _trianglesProxy.indexData = VK_NULL_HANDLE;//VkBuffer(*accelSet->_vertexAssemblySet->_indexBuffer);
+        _trianglesProxy.indexData = VkBuffer(*accelSet->_vertexAssemblySet->_indexBuffer);
         
 
         const auto vsize = accelSet->_vertexAssemblySet && accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? VkDeviceSize(accelSet->_vertexAssemblySet->_calculatedPrimitiveCount) : VK_WHOLE_SIZE;
@@ -98,7 +101,7 @@ namespace _vt {
 
         // create SBT buffer
         VtDeviceBufferCreateInfo dbi = {};
-        dbi.bufferSize = _raytracingProperties.shaderGroupHandleSize * _RTXgroupCount;
+        dbi.bufferSize = tiled(_raytracingProperties.shaderGroupHandleSize * _RTXgroupCount, _raytracingProperties.shaderGroupBaseAlignment)*_raytracingProperties.shaderGroupBaseAlignment;
         dbi.usageFlag = VK_BUFFER_USAGE_RAY_TRACING_BIT_NV;
         createHostToDeviceBuffer(device, dbi, _sbtBuffer);
 
@@ -121,7 +124,9 @@ namespace _vt {
                 //vk::DescriptorSetLayout(device->_descriptorLayoutMap["vertexData"]),
             };
 
-            std::vector<vk::PushConstantRange> constRanges = {};
+            std::vector<vk::PushConstantRange> constRanges = {
+                vk::PushConstantRange().setOffset(0).setSize(sizeof(uint32_t)*4u).setStageFlags(vk::ShaderStageFlagBits::eRaygenNV)
+            };
             _raytracingPipelineLayout = vk::Device(VkDevice(*device)).createPipelineLayout(vk::PipelineLayoutCreateInfo({}, dsLayouts.size(), dsLayouts.data(), constRanges.size(), constRanges.data()));
         };
 
@@ -129,9 +134,9 @@ namespace _vt {
             const auto vendorName = device->_vendorName;
 
             std::vector<VkRayTracingShaderGroupCreateInfoNV> groups = {
-                vk::RayTracingShaderGroupCreateInfoNV().setType(vk::RayTracingShaderGroupTypeNV::eGeneral).setGeneralShader(0),
-                vk::RayTracingShaderGroupCreateInfoNV().setType(vk::RayTracingShaderGroupTypeNV::eTrianglesHitGroup).setClosestHitShader(1).setAnyHitShader(2),
-                vk::RayTracingShaderGroupCreateInfoNV().setType(vk::RayTracingShaderGroupTypeNV::eGeneral).setGeneralShader(3)
+                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader(0u).setType(vk::RayTracingShaderGroupTypeNV::eGeneral),
+                vk::RayTracingShaderGroupCreateInfoNV().setClosestHitShader(1u).setAnyHitShader(2u).setType(vk::RayTracingShaderGroupTypeNV::eTrianglesHitGroup),
+                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader(3u).setType(vk::RayTracingShaderGroupTypeNV::eGeneral),
             };
 
             std::vector<VkPipelineShaderStageCreateInfo> stages = {
@@ -152,7 +157,9 @@ namespace _vt {
             rayPipelineInfo.maxRecursionDepth = 1;
             
             vkCreateRayTracingPipelinesNV(VkDevice(*device), {}, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNV);
-            vkGetRayTracingShaderGroupHandlesNV(VkDevice(*device), _intersectionPipelineNV, 0, _RTXgroupCount, size_t(_raytracingProperties.shaderGroupHandleSize * _RTXgroupCount), _sbtBuffer->_hostMapped());
+            vkGetRayTracingShaderGroupHandlesNV(VkDevice(*device), _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtBuffer->_hostMapped());
+            vkGetRayTracingShaderGroupHandlesNV(VkDevice(*device), _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtDebugData);
+            
         };
 
         return VK_SUCCESS;

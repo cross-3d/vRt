@@ -7,7 +7,7 @@ namespace _vt {
     // construction of extended vertex assembly
     VtResult RTXVertexAssemblyExtension::_Construction(std::shared_ptr<VertexAssemblySet> _assemblySet) {
         VkGeometryTrianglesNV _vertexProxyNV = vk::GeometryTrianglesNV{};
-        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;//VK_FORMAT_R32G32B32A32_SFLOAT;
         _vertexProxyNV.vertexOffset = _assemblySet->_verticeBufferCached->_offset();
         _vertexProxyNV.vertexStride = sizeof(float) * 4ull;
         _vertexProxyNV.vertexData = VkBuffer(*_assemblySet->_verticeBufferCached);
@@ -16,7 +16,7 @@ namespace _vt {
         _vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
         _vertexProxyNV.indexCount = _assemblySet->_calculatedPrimitiveCount * 3ull;
         _vertexProxyNV.indexOffset = _assemblySet->_indexBuffer->_offset();
-        _vertexProxyNV.indexData = VK_NULL_HANDLE; //VkBuffer(*_assemblySet->_indexBuffer);
+        _vertexProxyNV.indexData = VkBuffer(*_assemblySet->_indexBuffer);
 
         VkGeometryDataNV _vertexDataNV = vk::GeometryDataNV{};
         _vertexDataNV.aabbs = vk::GeometryAABBNV{};

@@ -14,7 +14,7 @@
 #endif
 
 /* VOLK_GENERATE_VERSION */
-#define VOLK_HEADER_VERSION 89
+#define VOLK_HEADER_VERSION 91
 /* VOLK_GENERATE_VERSION */
 
 #ifndef VK_NO_PROTOTYPES
@@ -384,21 +384,6 @@ struct VolkDeviceTable
 	PFN_vkRegisterObjectsNVX vkRegisterObjectsNVX;
 	PFN_vkUnregisterObjectsNVX vkUnregisterObjectsNVX;
 #endif /* defined(VK_NVX_device_generated_commands) */
-#if defined(VK_NVX_raytracing)
-	PFN_vkBindAccelerationStructureMemoryNVX vkBindAccelerationStructureMemoryNVX;
-	PFN_vkCmdBuildAccelerationStructureNVX vkCmdBuildAccelerationStructureNVX;
-	PFN_vkCmdCopyAccelerationStructureNVX vkCmdCopyAccelerationStructureNVX;
-	PFN_vkCmdTraceRaysNVX vkCmdTraceRaysNVX;
-	PFN_vkCmdWriteAccelerationStructurePropertiesNVX vkCmdWriteAccelerationStructurePropertiesNVX;
-	PFN_vkCompileDeferredNVX vkCompileDeferredNVX;
-	PFN_vkCreateAccelerationStructureNVX vkCreateAccelerationStructureNVX;
-	PFN_vkCreateRaytracingPipelinesNVX vkCreateRaytracingPipelinesNVX;
-	PFN_vkDestroyAccelerationStructureNVX vkDestroyAccelerationStructureNVX;
-	PFN_vkGetAccelerationStructureHandleNVX vkGetAccelerationStructureHandleNVX;
-	PFN_vkGetAccelerationStructureMemoryRequirementsNVX vkGetAccelerationStructureMemoryRequirementsNVX;
-	PFN_vkGetAccelerationStructureScratchMemoryRequirementsNVX vkGetAccelerationStructureScratchMemoryRequirementsNVX;
-	PFN_vkGetRaytracingShaderHandlesNVX vkGetRaytracingShaderHandlesNVX;
-#endif /* defined(VK_NVX_raytracing) */
 #if defined(VK_NV_clip_space_w_scaling)
 	PFN_vkCmdSetViewportWScalingNV vkCmdSetViewportWScalingNV;
 #endif /* defined(VK_NV_clip_space_w_scaling) */
@@ -414,6 +399,20 @@ struct VolkDeviceTable
 	PFN_vkCmdDrawMeshTasksIndirectNV vkCmdDrawMeshTasksIndirectNV;
 	PFN_vkCmdDrawMeshTasksNV vkCmdDrawMeshTasksNV;
 #endif /* defined(VK_NV_mesh_shader) */
+#if defined(VK_NV_ray_tracing)
+	PFN_vkBindAccelerationStructureMemoryNV vkBindAccelerationStructureMemoryNV;
+	PFN_vkCmdBuildAccelerationStructureNV vkCmdBuildAccelerationStructureNV;
+	PFN_vkCmdCopyAccelerationStructureNV vkCmdCopyAccelerationStructureNV;
+	PFN_vkCmdTraceRaysNV vkCmdTraceRaysNV;
+	PFN_vkCmdWriteAccelerationStructuresPropertiesNV vkCmdWriteAccelerationStructuresPropertiesNV;
+	PFN_vkCompileDeferredNV vkCompileDeferredNV;
+	PFN_vkCreateAccelerationStructureNV vkCreateAccelerationStructureNV;
+	PFN_vkCreateRayTracingPipelinesNV vkCreateRayTracingPipelinesNV;
+	PFN_vkDestroyAccelerationStructureNV vkDestroyAccelerationStructureNV;
+	PFN_vkGetAccelerationStructureHandleNV vkGetAccelerationStructureHandleNV;
+	PFN_vkGetAccelerationStructureMemoryRequirementsNV vkGetAccelerationStructureMemoryRequirementsNV;
+	PFN_vkGetRayTracingShaderGroupHandlesNV vkGetRayTracingShaderGroupHandlesNV;
+#endif /* defined(VK_NV_ray_tracing) */
 #if defined(VK_NV_scissor_exclusive)
 	PFN_vkCmdSetExclusiveScissorNV vkCmdSetExclusiveScissorNV;
 #endif /* defined(VK_NV_scissor_exclusive) */
@@ -810,10 +809,6 @@ extern PFN_vkTrimCommandPoolKHR vkTrimCommandPoolKHR;
 #if defined(VK_KHR_maintenance3)
 extern PFN_vkGetDescriptorSetLayoutSupportKHR vkGetDescriptorSetLayoutSupportKHR;
 #endif /* defined(VK_KHR_maintenance3) */
-#if defined(VK_KHR_mir_surface)
-extern PFN_vkCreateMirSurfaceKHR vkCreateMirSurfaceKHR;
-extern PFN_vkGetPhysicalDeviceMirPresentationSupportKHR vkGetPhysicalDeviceMirPresentationSupportKHR;
-#endif /* defined(VK_KHR_mir_surface) */
 #if defined(VK_KHR_push_descriptor)
 extern PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR;
 #endif /* defined(VK_KHR_push_descriptor) */
@@ -874,21 +869,6 @@ extern PFN_vkGetPhysicalDeviceGeneratedCommandsPropertiesNVX vkGetPhysicalDevice
 extern PFN_vkRegisterObjectsNVX vkRegisterObjectsNVX;
 extern PFN_vkUnregisterObjectsNVX vkUnregisterObjectsNVX;
 #endif /* defined(VK_NVX_device_generated_commands) */
-#if defined(VK_NVX_raytracing)
-extern PFN_vkBindAccelerationStructureMemoryNVX vkBindAccelerationStructureMemoryNVX;
-extern PFN_vkCmdBuildAccelerationStructureNVX vkCmdBuildAccelerationStructureNVX;
-extern PFN_vkCmdCopyAccelerationStructureNVX vkCmdCopyAccelerationStructureNVX;
-extern PFN_vkCmdTraceRaysNVX vkCmdTraceRaysNVX;
-extern PFN_vkCmdWriteAccelerationStructurePropertiesNVX vkCmdWriteAccelerationStructurePropertiesNVX;
-extern PFN_vkCompileDeferredNVX vkCompileDeferredNVX;
-extern PFN_vkCreateAccelerationStructureNVX vkCreateAccelerationStructureNVX;
-extern PFN_vkCreateRaytracingPipelinesNVX vkCreateRaytracingPipelinesNVX;
-extern PFN_vkDestroyAccelerationStructureNVX vkDestroyAccelerationStructureNVX;
-extern PFN_vkGetAccelerationStructureHandleNVX vkGetAccelerationStructureHandleNVX;
-extern PFN_vkGetAccelerationStructureMemoryRequirementsNVX vkGetAccelerationStructureMemoryRequirementsNVX;
-extern PFN_vkGetAccelerationStructureScratchMemoryRequirementsNVX vkGetAccelerationStructureScratchMemoryRequirementsNVX;
-extern PFN_vkGetRaytracingShaderHandlesNVX vkGetRaytracingShaderHandlesNVX;
-#endif /* defined(VK_NVX_raytracing) */
 #if defined(VK_NV_clip_space_w_scaling)
 extern PFN_vkCmdSetViewportWScalingNV vkCmdSetViewportWScalingNV;
 #endif /* defined(VK_NV_clip_space_w_scaling) */
@@ -907,6 +887,20 @@ extern PFN_vkCmdDrawMeshTasksIndirectCountNV vkCmdDrawMeshTasksIndirectCountNV;
 extern PFN_vkCmdDrawMeshTasksIndirectNV vkCmdDrawMeshTasksIndirectNV;
 extern PFN_vkCmdDrawMeshTasksNV vkCmdDrawMeshTasksNV;
 #endif /* defined(VK_NV_mesh_shader) */
+#if defined(VK_NV_ray_tracing)
+extern PFN_vkBindAccelerationStructureMemoryNV vkBindAccelerationStructureMemoryNV;
+extern PFN_vkCmdBuildAccelerationStructureNV vkCmdBuildAccelerationStructureNV;
+extern PFN_vkCmdCopyAccelerationStructureNV vkCmdCopyAccelerationStructureNV;
+extern PFN_vkCmdTraceRaysNV vkCmdTraceRaysNV;
+extern PFN_vkCmdWriteAccelerationStructuresPropertiesNV vkCmdWriteAccelerationStructuresPropertiesNV;
+extern PFN_vkCompileDeferredNV vkCompileDeferredNV;
+extern PFN_vkCreateAccelerationStructureNV vkCreateAccelerationStructureNV;
+extern PFN_vkCreateRayTracingPipelinesNV vkCreateRayTracingPipelinesNV;
+extern PFN_vkDestroyAccelerationStructureNV vkDestroyAccelerationStructureNV;
+extern PFN_vkGetAccelerationStructureHandleNV vkGetAccelerationStructureHandleNV;
+extern PFN_vkGetAccelerationStructureMemoryRequirementsNV vkGetAccelerationStructureMemoryRequirementsNV;
+extern PFN_vkGetRayTracingShaderGroupHandlesNV vkGetRayTracingShaderGroupHandlesNV;
+#endif /* defined(VK_NV_ray_tracing) */
 #if defined(VK_NV_scissor_exclusive)
 extern PFN_vkCmdSetExclusiveScissorNV vkCmdSetExclusiveScissorNV;
 #endif /* defined(VK_NV_scissor_exclusive) */
