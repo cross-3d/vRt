@@ -26,7 +26,7 @@
 #include "./state-based/bvh-traverse-core.glsl"
 
 #define wgs gl_NumWorkGroups.x
-#define r4ID (rayID<<2)
+#define r4ID (RAY_ID<<2)
 #define hit hits[hid]
 
 
@@ -38,18 +38,17 @@ void main() {
 
     // planned task-based BVH traversing (for two-level BVH support)
     for (uint w=0;w<wcount;w+=wgs) {
-        const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x), rayID = vtRayIdx(it);
+        const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         const bool overflow = it >= wsize; IFALL(overflow) break;
 
         // planned multiple-hits support
-        ORIGINAL_ORIGIN = rays[rayID].origin.xyz, ORIGINAL_DIRECTION = rays[rayID].cdirect;
-        traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO), traverseState.idx = -1, traverseState.entryIDBase = -1;
+        { RAY_ID = vtRayIdx(it), traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO); };
 
-        [[flatten]] if (!overflow && rayID >= 0) {
-            //int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
-            int hid = it;//vtFetchHitIdc(rayID);
+        [[flatten]] if (!overflow && RAY_ID >= 0) {
+            //int hid = vtFetchHitIdc(RAY_ID), mhit = hid+1; bool found = false; // last possible found hit
+            int hid = it;//vtFetchHitIdc(RAY_ID);
 
-            //[[flatten]] if (hid < 0) hid = rayID;
+            //[[flatten]] if (hid < 0) hid = RAY_ID;
             //[[unroll]] for (int i=0;i<1;i++) { //[[flatten]] if (i == 0 || found) 
 
 
@@ -60,7 +59,7 @@ void main() {
 
                 { // resolve hit result 
                     //[[flatten]] if (hid < 0) hid = atomicIncHitCount();
-                    hit.rayID = rayID+1, hit.attribID = 0, hit.payloadID = 0;
+                    hit.rayID = RAY_ID+1, hit.attribID = 0, hit.payloadID = 0;
                     hit.hitVD = vec4(0.f.xxx, intBitsToFloat(LAST_INSTANCE));
                     hit.uvt = primitiveState.lastIntersection;//, primitiveState.lastIntersection.w = FINT_ZERO;
                     

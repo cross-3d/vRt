@@ -1,6 +1,8 @@
 
 // 
 int traverseBVH2( in bool validTop ) {
+    //, traverseState.idx = -1, traverseState.entryIDBase = -1;
+
     {
         traverseState.idx = (traverseState.entryIDBase = bvhBlockTop.entryID), lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
         traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = -1, traverseState.defElementID = 0;
