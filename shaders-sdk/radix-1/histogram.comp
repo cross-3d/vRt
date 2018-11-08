@@ -32,7 +32,7 @@ void main() {
     // use SIMD lanes for calculate histograms
     WPTR1 addr = WPTR1(0)*Wave_Size_RT.x + WPTR1(blocks.offset.x) + WPTR1(Lane_Idx.x);
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
-        //LGROUP_BARRIER
+        LGROUP_BARRIER
 
         const bool validAddress = addr < blocks.limit.x; IFALL(!validAddress) break;
         [[flatten]] if (Wave_Idx == 0) { key.x = BFE(validAddress.x ? KeyIn[addr.x] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS); };
