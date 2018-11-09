@@ -17,8 +17,8 @@ namespace _vt {
         _vertexProxyNV.indexType = VK_INDEX_TYPE_NONE_NV;
         //_vertexProxyNV.indexCount = _vertexProxyNV.vertexCount;
         
+        // index buffer (uint32_t)
         //_vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
-        //_vertexProxyNV.indexCount = _assemblySet->_calculatedPrimitiveCount * 3ull;
         //_vertexProxyNV.indexOffset = _assemblySet->_indexBuffer->_offset();
         //_vertexProxyNV.indexData = VkBuffer(*_assemblySet->_indexBuffer);
 

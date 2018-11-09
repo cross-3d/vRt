@@ -77,7 +77,7 @@ namespace _vt {
             
             VtBufferRegionCreateInfo bfi = {};
 
-            
+
             { // allocate buffer regions
                 bfi.bufferSize = rayCount * (8ull * sizeof(uint32_t));
                 bfi.format = VK_FORMAT_UNDEFINED;

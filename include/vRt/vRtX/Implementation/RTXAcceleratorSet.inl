@@ -10,21 +10,16 @@ namespace _vt {
         VtResult rtxResult = VK_ERROR_EXTENSION_NOT_PRESENT;
 
         VkGeometryTrianglesNV _vertexProxyNV = vk::GeometryTrianglesNV{};
-        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
-        _vertexProxyNV.vertexOffset = 0ull;
         _vertexProxyNV.vertexStride = sizeof(float) * 4ull;
-        _vertexProxyNV.vertexData = VK_NULL_HANDLE;
+        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
         _vertexProxyNV.vertexCount = accelSet->_capacity * 3ull;
 
         // RTX support was fully broken, so need next generation of NVidia GPU's
         _vertexProxyNV.indexType = VK_INDEX_TYPE_NONE_NV; // support was broken
-        _vertexProxyNV.indexCount = _vertexProxyNV.vertexCount; // anyways forced requirements
+        //_vertexProxyNV.indexCount = _vertexProxyNV.vertexCount; // anyways forced requirements
 
-
+        // enable index buffer
         //_vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
-        //_vertexProxyNV.indexCount = accelSet->_capacity * 3ull;
-        //_vertexProxyNV.indexOffset = 0ull;
-        //_vertexProxyNV.indexData = VK_NULL_HANDLE;
 
 
         VkGeometryDataNV _vertexDataNV = vk::GeometryDataNV{};
@@ -127,7 +122,7 @@ namespace _vt {
             auto hAccExtension = std::dynamic_pointer_cast<RTXAcceleratorExtension>(accelSet->_device->_hExtensionAccelerator[0]);
             _accelDescriptorSetNV = vk::Device(VkDevice(*accelSet->_device)).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(accelSet->_device->_descriptorPool).setPSetLayouts((vk::DescriptorSetLayout*)&hAccExtension->_raytracingDescriptorLayout).setDescriptorSetCount(1))[0];
 
-            std::vector<vk::WriteDescriptorSet> writes = { vk::WriteDescriptorSet(_accelDescriptorSetNV, 0, 0, 1, vk::DescriptorType::eAccelerationStructureNV).setPNext(&_accelDescriptorNV).setDstBinding(0u) };
+            std::vector<vk::WriteDescriptorSet> writes = { vk::WriteDescriptorSet(_accelDescriptorSetNV, 0u, 0, 1, vk::DescriptorType::eAccelerationStructureNV).setPNext(&_accelDescriptorNV) };
             vk::Device(VkDevice(*accelSet->_device)).updateDescriptorSets(writes, {});
         };
 
