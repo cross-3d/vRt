@@ -18,7 +18,7 @@ namespace _vt {
 
         // RTX support was fully broken, so need next generation of NVidia GPU's
         _vertexProxyNV.indexType = VK_INDEX_TYPE_NONE_NV; // support was broken
-        //_vertexProxyNV.indexCount = _vertexProxyNV.vertexCount; // anyways forced requirements
+        _vertexProxyNV.indexCount = _vertexProxyNV.vertexCount; // anyways forced requirements
 
 
         //_vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
@@ -52,13 +52,16 @@ namespace _vt {
 
         //const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
         //const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
-        _accelInfoNV.flags = {};//buildFlags;
+        _accelInfoNV.flags = VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
 
 
         // create acceleration structure (no memory bind)
         _accelerationCreate.info = _accelInfoNV;
-        rtxResult = vkCreateAccelerationStructureNV(*accelSet->_device, &_accelerationCreate, nullptr, &_accelStructureNV);
-        _WasBuild = false;
+        rtxResult = vkCreateAccelerationStructureNV(*accelSet->_device, &_accelerationCreate, nullptr, &_accelStructureNV), _WasBuild = false;
+
+        // reset create structures
+        _accelInfoNV.pGeometries = nullptr;
+        _vertexProxyNV.indexCount = 0;
 
 
         // allocate and bind acceleration structure memory 
