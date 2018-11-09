@@ -15,7 +15,7 @@ namespace _vt {
 
         // RTX support was broken even there
         _vertexProxyNV.indexType = VK_INDEX_TYPE_NONE_NV;
-        _vertexProxyNV.indexCount = _vertexProxyNV.vertexCount;
+        //_vertexProxyNV.indexCount = _vertexProxyNV.vertexCount;
         
         //_vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
         //_vertexProxyNV.indexCount = _assemblySet->_calculatedPrimitiveCount * 3ull;

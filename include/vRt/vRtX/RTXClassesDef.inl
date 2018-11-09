@@ -10,7 +10,7 @@ namespace _vt {
     class RTXAcceleratorExtension;
 
     // command barrier with RTX support 
-    static inline void cmdRaytracingBarrierNV(VkCommandBuffer cmdBuffer) {
+    static inline VtResult cmdRaytracingBarrierNV(VkCommandBuffer cmdBuffer) {
         VkMemoryBarrier memoryBarrier = {};
         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
         memoryBarrier.pNext = nullptr;
@@ -24,5 +24,6 @@ namespace _vt {
             1, &memoryBarrier,
             0, nullptr,
             0, nullptr);
+        return VK_SUCCESS;
     };
 };

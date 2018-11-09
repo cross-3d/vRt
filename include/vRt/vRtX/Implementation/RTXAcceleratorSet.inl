@@ -7,6 +7,8 @@ namespace _vt {
 
     // constructor for accelerator set when enabled extension
     VtResult RTXAcceleratorSetExtension::_Construction(std::shared_ptr<AcceleratorSet> accelSet) {
+        VtResult rtxResult = VK_ERROR_EXTENSION_NOT_PRESENT;
+
         VkGeometryTrianglesNV _vertexProxyNV = vk::GeometryTrianglesNV{};
         _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
         _vertexProxyNV.vertexOffset = 0ull;
@@ -16,7 +18,7 @@ namespace _vt {
 
         // RTX support was fully broken, so need next generation of NVidia GPU's
         _vertexProxyNV.indexType = VK_INDEX_TYPE_NONE_NV; // support was broken
-        _vertexProxyNV.indexCount = _vertexProxyNV.vertexCount; // anyways forced requirements
+        //_vertexProxyNV.indexCount = _vertexProxyNV.vertexCount; // anyways forced requirements
 
 
         //_vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
@@ -49,18 +51,18 @@ namespace _vt {
         };
 
         //const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
-        const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
-        _accelInfoNV.flags = buildFlags;
+        //const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
+        _accelInfoNV.flags = {};//buildFlags;
 
 
         // create acceleration structure (no memory bind)
         _accelerationCreate.info = _accelInfoNV;
-        vkCreateAccelerationStructureNV(*accelSet->_device, &_accelerationCreate, nullptr, &_accelStructureNV);
+        rtxResult = vkCreateAccelerationStructureNV(*accelSet->_device, &_accelerationCreate, nullptr, &_accelStructureNV);
         _WasBuild = false;
 
 
         // allocate and bind acceleration structure memory 
-        { // VMA doesn't have native RTX memory support, so try to allocate manually
+        if (rtxResult == VK_SUCCESS) { // VMA doesn't have native RTX memory support, so try to allocate manually
             VkAccelerationStructureMemoryRequirementsInfoNV sMem = vk::AccelerationStructureMemoryRequirementsInfoNV{};
             sMem.type = VK_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_TYPE_OBJECT_NV;
             sMem.accelerationStructure = _accelStructureNV;
@@ -91,12 +93,12 @@ namespace _vt {
             };
 
             // bind memory 
-            vkBindAccelerationStructureMemoryNV(*accelSet->_device, 1, &mBind);
+            rtxResult = vkBindAccelerationStructureMemoryNV(*accelSet->_device, 1, &mBind);
         };
 
 
         // scratch memory allocation
-        { // VMA doesn't have native RTX memory support, so try to allocate manually
+        if (rtxResult == VK_SUCCESS) { // VMA doesn't have native RTX memory support, so try to allocate manually
             VkAccelerationStructureMemoryRequirementsInfoNV sMem = vk::AccelerationStructureMemoryRequirementsInfoNV{};
             sMem.type = VK_ACCELERATION_STRUCTURE_MEMORY_REQUIREMENTS_TYPE_BUILD_SCRATCH_NV;
             sMem.accelerationStructure = _accelStructureNV;
@@ -113,7 +115,7 @@ namespace _vt {
             createDeviceBuffer(accelSet->_device, dbs, _scratchBuffer);
         };
 
-        if (accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE) {
+        if (rtxResult == VK_SUCCESS && accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE) {
             // create description of structure to bind into descriptor set
             _accelDescriptorNV = vk::WriteDescriptorSetAccelerationStructureNV{};
             _accelDescriptorNV.accelerationStructureCount = 1;
@@ -126,9 +128,7 @@ namespace _vt {
             vk::Device(VkDevice(*accelSet->_device)).updateDescriptorSets(writes, {});
         };
 
-
-        return VK_SUCCESS;
-        //return VK_ERROR_EXTENSION_NOT_PRESENT;
+        return rtxResult;
     };
 
 

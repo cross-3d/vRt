@@ -27,13 +27,9 @@ namespace _vt {
         const auto accelertExt = std::dynamic_pointer_cast<RTXAcceleratorExtension>(accel->_device->_hExtensionAccelerator[0]);
 
         std::vector<uint32_t> _offsets = {};
-        //std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNV, (accel->_vertexAssemblySet)->_descriptorSet };
         std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNV };
         
-
-
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
-        //cmdUpdateBuffer(cmdBufVk, VkBuffer(*_sbtBuffer), 0ull, _raytracingProperties.shaderHeaderSize * _RTXgroupCount, &_sbtData); 
         cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRayTracingNV, accelertExt->_intersectionPipelineNV);
         cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRayTracingNV, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
         cmdBufVk.pushConstants<uint32_t>(vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), vk::ShaderStageFlagBits::eRaygenNV, 0u, { _raytracingProperties.shaderGroupHandleSize*0u, _raytracingProperties.shaderGroupHandleSize*1u, 0u, 0u });
@@ -41,17 +37,15 @@ namespace _vt {
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull * _raytracingProperties.shaderGroupHandleSize,
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 2ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 1ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
-            {}, 0ull, _raytracingProperties.shaderGroupHandleSize,
+            {}, 0ull, 0ull,
             4608u, 1u, 1u);
-        cmdRaytracingBarrierNV(cmdBufVk);
-
-
-        return VK_SUCCESS;
-        //return VK_ERROR_EXTENSION_NOT_PRESENT;
+        return cmdRaytracingBarrierNV(cmdBufVk);
     };
 
 
     VtResult RTXAcceleratorExtension::_BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> accelSet, VtAcceleratorBuildInfo buildInfo) {
+        VtResult rtxResult = VK_ERROR_EXTENSION_NOT_PRESENT;
+
         // if has valid vertex assembly
         if (!(accelSet->_vertexAssemblySet && accelSet->_vertexAssemblySet->_hExtension && accelSet->_vertexAssemblySet->_hExtension->_AccelerationName() == VT_ACCELERATION_NAME_RTX)) return VK_ERROR_EXTENSION_NOT_PRESENT;
 
@@ -63,20 +57,17 @@ namespace _vt {
         _trianglesProxy.vertexCount = accelSet->_vertexAssemblySet->_calculatedPrimitiveCount * 3ull;
         _trianglesProxy.vertexOffset = accelSet->_vertexAssemblySet->_verticeBufferCached->_offset();
         _trianglesProxy.vertexData = VkBuffer(*accelSet->_vertexAssemblySet->_verticeBufferCached);
-        _trianglesProxy.indexCount = _trianglesProxy.vertexCount;
+        //_trianglesProxy.indexCount = _trianglesProxy.vertexCount;
 
         // index buffer 
         //_trianglesProxy.indexCount = accelSet->_vertexAssemblySet->_calculatedPrimitiveCount * 3ull;
         //_trianglesProxy.indexOffset = accelSet->_vertexAssemblySet->_indexBuffer->_offset();
         //_trianglesProxy.indexOffset += (buildInfo.elementOffset + accelSet->_elementsOffset)*(3ull*sizeof(uint32_t));
         //_trianglesProxy.indexData = VkBuffer(*accelSet->_vertexAssemblySet->_indexBuffer);
-        
+
 
         const auto vsize = accelSet->_vertexAssemblySet && accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? VkDeviceSize(accelSet->_vertexAssemblySet->_calculatedPrimitiveCount) : VK_WHOLE_SIZE;
         const auto dsize = uint32_t(sMin((accelSet->_elementsCount != -1 && accelSet->_elementsCount >= 0) ? VkDeviceSize(accelSet->_elementsCount) : VkDeviceSize(vsize), sMin(buildInfo.elementSize, accelSet->_capacity)));
-
-        //const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
-        const auto buildFlags = VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT_NV | VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_NV;
         const auto extendedSet = std::dynamic_pointer_cast<RTXAcceleratorSetExtension>(accelSet->_hExtension);
 
 
@@ -91,14 +82,11 @@ namespace _vt {
             vkCmdBuildAccelerationStructureNV(cmdBufVk, &extendedSet->_accelInfoNV, VK_NULL_HANDLE, 0ull, extendedSet->_WasBuild, extendedSet->_accelStructureNV, VK_NULL_HANDLE, *extendedSet->_scratchBuffer, extendedSet->_scratchBuffer->_offset());
         };
         //extendedSet->_WasBuild = true; // force re-build structure
-        cmdRaytracingBarrierNV(cmdBufVk);
-        
-
-        return VK_SUCCESS;
-        //return VK_ERROR_EXTENSION_NOT_PRESENT;
+        return cmdRaytracingBarrierNV(cmdBufVk);
     };
 
     VtResult RTXAcceleratorExtension::_Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) {
+        VtResult rtxResult = VK_ERROR_EXTENSION_NOT_PRESENT;
         const auto * extensionInfo = (VtRTXAcceleratorExtension*)(extensionBasedInfo);
         _raytracingProperties = device->_features->_rayTracingNV; // planned to merge here
 
@@ -111,7 +99,7 @@ namespace _vt {
         //
         auto pbindings = vk::DescriptorBindingFlagBitsEXT::ePartiallyBound | vk::DescriptorBindingFlagBitsEXT::eUpdateAfterBind | vk::DescriptorBindingFlagBitsEXT::eVariableDescriptorCount | vk::DescriptorBindingFlagBitsEXT::eUpdateUnusedWhilePending;
         auto vkfl = vk::DescriptorSetLayoutBindingFlagsCreateInfoEXT().setPBindingFlags(&pbindings);
-        auto vkpi = vk::DescriptorSetLayoutCreateInfo().setPNext(&vkfl);
+        auto vkpi = vk::DescriptorSetLayoutCreateInfo();//.setPNext(&vkfl);
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
@@ -158,14 +146,15 @@ namespace _vt {
             rayPipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
             rayPipelineInfo.basePipelineIndex = 0;
             rayPipelineInfo.maxRecursionDepth = 1;
-            
-            vkCreateRayTracingPipelinesNV(VkDevice(*device), {}, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNV);
-            vkGetRayTracingShaderGroupHandlesNV(VkDevice(*device), _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtDebugData);
-            vkGetRayTracingShaderGroupHandlesNV(VkDevice(*device), _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtBuffer->_hostMapped());
+
+            rtxResult = vkCreateRayTracingPipelinesNV(*device, {}, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNV);
+            if (rtxResult == VK_SUCCESS) {
+                //vkGetRayTracingShaderGroupHandlesNV(*device, _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtDebugData);
+                rtxResult = vkGetRayTracingShaderGroupHandlesNV(*device, _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtBuffer->_hostMapped());
+            };
         };
 
-        return VK_SUCCESS;
-        //return VK_ERROR_EXTENSION_NOT_PRESENT;
+        return rtxResult;
     };
 
 
