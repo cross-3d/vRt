@@ -97,10 +97,10 @@ namespace NSM
 
         // instance layers
         std::vector<const char *> wantedLayers = {
-            //"VK_LAYER_LUNARG_assistant_layer",
-            //"VK_LAYER_LUNARG_standard_validation",
-            //"VK_LAYER_LUNARG_parameter_validation",
-            //"VK_LAYER_LUNARG_core_validation",
+            "VK_LAYER_LUNARG_assistant_layer",
+            "VK_LAYER_LUNARG_standard_validation",
+            "VK_LAYER_LUNARG_parameter_validation",
+            "VK_LAYER_LUNARG_core_validation",
 
             //"VK_LAYER_LUNARG_api_dump",
             //"VK_LAYER_LUNARG_object_tracker",
@@ -408,9 +408,7 @@ namespace NSM
                 const auto rtxExtensionPassport = vrt::VtRTXAcceleratorExtension{};
 
                 std::vector<uint32_t> queueIndices = {};
-                for (auto& q : devicePtr->queues) {
-                    queueIndices.push_back(q->familyIndex);
-                }
+                for (auto& q : devicePtr->queues) { queueIndices.push_back(q->familyIndex); };
 
                 vrt::VtArtificalDeviceExtension dbi = {};
                 dbi.pFamilyIndices = queueIndices.data();
@@ -419,7 +417,7 @@ namespace NSM
                 dbi.shaderPath = shaderPath;
                 dbi.sharedCacheSize = 4096ull * 4096ull * 4ull;
                 dbi.maxPrimitives = 1024ull * 2048ull;
-                dbi.enableAdvancedAcceleration = false; // Current Hardware and Drivers are damned to support RTX in Vulkan API, need await 5 years when will possible to run this pieces of shits, OR need to add DXR backend for Microsoft motherf&ckers
+                dbi.enableAdvancedAcceleration = false; // Current Hardware and Drivers are damned to support RTX in Vulkan API, need await 5 years...
                 dbi.pAccelerationExtension = (vrt::VtDeviceAdvancedAccelerationExtension*)&rtxExtensionPassport;
                 vrt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
                 if (deviceQueuePtr->device->rtDev->_hExtensionAccelerator.size() > 0 && deviceQueuePtr->device->rtDev->_hExtensionAccelerator[0]) {

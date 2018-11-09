@@ -8,16 +8,22 @@ namespace _vt {
     // constructor for accelerator set when enabled extension
     VtResult RTXAcceleratorSetExtension::_Construction(std::shared_ptr<AcceleratorSet> accelSet) {
         VkGeometryTrianglesNV _vertexProxyNV = vk::GeometryTrianglesNV{};
-        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+        _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
         _vertexProxyNV.vertexOffset = 0ull;
         _vertexProxyNV.vertexStride = sizeof(float) * 4ull;
         _vertexProxyNV.vertexData = VK_NULL_HANDLE;
         _vertexProxyNV.vertexCount = accelSet->_capacity * 3ull;
 
-        _vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
-        _vertexProxyNV.indexCount = accelSet->_capacity * 3ull;
-        _vertexProxyNV.indexOffset = 0ull;
-        _vertexProxyNV.indexData = VK_NULL_HANDLE;
+        // RTX support was fully broken, so need next generation of NVidia GPU's
+        _vertexProxyNV.indexType = VK_INDEX_TYPE_NONE_NV; // support was broken
+        _vertexProxyNV.indexCount = _vertexProxyNV.vertexCount; // anyways forced requirements
+
+
+        //_vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
+        //_vertexProxyNV.indexCount = accelSet->_capacity * 3ull;
+        //_vertexProxyNV.indexOffset = 0ull;
+        //_vertexProxyNV.indexData = VK_NULL_HANDLE;
+
 
         VkGeometryDataNV _vertexDataNV = vk::GeometryDataNV{};
         _vertexDataNV.aabbs = vk::GeometryAABBNV{};
@@ -26,7 +32,7 @@ namespace _vt {
         VkGeometryNV _vDataNV = vk::GeometryNV{};
         _vDataNV.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NV;
         _vDataNV.geometry = _vertexDataNV;
-        _vDataNV.flags = VK_GEOMETRY_OPAQUE_BIT_NV | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
+        _vDataNV.flags = VK_GEOMETRY_OPAQUE_BIT_NV; //| VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
 
         // creation of accelerator structure
         VkAccelerationStructureCreateInfoNV _accelerationCreate = vk::AccelerationStructureCreateInfoNV{};
@@ -102,8 +108,7 @@ namespace _vt {
 
             // just create scratch memory
             VtDeviceBufferCreateInfo dbs = {};
-            dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-            dbs.usageFlag |= VK_BUFFER_USAGE_RAY_TRACING_BIT_NV;
+            dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_RAY_TRACING_BIT_NV;
             dbs.bufferSize = mRequirements.memoryRequirements.size;
             createDeviceBuffer(accelSet->_device, dbs, _scratchBuffer);
         };

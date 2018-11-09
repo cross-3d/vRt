@@ -30,18 +30,18 @@ namespace _vt {
         //std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNV, (accel->_vertexAssemblySet)->_descriptorSet };
         std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNV };
         
-        
+
 
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
         //cmdUpdateBuffer(cmdBufVk, VkBuffer(*_sbtBuffer), 0ull, _raytracingProperties.shaderHeaderSize * _RTXgroupCount, &_sbtData); 
         cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRayTracingNV, accelertExt->_intersectionPipelineNV);
         cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRayTracingNV, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
-        cmdBufVk.pushConstants<uint32_t>(vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), vk::ShaderStageFlagBits::eRaygenNV, 0u, { _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize*3u, 2u, 0u });
+        cmdBufVk.pushConstants<uint32_t>(vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), vk::ShaderStageFlagBits::eRaygenNV, 0u, { _raytracingProperties.shaderGroupHandleSize*0u, _raytracingProperties.shaderGroupHandleSize*1u, 0u, 0u });
         cmdBufVk.traceRaysNV(
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull * _raytracingProperties.shaderGroupHandleSize,
-            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize * 3ull,
-            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize * 3ull,
-            {}, 0ull, 0ull,
+            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 2ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
+            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 1ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
+            {}, 0ull, _raytracingProperties.shaderGroupHandleSize,
             4608u, 1u, 1u);
         cmdRaytracingBarrierNV(cmdBufVk);
 
@@ -58,15 +58,18 @@ namespace _vt {
         auto vertexAssemblyExtension = std::dynamic_pointer_cast<RTXVertexAssemblyExtension>(accelSet->_vertexAssemblySet->_hExtension);
 
         auto& _trianglesProxy = vertexAssemblyExtension->_vDataNV.geometry.triangles;
+
+        // vertex buffer 
         _trianglesProxy.vertexCount = accelSet->_vertexAssemblySet->_calculatedPrimitiveCount * 3ull;
         _trianglesProxy.vertexOffset = accelSet->_vertexAssemblySet->_verticeBufferCached->_offset();
         _trianglesProxy.vertexData = VkBuffer(*accelSet->_vertexAssemblySet->_verticeBufferCached);
+        _trianglesProxy.indexCount = _trianglesProxy.vertexCount;
 
-        //vertexAssemblyExtension->_vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
-        _trianglesProxy.indexCount = accelSet->_vertexAssemblySet->_calculatedPrimitiveCount * 3ull;
-        _trianglesProxy.indexOffset = accelSet->_vertexAssemblySet->_indexBuffer->_offset();
-        _trianglesProxy.indexOffset += (buildInfo.elementOffset + accelSet->_elementsOffset)*(3ull*sizeof(uint32_t));
-        _trianglesProxy.indexData = VkBuffer(*accelSet->_vertexAssemblySet->_indexBuffer);
+        // index buffer 
+        //_trianglesProxy.indexCount = accelSet->_vertexAssemblySet->_calculatedPrimitiveCount * 3ull;
+        //_trianglesProxy.indexOffset = accelSet->_vertexAssemblySet->_indexBuffer->_offset();
+        //_trianglesProxy.indexOffset += (buildInfo.elementOffset + accelSet->_elementsOffset)*(3ull*sizeof(uint32_t));
+        //_trianglesProxy.indexData = VkBuffer(*accelSet->_vertexAssemblySet->_indexBuffer);
         
 
         const auto vsize = accelSet->_vertexAssemblySet && accelSet->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY ? VkDeviceSize(accelSet->_vertexAssemblySet->_calculatedPrimitiveCount) : VK_WHOLE_SIZE;
@@ -134,9 +137,9 @@ namespace _vt {
             const auto vendorName = device->_vendorName;
 
             std::vector<VkRayTracingShaderGroupCreateInfoNV> groups = {
-                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader(0u).setType(vk::RayTracingShaderGroupTypeNV::eGeneral),
-                vk::RayTracingShaderGroupCreateInfoNV().setClosestHitShader(1u).setAnyHitShader(2u).setType(vk::RayTracingShaderGroupTypeNV::eTrianglesHitGroup),
-                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader(3u).setType(vk::RayTracingShaderGroupTypeNV::eGeneral),
+                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader( 0u).setClosestHitShader(~0u).setAnyHitShader(~0u).setIntersectionShader(~0u).setType(vk::RayTracingShaderGroupTypeNV::eGeneral),
+                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader(~0u).setClosestHitShader( 1u).setAnyHitShader( 2u).setIntersectionShader(~0u).setType(vk::RayTracingShaderGroupTypeNV::eTrianglesHitGroup),
+                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader( 3u).setClosestHitShader(~0u).setAnyHitShader(~0u).setIntersectionShader(~0u).setType(vk::RayTracingShaderGroupTypeNV::eGeneral),
             };
 
             std::vector<VkPipelineShaderStageCreateInfo> stages = {
@@ -157,9 +160,8 @@ namespace _vt {
             rayPipelineInfo.maxRecursionDepth = 1;
             
             vkCreateRayTracingPipelinesNV(VkDevice(*device), {}, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNV);
-            vkGetRayTracingShaderGroupHandlesNV(VkDevice(*device), _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtBuffer->_hostMapped());
             vkGetRayTracingShaderGroupHandlesNV(VkDevice(*device), _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtDebugData);
-            
+            vkGetRayTracingShaderGroupHandlesNV(VkDevice(*device), _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtBuffer->_hostMapped());
         };
 
         return VK_SUCCESS;
