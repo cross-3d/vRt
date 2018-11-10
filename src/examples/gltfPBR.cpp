@@ -324,7 +324,7 @@ namespace rnd {
 
 
      void Renderer::InitRayTracing() {
-         const VkDeviceSize maxPrimitives = 2048ull * 2048ull;
+         const VkDeviceSize maxPrimitives = 1024ull * 2048ull;
 
 
          {
