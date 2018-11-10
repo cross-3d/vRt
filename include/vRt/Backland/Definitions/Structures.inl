@@ -139,8 +139,8 @@ namespace vrt { // store in official namespace
         uint32_t sourceBufferCount = 0;
 
         // bindings regions
-        VkBuffer bBufferRegionBindings = nullptr; // direct descriptor set bind
-        VkDeviceSize bufferRegionByteOffset = 0;
+        //VkBuffer bBufferRegionBindings = nullptr; // direct descriptor set bind
+        //VkDeviceSize bufferRegionByteOffset = 0;
 
         // accessor regions
         VkBuffer bBufferAccessors = nullptr; // direct descriptor set bind

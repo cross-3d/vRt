@@ -56,16 +56,22 @@ namespace _vt {
         // update constants
         if (vertx->_attributeTexelBuffer) imageBarrier(*cmdBuf, vertx->_attributeTexelBuffer);
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
+        std::vector<VtUniformBlock> uniformData = {};
         for (auto iV : cmdBuf->_vertexInputs) {
             const uint32_t _bnd = _bndc++;
 
             //iV->_uniformBlock.updateOnly = false;
             iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount;
             if (cb) { cb(*cmdBuf, int(_bnd), iV->_uniformBlock); };
-            if (iV->_uniformBlockBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock); };
+            uniformData.push_back(iV->_uniformBlock);
+
+            //if (iV->_uniformBlockBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock); };
             //if (iV->_inlineTransformBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_inlineTransformBuffer->_bufferRegion, 0ull, sizeof(IdentifyMat4), &IdentifyMat4); };
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
+
+        memcpy(vertx->_bufferTraffic[0]->_uniformVIMapped->_hostMapped(), uniformData.data(), uniformData.size() * sizeof(VtUniformBlock));
+        cmdCopyBufferFromHost(*cmdBuf, vertx->_bufferTraffic[0]->_uniformVIMapped, vertx->_bufferTraffic[0]->_uniformVIBuffer, { vk::BufferCopy(0u, 0u, uniformData.size() * sizeof(VtUniformBlock)) });
         updateCommandBarrier(*cmdBuf);
 
         vertx->_calculatedPrimitiveCount = calculatedPrimitiveCount;
@@ -129,16 +135,23 @@ namespace _vt {
 
         // update constants
         uint32_t _bndc = 0, calculatedPrimitiveCount = 0;
+        std::vector<VtUniformBlock> uniformData = {};
         for (auto iV : cmdBuf->_vertexInputs) {
             const uint32_t _bnd = _bndc++;
 
             //iV->_uniformBlock.updateOnly = true;
             iV->_uniformBlock.primitiveOffset = calculatedPrimitiveCount; // every requires newer offset 
             if (cb) { cb(*cmdBuf, int(_bnd), iV->_uniformBlock); };
-            if (iV->_uniformBlockBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock); };
-            if (iV->_inlineTransformBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_inlineTransformBuffer->_bufferRegion, 0ull, sizeof(IdentifyMat4), &IdentifyMat4); };
+            uniformData.push_back(iV->_uniformBlock);
+
+            //if (iV->_uniformBlockBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_uniformBlockBuffer, strided<VtUniformBlock>(_bnd), sizeof(iV->_uniformBlock), &iV->_uniformBlock); };
+            //if (iV->_inlineTransformBuffer) { cmdUpdateBuffer(*cmdBuf, iV->_inlineTransformBuffer->_bufferRegion, 0ull, sizeof(IdentifyMat4), &IdentifyMat4); };
             calculatedPrimitiveCount += iV->_uniformBlock.primitiveCount;
         } _bndc = 0;
+
+        // update uniform unified data
+        memcpy(vertx->_bufferTraffic[0]->_uniformVIMapped->_hostMapped(), uniformData.data(), uniformData.size() * sizeof(VtUniformBlock));
+        cmdCopyBufferFromHost(*cmdBuf, vertx->_bufferTraffic[0]->_uniformVIMapped, vertx->_bufferTraffic[0]->_uniformVIBuffer, { vk::BufferCopy(0u, 0u, uniformData.size() * sizeof(VtUniformBlock)) });
         updateCommandBarrier(*cmdBuf);
         
         if (vertx->_descriptorSetGenerator) vertx->_descriptorSetGenerator();

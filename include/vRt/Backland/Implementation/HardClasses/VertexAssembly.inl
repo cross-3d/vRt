@@ -114,6 +114,19 @@ namespace _vt {
                 tfi.size = { uint32_t(aWidth), uint32_t(tiled(maxPrimitives * ATTRIB_EXTENT * 3ull, aWidth) + 1ull), 1u };
                 createDeviceImage(_vtDevice, tfi, _assemblySet->_attributeTexelBuffer);
             };
+
+
+            _assemblySet->_bufferTraffic.push_back(std::make_shared<BufferTraffic>());
+
+            // vertex input meta construction arrays
+            { const constexpr uint32_t t = 0u;
+                VtDeviceBufferCreateInfo dbfi = {};
+                dbfi.format = VK_FORMAT_UNDEFINED;
+                dbfi.bufferSize = strided<VtUniformBlock>(1024);
+                createDeviceBuffer(_vtDevice, dbfi, _assemblySet->_bufferTraffic[t]->_uniformVIBuffer);
+                createHostToDeviceBuffer(_vtDevice, dbfi, _assemblySet->_bufferTraffic[t]->_uniformVIMapped);
+            };
+
         };
 
         _assemblySet->_descriptorSetGenerator = [=]() { // create caller for generate descriptor set
@@ -145,6 +158,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&attrbView),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(7).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_normalBuffer->_bufferView()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_indexBuffer->_bufferView()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(9).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_bufferTraffic[0]->_uniformVIBuffer->_descriptorInfo()),
                 };
                 vk::Device(vkDevice).updateDescriptorSets(writes, {});
             };

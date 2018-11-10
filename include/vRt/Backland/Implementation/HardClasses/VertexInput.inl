@@ -29,7 +29,7 @@ namespace _vt {
         bfi.format = VK_FORMAT_UNDEFINED;
 
         // planned add external buffer support
-        vtVertexInput->_uniformBlockBuffer = _vtDevice->_bufferTraffic[0]->_uniformVIBuffer; // use unified BUS only 
+        //vtVertexInput->_uniformBlockBuffer = _vtDevice->_bufferTraffic[0]->_uniformVIBuffer; // use unified BUS only 
         vtVertexInput->_uniformBlock.primitiveCount = info.primitiveCount;
         vtVertexInput->_uniformBlock.verticeAccessor = info.verticeAccessor;
         vtVertexInput->_uniformBlock.indiceAccessor = info.indiceAccessor;
@@ -59,11 +59,11 @@ namespace _vt {
                     vtVertexInput->_descriptorSet = std::move(dsc[0]);
 
                     // write descriptors
-                    auto d1 = vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset);
+                    //auto d1 = vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset);
                     auto d2 = vk::DescriptorBufferInfo(info.bBufferViews, 0, VK_WHOLE_SIZE).setOffset(info.bufferViewByteOffset);
                     auto d3 = vk::DescriptorBufferInfo(info.bBufferAccessors, 0, VK_WHOLE_SIZE).setOffset(info.bufferAccessorByteOffset);
                     auto d4 = vk::DescriptorBufferInfo(info.bBufferAttributeBindings, 0, VK_WHOLE_SIZE).setOffset(info.attributeByteOffset);
-                    auto d5 = vk::DescriptorBufferInfo(vtVertexInput->_uniformBlockBuffer->_descriptorInfo());
+                    //auto d5 = vk::DescriptorBufferInfo(vtVertexInput->_uniformBlockBuffer->_descriptorInfo());
                     auto d6 = vk::DescriptorBufferInfo(info.bTransformData, 0, VK_WHOLE_SIZE).setOffset(info.transformOffset);
 
                     // inline transform buffer create
@@ -78,11 +78,11 @@ namespace _vt {
                     const auto writeTmpl = vk::WriteDescriptorSet(vtVertexInput->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                     std::vector<vk::WriteDescriptorSet> writes = {
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(inputCount).setPTexelBufferView(sourceBuffers.data()),
-                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(&d1),
+                        //vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(&d1),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo(&d2),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo(&d3),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setPBufferInfo(&d4),
-                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setPBufferInfo(&d5),
+                        //vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setPBufferInfo(&d5),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setPBufferInfo(&d6),
                     };
                     vk::Device(vkDevice).updateDescriptorSets(writes, {});

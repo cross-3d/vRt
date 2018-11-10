@@ -32,9 +32,10 @@ namespace _vt { // store in undercover namespace
     public:
         friend Device;
         std::weak_ptr<Device> _device = {};
-        std::shared_ptr<HostToDeviceBuffer> _uploadBuffer = {}; // from host
-        std::shared_ptr<DeviceToHostBuffer> _downloadBuffer = {}; // to host
-        std::shared_ptr<DeviceBuffer> _uniformVIBuffer = {};
+        //std::shared_ptr<HostToDeviceBuffer> _uploadBuffer = {}; // from host
+        //std::shared_ptr<DeviceToHostBuffer> _downloadBuffer = {}; // to host
+        std::shared_ptr<DeviceBuffer>       _uniformVIBuffer = {};
+        std::shared_ptr<HostToDeviceBuffer> _uniformVIMapped = {};
     };
 
     // advanced device features
@@ -101,7 +102,7 @@ namespace _vt { // store in undercover namespace
         std::vector<std::shared_ptr<RadixSort>> _radixSort = {}; // 
         std::vector<std::shared_ptr<AcceleratorHLBVH2>> _acceleratorBuilder = {}; // planned to rename
         std::vector<std::shared_ptr<AssemblyPipeline>> _nativeVertexAssembler = {};
-        std::vector<std::shared_ptr<BufferTraffic>> _bufferTraffic = {};
+        //std::vector<std::shared_ptr<BufferTraffic>> _bufferTraffic = {};
 
         // accelerator by extension
         std::vector<std::shared_ptr<AcceleratorExtensionBase>> _hExtensionAccelerator = {};
@@ -114,8 +115,8 @@ namespace _vt { // store in undercover namespace
         operator VkPipelineCache() const { return _pipelineCache; };
         operator VkDescriptorPool() const { return _descriptorPool; };
 
-        operator std::shared_ptr<HostToDeviceBuffer>() const { return _bufferTraffic[0]->_uploadBuffer; };
-        operator std::shared_ptr<DeviceToHostBuffer>() const { return _bufferTraffic[0]->_downloadBuffer; };
+        //operator std::shared_ptr<HostToDeviceBuffer>() const { return _bufferTraffic[0]->_uploadBuffer; };
+        //operator std::shared_ptr<DeviceToHostBuffer>() const { return _bufferTraffic[0]->_downloadBuffer; };
 
         auto _parent() const { return _physicalDevice; };
         auto& _parent() { return _physicalDevice; };
@@ -237,6 +238,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
 
         // input of vertex source data 
+        std::vector<std::shared_ptr<BufferTraffic>> _bufferTraffic = {};
         std::vector<std::shared_ptr<VertexInputSet>> _vertexInputs = {};
         std::function<void()> _descriptorSetGenerator = {};
 

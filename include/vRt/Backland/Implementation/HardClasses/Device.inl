@@ -157,7 +157,7 @@ namespace _vt {
 
 
         // buffer <--> host traffic buffers
-        { const constexpr uint32_t t = 0u;
+        /*{ const constexpr uint32_t t = 0u;
         vtDevice->_bufferTraffic.push_back(std::make_shared<BufferTraffic>());
 
         // make traffic buffers 
@@ -168,15 +168,9 @@ namespace _vt {
         vtDevice->_bufferTraffic[t]->_device = vtDevice;
         createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uploadBuffer);
         createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_downloadBuffer);
-        };
+        };*/
 
-        // vertex input meta construction arrays
-        { const constexpr uint32_t t = 0u;
-        VtDeviceBufferCreateInfo dbfi = {};
-        dbfi.format = VK_FORMAT_UNDEFINED;
-        dbfi.bufferSize = strided<VtUniformBlock>(1024);
-        createDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uniformVIBuffer);
-        };
+
 
 
 
@@ -246,6 +240,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // readonly attributes (DEPRECATED row)
                 vk::DescriptorSetLayoutBinding(7 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // precomputed normals
                 vk::DescriptorSetLayoutBinding(8 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
+                vk::DescriptorSetLayoutBinding(9 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex input uniform buffer (TEMPORARY)
             };
             vtDevice->_descriptorLayoutMap["vertexData"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         };
@@ -284,12 +279,12 @@ namespace _vt {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
                 //vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eUniformTexelBuffer, vendorName == VT_VENDOR_INTEL ? 1 : 8, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex raw data
                 vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eUniformTexelBuffer, 8, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex raw data
-                vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // virtual regions
+                //vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // virtual regions
                 vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // buffer views
                 vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // accessors
                 vk::DescriptorSetLayoutBinding(4 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // attribute bindings 
-                vk::DescriptorSetLayoutBinding(5 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex input uniform
-                vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
+                //vk::DescriptorSetLayoutBinding(5 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex input uniform
+                vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), 
             };
             vtDevice->_descriptorLayoutMap["vertexInputSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         };

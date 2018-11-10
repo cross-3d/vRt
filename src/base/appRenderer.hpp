@@ -59,6 +59,8 @@ namespace rnd {
     };
 
 
+
+    /*
     template<class T>
     inline auto writeIntoBuffer(vte::Queue deviceQueue, const std::vector<T>& vctr, const vrt::VtDeviceBuffer& dBuffer, VkDeviceSize byteOffset = 0) {
         VkResult result = VK_SUCCESS;
@@ -104,6 +106,8 @@ namespace rnd {
         vrt::vtGetBufferSubData<T>(deviceQueue->device->rtDev, vctr);
         return result;
     };
+    */
+
 
     inline auto createBufferFast(vte::Queue deviceQueue, vrt::VtDeviceBuffer& dBuffer, VkDeviceSize byteSize = 1024 * 16) {
         vrt::VtDeviceBufferCreateInfo dbs = {};
@@ -122,7 +126,15 @@ namespace rnd {
         vrt::vtCreateDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
     };
 
+    inline auto createMappedFast(vte::Queue deviceQueue, vrt::VtHostToDeviceBuffer& dBuffer, VkDeviceSize byteSize = 1024 * 16) {
+        vrt::VtDeviceBufferCreateInfo dbs = {};
+        dbs.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
+        dbs.bufferSize = byteSize;
+        //dbs.familyIndex = deviceQueue->familyIndex;
+        dbs.format = VK_FORMAT_UNDEFINED;
+        vrt::vtCreateHostToDeviceBuffer(deviceQueue->device->rtDev, &dbs, &dBuffer);
+    };
 
 
 
@@ -369,8 +381,9 @@ namespace rnd {
 
 
         // ray tracing objects
-        std::vector<VtDeviceBuffer> VDataSpace = {};
-        std::vector<VkBufferView> bviews = {};
+        //std::vector<VkBufferView> VDataSpace = {};
+        VtDeviceBuffer VDataBuffer = {};
+        std::vector<VkBufferView> VDataViews = {};
         std::vector<VtVertexAccessor> accessors = {};
         std::vector<VtVertexBufferView> bufferViews = {};
         std::vector<std::vector<VtVertexInputSet>> vertexInputs = {};
@@ -399,7 +412,10 @@ namespace rnd {
         const uint32_t rParts = 1u; // experimental: use less memory by dispatch sequences
         VtVertexAssemblySet vertexAssembly = {};
         VkCommandBuffer bCmdBuf = {}, tbCmdBuf, rtCmdBuf = {}, vxCmdBuf = {}, vxuCmdBuf = {};
-        VtDeviceBuffer rtUniformBuffer = {}, rtPartitionBuffer = {};
+
+        VtDeviceBuffer       rtUniformBuffer = {}, rtPartitionBuffer = {};
+        VtHostToDeviceBuffer rtUniformMapped = {}, rtPartitionMapped = {};
+
         VtCameraUniform cameraUniformData = {};
         VtPartitionUniform partitionUniformData = {};
 

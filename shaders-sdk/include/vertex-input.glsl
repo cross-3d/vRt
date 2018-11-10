@@ -112,7 +112,8 @@ struct VtVIUniform {
 };
 
 // uniform input of vertex loader
-layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
+//layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
+layout ( binding = 9, set = VTX_SET, std430 ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
 layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
 #define vertexBlock _vertexBlock[gl_GlobalInvocationID.y + cblock.inputID]
 layout ( binding = 6, set = 1, std430 ) readonly buffer VT_TRANSFORMS { mat3x4 vTransforms[]; };

@@ -169,9 +169,15 @@ namespace rnd {
             // create uniform buffer
             createBufferFast(deviceQueue, rtUniformBuffer, vte::strided<VtCameraUniform>(1));
             createBufferFast(deviceQueue, rtPartitionBuffer, vte::strided<VtPartitionUniform>(1));
-            
-            writeIntoBuffer<VtCameraUniform>(deviceQueue, { cameraUniformData }, rtUniformBuffer, 0);
-            writeIntoBuffer<VtPartitionUniform>(deviceQueue, { partitionUniformData }, rtPartitionBuffer, 0);
+            createMappedFast(deviceQueue, rtUniformMapped, vte::strided<VtCameraUniform>(1));
+            createMappedFast(deviceQueue, rtPartitionMapped, vte::strided<VtPartitionUniform>(1));
+
+            // preload camera info 
+            vrt::vtSetBufferSubData<VtCameraUniform>({ cameraUniformData }, rtUniformMapped);
+            vrt::vtSetBufferSubData<VtPartitionUniform>({ partitionUniformData }, rtPartitionMapped);
+
+            //writeIntoBuffer<VtCameraUniform>(deviceQueue, { cameraUniformData }, rtUniformBuffer, 0);
+            //writeIntoBuffer<VtPartitionUniform>(deviceQueue, { partitionUniformData }, rtPartitionBuffer, 0);
         }
 
         {
@@ -270,7 +276,8 @@ namespace rnd {
             // make ray tracing command buffer
             rtCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qRtCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, rtCmdBuf, &qRtCmdBuf);
-            
+            _vt::commandBarrier(qRtCmdBuf); // host to device memcpy barrier should be
+
             // updator for buffer
             vtCmdBindMaterialSet(qRtCmdBuf, VtEntryUsageFlags(VT_ENTRY_USAGE_CLOSEST_BIT | VT_ENTRY_USAGE_MISS_BIT), materialSet);
             vtCmdBindDescriptorSets(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipelineLayout, 0, 1, &usrDescSet, 0, nullptr);
@@ -288,6 +295,8 @@ namespace rnd {
             // primary rays generation
             vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rtPipeline);
 
+            // automatically heading data to device buffer
+            cmdCopyBufferFromHost(qRtCmdBuf, rtUniformMapped, rtUniformBuffer, { vk::BufferCopy(0u, 0u, sizeof(VtCameraUniform)) });
             
             for (int32_t I = 0; I < rParts;I++) {
                 partitionUniformData.partID = I;
@@ -345,6 +354,12 @@ namespace rnd {
 
 
 
+         VtHostToDeviceBuffer BvhHeadersMapped = {}, BvhInstancedMapped = {};
+         createMappedFast(deviceQueue, BvhHeadersMapped, sizeof(VtBvhBlock) * 256ull);
+         createMappedFast(deviceQueue, BvhInstancedMapped, sizeof(VtBvhInstance) * 256ull);
+
+
+
          {
              // instances
              //BvhInstancedData.push_back(VtBvhInstance{});
@@ -383,16 +398,29 @@ namespace rnd {
              BvhHeadersData.push_back(VtBvhBlock{});
              BvhHeadersData.push_back(VtBvhBlock{});
 
-             // write entire into buffers 
-             writeIntoBuffer(deviceQueue, BvhHeadersData, BvhHeadersBuffer);
 
+             vrt::vtSetBufferSubData(BvhHeadersData, BvhHeadersMapped);
              if (deviceQueue->RTXEnabled) {
-                 writeIntoBuffer(deviceQueue, RTXInstancedData, BvhInstancedBuffer);
+                 vrt::vtSetBufferSubData(RTXInstancedData, BvhInstancedMapped);
              }
              else {
-                 writeIntoBuffer(deviceQueue, BvhInstancedData, BvhInstancedBuffer);
+                 vrt::vtSetBufferSubData(BvhInstancedData, BvhInstancedMapped);
              };
          };
+
+
+         // dispatch buffer uploading 
+         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+             _vt::commandBarrier(cmdBuf); // host to device memcpy barrier should be
+
+             // copy instances 
+             VkBufferCopy bfc = { 0, 0, vte::strided<VtBvhInstance>(BvhInstancedData.size()) };
+             vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, BvhInstancedMapped, BvhInstancedBuffer, 1, &bfc);
+
+             // copy structures headers
+             bfc = { 0, 0, vte::strided<VtBvhBlock>(BvhHeadersData.size()) };
+             vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, BvhHeadersMapped, BvhHeadersBuffer, 1, &bfc);
+         });
 
 
 
@@ -653,32 +681,48 @@ namespace rnd {
     };
 
      // loading mesh (support only one)
-     void Renderer::LoadScene(const std::string& modelInput){
-        tinygltf::Model model = {}; tinygltf::TinyGLTF loader = {};
-        std::string err = "", warn = "", input_filename = modelInput!="" ? modelInput : this->modelInput;
-        const bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, input_filename);
-        
+     void Renderer::LoadScene(const std::string& modelInput) {
+         tinygltf::Model model = {}; tinygltf::TinyGLTF loader = {};
+         std::string err = "", warn = "", input_filename = modelInput != "" ? modelInput : this->modelInput;
+         const bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, input_filename);
 
-        {
-            createBufferFast(deviceQueue, VBufferRegions, sizeof(VtVertexRegionBinding) * 2ull);
-            createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexAccessor) * (1ull+model.accessors.size()));
-            createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexBufferView) * (1ull+model.bufferViews.size()));
-            createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024ull * 1024ull);
-            createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4x3) * 1024ull * 1024ull);
-            createBufferFast(deviceQueue, materialDescs, sizeof(VtAppMaterial) * (1ull+model.materials.size()));
-            createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImageV16>(256));
-        };
+         // calculate full buffer size
+         VkDeviceSize bDataSize = 0ull;
+         for (auto B : model.buffers) {
+             bDataSize += B.data.size();
+         };
 
+         // create temporary data buffer
+         VtHostToDeviceBuffer VDataMapped = {};
+         createMappedFast(deviceQueue, VDataMapped, bDataSize);
 
-        // load gltf buffers to device
-        VtDeviceBuffer buf = {};
-        for (auto B : model.buffers) {
-            createBufferFast(deviceQueue, buf, B.data.size());
-            if (B.data.size() > 0) writeIntoBuffer(deviceQueue, B.data, buf);
-            VDataSpace.push_back(buf);
-        }
-        for (auto B : VDataSpace) { bviews.push_back(B); };
+         { // create vertex inputs buffers 
+             createBufferFast(deviceQueue, VDataBuffer, bDataSize);
+             createBufferFast(deviceQueue, VAccessorSet, sizeof(VtVertexAccessor) * (1ull + model.accessors.size()));
+             createBufferFast(deviceQueue, VBufferView, sizeof(VtVertexBufferView) * (1ull + model.bufferViews.size()));
+             createBufferFast(deviceQueue, VAttributes, sizeof(VtVertexAttributeBinding) * 1024ull * 1024ull);
+             createBufferFast(deviceQueue, VTransforms, sizeof(glm::mat4x3) * 1024ull * 1024ull);
+             createBufferFast(deviceQueue, materialDescs, sizeof(VtAppMaterial) * (1ull + model.materials.size()));
+             createBufferFast(deviceQueue, materialCombImages, vte::strided<VtVirtualCombinedImageV16>(256));
+         };
 
+         VkDeviceSize fsize = 0ull;
+         for (auto B : model.buffers) {
+             if (B.data.size() > 0) vrt::vtSetBufferSubData(B.data, VDataMapped, fsize);
+             VDataViews.push_back(deviceQueue->device->logical.createBufferView(vk::BufferViewCreateInfo().setFormat(vk::Format::eR16G16Uint).setBuffer(VkBuffer(VDataBuffer)).setOffset(fsize).setRange(B.data.size())));
+             fsize += B.data.size();
+         };
+
+         // queue to uploading vertex data into 
+         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+             _vt::commandBarrier(cmdBuf); // host to device memcpy barrier should be
+
+             VkBufferCopy bfc = { 0, 0, bDataSize };
+             vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, VDataMapped, VDataBuffer, 1, &bfc);
+         });
+
+         // temporary image buffers
+         std::vector<VtHostToDeviceBuffer> tmpImageBuffer = {};
 
         // create images
         if (model.images.size() > 0) {
@@ -695,7 +739,13 @@ namespace rnd {
                 dii.size = { uint32_t(I.width), uint32_t(I.height), 1 };
                 dii.layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                 vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
-                writeIntoImage<uint8_t>(deviceQueue, I.image, image, 0);
+
+                { // add queue to upload image data
+                    VtHostToDeviceBuffer tmpbuf = {};
+                    createMappedFast(deviceQueue, tmpbuf, I.image.size());
+                    vrt::vtSetBufferSubData(I.image, tmpbuf);
+                    tmpImageBuffer.push_back(tmpbuf);
+                };
             }
         }
         else {
@@ -712,6 +762,16 @@ namespace rnd {
             vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
         };
 
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+            uint32_t N = 0u; if (model.images.size() > 0) { // make commands to uploading image data
+                for (auto I : model.images) {
+                    const auto t = N++; auto image = mImages[t];
+                    VkBufferImageCopy bfc = { 0, uint32_t(I.width), uint32_t(I.height), image->_subresourceLayers, VkOffset3D{0u,0u,0u}, image->_extent };
+                    vrt::vtCmdImageBarrier(cmdBuf, image);
+                    vrt::vtCmdCopyHostToDeviceImage(cmdBuf, tmpImageBuffer[t], image, 1, &bfc);
+                };
+            };
+        });
 
         // create samplers
         if (model.samplers.size() > 0) {
@@ -757,12 +817,24 @@ namespace rnd {
         };
 
         {
+            VtHostToDeviceBuffer tmpbuf = {};
+
             std::vector<VtVirtualCombinedImageV16> textures = {};
             for (auto T : model.textures) {
                 textures.push_back(VtVirtualCombinedImageV16{});
                 textures[textures.size() - 1].setTextureID(T.source).setSamplerID(T.sampler != -1 ? T.sampler : 0);
-            }
-            writeIntoBuffer<VtVirtualCombinedImageV16>(deviceQueue, textures, materialCombImages, 0);
+            };
+
+            createMappedFast(deviceQueue, tmpbuf, textures.size() * sizeof(VtVirtualCombinedImageV16));
+            vrt::vtSetBufferSubData(textures, tmpbuf);
+
+
+            vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+                _vt::commandBarrier(cmdBuf);
+
+                 VkBufferCopy bfc = { 0, 0, textures.size() * sizeof(VtVirtualCombinedImageV16) };
+                 vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, tmpbuf, materialCombImages, 1, &bfc);
+            });
         };
 
         { // write ray tracing user defined descriptor set
@@ -791,12 +863,21 @@ namespace rnd {
                 if (M.values.find("metallicFactor" ) != M.values.end()) material.specular.z = M.values.at("metallicFactor" ).number_value;
                 if (M.values.find("roughnessFactor") != M.values.end()) material.specular.y = M.values.at("roughnessFactor").number_value;
                 if (M.values.find("baseColorFactor") != M.values.end()) material.diffuse = glm::vec4(glm::make_vec4(M.values.at("baseColorFactor").number_array.data()));
-            }
-            writeIntoBuffer<VtAppMaterial>(deviceQueue, materials, materialDescs, 0);
+            };
+
+            VtHostToDeviceBuffer tmpbuf = {};
+            { // add queue to upload image data
+                createMappedFast(deviceQueue, tmpbuf, materials.size() * sizeof(VtAppMaterial));
+                vrt::vtSetBufferSubData(materials, tmpbuf);
+            };
+
+            vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+                _vt::commandBarrier(cmdBuf); // host to device memcpy barrier should be
+                VkBufferCopy bfc = { 0, 0, materials.size() * sizeof(VtAppMaterial) };
+                vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, tmpbuf, materialDescs, 1, &bfc);
+            });
         };
 
-
-        
         for (auto acs: model.accessors) { accessors.push_back(VtVertexAccessor{ uint32_t(acs.bufferView), uint32_t(acs.byteOffset), uint32_t(_getFormat(acs)) }); }
         for (auto bv : model.bufferViews) { bufferViews.push_back(VtVertexBufferView{ uint32_t(bv.buffer), uint32_t(bv.byteOffset), uint32_t(bv.byteStride), uint32_t(bv.byteLength) }); }
 
@@ -853,12 +934,12 @@ namespace rnd {
                     vtii.attributeCount = attributes.size() - attribOffset;
                     vtii.primitiveCount = idcAccessor.count / 3;
                     vtii.materialID = prim.material;
-                    vtii.pSourceBuffers = bviews.data();
-                    vtii.sourceBufferCount = bviews.size();
+                    vtii.pSourceBuffers = VDataViews.data();
+                    vtii.sourceBufferCount = VDataViews.size();
                     vtii.bBufferAccessors = VAccessorSet;
                     vtii.bBufferAttributeBindings = VAttributes;
                     vtii.attributeOffset = attribOffset;
-                    vtii.bBufferRegionBindings = VBufferRegions;
+                    //vtii.bBufferRegionBindings = VBufferRegions;
                     vtii.bBufferViews = VBufferView;
                     vtii.attributeAssembly = vtxPipeline;
                     vtCreateVertexInputSet(deviceQueue->device->rtDev, &vtii, &primitive);
@@ -905,11 +986,39 @@ namespace rnd {
             }
         }
 
-        // write to buffers
-        writeIntoBuffer(deviceQueue, transforms, VTransforms, 0);
-        writeIntoBuffer(deviceQueue, accessors, VAccessorSet, 0);
-        writeIntoBuffer(deviceQueue, bufferViews, VBufferView, 0);
-        writeIntoBuffer(deviceQueue, attributes, VAttributes, 0);
+
+        VtHostToDeviceBuffer VTransformsTemp = {}, VAccessorSetTemp = {}, VBufferViewTemp = {}, VAttributesTemp = {};
+
+
+        { // add queue to upload image data
+            createMappedFast(deviceQueue, VTransformsTemp, transforms.size() * sizeof(VtMat3x4));
+            vrt::vtSetBufferSubData(transforms, VTransformsTemp);
+
+            createMappedFast(deviceQueue, VAccessorSetTemp, accessors.size() * sizeof(VtVertexAccessor));
+            vrt::vtSetBufferSubData(accessors, VAccessorSetTemp);
+
+            createMappedFast(deviceQueue, VBufferViewTemp, bufferViews.size() * sizeof(VtVertexBufferView));
+            vrt::vtSetBufferSubData(bufferViews, VBufferViewTemp);
+
+            createMappedFast(deviceQueue, VAttributesTemp, attributes.size() * sizeof(VtVertexAttributeBinding));
+            vrt::vtSetBufferSubData(attributes, VAttributesTemp);
+        };
+
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+            _vt::commandBarrier(cmdBuf); // host to device memcpy barrier should be
+
+            VkBufferCopy bfc = { 0, 0, transforms.size() * sizeof(VtMat3x4) };
+            vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, VTransformsTemp, VTransforms, 1, &bfc);
+
+            bfc = { 0, 0, accessors.size() * sizeof(VtVertexAccessor) };
+            vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, VAccessorSetTemp, VAccessorSet, 1, &bfc);
+
+            bfc = { 0, 0, bufferViews.size() * sizeof(VtVertexBufferView) };
+            vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, VBufferViewTemp, VBufferView, 1, &bfc);
+
+            bfc = { 0, 0, attributes.size() * sizeof(VtVertexAttributeBinding) };
+            vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, VAttributesTemp, VAttributes, 1, &bfc);
+        });
     };
 
 
@@ -926,11 +1035,14 @@ namespace rnd {
         auto atMatrix = glm::lookAt(eyePos*glm::vec3(scale), (eyePos + viewVector)*glm::vec3(scale), upVector);
         cameraUniformData.camInv = glm::transpose(glm::inverse(atMatrix));
 
+        // set to upload buffer
+        vrt::vtSetBufferSubData<VtCameraUniform>({ cameraUniformData }, rtUniformMapped);
+
         // update start position
-        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
-            vkCmdUpdateBuffer(cmdBuf, rtUniformBuffer, 0, sizeof(VtCameraUniform), &cameraUniformData);
-            _vt::updateCommandBarrier(cmdBuf);
-        });
+        //vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+        //    vkCmdUpdateBuffer(cmdBuf, rtUniformBuffer, 0, sizeof(VtCameraUniform), &cameraUniformData);
+        //    _vt::updateCommandBarrier(cmdBuf);
+        //});
     };
 
 
