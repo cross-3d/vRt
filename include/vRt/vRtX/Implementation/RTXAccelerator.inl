@@ -30,7 +30,7 @@ namespace _vt {
         std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNV };
         
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
-        cmdBufVk.pushConstants<uint32_t>(vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), vk::ShaderStageFlagBits::eRaygenNV, 0u, { _raytracingProperties.shaderGroupHandleSize * 0u, _raytracingProperties.shaderGroupHandleSize * 0u, 0u, 0u });
+        cmdBufVk.pushConstants<uint32_t>(vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), vk::ShaderStageFlagBits::eRaygenNV, 0u, { 0u, 1u, 0u, 0u });
         cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRayTracingNV, accelertExt->_intersectionPipelineNV);
         cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRayTracingNV, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
         
