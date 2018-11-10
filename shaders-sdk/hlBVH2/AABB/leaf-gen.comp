@@ -38,7 +38,7 @@ void main() {
 
             // calculate center of box (yes, uses mix, because the same of (a+b)/2)
             vec4 bcenter = vector4(mix(lbox.mn, lbox.mx, .5f.xxxx));
-            bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
+            bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = sqlen((lbox.mx-lbox.mn).xyz)/sqlen((sceneRes.xyz));
 
             // store leaf data
             {

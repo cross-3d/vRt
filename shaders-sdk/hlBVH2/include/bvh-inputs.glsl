@@ -58,7 +58,12 @@ layout ( binding = 2, set = 0, std430 ) readonly restrict buffer BuildConstB {
 #define fpInner InZero
 #endif
 
+#ifdef EXPERIMENTAL_UNORM16_BVH
 #define fpCorrect 0.0000152587890625f
+#else
+#define fpCorrect 0.f
+#endif
+
 //const float fpCorrect = 0.0000152587890625f;
 
 bbox_t calcTriBox(in mat3x4 triverts) {

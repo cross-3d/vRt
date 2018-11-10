@@ -94,7 +94,7 @@ void main() {
 #endif
 
             vec4 bcenter = vector4((triverts[0] + triverts[1] + triverts[2]) * 0.33333333333333f);
-            bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = length(lbox.mx-lbox.mn)/length(sceneRes);
+            bcenter = (bcenter - sceneMin) / (sceneRes), bcenter.w = sqlen((lbox.mx-lbox.mn).xyz)/sqlen((sceneRes).xyz);
 
 
             // store leaf data
