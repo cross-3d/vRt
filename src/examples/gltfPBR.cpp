@@ -355,8 +355,6 @@ namespace rnd {
          };
 
 
-
-
          VtHostToDeviceBuffer BvhHeadersMapped = {}, BvhInstancedMapped = {};
          createMappedFast(deviceQueue, BvhHeadersMapped, sizeof(VtBvhBlock) * 256ull);
          createMappedFast(deviceQueue, BvhInstancedMapped, sizeof(VtBvhInstance) * 256ull);

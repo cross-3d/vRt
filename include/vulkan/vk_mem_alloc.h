@@ -124,6 +124,10 @@ To do it properly:
 
 It may be a good idea to create dedicated CPP file just for this purpose.
 
+Note on language: This library is written in C++, but has C-compatible interface.
+Thus you can include and use vk_mem_alloc.h in C or C++ code, but full
+implementation with `VMA_IMPLEMENTATION` macro must be compiled as C++, NOT as C.
+
 Please note that this library includes header `<vulkan/vulkan.h>`, which in turn
 includes `<windows.h>` on Windows. If you need some specific macros defined
 before including these headers (like `WIN32_LEAN_AND_MEAN` or
@@ -1444,7 +1448,8 @@ Features deliberately excluded from the scope of this library:
 
 - Support for sparse binding and sparse residency. You can still use these
   features (when supported by the device) with VMA. You just need to do it
-  yourself. Any explicit support for sparse binding/residency would rather
+  yourself. Allocate memory pages with vmaAllocateMemory().
+  Any explicit support for sparse binding/residency would rather
   require another, higher-level library on top of VMA.
 - Data transfer - issuing commands that transfer data between buffers or images, any usage of
   `VkCommandList` or `VkQueue` and related synchronization is responsibility of the user.
@@ -1452,6 +1457,18 @@ Features deliberately excluded from the scope of this library:
   explicit memory type index and dedicated allocation anyway, so they don't
   interact with main features of this library. Such special purpose allocations
   should be made manually, using `vkCreateBuffer()` and `vkAllocateMemory()`.
+- Recreation of buffers and images. Although the library has functions for
+  buffer and image creation (vmaCreateBuffer(), vmaCreateImage()), you need to
+  recreate these objects yourself after defragmentation. That's because the big
+  structures `VkBufferCreateInfo`, `VkImageCreateInfo` are not stored in
+  #VmaAllocation object.
+- Handling CPU memory allocation failures. When dynamically creating small C++
+  objects in CPU memory (not Vulkan memory), allocation failures are not checked
+  and handled gracefully, because that would complicate code significantly and
+  is usually not needed in desktop PC applications anyway.
+- Code free of any compiler warnings. Maintaining the library to compile and
+  work correctly on so many different platforms is hard enough. Being free of 
+  any warnings, on any version of any compiler, is simply not feasible.
 - Support for any programming languages other than C/C++.
   Bindings to other languages are welcomed as external projects.
 
@@ -2781,7 +2798,19 @@ remove them if not needed.
    #define VMA_NULL   nullptr
 #endif
 
-#if defined(__APPLE__) || defined(__ANDROID__)
+#if defined(__ANDROID_API__) && (__ANDROID_API__ < 16)
+#include <cstdlib>
+void *aligned_alloc(size_t alignment, size_t size)
+{
+    // alignment must be >= sizeof(void*)
+    if(alignment < sizeof(void*))
+    {
+        alignment = sizeof(void*);
+    }
+
+    return memalign(alignment, size);
+}
+#elif defined(__APPLE__) || defined(__ANDROID__)
 #include <cstdlib>
 void *aligned_alloc(size_t alignment, size_t size)
 {
@@ -12293,6 +12322,10 @@ VkResult VmaAllocator_T::AllocateMemory(
 {
     VMA_ASSERT(VmaIsPow2(vkMemReq.alignment));
 
+    if(vkMemReq.size == 0)
+    {
+        return VK_ERROR_VALIDATION_FAILED_EXT;
+    }
     if((createInfo.flags & VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT) != 0 &&
         (createInfo.flags & VMA_ALLOCATION_CREATE_NEVER_ALLOCATE_BIT) != 0)
     {
@@ -12516,7 +12549,7 @@ VkResult VmaAllocator_T::Defragment(
 {
     if(pAllocationsChanged != VMA_NULL)
     {
-        memset(pAllocationsChanged, 0, sizeof(*pAllocationsChanged));
+        memset(pAllocationsChanged, 0, allocationCount * sizeof(VkBool32));
     }
     if(pDefragmentationStats != VMA_NULL)
     {
@@ -14087,6 +14120,11 @@ VkResult vmaCreateBuffer(
     VmaAllocationInfo* pAllocationInfo)
 {
     VMA_ASSERT(allocator && pBufferCreateInfo && pAllocationCreateInfo && pBuffer && pAllocation);
+
+    if(pBufferCreateInfo->size == 0)
+    {
+        return VK_ERROR_VALIDATION_FAILED_EXT;
+    }
     
     VMA_DEBUG_LOG("vmaCreateBuffer");
     
@@ -14225,6 +14263,15 @@ VkResult vmaCreateImage(
     VmaAllocationInfo* pAllocationInfo)
 {
     VMA_ASSERT(allocator && pImageCreateInfo && pAllocationCreateInfo && pImage && pAllocation);
+
+    if(pImageCreateInfo->extent.width == 0 ||
+        pImageCreateInfo->extent.height == 0 ||
+        pImageCreateInfo->extent.depth == 0 ||
+        pImageCreateInfo->mipLevels == 0 ||
+        pImageCreateInfo->arrayLayers == 0)
+    {
+        return VK_ERROR_VALIDATION_FAILED_EXT;
+    }
 
     VMA_DEBUG_LOG("vmaCreateImage");
 
