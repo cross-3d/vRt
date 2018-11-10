@@ -13,7 +13,7 @@ namespace _vt {
         _vertexProxyNV.vertexData = VkBuffer(*_assemblySet->_verticeBufferCached);
         _vertexProxyNV.vertexCount = _assemblySet->_calculatedPrimitiveCount * 3ull;
 
-        // RTX support was broken even there
+        // still have some dumbs
         _vertexProxyNV.indexType = VK_INDEX_TYPE_NONE_NV;
         _vertexProxyNV.indexCount = _vertexProxyNV.vertexCount;
         

@@ -14,7 +14,7 @@ namespace _vt {
         _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
         _vertexProxyNV.vertexCount = accelSet->_capacity * 3ull;
 
-        // RTX support was fully broken, so need next generation of NVidia GPU's
+        // still have some dumbs
         _vertexProxyNV.indexType = VK_INDEX_TYPE_NONE_NV; // support was broken
         _vertexProxyNV.indexCount = _vertexProxyNV.vertexCount; // anyways forced requirements
 

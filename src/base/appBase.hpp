@@ -417,7 +417,7 @@ namespace NSM
                 dbi.shaderPath = shaderPath;
                 dbi.sharedCacheSize = 4ull;//4096ull * 4096ull * 4ull;
                 dbi.maxPrimitives = 1024ull * 2048ull;
-                dbi.enableAdvancedAcceleration = true; // Current Hardware and Drivers are damned to support RTX in Vulkan API, need await 5 years...
+                dbi.enableAdvancedAcceleration = true; // Current Hardwares still not so powerful for over 480 FPS in 1080p, so you still can't to play NFS Most Wanted with ray-tracing and with Widescreen patch
                 dbi.pAccelerationExtension = (vrt::VtDeviceAdvancedAccelerationExtension*)&rtxExtensionPassport;
                 vrt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
                 if (deviceQueuePtr->device->rtDev->_hExtensionAccelerator.size() > 0 && deviceQueuePtr->device->rtDev->_hExtensionAccelerator[0]) {
