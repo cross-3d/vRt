@@ -411,7 +411,7 @@ namespace rnd {
 
 
          // dispatch buffer uploading 
-         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
              _vt::commandBarrier(cmdBuf); // host to device memcpy barrier should be
 
              // copy instances 
@@ -715,7 +715,7 @@ namespace rnd {
          };
 
          // queue to uploading vertex data into 
-         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+         vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
              _vt::commandBarrier(cmdBuf); // host to device memcpy barrier should be
 
              VkBufferCopy bfc = { 0, 0, bDataSize };
@@ -763,7 +763,7 @@ namespace rnd {
             vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
         };
 
-        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
             uint32_t N = 0u; if (model.images.size() > 0) { // make commands to uploading image data
                 for (auto I : model.images) {
                     const auto t = N++; auto image = mImages[t];
@@ -830,7 +830,7 @@ namespace rnd {
             vrt::vtSetBufferSubData(textures, tmpbuf);
 
 
-            vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+            vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
                 _vt::commandBarrier(cmdBuf);
 
                  VkBufferCopy bfc = { 0, 0, textures.size() * sizeof(VtVirtualCombinedImageV16) };
@@ -872,7 +872,7 @@ namespace rnd {
                 vrt::vtSetBufferSubData(materials, tmpbuf);
             };
 
-            vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+            vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
                 _vt::commandBarrier(cmdBuf); // host to device memcpy barrier should be
                 VkBufferCopy bfc = { 0, 0, materials.size() * sizeof(VtAppMaterial) };
                 vrt::vtCmdCopyHostToDeviceBuffer(cmdBuf, tmpbuf, materialDescs, 1, &bfc);
@@ -1005,7 +1005,7 @@ namespace rnd {
             vrt::vtSetBufferSubData(attributes, VAttributesTemp);
         };
 
-        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+        vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
             _vt::commandBarrier(cmdBuf); // host to device memcpy barrier should be
 
             VkBufferCopy bfc = { 0, 0, transforms.size() * sizeof(VtMat3x4) };
@@ -1040,7 +1040,7 @@ namespace rnd {
         vrt::vtSetBufferSubData<VtCameraUniform>({ cameraUniformData }, rtUniformMapped);
 
         // update start position
-        //vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [=](VkCommandBuffer cmdBuf) {
+        //vte::submitOnce(deviceQueue->device->rtDev, deviceQueue->queue, deviceQueue->commandPool, [&](VkCommandBuffer cmdBuf) {
         //    vkCmdUpdateBuffer(cmdBuf, rtUniformBuffer, 0, sizeof(VtCameraUniform), &cameraUniformData);
         //    _vt::updateCommandBarrier(cmdBuf);
         //});

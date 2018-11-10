@@ -290,9 +290,9 @@ namespace _vt {
         VkFence fence = {}; VkFenceCreateInfo fin = vk::FenceCreateInfo{};
         vkCreateFence(device, &fin, nullptr, &fence);
         vkQueueSubmit(queue, 1, (const VkSubmitInfo *)&smbi, fence);
-        VRT_ASYNC([=]() {
+        VRT_ASYNC([&]() {
             vkWaitForFences(device, 1, &fence, true, DEFAULT_FENCE_TIMEOUT);
-            VRT_ASYNC([=]() {
+            VRT_ASYNC([&]() {
                 vkDestroyFence(device, fence, nullptr);
                 if (asyncCallback) asyncCallback();
             });
@@ -302,7 +302,7 @@ namespace _vt {
     // once submit command buffer
     static inline void submitOnceAsync(VkDevice device, VkQueue queue, VkCommandPool cmdPool, std::function<void(VkCommandBuffer)> cmdFn = {}, std::function<void(VkCommandBuffer)> asyncCallback = {}, vk::SubmitInfo smbi = {}) {
         auto cmdBuf = createCommandBuffer(device, cmdPool, false); cmdFn(cmdBuf); vkEndCommandBuffer(cmdBuf);
-        submitCmdAsync(device, queue, { cmdBuf }, [=]() {
+        submitCmdAsync(device, queue, { cmdBuf }, [&]() {
             asyncCallback(cmdBuf); // call async callback
             vkFreeCommandBuffers(device, cmdPool, 1, &cmdBuf); // free that command buffer
         });
