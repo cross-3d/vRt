@@ -177,7 +177,7 @@ namespace _vt { // store in undercover namespace
     // you can't use it for form long command buffer from host
     template<VtMemoryUsage U = VT_MEMORY_USAGE_CPU_TO_GPU>
     inline void cmdCopyBufferToImage(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> srcBuffer, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::BufferImageCopy>& regions) {
-        vk::CommandBuffer(cmd).copyBufferToImage(srcBuffer->_buffer, dstImage->_image, vk::ImageLayout(dstImage->_layout), regions);
+        vk::CommandBuffer(cmd).copyBufferToImage(VkBuffer(*srcBuffer), VkImage(*dstImage), vk::ImageLayout(dstImage->_layout), regions);
 
         if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
             if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }

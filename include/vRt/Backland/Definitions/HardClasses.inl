@@ -89,7 +89,8 @@ namespace _vt { // store in undercover namespace
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         VmaAllocator _allocator = {};
-        explicit operator VmaAllocator() const { return _allocator; };
+        operator VmaAllocator() const { return _allocator; };
+        operator VmaAllocator&() { return _allocator; };
 #endif
 
         VkPipelineCache _pipelineCache = {}; // store native pipeline cache
@@ -329,9 +330,31 @@ namespace _vt { // store in undercover namespace
     class RoledBufferBase : public std::enable_shared_from_this<RoledBufferBase> {
     public:
         friend Device;
+        ~RoledBufferBase();
 
         VkBuffer _buffer = {};
         std::shared_ptr<Device> _device = {};
+
+        operator VkBuffer&() { return _buffer; }; // cast operator
+        operator VkBuffer() const { return _buffer; }; // cast operator
+
+#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
+        VmaAllocation _allocation = {};
+        VmaAllocationInfo _allocationInfo = {};
+        auto _hostMapped() const { return _allocationInfo.pMappedData; };
+#endif
+    };
+
+    // this is wrapped advanced buffer class
+    template<VtMemoryUsage U>
+    //class RoledBuffer : public RoledBufferBase, std::enable_shared_from_this<RoledBuffer<U>> {
+    class RoledBuffer : public std::enable_shared_from_this<RoledBuffer<U>> {
+    public:
+        friend Device;
+        friend RoledBufferBase;
+
+        //~RoledBuffer();
+        std::shared_ptr<RoledBufferBase> _bufferWrap = {}; // 
         std::shared_ptr<BufferRegion> _bufferRegion = {};
 
         // direct getters and refers
@@ -345,31 +368,37 @@ namespace _vt { // store in undercover namespace
         auto _size() const { return _descriptorInfo().range; };
         auto& _offset() { return _descriptorInfo().offset; };
         auto& _size() { return _descriptorInfo().range; };
-        auto _parent() const { return _device; };
-        auto& _parent() { return _device; };
+        auto _parent() const { return _device(); };
+        auto& _parent() { return _device(); };
 
+        operator std::shared_ptr<RoledBufferBase>&() { return _bufferWrap; };
+        operator std::shared_ptr<RoledBufferBase>() const { return _bufferWrap; };
+
+        // typed getters and refers
         operator VkBufferView&() { return this->_bufferView(); };
         operator VkBufferView() const { return this->_bufferView(); };
-        operator VkBuffer&() { return _buffer; }; // cast operator
-        operator VkBuffer() const { return _buffer; }; // cast operator
+        operator VkBuffer&() { return _bufferWrap->_buffer; }; // cast operator
+        operator VkBuffer() const { return _bufferWrap->_buffer; }; // cast operator
+        auto _hostMapped() const { return _bufferWrap->_hostMapped(); };
 
-#ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-        VmaAllocation _allocation = {};
-        VmaAllocationInfo _allocationInfo = {};
-        auto _hostMapped() const { return _allocationInfo.pMappedData; };
-#endif
+        // direct getters and refers
+        VkDevice  _device() const { return _bufferWrap->_device; };
+        VkDevice& _device() { return _bufferWrap->_device; };
+        VkBuffer  _buffer() const { return _bufferWrap->_buffer; };
+        VkBuffer& _buffer() { return _bufferWrap->_buffer; };
 
+        // redirectors
+        //VkDescriptorBufferInfo  _descriptorInfo() const { return _bufferWrap->_descriptorInfo(); };
+        //VkDescriptorBufferInfo& _descriptorInfo() { return _bufferWrap->_descriptorInfo(); };
+        //VkBufferView  _bufferView() const { return _bufferWrap->_bufferView(); };
+        //VkBufferView& _bufferView() { return _bufferWrap->_bufferView(); };
+        //std::shared_ptr<BufferRegion>  _bufferRegion() const { return _bufferWrap->_bufferRegion; };
+        //std::shared_ptr<BufferRegion>& _bufferRegion() { return _bufferWrap->_bufferRegion; };
+        //std::vector<std::shared_ptr<BufferRegion>>  _sharedRegions() const { return _bufferWrap->_sharedRegions; };
+        //std::vector<std::shared_ptr<BufferRegion>>& _sharedRegions() { return _bufferWrap->_sharedRegions; };
+
+        // 
         std::vector<std::shared_ptr<BufferRegion>> _sharedRegions = {};
-    };
-
-    // this is wrapped advanced buffer class
-    template<VtMemoryUsage U>
-    class RoledBuffer : public RoledBufferBase, std::enable_shared_from_this<RoledBuffer<U>> {
-    public:
-        ~RoledBuffer();
-
-        friend Device;
-        friend RoledBufferBase;
     };
 
 
@@ -444,10 +473,10 @@ namespace _vt { // store in undercover namespace
     // avoid compilation issues
      inline BufferRegion::operator VkBuffer&() { return _descriptorInfo().buffer; };
      inline BufferRegion::operator VkBuffer() const { return _descriptorInfo().buffer; };
-     inline VkDescriptorBufferInfo  RoledBufferBase::_descriptorInfo() const { return _bufferRegion->_descriptorInfo(); };
-     inline VkDescriptorBufferInfo& RoledBufferBase::_descriptorInfo() { return _bufferRegion->_descriptorInfo(); };
-     inline VkBufferView  RoledBufferBase::_bufferView() const { return _bufferRegion->_bufferView(); };
-     inline VkBufferView& RoledBufferBase::_bufferView() { return _bufferRegion->_bufferView(); };
+     template<VtMemoryUsage U> inline VkDescriptorBufferInfo  RoledBuffer<U>::_descriptorInfo() const { return _bufferRegion->_descriptorInfo(); };
+     template<VtMemoryUsage U> inline VkDescriptorBufferInfo& RoledBuffer<U>::_descriptorInfo() { return _bufferRegion->_descriptorInfo(); };
+     template<VtMemoryUsage U> inline VkBufferView  RoledBuffer<U>::_bufferView() const { return _bufferRegion->_bufferView(); };
+     template<VtMemoryUsage U> inline VkBufferView& RoledBuffer<U>::_bufferView() { return _bufferRegion->_bufferView(); };
 
 
 

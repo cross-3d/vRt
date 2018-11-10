@@ -8,23 +8,23 @@ namespace _vt {
 
 
     // destructor of roled buffer
-    template<VtMemoryUsage U>
-    RoledBuffer<U>::~RoledBuffer() {
+    RoledBufferBase::~RoledBufferBase() {
         auto buffer = this->_buffer; this->_buffer = {};
         auto device = this->_device; this->_device = {};
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         auto allocation = this->_allocation; this->_allocation = {};
 #endif
-        std::async([=](){
-            if (buffer && device)
+        //std::async([=](){
+        if (buffer && device) {
 #ifdef VRT_ENABLE_VEZ_INTEROP
-                vezDestroyBuffer(device->_device, buffer);
+            vezDestroyBuffer(*device, buffer);
 #else
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-                if (allocation) vmaDestroyBuffer(device->_allocator, buffer, allocation);
+            if (allocation) { vmaDestroyBuffer(*device, buffer, allocation); };
 #endif
 #endif
-        });
+        };
+        //});
     };
 
 
@@ -70,63 +70,65 @@ namespace _vt {
 
 
     template<VtMemoryUsage U>
-    VtResult createBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<RoledBuffer<U>>& vtDeviceBuffer) {
+    VtResult createBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<RoledBuffer<U>>& _vtDeviceBuffer) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
         //auto vtDeviceBuffer = (_vtBuffer = std::make_shared<RoledBuffer<U>>());
-        vtDeviceBuffer = std::make_shared<RoledBuffer<U>>();
-        vtDeviceBuffer->_device = device; // delegate device by weak_ptr
+        _vtDeviceBuffer = std::make_shared<RoledBuffer<U>>(); {
+            std::shared_ptr<RoledBufferBase> vtDeviceBuffer = (_vtDeviceBuffer->_bufferWrap = std::make_shared<RoledBufferBase>());
+            vtDeviceBuffer->_device = device; // delegate device by weak_ptr
 
-        VmaAllocationCreateInfo allocCreateInfo = {};
-        allocCreateInfo.usage = VmaMemoryUsage(U); // TODO: stable conversion
+            VmaAllocationCreateInfo allocCreateInfo = {};
+            allocCreateInfo.usage = VmaMemoryUsage(U); // TODO: stable conversion
 
-        // make memory usages 
-        auto usageFlagCstr = 0u;
-        if constexpr (U != VT_MEMORY_USAGE_GPU_ONLY) { allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT; }
-        if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; }
-        else {
-            if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; }
+            // make memory usages 
+            auto usageFlagCstr = 0u;
+            if constexpr (U != VT_MEMORY_USAGE_GPU_ONLY) { allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT; }
+            if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; }
             else {
-                usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+                if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; }
+                else {
+                    usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+                };
             };
-        };
 
-        auto usageFlag = cinfo.usageFlag | usageFlagCstr;
-        //if (cinfo.format) { usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT; } // if has format, add texel storage usage
-        usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
+            auto usageFlag = cinfo.usageFlag | usageFlagCstr;
+            //if (cinfo.format) { usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT; } // if has format, add texel storage usage
+            usageFlag |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
 
 #ifdef VRT_ENABLE_VEZ_INTEROP
-        VezMemoryFlags mem = VEZ_MEMORY_GPU_ONLY;
-        if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) mem = VEZ_MEMORY_CPU_TO_GPU;
-        if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) mem = VEZ_MEMORY_GPU_TO_CPU;
-        if constexpr (U == VT_MEMORY_USAGE_CPU_ONLY) mem = VEZ_MEMORY_CPU_ONLY;
+            VezMemoryFlags mem = VEZ_MEMORY_GPU_ONLY;
+            if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) mem = VEZ_MEMORY_CPU_TO_GPU;
+            if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) mem = VEZ_MEMORY_GPU_TO_CPU;
+            if constexpr (U == VT_MEMORY_USAGE_CPU_ONLY) mem = VEZ_MEMORY_CPU_ONLY;
 
-        auto binfo = VezBufferCreateInfo{};
-        binfo.pNext = nullptr;
+            auto binfo = VezBufferCreateInfo{};
+            binfo.pNext = nullptr;
 #else
-        auto binfo = VkBufferCreateInfo(vk::BufferCreateInfo{});
-        binfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            auto binfo = VkBufferCreateInfo(vk::BufferCreateInfo{});
+            binfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 #endif
 
-        binfo.queueFamilyIndexCount = device->_familyIndices.size();
-        binfo.pQueueFamilyIndices = device->_familyIndices.data();
+            binfo.queueFamilyIndexCount = device->_familyIndices.size();
+            binfo.pQueueFamilyIndices = device->_familyIndices.data();
 
-        binfo.size = cinfo.bufferSize;//((cinfo.bufferSize >> 5ull) << 5ull) + 32ull;
-        binfo.usage = usageFlag;
+            binfo.size = cinfo.bufferSize;//((cinfo.bufferSize >> 5ull) << 5ull) + 32ull;
+            binfo.usage = usageFlag;
 
-        if (binfo.size > 0) {
+            if (binfo.size > 0) {
 #ifdef VRT_ENABLE_VEZ_INTEROP
-            result = vezCreateBuffer(device->_device, mem, &binfo, &vtDeviceBuffer->_buffer);
+                result = vezCreateBuffer(device->_device, mem, &binfo, &vtDeviceBuffer->_buffer);
 #else
-            result = vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo);
+                result = vmaCreateBuffer(device->_allocator, &binfo, &allocCreateInfo, &vtDeviceBuffer->_buffer, &vtDeviceBuffer->_allocation, &vtDeviceBuffer->_allocationInfo);
 #endif
+            };
         };
 
         // if format is known, make bufferView
         if constexpr (U == VT_MEMORY_USAGE_GPU_ONLY) {
             VtBufferRegionCreateInfo rbc = {};
             rbc.offset = 0, rbc.bufferSize = cinfo.bufferSize, rbc.format = cinfo.format;
-            createBufferRegion(vtDeviceBuffer, rbc, vtDeviceBuffer->_bufferRegion);
+            createBufferRegion(_vtDeviceBuffer, rbc, _vtDeviceBuffer->_bufferRegion);
         };
 
         return result;
@@ -139,10 +141,9 @@ namespace _vt {
 
         // complete descriptors and buffer-views
         bManager->_bufferStore->_sharedRegions = bManager->_bufferRegions; // link regions with buffer
-        const auto wptr = std::weak_ptr(bManager->_bufferStore);
         for (auto f : bManager->_bufferRegions) {
-            f->_boundBuffer = wptr, f->_descriptorInfo().buffer = VkBuffer(*bManager->_bufferStore); createBufferView(f);
-        }
+            f->_boundBuffer = bManager->_bufferStore->_bufferWrap, f->_descriptorInfo().buffer = VkBuffer(*bManager->_bufferStore); createBufferView(f);
+        };
 
         // return result (TODO: handling)
         return VK_SUCCESS;
@@ -155,9 +156,8 @@ namespace _vt {
 
         // complete descriptors and buffer-views
         bManager->_bufferStore->_sharedRegions = bManager->_bufferRegions; // link regions with buffer
-        const auto wptr = std::weak_ptr(bManager->_bufferStore);
         for (auto f : bManager->_bufferRegions) {
-            f->_boundBuffer = wptr, f->_descriptorInfo().buffer = VkBuffer(*bManager->_bufferStore); createBufferView(f);
+            f->_boundBuffer = bManager->_bufferStore->_bufferWrap, f->_descriptorInfo().buffer = VkBuffer(*bManager->_bufferStore); createBufferView(f);
         };
 
         // return result (TODO: handling)
@@ -177,11 +177,10 @@ namespace _vt {
     inline VtResult createBufferRegion(std::shared_ptr<DeviceBuffer> gBuffer, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion) {
         const auto correctedSize = bri.bufferSize;//((bri.bufferSize >> 5ull) << 5ull) + 32ull;
         bRegion = std::make_shared<BufferRegion>();
-        bRegion->_device = gBuffer->_device;
         bRegion->_format = bri.format;
         bRegion->_descriptorInfo().range = correctedSize;
         bRegion->_descriptorInfo().offset = bri.offset;
-        bRegion->_descriptorInfo().buffer = *(bRegion->_boundBuffer = std::weak_ptr(gBuffer)).lock(); createBufferView(bRegion);
+        bRegion->_descriptorInfo().buffer = *(bRegion->_boundBuffer = gBuffer->_bufferWrap).lock(); createBufferView(bRegion);
         gBuffer->_sharedRegions.push_back(bRegion); // add shared buffer region
         return VK_SUCCESS;
     };
@@ -189,15 +188,13 @@ namespace _vt {
 
     // create buffer region by exist buffer
     inline VtResult createBufferRegion(VkBuffer vkBuffer, VtBufferRegionCreateInfo bri, std::shared_ptr<BufferRegion>& bRegion, std::shared_ptr<Device> gDevice) {
-        const auto gBuffer = std::make_shared<DeviceBuffer>(); gBuffer->_device = gDevice;
-        const auto correctedSize = bri.bufferSize;//((bri.bufferSize >> 5ull) << 5ull) + 32ull;
+        const auto correctedSize = bri.bufferSize;
         bRegion = std::make_shared<BufferRegion>();
         bRegion->_device = gDevice;
         bRegion->_format = bri.format;
         bRegion->_descriptorInfo().range = correctedSize;
         bRegion->_descriptorInfo().offset = bri.offset;
         bRegion->_descriptorInfo().buffer = vkBuffer; createBufferView(bRegion);
-        gBuffer->_sharedRegions.push_back(bRegion); // add shared buffer region
         return VK_SUCCESS;
     };
 
@@ -229,16 +226,17 @@ namespace _vt {
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         auto allocation = this->_allocation; this->_allocation = {};
 #endif
-        std::async([=](){
-            if (image && device)
+        //std::async([=](){
+        if (image && device) {
 #ifdef VRT_ENABLE_VEZ_INTEROP
-                vezDestroyImage(device->_device, image);
+            vezDestroyImage(*device, image);
 #else
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
-                if (allocation) vmaDestroyImage(device->_allocator, image, allocation);
+            if (allocation) { vmaDestroyImage(*device, image, allocation); };
 #endif
 #endif
-        });
+        };
+        //});
     };
 
     VtResult createDeviceImage(std::shared_ptr<Device> device, VtDeviceImageCreateInfo cinfo, std::shared_ptr<DeviceImage>& vtDeviceImage) {

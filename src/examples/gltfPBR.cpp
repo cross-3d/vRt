@@ -324,8 +324,11 @@ namespace rnd {
 
 
      void Renderer::InitRayTracing() {
+         const VkDeviceSize maxPrimitives = 2048ull * 2048ull;
+
+
          {
-             createBufferFast(deviceQueue, BvhDataBuffer, sizeof(VtBvhNodeStruct) * 2048ull * 2048ull);
+             createBufferFast(deviceQueue, BvhDataBuffer, sizeof(VtBvhNodeStruct) * maxPrimitives * 2ull);
              createBufferFast(deviceQueue, BvhHeadersBuffer, sizeof(VtBvhBlock) * 256ull);
              createBufferFast(deviceQueue, BvhInstancedBuffer, sizeof(VtBvhInstance) * 256ull);
          };
@@ -341,7 +344,7 @@ namespace rnd {
              acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
              acci.coverMat = IdentifyMat4;
              //acci.coverMat = *((VtMat4*)&optMat);
-             acci.maxPrimitives = 1024ull * 2048ull;
+             acci.maxPrimitives = maxPrimitives;
              acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
              acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
              acci.bvhDataBuffer = BvhDataBuffer;
@@ -434,7 +437,7 @@ namespace rnd {
             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
             acci.coverMat = IdentifyMat4;
             //acci.coverMat = *((VtMat4*)&optMat);
-            acci.maxPrimitives = 1024ull * 2048ull;
+            acci.maxPrimitives = maxPrimitives;
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
             acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
             acci.bvhDataBuffer = BvhDataBuffer;
@@ -462,7 +465,7 @@ namespace rnd {
 
             // create vertex assembly
             VtVertexAssemblySetCreateInfo vtsi = {};
-            vtsi.maxPrimitives = 1024ull * 2048ull;
+            vtsi.maxPrimitives = maxPrimitives;
             vtCreateVertexAssembly(deviceQueue->device->rtDev, &vtsi, &vertexAssembly);
 
             // dispatch image barrier for vertex assembly

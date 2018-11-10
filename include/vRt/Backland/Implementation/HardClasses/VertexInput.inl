@@ -71,7 +71,7 @@ namespace _vt {
                         VtDeviceBufferCreateInfo dbi = {};
                         dbi.bufferSize = 16ull * sizeof(float);
                         createBuffer(_vtDevice, dbi, vtVertexInput->_inlineTransformBuffer); // TODO - add support of constant shared buffer
-                        d6.setBuffer(vtVertexInput->_inlineTransformBuffer->_buffer);
+                        d6.setBuffer(VkBuffer(*vtVertexInput->_inlineTransformBuffer));
                     };
 
                     // 

@@ -415,8 +415,8 @@ namespace NSM
                 dbi.familyIndiceCount = queueIndices.size();
 
                 dbi.shaderPath = shaderPath;
-                dbi.sharedCacheSize = 4096ull * 4096ull * 4ull;
-                dbi.maxPrimitives = 1024ull * 2048ull;
+                dbi.sharedCacheSize = 4ull;//4096ull * 4096ull * 4ull;
+                dbi.maxPrimitives = 4096ull * 2048ull;
                 dbi.enableAdvancedAcceleration = false; // Current Hardware and Drivers are damned to support RTX in Vulkan API, need await 5 years...
                 dbi.pAccelerationExtension = (vrt::VtDeviceAdvancedAccelerationExtension*)&rtxExtensionPassport;
                 vrt::vtConvertDevice(pdevice, deviceQueuePtr->device->logical, &dbi, &deviceQueuePtr->device->rtDev);
