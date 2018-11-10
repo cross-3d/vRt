@@ -177,22 +177,28 @@ namespace _vt { // store in undercover namespace
     // you can't use it for form long command buffer from host
     template<VtMemoryUsage U = VT_MEMORY_USAGE_CPU_TO_GPU>
     inline void cmdCopyBufferToImage(VkCommandBuffer cmd, std::shared_ptr<RoledBuffer<U>> srcBuffer, std::shared_ptr<DeviceImage> dstImage, const std::vector<vk::BufferImageCopy>& regions) {
-        vk::CommandBuffer(cmd).copyBufferToImage(VkBuffer(*srcBuffer), VkImage(*dstImage), vk::ImageLayout(dstImage->_layout), regions);
-
-        if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
-            if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }
-        }
+        if (srcBuffer && dstImage && srcBuffer->_buffer() && dstImage->_image && regions.size() > 0) {
+            vk::CommandBuffer(cmd).copyBufferToImage(VkBuffer(*srcBuffer), VkImage(*dstImage), vk::ImageLayout(dstImage->_layout), regions);
+            if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); }
+            else {
+                if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); }
+                else { commandBarrier(cmd); }
+            };
+        };
     };
 
     // copy image to buffer (to gpu or host)
     // you can't use it for form long command buffer to host
     template<VtMemoryUsage U = VT_MEMORY_USAGE_GPU_TO_CPU>
     inline void cmdCopyImageToBuffer(VkCommandBuffer cmd, std::shared_ptr<DeviceImage> srcImage, std::shared_ptr<RoledBuffer<U>> dstBuffer, const std::vector<vk::BufferImageCopy>& regions) {
-        vk::CommandBuffer(cmd).copyImageToBuffer((vk::Image&)(*srcImage), vk::ImageLayout(srcImage->_layout), (vk::Buffer&)(*dstBuffer), regions);
-
-        if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); } else {
-            if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); } else { commandBarrier(cmd); }
-        }
+        if (srcImage && dstBuffer && srcImage->_image && dstBuffer->_buffer() && regions.size() > 0) {
+            vk::CommandBuffer(cmd).copyImageToBuffer((vk::Image&)(*srcImage), vk::ImageLayout(srcImage->_layout), (vk::Buffer&)(*dstBuffer), regions);
+            if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { fromHostCommandBarrier(cmd); }
+            else {
+                if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { toHostCommandBarrier(cmd); }
+                else { commandBarrier(cmd); }
+            };
+        };
     };
 
 

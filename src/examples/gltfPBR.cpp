@@ -736,9 +736,11 @@ namespace rnd {
                 dii.imageViewType = VK_IMAGE_VIEW_TYPE_2D;
                 dii.layout = VK_IMAGE_LAYOUT_GENERAL;
                 dii.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-                dii.size = { uint32_t(I.width), uint32_t(I.height), 1 };
+                dii.size = { uint32_t(std::max(I.width, 2)), uint32_t(std::max(I.height, 2)), 1u };
                 dii.layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-                vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
+                //if (I.width >= 0 && I.height >= 0) {
+                    vtCreateDeviceImage(deviceQueue->device->rtDev, &dii, &image);
+                //};
 
                 { // add queue to upload image data
                     VtHostToDeviceBuffer tmpbuf = {};

@@ -221,8 +221,9 @@ namespace _vt {
 
     // low level copy command between (prefer for host and device)
     static inline VkResult cmdCopyBufferL(VkCommandBuffer cmd, VkBuffer srcBuffer, VkBuffer dstBuffer, const std::vector<vk::BufferCopy>& regions, std::function<void(VkCommandBuffer)> barrierFn = commandBarrier) {
-        vk::CommandBuffer(cmd).copyBuffer(srcBuffer, dstBuffer, regions);
-        barrierFn(cmd); // put copy barrier
+        if (srcBuffer && dstBuffer && regions.size() > 0) {
+            vk::CommandBuffer(cmd).copyBuffer(srcBuffer, dstBuffer, regions); barrierFn(cmd); // put copy barrier
+        };
         return VK_SUCCESS;
     };
 
