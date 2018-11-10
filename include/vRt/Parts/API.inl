@@ -61,7 +61,7 @@ namespace vrt { // store in official namespace
     extern VtResult vtCmdBindVertexAssembly(VtCommandBuffer commandBuffer, VtVertexAssemblySet vertexAssembly);
 
     // update vertex assembly without needs to full rebuilding vertex set 
-    extern VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, uint32_t inputSet, bool multiple = false, bool useInstance = true, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)>& cb = {});
+    extern VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)>& cb = {});
 
     // pre-build vertex input in accelerator structure
     extern VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer, bool useInstance = true, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)>& cb = {});

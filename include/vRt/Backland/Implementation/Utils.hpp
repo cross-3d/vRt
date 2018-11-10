@@ -68,8 +68,8 @@ namespace _vt { // store in undercover namespace
         imageMemoryBarriers.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         imageMemoryBarriers.oldLayout = (vk::ImageLayout)image->_initialLayout;
         imageMemoryBarriers.newLayout = (vk::ImageLayout)image->_layout;
-        imageMemoryBarriers.image = image->_image;
         imageMemoryBarriers.subresourceRange = image->_subresourceRange;
+        imageMemoryBarriers.image = image->_image;
 
         // Put barrier on top
         const auto  srcStageMask = vk::PipelineStageFlags{ vk::PipelineStageFlagBits::eBottomOfPipe };

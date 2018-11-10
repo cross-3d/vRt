@@ -244,7 +244,7 @@ namespace rnd {
             //vtCmdBindDescriptorSets(qVxuCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
             //vtCmdBindVertexAssembly(qVxuCmdBuf, vertexAssembly);
             //vtCmdBindVertexInputSets(qVxuCmdBuf, inputs.size(), inputs.data());
-            //vtCmdUpdateVertexAssembly(qVxuCmdBuf, 0, true);
+            //vtCmdUpdateVertexAssembly(qVxuCmdBuf); 
             //vkEndCommandBuffer(qVxuCmdBuf);
         }
 

@@ -83,8 +83,8 @@ namespace vrt {
         return _vt::cmdVertexAssemblyBarrier(commandBuffer, vertexAssembly);
     };
 
-    VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, uint32_t inputSet, bool multiple, bool useInstance, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)>& cb) {
-        return _vt::updateVertexSet(commandBuffer, inputSet, multiple, useInstance, cb);
+    VtResult vtCmdUpdateVertexAssembly(VtCommandBuffer commandBuffer, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)>& cb) {
+        return _vt::updateVertexSet(commandBuffer, cb);
     };
 
     VtResult vtCmdBuildVertexAssembly(VtCommandBuffer commandBuffer, bool useInstance, const std::function<void(VkCommandBuffer, int, VtUniformBlock&)>& cb) {
