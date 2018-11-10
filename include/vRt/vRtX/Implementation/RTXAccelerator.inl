@@ -30,8 +30,7 @@ namespace _vt {
         std::vector<vk::DescriptorSet> _tvSets = { rtset->_descriptorSet, extendedSet->_accelDescriptorSetNV };
         
         auto cmdBufVk = vk::CommandBuffer(VkCommandBuffer(*cmdBuf));
-
-        cmdBufVk.pushConstants<uint32_t>(vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), vk::ShaderStageFlagBits::eRaygenNV, 0u, { _raytracingProperties.shaderGroupHandleSize * 0u, _raytracingProperties.shaderGroupHandleSize * 1u, 0u, 0u });
+        cmdBufVk.pushConstants<uint32_t>(vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), vk::ShaderStageFlagBits::eRaygenNV, 0u, { _raytracingProperties.shaderGroupHandleSize * 0u, _raytracingProperties.shaderGroupHandleSize * 0u, 0u, 0u });
         cmdBufVk.bindPipeline(vk::PipelineBindPoint::eRayTracingNV, accelertExt->_intersectionPipelineNV);
         cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRayTracingNV, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
         
@@ -60,7 +59,7 @@ namespace _vt {
         _trianglesProxy.vertexCount = accelSet->_vertexAssemblySet->_calculatedPrimitiveCount * 3ull;
         _trianglesProxy.vertexOffset = accelSet->_vertexAssemblySet->_verticeBufferCached->_offset();
         _trianglesProxy.vertexData = VkBuffer(*accelSet->_vertexAssemblySet->_verticeBufferCached);
-        //_trianglesProxy.indexCount = _trianglesProxy.vertexCount;
+        _trianglesProxy.indexCount = _trianglesProxy.vertexCount;
 
         // index buffer (uint32_t)
         //_trianglesProxy.indexOffset = accelSet->_vertexAssemblySet->_indexBuffer->_offset();
@@ -105,7 +104,7 @@ namespace _vt {
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
-                vk::DescriptorSetLayoutBinding(0u, vk::DescriptorType::eAccelerationStructureNV, 1, vk::ShaderStageFlagBits::eRaygenNV | vk::ShaderStageFlagBits::eClosestHitNV), // rays
+                vk::DescriptorSetLayoutBinding(0u, vk::DescriptorType::eAccelerationStructureNV, 1, vk::ShaderStageFlagBits::eRaygenNV), // rays
             };
             _raytracingDescriptorLayout = vk::Device(VkDevice(*device)).createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         };
@@ -128,14 +127,14 @@ namespace _vt {
 
             std::vector<VkRayTracingShaderGroupCreateInfoNV> groups = {
                 vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader( 0u).setClosestHitShader(~0u).setAnyHitShader(~0u).setIntersectionShader(~0u).setType(vk::RayTracingShaderGroupTypeNV::eGeneral),
-                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader(~0u).setClosestHitShader( 1u).setAnyHitShader( 2u).setIntersectionShader(~0u).setType(vk::RayTracingShaderGroupTypeNV::eTrianglesHitGroup),
-                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader( 3u).setClosestHitShader(~0u).setAnyHitShader(~0u).setIntersectionShader(~0u).setType(vk::RayTracingShaderGroupTypeNV::eGeneral),
+                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader(~0u).setClosestHitShader( 1u).setAnyHitShader(~0u).setIntersectionShader(~0u).setType(vk::RayTracingShaderGroupTypeNV::eTrianglesHitGroup),
+                vk::RayTracingShaderGroupCreateInfoNV().setGeneralShader( 2u).setClosestHitShader(~0u).setAnyHitShader(~0u).setIntersectionShader(~0u).setType(vk::RayTracingShaderGroupTypeNV::eGeneral),
             };
 
             std::vector<VkPipelineShaderStageCreateInfo> stages = {
                 makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rgen", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_RAYGEN_BIT_NV),
                 makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rchit", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV),
-                makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rahit", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_ANY_HIT_BIT_NV),
+                //makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rahit", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_ANY_HIT_BIT_NV),
                 makePipelineStageInfo(VkDevice(*device), getCorrectPath("accelNVX/traverse.rmiss", vendorName, device->_shadersPath), "main", VK_SHADER_STAGE_MISS_BIT_NV),
             };
 

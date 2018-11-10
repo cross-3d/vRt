@@ -376,7 +376,7 @@ namespace rnd {
                      RTXInstancedData.push_back(VtRTXInstance{});
                      auto & RTXInstanceRef = RTXInstancedData[RTXInstancedData.size() - 1];
                      memcpy(&RTXInstanceRef.transform, &movedFW, sizeof(VtMat3x4));
-                     RTXInstanceRef.instanceId = InstCounter++;
+                     RTXInstanceRef.instanceId = 0u;//InstCounter++;
                      RTXInstanceRef.mask = 0xff;
                      RTXInstanceRef.instanceOffset = 0;
 

@@ -15,7 +15,7 @@ namespace _vt {
 
         // RTX support was broken even there
         _vertexProxyNV.indexType = VK_INDEX_TYPE_NONE_NV;
-        //_vertexProxyNV.indexCount = _vertexProxyNV.vertexCount;
+        _vertexProxyNV.indexCount = _vertexProxyNV.vertexCount;
         
         // index buffer (uint32_t)
         //_vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
@@ -27,7 +27,7 @@ namespace _vt {
         _vertexDataNV.triangles = _vertexProxyNV;
 
         _vDataNV = vk::GeometryNV{};
-        _vDataNV.flags = VK_GEOMETRY_OPAQUE_BIT_NV; //| VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
+        _vDataNV.flags = VK_GEOMETRY_OPAQUE_BIT_NV | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
         _vDataNV.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NV;
         _vDataNV.geometry = _vertexDataNV;
 

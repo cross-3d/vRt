@@ -16,7 +16,7 @@ namespace _vt {
 
         // RTX support was fully broken, so need next generation of NVidia GPU's
         _vertexProxyNV.indexType = VK_INDEX_TYPE_NONE_NV; // support was broken
-        //_vertexProxyNV.indexCount = _vertexProxyNV.vertexCount; // anyways forced requirements
+        _vertexProxyNV.indexCount = _vertexProxyNV.vertexCount; // anyways forced requirements
 
         // enable index buffer
         //_vertexProxyNV.indexType = VK_INDEX_TYPE_UINT32;
@@ -29,7 +29,7 @@ namespace _vt {
         VkGeometryNV _vDataNV = vk::GeometryNV{};
         _vDataNV.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NV;
         _vDataNV.geometry = _vertexDataNV;
-        _vDataNV.flags = VK_GEOMETRY_OPAQUE_BIT_NV; //| VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
+        _vDataNV.flags = VK_GEOMETRY_OPAQUE_BIT_NV | VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_NV;
 
         // creation of accelerator structure
         VkAccelerationStructureCreateInfoNV _accelerationCreate = vk::AccelerationStructureCreateInfoNV{};
@@ -113,6 +113,7 @@ namespace _vt {
             createDeviceBuffer(accelSet->_device, dbs, _scratchBuffer);
         };
 
+        // create RTX descriptor set
         if (rtxResult == VK_SUCCESS && accelSet->_level == VT_ACCELERATOR_SET_LEVEL_INSTANCE) {
             // create description of structure to bind into descriptor set
             _accelDescriptorNV = vk::WriteDescriptorSetAccelerationStructureNV{};

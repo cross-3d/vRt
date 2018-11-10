@@ -33,7 +33,7 @@
 ### Compatibility Confirmed
 
 - RX Vega 64
-- RTX 2070 (without RTX acceleration)
+- RTX 2070 (but still have some dumbs)
 - GTX 1070 (need new tests)
 
 ### Roadmaps
@@ -53,7 +53,6 @@
 
 #### Indefinite Term
 
-- Support RTX acceleration and next-gen NVidia GPU's (awaiting in 2023 year)
 - Begin of development for OpenGL, OpenCL and CUDA interoperability
 - First implementations for games, engines, applications, blockchains
 - Make custom GLSL/HLSL compiler for unified compatibility
@@ -61,7 +60,6 @@
 
 ### Known Issues
 
-- Implementation, based on `VK_NV_ray_tracing` not working. NVIDIA just added stubs only, in practice is useless now. Nothing any news about drivers (https://developer.nvidia.com/vulkan-driver).
 - Not enough performance on RX Vega 64 (where is promised millions, why we have only half?). We attemped to restore lost performances, but still need very deep work to full remedy of application architecture.
 - Intel HD Graphics UHD 630 doesn't work. Intel integrated graphics still needs to workarounds.
-- Not working some meshes. Still need full application rework to make better memory managments.
+- Not working some meshes. We still do search the solutions for this problem.
