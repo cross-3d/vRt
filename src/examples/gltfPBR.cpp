@@ -229,7 +229,6 @@ namespace rnd {
             // make accelerator and vertex builder command
             vxCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
             VtCommandBuffer qVxCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxCmdBuf, &qVxCmdBuf);
-            //vtCmdBindRayTracingSet(qVxCmdBuf, raytracingSet); 
             vtCmdBindDescriptorSets(qVxCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
             vtCmdBindVertexAssembly(qVxCmdBuf, vertexAssembly);
             vtCmdBindVertexInputSets(qVxCmdBuf, inputs.size(), inputs.data());
@@ -238,15 +237,15 @@ namespace rnd {
         }
 
         {
+            vxuCmdBuf = vxCmdBuf;
             // make accelerator and vertex builder command
-            vxuCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
-            VtCommandBuffer qVxuCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxuCmdBuf, &qVxuCmdBuf);
-            //vtCmdBindRayTracingSet(qVxCmdBuf, raytracingSet); 
-            vtCmdBindDescriptorSets(qVxuCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
-            vtCmdBindVertexAssembly(qVxuCmdBuf, vertexAssembly);
-            vtCmdBindVertexInputSets(qVxuCmdBuf, inputs.size(), inputs.data());
-            vtCmdUpdateVertexAssembly(qVxuCmdBuf, 0, true);
-            vkEndCommandBuffer(qVxuCmdBuf);
+            //vxuCmdBuf = vte::createCommandBuffer(deviceQueue->device->rtDev, deviceQueue->commandPool, false, false);
+            //VtCommandBuffer qVxuCmdBuf; vtQueryCommandInterface(deviceQueue->device->rtDev, vxuCmdBuf, &qVxuCmdBuf);
+            //vtCmdBindDescriptorSets(qVxuCmdBuf, VT_PIPELINE_BIND_POINT_VERTEXASSEMBLY, rtVPipelineLayout, 0, 1, &vtxDescSet, 0, nullptr);
+            //vtCmdBindVertexAssembly(qVxuCmdBuf, vertexAssembly);
+            //vtCmdBindVertexInputSets(qVxuCmdBuf, inputs.size(), inputs.data());
+            //vtCmdUpdateVertexAssembly(qVxuCmdBuf, 0, true);
+            //vkEndCommandBuffer(qVxuCmdBuf);
         }
 
         {
