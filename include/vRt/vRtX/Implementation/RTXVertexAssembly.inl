@@ -6,6 +6,10 @@ namespace _vt {
 
     // construction of extended vertex assembly
     VtResult RTXVertexAssemblyExtension::_Construction(std::shared_ptr<VertexAssemblySet> _assemblySet) {
+        // identify as RTX extension
+        _nativeAccelerationName = VT_ACCELERATION_NAME_RTX;
+
+        // 
         VkGeometryTrianglesNV _vertexProxyNV = vk::GeometryTrianglesNV{};
         _vertexProxyNV.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
         _vertexProxyNV.vertexOffset = _assemblySet->_verticeBufferCached->_offset();

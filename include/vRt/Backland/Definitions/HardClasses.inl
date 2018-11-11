@@ -585,6 +585,7 @@ namespace _vt { // store in undercover namespace
         friend Device;
 
     protected:
+        VtAccelerationName _nativeAccelerationName = VT_ACCELERATION_NAME_UNKNOWN;
         std::weak_ptr<Device> _device = {};
         //std::shared_ptr<AdvancedAcceleratorDataBase> _dataPtr = {};
 
@@ -612,8 +613,10 @@ namespace _vt { // store in undercover namespace
         friend Device;
 
     protected:
-        std::weak_ptr<Device> _device = {};
+        VtAccelerationName _nativeAccelerationName = VT_ACCELERATION_NAME_UNKNOWN;
         std::weak_ptr<AcceleratorSet> _accelSet = {};
+        std::weak_ptr<Device> _device = {};
+        
         //std::shared_ptr<AcceleratorSetExtensionDataBase> _dataPtr = {};
 
     public:
@@ -638,8 +641,10 @@ namespace _vt { // store in undercover namespace
         friend Device;
 
     protected:
-        std::weak_ptr<Device> _device = {};
+        VtAccelerationName _nativeAccelerationName = VT_ACCELERATION_NAME_UNKNOWN;
         std::weak_ptr<VertexAssemblySet> _assemblySet = {};
+        std::weak_ptr<Device> _device = {};
+        
         //std::shared_ptr<VertexAssemblyExtensionDataBase> _dataPtr = {};
 
     public:

@@ -87,6 +87,10 @@ namespace _vt {
     };
 
     VtResult RTXAcceleratorExtension::_Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) {
+        // identify as RTX extension
+        _nativeAccelerationName = VT_ACCELERATION_NAME_RTX;
+
+        // 
         VtResult rtxResult = VK_ERROR_EXTENSION_NOT_PRESENT;
         const auto * extensionInfo = (VtRTXAcceleratorExtension*)(extensionBasedInfo);
         _raytracingProperties = device->_features->_rayTracingNV; // planned to merge here
