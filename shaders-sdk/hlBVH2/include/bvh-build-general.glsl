@@ -15,8 +15,10 @@ int prefixOf( in int a, in int b ) {
 int findSplit( in int left, in int right ) {
     const int commonPrefix = prefixOf(left, right);
     int split = left, nstep = right - left, nsplit = split + nstep;
-    IFALL (commonPrefix >= BIT_FFT) { split = (left + right)>>1; };
-    if    (commonPrefix  < BIT_FFT) {
+    //IFALL (commonPrefix >= BIT_FFT) { split = (left + right)>>1; };
+      [[flatten]] if (commonPrefix >= BIT_FFT) { split = (left + right)>>1; } else 
+    //[[flatten]] if (commonPrefix  < BIT_FFT) 
+    {
         [[dependency_infinite]] do {
             nstep = (nstep + 1) >> 1, nsplit = split + nstep;
             [[flatten]] if (prefixOf(split, nsplit) > commonPrefix) { split = nsplit; }
