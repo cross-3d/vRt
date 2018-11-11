@@ -11,7 +11,7 @@ namespace _vt { // store in undercover namespace
     // base creation functions 
     extern VtResult convertInstance(VkInstance vkInstance, VtInstanceConversionInfo vtInstanceCreateInfo, std::shared_ptr<Instance>& vtInstance);
     extern VtResult convertPhysicalDevice(std::shared_ptr<Instance> instance, VkPhysicalDevice physical, std::shared_ptr<PhysicalDevice>& _vtPhysicalDevice);
-    extern VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, VtArtificalDeviceExtension vtExtension, std::shared_ptr<Device>& _vtDevice);
+    extern VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, VtDeviceAggregationInfo vtExtension, std::shared_ptr<Device>& _vtDevice);
 
     template<VtMemoryUsage U = VT_MEMORY_USAGE_GPU_ONLY>
     extern VtResult createBuffer(std::shared_ptr<Device> device, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<RoledBuffer<U>>& _vtBuffer);
@@ -34,9 +34,9 @@ namespace _vt { // store in undercover namespace
 
     // main inner objects
     extern VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo vdvi, std::shared_ptr<Device>& _vtDevice);
-    extern VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, VtArtificalDeviceExtension info, std::shared_ptr<AcceleratorHLBVH2>& _vtAccelerator);
+    extern VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, VtDeviceAggregationInfo info, std::shared_ptr<AcceleratorHLBVH2>& _vtAccelerator);
     extern VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, VtAcceleratorSetCreateInfo info, std::shared_ptr<AcceleratorSet>& _vtAccelerator);
-    extern VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, VtArtificalDeviceExtension info, std::shared_ptr<RadixSort>& _vtRadix);
+    extern VtResult createRadixSort(std::shared_ptr<Device> _vtDevice, VtDeviceAggregationInfo info, std::shared_ptr<RadixSort>& _vtRadix);
     extern VtResult createAssemblyPipeline(std::shared_ptr<Device> _vtDevice, VtAttributePipelineCreateInfo info, std::shared_ptr<AssemblyPipeline>& _assemblyPipeline, bool native = false);
     extern VtResult createVertexAssemblySet(std::shared_ptr<Device> _vtDevice, VtVertexAssemblySetCreateInfo info, std::shared_ptr<VertexAssemblySet>& _assemblyPipeline);
     extern VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice, VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& _vtVertexInput);

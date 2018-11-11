@@ -7,7 +7,7 @@ namespace _vt {
     using namespace vrt;
 
     // TODO: enable AABB shaders for real support of multi-leveling (i.e. top level)
-    VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, VtArtificalDeviceExtension info, std::shared_ptr<AcceleratorHLBVH2>& vtAccelerator) {
+    VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, VtDeviceAggregationInfo info, std::shared_ptr<AcceleratorHLBVH2>& vtAccelerator) {
         VtResult result = VK_SUCCESS;
         //auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
         vtAccelerator = std::make_shared<AcceleratorHLBVH2>();

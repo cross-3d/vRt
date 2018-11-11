@@ -6,7 +6,7 @@ namespace vrt { // store in official namespace
 
     // in general that is conversion
     struct VtInstanceConversionInfo;
-    struct VtArtificalDeviceExtension;
+    struct VtDeviceAggregationInfo;
     //struct VtDeviceConversionInfo;
     //struct VtPhysicalDeviceConversionInfo;
     struct VtRayTracingPipelineCreateInfo;

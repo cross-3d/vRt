@@ -410,7 +410,7 @@ namespace NSM
                 std::vector<uint32_t> queueIndices = {};
                 for (auto& q : devicePtr->queues) { queueIndices.push_back(q->familyIndex); };
 
-                vrt::VtArtificalDeviceExtension dbi = {};
+                vrt::VtDeviceAggregationInfo dbi = {};
                 dbi.pFamilyIndices = queueIndices.data();
                 dbi.familyIndiceCount = queueIndices.size();
 

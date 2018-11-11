@@ -5,7 +5,7 @@
 namespace vrt {
 
     // extension passport for RTX device 
-    class VtRTXAcceleratorExtension : VtDeviceAdvancedAccelerationExtension {
+    class VtRTXAcceleratorExtension : public VtDeviceAdvancedAccelerationExtension {
     protected: // API in-runtime implementation (dynamic polymorphism)
         virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; }; // in-runtime return acceleration extension name
         virtual VtResult _Criteria(std::shared_ptr<_vt::DeviceFeatures> lwFeatures) const override;

@@ -15,7 +15,7 @@ namespace vrt {
         return _vt::createDevice(vtPhysicalDevice, *deviceCreateInfo, *vtDevice);
     };
 
-    VtResult vtConvertDevice(VtPhysicalDevice vtPhysicalDevice, VkDevice vkDevice, const VtArtificalDeviceExtension * vtDeviceExtension, VtDevice * vtDevice) {
+    VtResult vtConvertDevice(VtPhysicalDevice vtPhysicalDevice, VkDevice vkDevice, const VtDeviceAggregationInfo * vtDeviceExtension, VtDevice * vtDevice) {
         return _vt::convertDevice(vkDevice, vtPhysicalDevice, *vtDeviceExtension, *vtDevice);
     };
 

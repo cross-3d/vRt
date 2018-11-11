@@ -14,7 +14,7 @@ namespace _vt {
     };
 
 
-    VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, VtArtificalDeviceExtension vtExtension, std::shared_ptr<Device>& vtDevice) {
+    VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, VtDeviceAggregationInfo vtExtension, std::shared_ptr<Device>& vtDevice) {
         //auto vtDevice = (_vtDevice = std::make_shared<Device>());
         vtDevice = std::make_shared<Device>();
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
@@ -336,11 +336,11 @@ namespace _vt {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
         // default structure values
-        VtArtificalDeviceExtension vtExtension = {};
-        auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION);
+        VtDeviceAggregationInfo vtExtension = {};
+        auto vtExtensionPtr = vtSearchStructure(vdvi, VT_STRUCTURE_TYPE_DEVICE_AGGREGATION_INFO);
 
         // if found, getting some info
-        if (vtExtensionPtr) vtExtension = (VtArtificalDeviceExtension&)*vtExtensionPtr;
+        if (vtExtensionPtr) vtExtension = (VtDeviceAggregationInfo&)*vtExtensionPtr;
 
         // be occurate with "VkDeviceCreateInfo", because after creation device, all "vt" extended structures will destoyed
         VkDevice vkDevice = {};

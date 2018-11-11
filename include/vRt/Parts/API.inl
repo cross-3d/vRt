@@ -16,7 +16,7 @@ namespace vrt { // store in official namespace
     // conversion API objects from VK
     extern VtResult vtConvertInstance(VkInstance vkInstance, const VtInstanceConversionInfo * vtInstanceCreateInfo, VtInstance * vtInstance);
     extern VtResult vtConvertPhysicalDevice(VtInstance vtInstance, VkPhysicalDevice vkPhysicalDevice, VtPhysicalDevice * vtPhysicalDevice);
-    extern VtResult vtConvertDevice(VtPhysicalDevice vtPhysicalDevice, VkDevice vkDevice, const VtArtificalDeviceExtension * vtDeviceExtension, VtDevice * vtDevice);
+    extern VtResult vtConvertDevice(VtPhysicalDevice vtPhysicalDevice, VkDevice vkDevice, const VtDeviceAggregationInfo * vtDeviceExtension, VtDevice * vtDevice);
 
     // create ray tracing pipelineLayout 
     extern VtResult vtCreateRayTracingPipelineLayout(VtDevice device, const VtPipelineLayoutCreateInfo * vtRayTracingPipelineLayoutCreateInfo, VtPipelineLayout * vtPipelineLayout);

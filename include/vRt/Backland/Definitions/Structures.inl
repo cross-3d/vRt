@@ -17,7 +17,7 @@ namespace vrt { // store in official namespace
 
     // should be implemented support for enabling
     // planned connection with VtAcceleratorName, and automatic initialization
-    // passing with pNext to VtArtificalDeviceExtension
+    // passing with pNext to VtDeviceAggregationInfo
     class VtDeviceAdvancedAccelerationExtension {
     public: // regular API chaining
         VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_ADVANCED_ACCELERATION_EXTENSION;
@@ -33,8 +33,8 @@ namespace vrt { // store in official namespace
     };
 
 
-    struct VtArtificalDeviceExtension {
-        VtStructureType sType = VT_STRUCTURE_TYPE_ARTIFICAL_DEVICE_EXTENSION;
+    struct VtDeviceAggregationInfo {
+        VtStructureType sType = VT_STRUCTURE_TYPE_DEVICE_AGGREGATION_INFO;
         const void* pNext = nullptr;
         
         uint32_t familyIndiceCount = 0u;
