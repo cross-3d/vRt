@@ -220,21 +220,24 @@ bool intersectCubeF32Single(in vec3 orig, in vec3 dr, in bvec4 sgn, in mat3x2 tM
 // also, optimized for RPM (Rapid Packed Math) https://radeon.com/_downloads/vega-whitepaper-11.6.17.pdf
 // compatible with NVidia GPU too
 
+#ifdef EXPERIMENTAL_UNORM16_BVH
+    #define fcvt4_ unpackSnorm4x16
+#else
+    #define fcvt4_ fvec4_
+#endif
+
+
 #ifndef VERTEX_FILLING
 //pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in fvec4_[3] tMinMax, inout vec4 nfe2)
-pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in int IDX, inout vec4 nfe2)
-{ nfe2 = INFINITY.xxxx; // indefined distance
-
+pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, inout int IDX, inout vec4 nfe2)
+{
     // calculate intersection
     mat3x4 tMinMax = mat3x4(0.f.xxxx,0.f.xxxx,0.f.xxxx);
-    [[flatten]] if (IDX >= 0) [[unroll]] for (int i=0;i<3;i++) 
+    [[flatten]] if (IDX >= 0)  [[unroll]] for (int i=0;i<3;i++) 
     {
-#ifdef EXPERIMENTAL_UNORM16_BVH
-         tMinMax[i] = fvec4_(fma(unpackSnorm4x16(bvhNodes[IDX].cbox[i]),dr[i].xxxx,orig[i].xxxx));
-#else
-         tMinMax[i] = fvec4_(fma(bvhNodes[IDX].cbox[i],dr[i].xxxx,orig[i].xxxx));
-#endif
-         tMinMax[i] = fvec4_(min(tMinMax[i].xy, tMinMax[i].zw), max(tMinMax[i].xy, tMinMax[i].zw));
+        tMinMax[i] = fcvt4_(bvhNodes[IDX].cbox[i]);
+        tMinMax[i] = fvec4_(fma(tMinMax[i],dr[i].xxxx,orig[i].xxxx));
+        tMinMax[i] = fvec4_(min(tMinMax[i].xy, tMinMax[i].zw), max(tMinMax[i].xy, tMinMax[i].zw));
     };
 
     const fvec2_
@@ -244,7 +247,7 @@ pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in i
     // TODO: improve performance and ops
     const bvec2 isCube = and(and(greaterThanEqual(tFar, tNear), greaterThan(tFar, fvec2_(SFN))), lessThan(tNear, fvec2_(N_INFINITY)));
 
-    nfe2 = mix(nfe2, vec4(tNear, tFar), bvec4(isCube, isCube));
+    nfe2 = mix(INFINITY.xxxx, vec4(tNear, tFar), bvec4(isCube, isCube));
     return binarize(isCube);
 };
 #endif
