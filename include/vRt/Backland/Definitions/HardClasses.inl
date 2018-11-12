@@ -382,8 +382,8 @@ namespace _vt { // store in undercover namespace
         auto _hostMapped() const { return _bufferWrap->_hostMapped(); };
 
         // direct getters and refers
-        VkDevice  _device() const { return _bufferWrap->_device; };
-        VkDevice& _device() { return _bufferWrap->_device; };
+        VkDevice  _device() const { return *_bufferWrap->_device; };
+        //VkDevice& _device() { return *_bufferWrap->_device; };
         VkBuffer  _buffer() const { return _bufferWrap->_buffer; };
         VkBuffer& _buffer() { return _bufferWrap->_buffer; };
 
