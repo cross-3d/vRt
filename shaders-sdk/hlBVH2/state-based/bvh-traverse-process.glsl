@@ -21,15 +21,7 @@ int traverseBVH2( in bool validTop ) {
             [[flatten]] if ( isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x; traverseState.idx = -1; } else  // if leaf, defer for intersection 
             [[flatten]] if (isnLeaf(cnode.xy)) { // if not leaf, intersect with nodes
 
-#ifdef EXPERIMENTAL_UNORM16_BVH
-                #define bbox2x fvec4_[3](\
-                    fvec4_(validIdx(traverseState.idx)?unpackSnorm4x16(bvhNode.cbox[0]):0.f.xxxx),\
-                    fvec4_(validIdx(traverseState.idx)?unpackSnorm4x16(bvhNode.cbox[1]):0.f.xxxx),\
-                    fvec4_(validIdx(traverseState.idx)?unpackSnorm4x16(bvhNode.cbox[2]):0.f.xxxx)\
-                )
-#else
-                #define bbox2x (validIdx(traverseState.idx)?bvhNode.cbox:fvec4_[3](0.f.xxxx,0.f.xxxx,0.f.xxxx)) // use same memory
-#endif
+                #define bbox2x traverseState.idx
 
                 vec4 nfe = vec4(0.f.xx, INFINITY.xx);
                 pbvec2_ childIntersect = bool(cnode.x&1) ? intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe) : false2_;
