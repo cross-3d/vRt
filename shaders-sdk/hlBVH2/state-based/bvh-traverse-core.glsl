@@ -21,8 +21,10 @@ struct PrimitiveState {
 int LAST_INSTANCE = 0, RAY_ID = -1, MAX_ELEMENTS = 0;
 
 // BVH traversing itself 
-bool isLeaf(in ivec2 mem) { return mem.x==mem.y && mem.x >= 1 && (currentState == BVH_STATE_TOP || mem.x <= traverseState.maxElements); };
-bool isnLeaf(in ivec2 mem) { return mem.x!=mem.y && mem.x >= 1; };
+bool isLeaf(in ivec2 mem) { return mem.x >= 1 && mem.x==mem.y && (currentState == BVH_STATE_TOP || mem.x <= traverseState.maxElements); };
+bool isnLeaf(in ivec2 mem) { return mem.x >= 1 && //mem.x!=mem.y && 
+    (mem.x&1)==1 && (mem.y-mem.x)==1; // additional checking;
+};
 
 
 void resetEntry(in bool VALID) {

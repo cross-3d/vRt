@@ -20,11 +20,10 @@ int traverseBVH2( in bool validTop ) {
             const ivec2 cnode = validIdx(traverseState.idx) ? bvhNode.meta.xy : (0).xx;
             [[flatten]] if ( isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x; traverseState.idx = -1; } else  // if leaf, defer for intersection 
             [[flatten]] if (isnLeaf(cnode.xy)) { // if not leaf, intersect with nodes
-
                 #define bbox2x traverseState.idx
 
                 vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-                pbvec2_ childIntersect = bool(cnode.x&1) ? intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe) : false2_;
+                pbvec2_ childIntersect = intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
                 //pbvec2_ childIntersect = mix(false2_, intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe), bool(cnode.x&1));
                 
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
