@@ -50,12 +50,12 @@
 //uint_ballot ballotHW() { return subgroupBallot(true); }
 //bool electedInvoc() { return subgroupElect(); }
 
-lowp uvec2 bPrefixSum(in bool val) { const uvec4 blt = subgroupBallot(val); return uvec2(subgroupBallotBitCount(blt), subgroupBallotExclusiveBitCount(blt)); }; 
-lowp uvec2 bPrefixSum() { const uvec4 blt = subgroupBallot(true); return uvec2(subgroupBallotBitCount(blt), subgroupBallotExclusiveBitCount(blt)); }; 
+//lowp uvec2 bPrefixSum(in bool val) { const uvec4 blt = subgroupBallot(val); return uvec2(subgroupBallotBitCount(blt), subgroupBallotExclusiveBitCount(blt)); };
+//lowp uvec2 bPrefixSum() { const uvec4 blt = subgroupBallot(true); return uvec2(subgroupBallotBitCount(blt), subgroupBallotExclusiveBitCount(blt)); }; 
 
-//const uint UONE = 1u;
+const uint UONE = 1u;
 //lowp uvec2 bPrefixSum(in bool val) { return uvec2(subgroupAdd(uint(val)), subgroupExclusiveAdd(uint(val))); };
-//lowp uvec2 bPrefixSum() { return uvec2(subgroupAdd(UONE), subgroupExclusiveAdd(UONE)); };
+lowp uvec2 bPrefixSum() { return uvec2(subgroupAdd(UONE), subgroupExclusiveAdd(UONE)); };
 
 /*
 // advanced version
