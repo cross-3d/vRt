@@ -233,7 +233,8 @@ pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, inou
 {
     // calculate intersection
     mat3x4 tMinMax = mat3x4(0.f.xxxx,0.f.xxxx,0.f.xxxx);
-    [[flatten]] if (IDX >= 0)  [[unroll]] for (int i=0;i<3;i++) 
+    //[[flatten]] if (IDX >= 0) [[unroll]] for (int i=0;i<3;i++) 
+    [[unroll]] for (int i=0;i<3;i++) 
     {
         tMinMax[i] = fcvt4_(bvhNodes[IDX].cbox[i]);
         tMinMax[i] = fvec4_(fma(tMinMax[i],dr[i].xxxx,orig[i].xxxx));
