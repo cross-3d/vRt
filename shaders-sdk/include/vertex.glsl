@@ -168,7 +168,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         IFANY (_valid) {
             const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1), uvt = vec3(dot(s,h),dot(dir.xyz,q), dot(e2,q))/(a);
             uv = uvt.xy, T = uvt.z;
-            [[flatten]] if (T >= N_INFINITY || any(lessThanEqual(vec4(1.f-uv.x-uv.y, uv, T), -SFN.xxxx))) { _valid = false; };
+            [[flatten]] if (T >= N_INFINITY || any(lessThanEqual(vec4(SFO-uv.x-uv.y, uv, T), SFN.xxxx))) { _valid = false; };
         };
 #else
         // intersect triangle by transform
@@ -178,7 +178,7 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         [[flatten]] if ( T >= N_INFINITY || abs(dz) <= 0.f ) { _valid = false; };
         IFANY (_valid) {
             const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
-            [[flatten]] if (any(lessThanEqual(vec4(1.f-uv.x-uv.y, uv, T), -SFN.xxxx))) { _valid = false; };
+            [[flatten]] if (any(lessThanEqual(vec4(SFO-uv.x-uv.y, uv, T), SFN.xxxx))) { _valid = false; };
         };
 #endif
     }
