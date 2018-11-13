@@ -101,7 +101,7 @@ namespace _vt {
             cmdBuffer, 
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-            {},
+            VK_DEPENDENCY_BY_REGION_BIT,
             1, &memoryBarrier,
             0, nullptr,
             0, nullptr);
