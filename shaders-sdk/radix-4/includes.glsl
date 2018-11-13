@@ -41,7 +41,7 @@
 
 // default values
 #ifndef BLOCK_SIZE
-#define BLOCK_SIZE 512u //(Wave_Size*16u)
+#define BLOCK_SIZE (Wave_Size*16u)
 #endif
 
 

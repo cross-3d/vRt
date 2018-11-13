@@ -87,13 +87,17 @@
 #ifndef WORK_SIZE
 #ifdef EXTEND_LOCAL_GROUPS
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
-    #define WORK_SIZE 512u//1024u
+    #define WORK_SIZE 1024u
 #else
     #ifdef ENABLE_TURING_INSTRUCTION_SET
         #define WORK_SIZE 768u
         //#define WORK_SIZE 1536u // NVIDIA, please, extend compute support!
     #else
-        #define WORK_SIZE 640u
+        #ifdef AMD_PLATFORM
+            #define WORK_SIZE 768u
+        #else
+            #define WORK_SIZE 640u
+        #endif
     #endif
 #endif
 #endif
