@@ -87,7 +87,7 @@
 #ifndef WORK_SIZE
 #ifdef EXTEND_LOCAL_GROUPS
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
-    #define WORK_SIZE 1024u
+    #define WORK_SIZE 512u//1024u
 #else
     #ifdef ENABLE_TURING_INSTRUCTION_SET
         #define WORK_SIZE 768u
