@@ -89,7 +89,12 @@
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
     #define WORK_SIZE 1024u
 #else
-    #define WORK_SIZE 768u
+    #ifdef ENABLE_TURING_INSTRUCTION_SET
+        #define WORK_SIZE 768u
+        //#define WORK_SIZE 1536u // NVIDIA, please, extend compute support!
+    #else
+        #define WORK_SIZE 640u
+    #endif
 #endif
 #endif
 #endif

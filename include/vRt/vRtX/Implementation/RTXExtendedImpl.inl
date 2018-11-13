@@ -8,8 +8,10 @@ namespace vrt {
     // make sure that RTX really supported
     VtResult VtRTXAcceleratorExtension::_Criteria(std::shared_ptr<_vt::DeviceFeatures> lwFeatures) const {
         const auto rayTracingNV = "VK_NV_ray_tracing"; // awaiting support of extension
-        for (auto i : lwFeatures->_extensions) {
-            if (std::string(i.extensionName).compare(rayTracingNV) == 0) return VK_SUCCESS; // RTX have support
+        if (lwFeatures->_features.features.shaderInt16) {
+            for (auto i : lwFeatures->_extensions) {
+                if (std::string(i.extensionName).compare(rayTracingNV) == 0) return VK_SUCCESS; // RTX have support
+            };
         };
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
