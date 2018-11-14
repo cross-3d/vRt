@@ -50,7 +50,7 @@ void main() {
         
         const int rayID = vtRayIdx(int(W)); const bool overflow = W >= wsize; IFALL(overflow) break;
         const vec3 ORIGINAL_ORIGIN = rays[rayID].origin.xyz; const dirtype_t ORIGINAL_DIRECTION = rays[rayID].cdirect;
-        const uint rayFlags = gl_RayFlagsOpaqueNV, cullMask = 0xff;
+        const uint rayFlags = gl_RayFlagsOpaqueNV, cullMask = !overflow ? 0xff : 0x00;
         [[flatten]] if (!overflow) {
             //LAST_INTERSECTION = vec4(0.f.xx, INFINITY, FINT_ZERO);
             traceNV(accelStructure, rayFlags, cullMask, sbtOffset, sbtStride, missIndex, ORIGINAL_ORIGIN, SFN, dcts(ORIGINAL_DIRECTION), INFINITY, 0);
@@ -66,7 +66,7 @@ void main() {
                 
                 hit.rayID = rayID+1, hit.attribID = 0, hit.payloadID = 0;
                 hit.hitVD = vec4(0.f.xxx, uintBitsToFloat(LAST_INSTANCE));
-                hit.uvt = LAST_INTERSECTION;
+                hit.tdat = (-1).xxxx, hit.uvt = LAST_INTERSECTION;
                 
                 //imageAtomicMax(rayLink,r4ID,(hid+1).x);
                 [[flatten]] if ( ftrID >= 0 ) 

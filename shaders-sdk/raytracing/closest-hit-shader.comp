@@ -79,7 +79,7 @@ VtHitPayload hitp;
 void main() {
     
     // constants
-    const float IOR = 1.3333f, sIOR = IOR;
+    const float IOR = 1.2f, sIOR = IOR;
     const float diffuse_min_importance = 0.5f;
     const float reflect_min_importance = 0.5f;
     const vec3 max_fresnel_color = vec3(1.f);
@@ -117,7 +117,7 @@ void main() {
             // get textured data
             textured.bump = getNormalMapping(texcoord);
             textured.diffuse  = toLinear(fetchDiffuse(texcoord));
-            textured.specular = toLinear(fetchSpecular(texcoord));
+            textured.specular = fetchSpecular(texcoord);
             textured.emissive = toLinear(fetchEmission(texcoord));
 
             hitp.normalHeight.xyz = validateTexture(material.bumpTexture) ? (tbn * textured.bump.xyz) : normal.xyz; // apply TBN with normal mapping
@@ -130,7 +130,7 @@ void main() {
             // convert metallic roughness to glossiness specular PBR model
             const vec3 faceNormal = faceforward(hitp.normalHeight.xyz, rdirect, dnormal);
             const float fresnel = clamp01(pow(abs(dot(rdirect, faceNormal)), sIOR - 1.f));
-            const vec3 fresnelColor = clamp01(mix(min_fresnel_color * 0.02f, max_fresnel_color * 0.45f, 1.f-fresnel.xxx));
+            const vec3 fresnelColor = clamp01(mix(min_fresnel_color * 0.0f, max_fresnel_color * 0.45f, 1.f-fresnel.xxx));
             const vec3 specularColor = clamp01(mix(fresnelColor, textured.diffuse.xyz, textured.specular.zzz)); // use correct specular
             const vec4 specularGlossiness = vec4(specularColor, textured.specular.y);
             

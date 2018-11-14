@@ -61,7 +61,7 @@ void main() {
                     //[[flatten]] if (hid < 0) hid = atomicIncHitCount();
                     hit.rayID = RAY_ID+1, hit.attribID = 0, hit.payloadID = 0;
                     hit.hitVD = vec4(0.f.xxx, intBitsToFloat(LAST_INSTANCE));
-                    hit.uvt = primitiveState.lastIntersection;//, primitiveState.lastIntersection.w = FINT_ZERO;
+                    hit.tdat = (-1).xxxx, hit.uvt = primitiveState.lastIntersection;//, primitiveState.lastIntersection.w = FINT_ZERO;
                     
                     //imageAtomicMax(rayLink,r4ID,(hid+1).x);
                     [[flatten]] if ( ftrID >= 0 ) 

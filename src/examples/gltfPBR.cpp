@@ -679,6 +679,7 @@ namespace rnd {
             rtpi.groupModuleCount = 1;
 
             rtpi.pipelineLayout = rtPipelineLayout;
+            rtpi.tiling = { blockWidth, blockheight };
             vtCreateRayTracingPipeline(deviceQueue->device->rtDev, &rtpi, &rfPipeline);
         }
     };

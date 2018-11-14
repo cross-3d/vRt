@@ -70,6 +70,7 @@ void main() {
         ISTORE(NormalPass, xy, vec4(0.f.xxx, 0.f));
         ISTORE(OriginPass, xy, vec4(0.f.xxx, 1.f));
         ISTORE(SpecularPass, xy, vec4(0.f.xxx, 0.f));
-        vtReuseRays(ray, uvec2(xy), 0, int(Launch_Idx.y * wh.x + Launch_Idx.x)); // prefer strict layout
+        //vtReuseRays(ray, uvec2(xy), 0, int(Launch_Idx.y * wh.x + Launch_Idx.x)); // prefer strict layout
+        vtEmitRays(ray, uvec2(xy), 0);
     };
 };

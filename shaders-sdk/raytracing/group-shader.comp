@@ -37,11 +37,13 @@ void main() {
     for (uint w=0;w<wcount;w+=wgs) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
         const int rayID = (globalID < wsize ? rayGroupIndicesRead[globalID] : 0)-1;
+        //const int rayID = (globalID < wsize ? (globalID+1) : 0)-1;
         const bool overflow = globalID >= wsize || globalID < 0; IFALL(overflow) break;
 
         // get ray by id
         ray = rays[rayID];
         const int hitIdc = vtFetchHitClosest(rayID);
+        
         const int hitpId = hits[hitIdc].payloadID-1;
         const vec4 diffuse = hitp.albedo, reflc = hitp.specularGlossiness;
         const float shiftLenght = fma(sqrt(hit.uvt.z),float(One1024),SFN); // TODO: advanced correction of ray starting
@@ -53,7 +55,8 @@ void main() {
         // add support for multi-passing
         [[flatten]] if (!overflow && rayID >= 0) {
             // reflection prior (early stage)
-            const vec4 rcolor = point4(f16_f32(ray.dcolor)), bcolor = imageLoad(ColorOutput, icoord);
+            const vec4 ecolor = point4(f16_f32(ray.dcolor));
+            const vec4 rcolor = ecolor * float(hit.tdat.x>=0), bcolor = imageLoad(ColorOutput, icoord);
             const vec3 orgdir = dcts(ray.cdirect);
             const vec3 normal = hitp.normalHeight.xyz;
 
@@ -70,13 +73,14 @@ void main() {
                 const vec3 vdir = orgdir, shift = vdir;
                 newray.origin.xyz = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
                 writeColor(newray.dcolor, vec4(rcolor.xyz * (1.f - alph).xxx, 1.f));
+                //vtEmitRays(newray, ucoord.xy, 0);
                 vtReuseRays(newray, ucoord.xy, 0, rayID);
             };
             
             // create data for reflection rays
             const vec3 vcolor = rcolor.xyz * alph; // visible ray color energy
             {
-                const vec3 vdir = reflect(orgdir, hitp.normalHeight.xyz), shift = vdir;
+                const vec3 vdir = reflect(orgdir, normal), shift = vdir;
                 const vec3 orig = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
                 const vec3 rcol = vcolor * reflc.xyz;
 
@@ -90,7 +94,7 @@ void main() {
             }
 
             { // output color
-                const vec3 outcolor = vcolor * (1.f - reflc.xyz);
+                const vec3 outcolor = ecolor.xyz * (1.f - reflc.xyz) * alph;
                 ISTORE(ColorOutput, icoord, vec4(fma(diffuse.xyz, outcolor.xyz, bcolor.xyz), 1.f));
             }
         }

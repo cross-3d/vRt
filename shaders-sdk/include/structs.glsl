@@ -64,7 +64,7 @@ int makeAttribID(in int hAttribID, in int sub) { return (hAttribID-1)*ATTRIB_EXT
 struct VtHitData {
     //int next; uint bitfield; int r0, r1;
     int attribID, rayID, payloadID, nextID; //materialID;
-    vec4 uvt, hitVD; uvec4 tdat; // UV, distance, triangle (base data), normal
+    vec4 uvt, hitVD; ivec4 tdat; // UV, distance, triangle (base data), normal
 };
 
 
