@@ -17,6 +17,11 @@
 - Unified library for desktop dedicated GPU's
 - Extensions for accelerations
 
+### Backends
+
+- vRtC (compute-based, native, default, wide GPU support)
+- vRtX (NVIDIA RTX only, more higher performance at now)
+
 ### Repository mirrors
 
 - https://github.com/world8th/vRt
