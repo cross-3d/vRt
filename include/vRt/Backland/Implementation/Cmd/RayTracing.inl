@@ -74,7 +74,7 @@ namespace _vt {
         // run rays generation (if have)
         if (rtppl->_generationPipeline.size() > 0 && rtppl->_generationPipeline[0]) {
             cmdFillBuffer<0u>(*cmdBuf, rtset->_groupCountersBufferRead);
-            cmdClean(), cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform), updateCommandBarrier(*cmdBuf);
+            cmdClean(), cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_rtLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, rtppl->_tiling.width), tiled(y, rtppl->_tiling.height));
         };
@@ -121,29 +121,29 @@ namespace _vt {
                 if (rtppl->_groupPipeline[i]) {
                     cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 64ull * sizeof(uint32_t)) });
                     cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, rayCount * MAX_RAY_GROUPS * sizeof(uint32_t)) });
-                    updateCommandBarrier(*cmdBuf), cmdClean();
+                    cmdClean(), commandBarrier(*cmdBuf);
                     hasGroupShaders = true; break;
                 }
             }
-            
-
-
 
             // handling hits in groups
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
                 if (rtppl->_closestHitPipeline[i]) {
                     rtset->_cuniform.currentGroup = i;
-                    cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform), updateCommandBarrier(*cmdBuf);
-                    cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY);
-                }
-            }
+                    cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                    cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY, 1u, 1u, false);
+                };
+            };
 
             // handling misses in groups
             // moved to after in 11.10.2018
             if (rtppl->_missHitPipeline[0]) {
                 cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY);
-            }
+                cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY, 1u, 1u, false);
+            };
+
+            // hit shading barrier
+            commandBarrier(*cmdBuf);
 
             // clear counters for pushing newer data
             //if (hasGroupShaders) cmdFillBuffer<0u>(*cmdBuf, rtset->_countersBuffer);
@@ -153,9 +153,11 @@ namespace _vt {
                 if (rtppl->_groupPipeline[i]) {
                     rtset->_cuniform.currentGroup = i;
                     cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                    cmdDispatch(*cmdBuf, rtppl->_groupPipeline[i], INTENSIVITY);
+                    cmdDispatch(*cmdBuf, rtppl->_groupPipeline[i], INTENSIVITY, 1u, 1u, false);
                 }
             }
+
+            if (hasGroupShaders) commandBarrier(*cmdBuf);
         }
 
         return result;
