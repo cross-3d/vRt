@@ -9,6 +9,8 @@
 
 namespace rnd {
 
+    const uint32_t blockWidth = 8, blockheight = 8;
+
     using namespace vrt;
 
      void Renderer::Arguments(int argc, char** argv) {
@@ -301,7 +303,7 @@ namespace rnd {
                 partitionUniformData.partID = I;
                 vkCmdUpdateBuffer(qRtCmdBuf, rtPartitionBuffer, 0, sizeof(VtPartitionUniform), &partitionUniformData);
                 _vt::updateCommandBarrier(qRtCmdBuf);
-                vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, _vt::tiled(canvasHeight, rParts*8u)*8u, std::max(transparencyLevel + 1, 1));
+                vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, _vt::tiled(canvasHeight, rParts*blockheight)*blockheight, std::max(transparencyLevel + 1, 1));
             };
 
             vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);
@@ -310,7 +312,7 @@ namespace rnd {
                     partitionUniformData.partID = I;
                     vkCmdUpdateBuffer(qRtCmdBuf, rtPartitionBuffer, 0, sizeof(VtPartitionUniform), &partitionUniformData);
                     _vt::updateCommandBarrier(qRtCmdBuf);
-                    vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, _vt::tiled(canvasHeight, rParts * 8u) * 8u, std::max(transparencyLevel + 1, 1));
+                    vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, _vt::tiled(canvasHeight, rParts * blockheight) * blockheight, std::max(transparencyLevel + 1, 1));
                 };
             };
 
@@ -510,7 +512,7 @@ namespace rnd {
         {
             // create ray tracing set
             VtRayTracingSetCreateInfo rtsi = {};
-            rtsi.maxRays = VkDeviceSize(canvasWidth) * VkDeviceSize(_vt::tiled(VkDeviceSize(canvasHeight), VkDeviceSize(rParts) * 8ull) * 8ull); // prefer that limit
+            rtsi.maxRays = VkDeviceSize(canvasWidth) * VkDeviceSize(_vt::tiled(VkDeviceSize(canvasHeight), VkDeviceSize(rParts) * blockheight) * blockheight); // prefer that limit
             rtsi.maxHits = rtsi.maxRays * 2;
             vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &raytracingSet);
         }
@@ -658,6 +660,7 @@ namespace rnd {
             rtpi.groupModuleCount = 1;
 
             rtpi.pipelineLayout = rtPipelineLayout;
+            rtpi.tiling = { blockWidth, blockheight };
             vtCreateRayTracingPipeline(deviceQueue->device->rtDev, &rtpi, &rtPipeline);
         }
 

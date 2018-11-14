@@ -72,10 +72,9 @@ void bPrefixSum(in bvec4 val, inout lowp uvec4 sums, inout lowp uvec4 pfxs) {
 #define initAtomicSubgroupIncFunction(mem, fname, by, T)\
 T fname() {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0;\
-    [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
-}
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
+    return T(pfx.y) * T(by) + gadd;\
+};
 /*
 #ifdef REGULAR_ATOMIC_INC
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
@@ -87,10 +86,9 @@ T fname(in uint WHERE) {\
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0;\
-    [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
-}
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
+    return T(pfx.y) * T(by) + gadd;\
+};
 //#endif
 //
 
@@ -98,10 +96,9 @@ T fname(in uint WHERE) {\
 #define initSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0;\
-    [[flatten]] if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));}\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
-}
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
+    return T(pfx.y) * T(by) + gadd;\
+};
 
 /*
 // statically multiplied
@@ -130,15 +127,15 @@ T4 fname(in uint WHERE, in bvec4 a) {\
 
 
 // invoc vote
-bool allInvoc(in bool bc) { return subgroupAll(bc); }
-bool anyInvoc(in bool bc) { return subgroupAny(bc); }
+//bool allInvoc(in bool bc) { return subgroupAll(bc); }
+//bool anyInvoc(in bool bc) { return subgroupAny(bc); }
 
 // aliases
-bool allInvoc(in pbool_ bc) { return allInvoc(SSC(bc)); }
-bool anyInvoc(in pbool_ bc) { return anyInvoc(SSC(bc)); }
+//bool allInvoc(in pbool_ bc) { return allInvoc(SSC(bc)); }
+//bool anyInvoc(in pbool_ bc) { return anyInvoc(SSC(bc)); }
 
-#define IFALL(b) [[flatten]]if(allInvoc(b))
-#define IFANY(b)            if(anyInvoc(b))
+#define IFALL(b) [[flatten]]if(subgroupAll(b))
+#define IFANY(b)            if(subgroupAny(b))
 
 // subgroup barriers
 #define SB_BARRIER subgroupMemoryBarrier(),subgroupBarrier();
