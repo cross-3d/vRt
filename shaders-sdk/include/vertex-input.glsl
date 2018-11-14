@@ -26,6 +26,15 @@ uint M32(in f16samplerBuffer m, in uint i) {
 
 #endif
 
+#ifdef ENABLE_INT16_SUPPORT
+uint16_t M16(in highp usamplerBuffer m, in uint i) {
+    return uint16_t(texelFetch(m, int(i>>1u))[i&1u]);
+};
+
+uint M32(in highp usamplerBuffer m, in uint i) {
+    return packUint2x16(u16vec2(texelFetch(m, int(i)).xy));
+};
+#else
 highp uint M16(in highp usamplerBuffer m, in uint i) {
     return texelFetch(m, int(i>>1u))[i&1u];
 };
@@ -34,7 +43,7 @@ uint M32(in highp usamplerBuffer m, in uint i) {
     const highp uvec2 mpc = texelFetch(m, int(i)).xy;
     return (mpc.x|(mpc.y<<16u));
 };
-
+#endif
 
 // buffer region
 struct VtBufferRegion {

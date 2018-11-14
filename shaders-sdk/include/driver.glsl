@@ -50,7 +50,7 @@
     #define ENABLE_INT16_SUPPORT
     #define ENABLE_FP16_SUPPORT
     //#define ENABLE_NON_UNIFORM_SAMPLER
-    #define ENABLE_FP16_SAMPLER_HACK
+    //#define ENABLE_FP16_SAMPLER_HACK
 #endif
 
 // if Turing specific
