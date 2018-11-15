@@ -45,7 +45,7 @@ void main() {
         const bool overflow = globalID >= wsize; IFALL(overflow) break;
         const int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
         [[flatten]] if (!overflow && hitID >= 0) { // verify intersection
-            const int triID = floatBitsToInt(hit.uvt.w)-1; INSTANCE_ID = floatBitsToInt(hit.hitVD.w);
+            const int triID = floatBitsToInt(hit.uvt.w)-1; INSTANCE_ID = hit.idat.x;
             [[flatten]] if (triID >= 0 && INSTANCE_ID >= 0) {
                 interpolateMeshData(hitID, triID, IPC); // interplate hit for every invocation
                 [[flatten]] if (IPC == 0) { // handle hit in every available invocation
@@ -56,7 +56,7 @@ void main() {
 #endif
 
                     // additional hit data (18.10.2018)
-                    hit.tdat.xyzw = ivec4(INSTANCE_ID, triID, (-1).xx);
+                    //hit.idat.xyzw = ivec4(INSTANCE_ID, triID, (-1).xx);
 
                     // store minimal possible hit (first operation required, because MAX will haven't no effect)
                     // required for correct alpha channels support 

@@ -46,7 +46,7 @@ void main() {
 
         [[flatten]] if (!overflow && RAY_ID >= 0) {
             //int hid = vtFetchHitIdc(RAY_ID), mhit = hid+1; bool found = false; // last possible found hit
-            int hid = it;//vtFetchHitIdc(RAY_ID);
+            const int hid = it;//vtFetchHitIdc(RAY_ID);
 
             //[[flatten]] if (hid < 0) hid = RAY_ID;
             //[[unroll]] for (int i=0;i<1;i++) { //[[flatten]] if (i == 0 || found) 
@@ -59,9 +59,8 @@ void main() {
 
                 { // resolve hit result 
                     //[[flatten]] if (hid < 0) hid = atomicIncHitCount();
-                    hit.rayID = RAY_ID+1, hit.attribID = 0, hit.payloadID = 0;
-                    hit.hitVD = vec4(0.f.xxx, intBitsToFloat(LAST_INSTANCE));
-                    hit.tdat = (-1).xxxx, hit.uvt = primitiveState.lastIntersection;//, primitiveState.lastIntersection.w = FINT_ZERO;
+                    hit.rayID = RAY_ID+1, hit.attribID = 0, hit.payloadID = 0, hit.hitVD = 0.f.xxxx;
+                    hit.idat = ivec4(INSTANCE_ID, ftrID, (-1).xx), hit.uvt = primitiveState.lastIntersection;//, primitiveState.lastIntersection.w = FINT_ZERO;
                     
                     //imageAtomicMax(rayLink,r4ID,(hid+1).x);
                     [[flatten]] if ( ftrID >= 0 ) 

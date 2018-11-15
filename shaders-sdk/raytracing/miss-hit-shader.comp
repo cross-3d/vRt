@@ -63,7 +63,7 @@ void main() {
                 [[flatten]] if (ghit == 0u) {
                     const int pid = atomicIncPayloadHitCount();
                     hit.payloadID = pid+1;
-                    hit.tdat = (-1).xxxx;
+                    hit.idat = (-1).xxxx;
 #ifndef DMA_HIT
                     hits[hitID] = hit;
 #endif
