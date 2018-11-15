@@ -43,8 +43,10 @@ void main() {
             // store leaf data
             {
                 // re-arrange box
+#ifndef EXPERIMENTAL_UNORM16_BVH
                 Leafs[I].lbox = lbox;
-                
+#endif
+
                 // save morton codes 
     #ifdef USE_MORTON_32
                 Mortoncodes[I] = encodeMorton(packUnorm4x8(bcenter));

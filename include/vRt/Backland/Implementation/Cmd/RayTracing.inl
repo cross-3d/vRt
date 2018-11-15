@@ -112,7 +112,7 @@ namespace _vt {
                 // multiple-time traversing no more needed since added instancing 
                 //cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), sizeof(uint32_t)) });
                 //cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(1), sizeof(uint32_t), &zero); //reset collection hit counter
-            }
+            };
 
             // reload to caches and reset counters (if has group shaders)
             bool hasGroupShaders = false;
@@ -123,8 +123,8 @@ namespace _vt {
                     cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, rayCount * MAX_RAY_GROUPS * sizeof(uint32_t)) });
                     cmdClean(), commandBarrier(*cmdBuf);
                     hasGroupShaders = true; break;
-                }
-            }
+                };
+            };
 
             // handling hits in groups
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
@@ -154,12 +154,11 @@ namespace _vt {
                     //rtset->_cuniform.currentGroup = i;
                     //cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                     cmdDispatch(*cmdBuf, rtppl->_groupPipeline[i], INTENSIVITY, 1u, 1u, false);
-                }
-            }
+                };
+            };
 
             if (hasGroupShaders) commandBarrier(*cmdBuf);
-        }
-
+        };
         return result;
     };
 

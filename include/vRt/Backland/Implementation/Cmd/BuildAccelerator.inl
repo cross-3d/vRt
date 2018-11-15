@@ -15,32 +15,32 @@ namespace _vt {
             cmdBuf->_perVertexInputDSC[vertexInputID] = descriptorSets;
         };
         return result;
-    }
+    };
 
     VtResult bindVertexInputs(std::shared_ptr<CommandBuffer> cmdBuf, const std::vector<std::shared_ptr<VertexInputSet>>& sets) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexInputs = sets;
         return result;
-    }
+    };
 
     VtResult bindAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> accSet) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_acceleratorSet = accSet;
         return result;
-    }
+    };
 
     // bind vertex assembly (also, do imageBarrier)
     VtResult bindVertexAssembly(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<VertexAssemblySet> vasSet) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_vertexSet = vasSet;
         return result;
-    }
+    };
 
     VtResult cmdVertexAssemblyBarrier(VkCommandBuffer cmdBuf, std::shared_ptr<VertexAssemblySet> vasSet) {
         VtResult result = VK_SUCCESS;
         if (vasSet->_attributeTexelBuffer) imageBarrier(cmdBuf, vasSet->_attributeTexelBuffer);
         return result;
-    }
+    };
 
     
     // update region of vertex set by bound input set
@@ -74,6 +74,7 @@ namespace _vt {
         return result;
     };
 
+    // 
     VtResult buildVertexSet(std::shared_ptr<CommandBuffer> cmdBuf, bool useInstance = true, std::function<void(VkCommandBuffer, int, VtUniformBlock&)> cb = {}) {
         VtResult result = VK_SUCCESS;
 
@@ -158,7 +159,7 @@ namespace _vt {
         auto accel = cmdBuf->_acceleratorSet.lock();
         auto vertx = cmdBuf->_vertexSet.lock();
         if (vertx) accel->_vertexAssemblySet = vertx; // bind vertex assembly with accelerator structure (planned to deprecate)
-        
+
 
         // if has advanced accelerator
         if (device->_hExtensionAccelerator.size() > 0 && device->_hExtensionAccelerator[0] && device->_enabledAdvancedAcceleration) {

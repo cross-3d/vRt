@@ -30,8 +30,8 @@ namespace _vt {
             cmdDispatch(*cmdBuf, radix->_workPrefixPipeline, 1u, 1u, 1u, true);
             cmdDispatch(*cmdBuf, radix->_permutePipeline, WG_COUNT, RADICE_AFFINE, 1u, true);
             cmdDispatch(*cmdBuf, radix->_copyhackPipeline, INTENSIVITY, 1u, 1u, true);
-        }
+        };
         return result;
-    }
+    };
 
 };

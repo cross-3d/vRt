@@ -37,13 +37,15 @@ void main() {
 #endif
 
             {
-    #ifndef VRT_USE_FAST_INTERSECTION
+#ifndef VRT_USE_FAST_INTERSECTION
                 const mat4x3 triverts = transpose(triverts);
                 ISTORE(lvtx, int(tri*3+0), point4(triverts[0])), ISTORE(lvtx, int(tri*3+1), point4(triverts[1])), ISTORE(lvtx, int(tri*3+2), point4(triverts[2]));
-    #else
-    #ifdef VTX_USE_MOLLER_TRUMBORE
+#else
+#ifdef VTX_USE_MOLLER_TRUMBORE
+#ifndef EXPERIMENTAL_UNORM16_BVH
                 ISTORE(lvtx, int(tri*3+0), triverts[0]), ISTORE(lvtx, int(tri*3+1), triverts[1]), ISTORE(lvtx, int(tri*3+2), triverts[2]);
-    #else
+#endif
+#else
 
                 // experimental coordinate transform of triangle
                 // http://jcgt.org/published/0005/03/03/paper.pdf
@@ -80,8 +82,8 @@ void main() {
                 // get transposed version (for full-filling)
                 const mat3x4 TVIt = transpose(TVI);
                 ISTORE(lvtx, int(tri*3+0), TVIt[0]), ISTORE(lvtx, int(tri*3+1), TVIt[1]), ISTORE(lvtx, int(tri*3+2), TVIt[2]);
-    #endif
-    #endif
+#endif
+#endif
             };
 
             // unit mode 
