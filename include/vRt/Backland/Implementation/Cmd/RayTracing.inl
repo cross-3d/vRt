@@ -129,8 +129,8 @@ namespace _vt {
             // handling hits in groups
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
                 if (rtppl->_closestHitPipeline[i]) {
-                    rtset->_cuniform.currentGroup = i;
-                    cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                    //rtset->_cuniform.currentGroup = i;
+                    //cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                     cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY, 1u, 1u, false);
                 };
             };
@@ -138,7 +138,7 @@ namespace _vt {
             // handling misses in groups
             // moved to after in 11.10.2018
             if (rtppl->_missHitPipeline[0]) {
-                cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                //cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                 cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY, 1u, 1u, false);
             };
 
@@ -151,8 +151,8 @@ namespace _vt {
             // use resolve shader for resolve ray output or pushing secondaries
             for (auto i = 0u; i < std::min(std::size_t(4ull), rtppl->_groupPipeline.size()); i++) {
                 if (rtppl->_groupPipeline[i]) {
-                    rtset->_cuniform.currentGroup = i;
-                    cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                    //rtset->_cuniform.currentGroup = i;
+                    //cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
                     cmdDispatch(*cmdBuf, rtppl->_groupPipeline[i], INTENSIVITY, 1u, 1u, false);
                 }
             }
