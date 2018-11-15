@@ -26,8 +26,8 @@
 #include "../include/rayslib.glsl"
 
 struct VtCustomPayload {
-    vec4 lastIntersection;
-    uvec4 binaryData128;
+     vec4 lastIntersection;
+    ivec4 binaryData128;
 };
 #define LAST_INSTANCE primitiveState.binaryData128.x
 #define LAST_INTERSECTION primitiveState.lastIntersection

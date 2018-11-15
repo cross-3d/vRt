@@ -6,8 +6,8 @@
 #include "../include/mathlib.glsl"
 
 struct VtCustomPayload {
-    vec4 lastIntersection;
-    uvec4 binaryData128;
+     vec4 lastIntersection;
+    ivec4 binaryData128;
 };
 #define LAST_INSTANCE primitiveState.binaryData128
 
@@ -16,5 +16,6 @@ layout(location = 0) rayPayloadInNV VtCustomPayload primitiveState;
 void main()
 {
     primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO);
+    primitiveState.binaryData128 = (-1).xxxx;
     //primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, intBitsToFloat(1));
 };

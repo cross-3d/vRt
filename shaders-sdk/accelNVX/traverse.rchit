@@ -3,8 +3,8 @@
 #extension GL_GOOGLE_include_directive : enable
 
 struct VtCustomPayload {
-    vec4 lastIntersection;
-    uvec4 binaryData128;
+     vec4 lastIntersection;
+    ivec4 binaryData128;
 };
 
                      hitAttributeNV vec2 attribs;
@@ -14,5 +14,5 @@ void main()
 {
     primitiveState.lastIntersection = vec4(attribs.xy, gl_HitTNV, intBitsToFloat(gl_PrimitiveID+1));
     //primitiveState.lastIntersection = vec4(attribs.xy, gl_HitTNV, intBitsToFloat(1));
-    primitiveState.binaryData128.x = gl_InstanceID;
+    primitiveState.binaryData128 = ivec4(gl_InstanceID, (-1).xxx);
 };
