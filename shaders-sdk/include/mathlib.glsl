@@ -354,24 +354,18 @@ highp vec3 dcts(in dirtype_t hr) {
     return dcts(dirtype_t_decode(hr));
 };
 
-
-
-
-uint p2x_16(in highp uvec2 a) {
 #ifdef ENABLE_INT16_SUPPORT
-    return packUint2x16(u16vec2(a));
-#else
-    return (a.x&0xFFFFu)|(a.y<<16u);
+uint p2x_16(in u16vec2 a) { return packUint2x16(a); };
 #endif
-};
+uint p2x_16(in highp uvec2 a) { return bitfieldInsert(a.x,a.y,16,16); };
 
-highp uvec2 up2x_16(in uint a) {
+
 #ifdef ENABLE_INT16_SUPPORT
-    return uvec2(unpackUint2x16(a));
+u16vec2 up2x_16(in uint a) { return unpackUint2x16(a); }; // cast uint32 memory
+u16vec2 up2x_16(in u16vec2 a) { return a; }; // just return value
 #else
-    return uvec2(a&0xFFFFu, a>>16u);
+highp uvec2 up2x_16(in uint a) { return uvec2(a&0xFFFFu,a>>16u); }; // unpack uint32 value
 #endif
-};
 
 
 #ifdef ENABLE_INT16_SUPPORT
