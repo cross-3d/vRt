@@ -14,5 +14,5 @@ void main()
 {
     primitiveState.lastIntersection = vec4(attribs.xy, gl_HitTNV, intBitsToFloat(gl_PrimitiveID+1));
     //primitiveState.lastIntersection = vec4(attribs.xy, gl_HitTNV, intBitsToFloat(1));
-    primitiveState.binaryData128 = ivec4(gl_InstanceID, (-1).xxx);
+    primitiveState.binaryData128 = ivec4(gl_InstanceID, gl_PrimitiveID, (-1).xx);
 };

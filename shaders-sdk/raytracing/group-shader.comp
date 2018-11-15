@@ -56,7 +56,7 @@ void main() {
         [[flatten]] if (!overflow && rayID >= 0) {
             // reflection prior (early stage)
             const vec4 ecolor = point4(f16_f32(ray.dcolor));
-            const vec4 rcolor = ecolor * float(hit.tdat.x>=0), bcolor = imageLoad(ColorOutput, icoord);
+            const vec4 rcolor = ecolor * float(hit.tdat.y>=0), bcolor = imageLoad(ColorOutput, icoord);
             const vec3 orgdir = dcts(ray.cdirect);
             const vec3 normal = hitp.normalHeight.xyz;
 

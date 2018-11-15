@@ -56,7 +56,7 @@ void main() {
 #endif
 
                     // additional hit data (18.10.2018)
-                    hit.tdat.xyzw = ivec4(triID, INSTANCE_ID, 0u.xx);
+                    hit.tdat.xyzw = ivec4(INSTANCE_ID, triID, (-1).xx);
 
                     // store minimal possible hit (first operation required, because MAX will haven't no effect)
                     // required for correct alpha channels support 
