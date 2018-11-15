@@ -18,7 +18,7 @@ struct PrimitiveState {
 #define ORIGINAL_ORIGIN rays[RAY_ID].origin.xyz
 #define ORIGINAL_DIRECTION rays[RAY_ID].cdirect
 
-int LAST_INSTANCE = 0, RAY_ID = -1, MAX_ELEMENTS = 0;
+int LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
 
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x >= 1 && mem.x==mem.y && (currentState == BVH_STATE_TOP || mem.x <= traverseState.maxElements); };

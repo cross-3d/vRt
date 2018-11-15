@@ -8,7 +8,7 @@ int traverseBVH2( in bool validTop ) {
         traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0, traverseState.defElementID = 0;
     };
 
-    INSTANCE_ID = 0, LAST_INSTANCE = 0, currentState = uint(bvhBlockTop.primitiveCount <= 1);
+    INSTANCE_ID = 0, LAST_INSTANCE = -1, currentState = uint(bvhBlockTop.primitiveCount <= 1);
     initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     
     [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
