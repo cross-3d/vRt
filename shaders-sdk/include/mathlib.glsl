@@ -342,17 +342,17 @@ int nlz(in int x) { return nlz(uint(x)); }
 dirtype_t lcts(in highp vec3 direct) {
     //direct = normalize(direct); // normalize before
     return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),INV_TWO_PI,0.5f),acos(-direct.y)*INV_PI)); // to unorm
-}
+};
 
 highp vec3 dcts(in highp vec2 hr) {
     hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f));
     return //normalize
         (vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y)));
-}
+};
 
 highp vec3 dcts(in dirtype_t hr) {
     return dcts(dirtype_t_decode(hr));
-}
+};
 
 
 
@@ -363,7 +363,7 @@ uint p2x_16(in highp uvec2 a) {
 #else
     return (a.x&0xFFFFu)|(a.y<<16u);
 #endif
-}
+};
 
 highp uvec2 up2x_16(in uint a) {
 #ifdef ENABLE_INT16_SUPPORT
@@ -371,7 +371,7 @@ highp uvec2 up2x_16(in uint a) {
 #else
     return uvec2(a&0xFFFFu, a>>16u);
 #endif
-}
+};
 
 
 #ifdef ENABLE_INT16_SUPPORT

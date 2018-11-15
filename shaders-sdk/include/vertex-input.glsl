@@ -9,41 +9,24 @@ layout ( binding = 8, set = VTX_SET, r32ui ) coherent uniform uimageBuffer index
 
 
 #if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SAMPLER_HACK) && defined(ENABLE_FP16_SUPPORT)
-
-#ifdef ENABLE_INT16_SUPPORT // native 16-bit integer support
-uint16_t M16(in f16samplerBuffer m, in uint i) {
-    return float16BitsToUint16(texelFetch(m, int(i>>1u)).xy)[i&1u];
-};
-#else
-highp uint M16(in f16samplerBuffer m, in uint i) {
-    return bitfieldExtract(packFloat2x16(texelFetch(m, int(i>>1u)).xy), int(i&1u)<<4, 16); // unified sentence of uint16_t values
-};
+    #ifdef ENABLE_INT16_SUPPORT // native 16-bit integer support
+    uint16_t M16(in f16samplerBuffer m, in uint i) {
+        return float16BitsToUint16(texelFetch(m, int(i>>1u)).xy)[i&1u];
+    };
+    #else
+    highp uint M16(in f16samplerBuffer m, in uint i) {
+        return bitfieldExtract(packFloat2x16(texelFetch(m, int(i>>1u)).xy), int(i&1u)<<4, 16); // unified sentence of uint16_t values
+    };
+    #endif
+    uint M32(in f16samplerBuffer m, in uint i) { 
+        return packFloat2x16(texelFetch(m, int(i)).xy);
+    };
 #endif
 
-uint M32(in f16samplerBuffer m, in uint i) { 
-    return packFloat2x16(texelFetch(m, int(i)).xy);
-};
 
-#endif
+highp uint M16(in highp usamplerBuffer m, in uint i) { return texelFetch(m, int(i>>1u))[i&1u]; };
+uint M32(in highp usamplerBuffer m, in uint i) { return p2x_16(texelFetch(m, int(i)).xy); };
 
-#ifdef ENABLE_INT16_SUPPORT
-uint16_t M16(in highp usamplerBuffer m, in uint i) {
-    return uint16_t(texelFetch(m, int(i>>1u))[i&1u]);
-};
-
-uint M32(in highp usamplerBuffer m, in uint i) {
-    return packUint2x16(u16vec2(texelFetch(m, int(i)).xy));
-};
-#else
-highp uint M16(in highp usamplerBuffer m, in uint i) {
-    return texelFetch(m, int(i>>1u))[i&1u];
-};
-
-uint M32(in highp usamplerBuffer m, in uint i) {
-    const highp uvec2 mpc = texelFetch(m, int(i)).xy;
-    return (mpc.x|(mpc.y<<16u));
-};
-#endif
 
 // buffer region
 struct VtBufferRegion {
@@ -93,9 +76,9 @@ int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 
 
 #if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SUPPORT) && defined(ENABLE_FP16_SAMPLER_HACK)
-layout ( binding = 0, set = 1 ) uniform f16samplerBuffer bufferSpace[8]; // vertex model v1.4
+layout ( binding = 0, set = 1 )  uniform f16samplerBuffer bufferSpace[8]; // 
 #else
-layout ( binding = 0, set = 1 ) uniform highp usamplerBuffer bufferSpace[8]; // vertex model v1.4
+layout ( binding = 0, set = 1 )  uniform highp usamplerBuffer bufferSpace[8]; // 
 #endif
 
 layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
