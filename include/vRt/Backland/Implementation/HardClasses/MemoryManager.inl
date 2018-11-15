@@ -137,6 +137,7 @@ namespace _vt {
 
     // create shared buffer, buffer views and resolve descriptor info (with externalization support)
     inline VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, VtDeviceBufferCreateInfo cinfo, std::shared_ptr<DeviceBuffer>& gBuffer) {
+        cinfo.format = VK_FORMAT_UNDEFINED, 
         cinfo.bufferSize = bManager->_size; createDeviceBuffer(bManager->_device, cinfo, bManager->_bufferStore); gBuffer = bManager->_bufferStore;
 
         // complete descriptors and buffer-views
@@ -152,6 +153,7 @@ namespace _vt {
 
     // create shared buffer, buffer views and resolve descriptor info
     inline VtResult createSharedBuffer(std::shared_ptr<BufferManager> bManager, VtDeviceBufferCreateInfo cinfo) {
+        cinfo.format = VK_FORMAT_UNDEFINED, 
         cinfo.bufferSize = bManager->_size; createDeviceBuffer(bManager->_device, cinfo, bManager->_bufferStore);
 
         // complete descriptors and buffer-views
