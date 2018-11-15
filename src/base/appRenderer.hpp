@@ -334,6 +334,7 @@ namespace rnd {
         vk::RenderPass renderpass = {};
         vte::Queue deviceQueue = {};
         
+        bool enableAdvancedAcceleration = true;
         float guiScale = 1.0f;
         uint32_t canvasWidth = 1, canvasHeight = 1; // canvas size with SSAA accounting
         uint32_t windowWidth = 1, windowHeight = 1; // virtual window size (without DPI recalculation)

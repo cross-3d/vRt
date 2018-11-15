@@ -33,24 +33,18 @@ namespace _vt {
             features->_extensions = std::vector<VkExtensionProperties>(extList.begin(), extList.end());
 
             // features support list
-            features->_features = vk::PhysicalDeviceFeatures2{};
+            auto _vkfeatures = vk::PhysicalDeviceFeatures2{};
+            auto _vkproperties = vk::PhysicalDeviceProperties2{};
+
+            // features properties
             features->_storage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
             features->_storage16 = vk::PhysicalDevice16BitStorageFeatures{};
             features->_descriptorIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
-            features->_features.pNext = &features->_storage16, features->_storage16.pNext = &features->_storage8, features->_storage8.pNext = &features->_descriptorIndexing; //features->_descriptorIndexing.pNext = &features->_raytracingNVX;
-            gpu.getFeatures2((vk::PhysicalDeviceFeatures2*)&features->_features); // 
+            _vkfeatures.pNext = &features->_storage16, features->_storage16.pNext = &features->_storage8, features->_storage8.pNext = &features->_descriptorIndexing;
 
-            // properties list 
-            features->_properties = vk::PhysicalDeviceProperties2{};
-
-#ifdef VT_LEGACY_RAYTRACING_NVX
-            features->_rayTracingNV = vk::PhysicalDeviceRaytracingPropertiesNVX{};
-#else
-            features->_rayTracingNV = vk::PhysicalDeviceRayTracingPropertiesNV{};
-#endif
-
-            features->_properties.pNext = &features->_rayTracingNV;
-            gpu.getProperties2((vk::PhysicalDeviceProperties2*)&features->_properties); // 
+            // get properties and features
+            gpu.getFeatures2(&_vkfeatures), gpu.getProperties2(&_vkproperties);
+            features->_features = _vkfeatures, features->_properties = _vkproperties;
         };
 
         // only next-gen GPU can have native uint16_t support
@@ -321,6 +315,7 @@ namespace _vt {
 
         // add acceleration extension support
         if (vtExtension.enableAdvancedAcceleration && vtExtension.pAccelerationExtension) {
+            vtDevice->_enabledAdvancedAcceleration = vtExtension.enableAdvancedAcceleration;
             if (vtExtension.pAccelerationExtension->_Criteria(vtDevice->_features) == VK_SUCCESS) {
                 std::shared_ptr<AcceleratorExtensionBase> hExtensionAccelerator = {};
                 vtExtension.pAccelerationExtension->_Initialization(vtDevice, hExtensionAccelerator);

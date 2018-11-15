@@ -21,6 +21,7 @@ namespace _vt {
         VmaAllocationInfo _vmaAllocationInfo = {}, _vmaScratchAllocationInfo = {};
         VkWriteDescriptorSetAccelerationStructureNV _accelDescriptorNV = {};
         VkDescriptorSet _accelDescriptorSetNV = {}; // additional descriptor set
+        
 
 
         // scratch buffers
@@ -54,7 +55,7 @@ namespace _vt {
         VkDescriptorSetLayout _raytracingDescriptorLayout = {};
         VkPipelineLayout _raytracingPipelineLayout = {};
         VkPipeline _intersectionPipelineNV = {}; // native RTX intersection system 
-        VkPhysicalDeviceRayTracingPropertiesNV _raytracingProperties = {};
+        VkPhysicalDeviceRayTracingPropertiesNV _rayTracingNV = {};
         //std::shared_ptr<DeviceBuffer> _sbtBuffer = {};
 
         RTXShaderBindingTable _sbtDebugData[4] = {};

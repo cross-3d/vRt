@@ -103,7 +103,7 @@ void main() {
             hitp = hitPayload[hit.payloadID-1];
             globalInvocationSMP = globalID;
 
-            matID = floatBitsToInt(hit.uvt.w);
+            matID = hit.idat.z;//floatBitsToInt(hit.uvt.w);
             const bool overflow = overflow || rayID < 0;
             const vec3 rdirect = dcts(cray.cdirect);
 

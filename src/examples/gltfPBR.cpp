@@ -23,17 +23,13 @@ namespace rnd {
         args::ValueFlag<std::string> shaderflag(parser, "shaders", "Used SPIR-V shader pack", { 'p' });
         args::ValueFlag<std::string> bgflag(parser, "background", "Environment background", { 'b' });
         args::ValueFlag<std::string> modelflag(parser, "model", "Model to view (planned multiple models support)", { 'm' });
+        args::Flag forceCompute(parser, "force-compute", "Force enable compute shader backend", { 'F' });
 
         args::ValueFlag<int32_t> reflLV(parser, "reflection-level", "Level of reflections", {'R'});
         args::ValueFlag<int32_t> trnsLV(parser, "transparency-level", "Level of transparency", {'T'});
-
-        try {
-            parser.ParseCLI(argc, argv);
-        }
-        catch (args::Help)
-        {
-            std::cout << parser; glfwTerminate(); exit(1);
-        }
+        
+        try { parser.ParseCLI(argc, argv); }
+        catch (args::Help) { std::cout << parser; glfwTerminate(); exit(1); };
 
         // read arguments
         if (deviceflag) gpuID = args::get(deviceflag);
@@ -47,6 +43,7 @@ namespace rnd {
 
         if (reflLV) reflectionLevel = args::get(reflLV);
         if (trnsLV) transparencyLevel = args::get(trnsLV);
+        if (forceCompute) enableAdvancedAcceleration = !args::get(forceCompute);
     };
 
      void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, bool enableSuperSampling) {
@@ -95,7 +92,7 @@ namespace rnd {
 
         // create combined device object
         shaderPack = shaderPrefix + "shaders/" + getShaderDir(devProperties.vendorID);
-        deviceQueue = appBase->createDeviceQueue(gpu, false, shaderPrefix + "intrusive"); // create default graphical device
+        deviceQueue = appBase->createDeviceQueue(gpu, false, shaderPrefix + "intrusive", enableAdvancedAcceleration); // create default graphical device
         renderpass = appBase->createRenderpass(deviceQueue);
         
         // create image output
@@ -1069,22 +1066,23 @@ namespace rnd {
         currentContext->queue->device->logical.acquireNextImageKHR(currentContext->swapchain, std::numeric_limits<uint64_t>::max(), currentContext->framebuffers[n_semaphore].semaphore, nullptr, &currentBuffer);
 
         { // submit rendering (and wait presentation in device)
-            // prepare viewport and clear info
             std::vector<vk::ClearValue> clearValues = { vk::ClearColorValue(std::array<float,4>{0.2f, 0.2f, 0.2f, 1.0f}), vk::ClearDepthStencilValue(1.0f, 0) };
             auto renderArea = vk::Rect2D(vk::Offset2D(0, 0), appBase->size());
             auto viewport = vk::Viewport(0.0f, 0.0f, appBase->size().width, appBase->size().height, 0, 1.0f);
 
             // create command buffer (with rewrite)
-            
-            auto commandBuffer = (currentContext->framebuffers[n_semaphore].commandBuffer = vte::createCommandBuffer(currentContext->queue->device->logical, currentContext->queue->commandPool, false)); // do reference of cmd buffer
-            commandBuffer.beginRenderPass(vk::RenderPassBeginInfo(currentContext->renderpass, currentContext->framebuffers[currentBuffer].frameBuffer, renderArea, clearValues.size(), clearValues.data()), vk::SubpassContents::eInline);
-            commandBuffer.setViewport(0, std::vector<vk::Viewport> { viewport });
-            commandBuffer.setScissor(0, std::vector<vk::Rect2D> { renderArea });
-            commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, currentContext->pipeline);
-            commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, currentContext->pipelineLayout, 0, currentContext->descriptorSets, nullptr);
-            commandBuffer.draw(4, 1, 0, 0);
-            commandBuffer.endRenderPass();
-            commandBuffer.end();
+            vk::CommandBuffer& commandBuffer = currentContext->framebuffers[n_semaphore].commandBuffer;
+            if (!commandBuffer) {
+                commandBuffer = vte::createCommandBuffer(currentContext->queue->device->logical, currentContext->queue->commandPool, false, false); // do reference of cmd buffer
+                commandBuffer.beginRenderPass(vk::RenderPassBeginInfo(currentContext->renderpass, currentContext->framebuffers[currentBuffer].frameBuffer, renderArea, clearValues.size(), clearValues.data()), vk::SubpassContents::eInline);
+                commandBuffer.setViewport(0, std::vector<vk::Viewport> { viewport });
+                commandBuffer.setScissor(0, std::vector<vk::Rect2D> { renderArea });
+                commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, currentContext->pipeline);
+                commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, currentContext->pipelineLayout, 0, currentContext->descriptorSets, nullptr);
+                commandBuffer.draw(4, 1, 0, 0);
+                commandBuffer.endRenderPass();
+                commandBuffer.end();
+            };
 
             // create render submission 
             std::vector<vk::Semaphore>
@@ -1092,6 +1090,7 @@ namespace rnd {
                 signalSemaphores = { currentContext->framebuffers[c_semaphore].semaphore };
             std::vector<vk::PipelineStageFlags> waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
 
+            // 
             auto smbi = vk::SubmitInfo()
                 .setPWaitDstStageMask(waitStages.data()).setPWaitSemaphores(waitSemaphores.data()).setWaitSemaphoreCount(waitSemaphores.size())
                 .setPCommandBuffers(&commandBuffer).setCommandBufferCount(1)
@@ -1099,8 +1098,10 @@ namespace rnd {
 
             // submit command once
             vte::submitCmd(currentContext->queue->device->logical, currentContext->queue->queue, { commandBuffer }, smbi);
-            currentContext->queue->device->logical.freeCommandBuffers(currentContext->queue->commandPool, { commandBuffer });
-        }
+
+            // delete command buffer 
+            //{ currentContext->queue->device->logical.freeCommandBuffers(currentContext->queue->commandPool, { commandBuffer }); commandBuffer = nullptr; };
+        };
 
         // present for displaying of this image
         currentContext->queue->queue.presentKHR(vk::PresentInfoKHR(

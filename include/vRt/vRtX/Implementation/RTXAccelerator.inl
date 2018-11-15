@@ -35,9 +35,9 @@ namespace _vt {
         cmdBufVk.bindDescriptorSets(vk::PipelineBindPoint::eRayTracingNV, vk::PipelineLayout(accelertExt->_raytracingPipelineLayout), 0, _tvSets, _offsets);
         
         cmdBufVk.traceRaysNV(
-            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull * _raytracingProperties.shaderGroupHandleSize,
-            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 2ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
-            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 1ull * _raytracingProperties.shaderGroupHandleSize, _raytracingProperties.shaderGroupHandleSize,
+            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 0ull * _rayTracingNV.shaderGroupHandleSize,
+            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 2ull * _rayTracingNV.shaderGroupHandleSize, _rayTracingNV.shaderGroupHandleSize,
+            vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 1ull * _rayTracingNV.shaderGroupHandleSize, _rayTracingNV.shaderGroupHandleSize,
             {}, 0ull, 0ull,
             4608u, 1u, 1u);
 
@@ -93,11 +93,18 @@ namespace _vt {
         // 
         VtResult rtxResult = VK_ERROR_EXTENSION_NOT_PRESENT;
         const auto * extensionInfo = (VtRTXAcceleratorExtension*)(extensionBasedInfo);
-        _raytracingProperties = device->_features->_rayTracingNV; // planned to merge here
+
+        //_rayTracingNV
+        { // get device properties 
+            // features support list
+            auto _properties = vk::PhysicalDeviceProperties2{};
+            _properties.pNext = &(_rayTracingNV = vk::PhysicalDeviceRayTracingPropertiesNV{});
+            vk::PhysicalDevice(*device->_physicalDevice).getProperties2(&_properties);
+        };
 
         // create SBT buffer
         VtDeviceBufferCreateInfo dbi = {};
-        dbi.bufferSize = tiled(_raytracingProperties.shaderGroupHandleSize * _RTXgroupCount, _raytracingProperties.shaderGroupBaseAlignment)*_raytracingProperties.shaderGroupBaseAlignment;
+        dbi.bufferSize = tiled(_rayTracingNV.shaderGroupHandleSize * _RTXgroupCount, _rayTracingNV.shaderGroupBaseAlignment)*_rayTracingNV.shaderGroupBaseAlignment;
         dbi.usageFlag = VK_BUFFER_USAGE_RAY_TRACING_BIT_NV;
         createHostToDeviceBuffer(device, dbi, _sbtBuffer);
 
@@ -155,7 +162,7 @@ namespace _vt {
             rtxResult = vkCreateRayTracingPipelinesNV(*device, {}, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNV);
             if (rtxResult == VK_SUCCESS) {
                 //rtxResult = vkGetRayTracingShaderGroupHandlesNV(*device, _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtDebugData);
-                rtxResult = vkGetRayTracingShaderGroupHandlesNV(*device, _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtBuffer->_hostMapped());
+                rtxResult = vkGetRayTracingShaderGroupHandlesNV(*device, _intersectionPipelineNV, 0, groups.size(), groups.size()*_rayTracingNV.shaderGroupHandleSize, _sbtBuffer->_hostMapped());
             };
         };
 

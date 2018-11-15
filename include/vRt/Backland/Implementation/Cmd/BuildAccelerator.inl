@@ -161,7 +161,7 @@ namespace _vt {
         
 
         // if has advanced accelerator
-        if (device->_hExtensionAccelerator.size() > 0 && device->_hExtensionAccelerator[0]) {
+        if (device->_hExtensionAccelerator.size() > 0 && device->_hExtensionAccelerator[0] && device->_enabledAdvancedAcceleration) {
             result = device->_hExtensionAccelerator[0]->_BuildAccelerator(cmdBuf, accel, buildInfo);
         }
         else {

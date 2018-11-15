@@ -57,12 +57,6 @@ namespace _vt { // store in undercover namespace
         VkPhysicalDevice8BitStorageFeaturesKHR _storage8 = {};
         VkPhysicalDeviceDescriptorIndexingFeaturesEXT _descriptorIndexing = {};
 
-#ifdef VT_LEGACY_RAYTRACING_NVX
-        VkPhysicalDeviceRaytracingPropertiesNVX _rayTracingNV = {};
-#else
-        VkPhysicalDeviceRayTracingPropertiesNV _rayTracingNV = {};
-#endif
-
         // features linking
         operator VkPhysicalDeviceFeatures2&() { return _features; };
         operator VkPhysicalDeviceFeatures2() const { return _features; };
@@ -79,7 +73,9 @@ namespace _vt { // store in undercover namespace
         ~Device();
 
         friend PhysicalDevice;
-        VkDevice _device = {};
+        VkDevice _device = {}; VtVendor _vendorName = VT_VENDOR_UNIVERSAL;
+        bool _enabledAdvancedAcceleration = false;
+
         std::shared_ptr<DeviceFeatures> _features = {};
         std::shared_ptr<PhysicalDevice> _physicalDevice = {};
 
@@ -110,7 +106,7 @@ namespace _vt { // store in undercover namespace
 
         // descriptor layout map in ray tracing system
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap = {};
-        VtVendor _vendorName = VT_VENDOR_UNIVERSAL;
+        
 
         operator VkDevice() const { return _device; };
         operator VkPipelineCache() const { return _pipelineCache; };
