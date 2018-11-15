@@ -29,47 +29,47 @@
 
 #include "../include/attribute.glsl"
 
-
 LOCAL_SIZE_LAYOUT;
 
 // can be replaced by custom interpolation shader with custom vertex assembly pipeline
 void main() {
     const uint wsize = min(closestHitCounterCurrent, MAX_HITS); IFANY (wsize <= 0) return;
-    const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
+    const uint wcount = min(tiled(uint(wsize)*4u, gl_WorkGroupSize.x), 2097152u);
     const uint hitGroupDirection = 0u;
 
     // accumulate closest hits
     [[flatten]] if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(closestHitCounter, closestHitCounterCurrent), atomicAdd(closestHitTypedCounter[hitGroupDirection], closestHitCounterCurrent); }
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+        const int GPT4 = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x), IPC = GPT4&3, globalID = (GPT4>>2);
+
         const bool overflow = globalID >= wsize; IFALL(overflow) break;
         const int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
         [[flatten]] if (!overflow && hitID >= 0) { // verify intersection
-            // interpolate hit
             const int triID = floatBitsToInt(hit.uvt.w)-1; INSTANCE_ID = floatBitsToInt(hit.hitVD.w);
             [[flatten]] if (triID >= 0 && INSTANCE_ID >= 0) {
-                hit.uvt.w = intBitsToFloat(vmaterials[triID]); // set material ID to UVT (for backward compatibility)
-                hit.hitVD = TLOAD(lnrm, triID); // pick-up pre-computed physical normal
+                interpolateMeshData(hitID, triID, IPC); // interplate hit for every invocation
+                [[flatten]] if (IPC == 0) { // handle hit in every available invocation
+                    hit.uvt.w = intBitsToFloat(vmaterials[triID]); // set material ID to UVT (for backward compatibility)
+                    hit.hitVD = TLOAD(lnrm, triID); // pick-up pre-computed physical normal
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-                hit.hitVD.xyz = mult4(bvhInstance.transformIn, vec4(hit.hitVD.xyz, 0.f)).xyz; // get correct transformation from instance 
+                    hit.hitVD.xyz = mult4(bvhInstance.transformIn, vec4(hit.hitVD.xyz, 0.f)).xyz; // get correct transformation from instance 
 #endif
 
-                // additional hit data (18.10.2018)
-                hit.tdat.xyzw = ivec4(triID, INSTANCE_ID, 0u.xx);
+                    // additional hit data (18.10.2018)
+                    hit.tdat.xyzw = ivec4(triID, INSTANCE_ID, 0u.xx);
 
-                // store minimal possible hit (first operation required, because MAX will haven't no effect)
-                // required for correct alpha channels support 
-                //imageAtomicCompSwap(rayLink,r4ID|2,0xFFFFFFFFu,hitID+1), imageAtomicMax(rayLink,r4ID|2,hitID+1);
-                imageAtomicMax(rayLink,r4ID,(hitID+1).x);
-                interpolateMeshData(hitID, triID); // 
+                    // store minimal possible hit (first operation required, because MAX will haven't no effect)
+                    // required for correct alpha channels support 
+                    //imageAtomicCompSwap(rayLink,r4ID|2,0xFFFFFFFFu,hitID+1), imageAtomicMax(rayLink,r4ID|2,hitID+1);
+                    imageAtomicMax(rayLink,r4ID,(hitID+1).x);
+
+                    //const lowp uint rID = floatBitsToUint(hit.hitVD.w);
+                    //[[unroll]] for (lowp int i=0;i<4;i++) { [[flatten]] if (rID == i) { vtVerifyClosestHit(hitID, i); break; }; };
+                    const uint gPrefix = (1+hitGroupDirection)*MAX_HITS;
+                    closestHits[gPrefix + globalID] = hitID+1;
+                    //vtVerifyClosestHit(hitID, 0); // use only one hit group (fast-mode)
+                };
             };
-
-            // re-group hit 
-            //const lowp uint rID = floatBitsToUint(hit.hitVD.w);
-            //[[unroll]] for (lowp int i=0;i<4;i++) { [[flatten]] if (rID == i) { vtVerifyClosestHit(hitID, i); break; }; };
-            const uint gPrefix = (1+hitGroupDirection)*MAX_HITS;
-            closestHits[gPrefix + globalID] = hitID+1;
-            //vtVerifyClosestHit(hitID, 0); // use only one hit group (fast-mode)
         };
     };
 };

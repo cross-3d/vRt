@@ -66,27 +66,28 @@ void storeAttribute(in ivec3 cdata, in vec4 fval) {
 
 #if (defined(ENABLE_VSTORAGE_DATA) && defined(ENABLE_VERTEX_INTERPOLATOR))
 // barycentric map (for corrections tangents in POM)
-void interpolateMeshData(in int hitID, in int tri) {
+void interpolateMeshData(in int hitID, in int tri, in int IPC) {
     const vec4 vs = vec4(1.0f - hit.uvt.x - hit.uvt.y, hit.uvt.xy, 0.f); // added additional component for shared computing capable production 
     const vec2 sz = 1.f.xx / textureSize(attrib_texture, 0);
     [[flatten]] if (hit.attribID > 0) {
         //[[unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
-        [[dont_unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
+        //[[dont_unroll]] for (int i=0;i<ATTRIB_EXTENT;i++) {
+        { const int i = IPC;
             const vec2 trig = (vec2(gatherMosaic(getUniformCoord(tri*ATTRIB_EXTENT+i))) + 0.5f) * sz;
 
-            vec4 attrib = 0.f.xxxx;
-            //[[unroll]] for (int j=0;j<3;j++) {attrib=fma(vs[j].xxxx,textureLod(attrib_texture,fma(sz,offsetf[j],trig),0),attrib);}; // using accumulation sequence
-            [[unroll]] for (int j=0;j<4;j++) {attrib[j]=dot(vs,sifonGather(attrib_texture,trig,j));}; // tensor capable production 
+            // calculate attribute value (interpolation)
+             vec4 attrib = mult4(mat4(textureGather(attrib_texture,trig,0),textureGather(attrib_texture,trig,1),textureGather(attrib_texture,trig,2),textureGather(attrib_texture,trig,3)),vs);
 
             // TODO: support of variable attribute transforms
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
             [[flatten]] if (any(equal(i.xxx, ivec3(NORMAL_TID, TANGENT_TID, BITANGENT_TID)))) attrib.xyz = mult4(bvhInstance.transformIn, attrib);
 #endif
 
+            // 
             ISTORE(attributes, makeAttribID(hit.attribID, i), attrib);
-        }
-    }
-}
+        };
+    };
+};
 #endif
 
 
