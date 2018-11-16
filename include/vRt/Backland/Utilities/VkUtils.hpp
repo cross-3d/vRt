@@ -36,9 +36,9 @@ namespace _vt {
     constexpr const static inline auto DEFAULT_FENCE_TIMEOUT = 100000000000ll;
     constexpr const static inline auto ATTRIB_EXTENT = 4ull;
     constexpr const static inline auto VRT_USE_MORTON_32 = true;
-    constexpr const static inline auto INTENSIVITY = 1920ull;
-    constexpr const static inline auto RV_INTENSIVITY = 60ull;
-    constexpr const static inline auto VX_INTENSIVITY = 60ull;
+    constexpr const static inline auto INTENSIVITY = 4608ull;
+    constexpr const static inline auto RV_INTENSIVITY = 72ull;
+    constexpr const static inline auto VX_INTENSIVITY = 72ull;
     constexpr const static inline auto DUAL_COMPUTE = 1ull;
     constexpr const static inline auto MAX_RAY_GROUPS = 2ull;
     
