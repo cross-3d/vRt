@@ -105,7 +105,11 @@
 #endif
 
 #ifndef WORK_SIZE
-    #define WORK_SIZE 128u
+#ifdef AMD_PLATFORM
+    #define WORK_SIZE 64u
+#else
+    #define WORK_SIZE 32u
+#endif
 #endif
 
 #define LOCAL_SIZE_LAYOUT layout(local_size_x=WORK_SIZE)in
