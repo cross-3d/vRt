@@ -32,7 +32,7 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 #define OriginPass _devImages[2]
 #define SpecularPass _devImages[3]
 
-shared VtRay lrays[64];
+shared VtRay lrays[R_BLOCK_SIZE];
 #define ray lrays[Local_Idx]
 
 // planned ray generation shader example
@@ -40,7 +40,7 @@ void main() {
     //ivec2 wh = stageUniform.size.xy, xy = ivec2(Launch_Idx.xy);
     const ivec2 wh = /*stageUniform.size.xy*/ ivec2(cameraUniform.sceneRes.xy), xy = ivec2(Launch_Idx.xy) + ivec2(0, stageUniform.size.y*partitionUniform.partID);
     //xy.y = (xy.y<<1) + ((int(WID)+xy.x)&1); // make checkerboard from direct pointers
-    IFANY (WID > 0) return;
+    [[flatten]] IFANY (WID > 0) return;
 
     ray.dcolor = uvec2(0u.xx);
     writeColor(ray.dcolor, imageLoad(SpecularPass, xy));

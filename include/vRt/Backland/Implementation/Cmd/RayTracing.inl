@@ -108,7 +108,7 @@ namespace _vt {
                 if (vasmp->_intrpPipeline) {
                     std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
                     vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, vasmp->_pipelineLayout->_rtLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
-                    cmdDispatch(*cmdBuf, vasmp->_intrpPipeline, tiled(RV_INTENSIVITY, TPC), 1u, TMC); // interpolate intersections
+                    cmdDispatch(*cmdBuf, vasmp->_intrpPipeline, tiled(IV_INTENSIVITY, TPC), 1u, TMC); // interpolate intersections
                 };
 
                 // multiple-time traversing no more needed since added instancing 

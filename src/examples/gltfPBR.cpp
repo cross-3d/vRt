@@ -300,7 +300,7 @@ namespace rnd {
                 partitionUniformData.partID = I;
                 vkCmdUpdateBuffer(qRtCmdBuf, rtPartitionBuffer, 0, sizeof(VtPartitionUniform), &partitionUniformData);
                 _vt::updateCommandBarrier(qRtCmdBuf);
-                vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, _vt::tiled(canvasHeight, rParts*blockheight)*blockheight, std::max(transparencyLevel + 1, 1));
+                vtCmdDispatchRayTracing(qRtCmdBuf, canvasWidth, _vt::tiled(canvasHeight, rParts * blockheight) * blockheight, std::max(transparencyLevel + 1, 1));
             };
 
             vtCmdBindPipeline(qRtCmdBuf, VT_PIPELINE_BIND_POINT_RAYTRACING, rfPipeline);

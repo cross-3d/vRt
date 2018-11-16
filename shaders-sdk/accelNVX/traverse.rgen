@@ -48,8 +48,9 @@ layout(push_constant) uniform rayParams {
 void main() {
     // planned task-based BVH traversing (for two-level BVH support)
     const uint wsize = min(rayCounter[WID], MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
-    for (uint Wi=0u;Wi<wsize;Wi+=(gl_LaunchSizeNV.x*gl_LaunchSizeNV.y)) {
-        const uint W = (gl_LaunchSizeNV.x*gl_LaunchIDNV.y+gl_LaunchIDNV.x) + Wi;
+    const uint tsize = (gl_LaunchSizeNV.x*gl_LaunchSizeNV.y), tWc = (gl_LaunchSizeNV.x*gl_LaunchIDNV.y+gl_LaunchIDNV.x);
+    for (uint Wi=0u;Wi<wsize;Wi+=tsize) {
+        const uint W = tWc + Wi;
         
         const int rayID = vtRayIdx(int(W)); const bool overflow = W >= wsize; IFALL(overflow) break;
         const vec3 ORIGINAL_ORIGIN = rays[RPG_OFF+rayID].origin.xyz; const dirtype_t ORIGINAL_DIRECTION = rays[RPG_OFF+rayID].cdirect;
