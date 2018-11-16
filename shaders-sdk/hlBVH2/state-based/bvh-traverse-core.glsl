@@ -15,10 +15,8 @@ struct PrimitiveState {
 
 // used for re-init traversing 
 //vec3 ORIGINAL_ORIGIN = vec3(0.f); dirtype_t ORIGINAL_DIRECTION = dirtype_t(0);
-#define ORIGINAL_ORIGIN rays[RAY_ID].origin.xyz
-#define ORIGINAL_DIRECTION rays[RAY_ID].cdirect
-
-int LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
+#define ORIGINAL_ORIGIN rays[RPG_OFF+RAY_ID].origin.xyz
+#define ORIGINAL_DIRECTION rays[RPG_OFF+RAY_ID].cdirect
 
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x >= 1 && mem.x==mem.y && (currentState == BVH_STATE_TOP || mem.x <= traverseState.maxElements); };

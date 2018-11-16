@@ -22,9 +22,9 @@
 
 
 #define rayID (hit.rayID-1)
-#define r4ID (rayID<<2)
-#define cray rays[rayID]
-#define hit hits[hitID]
+#define r4ID int((RPG_OFF+rayID)<<2)
+#define cray rays[RPG_OFF+rayID]
+#define hit hits[HPG_OFF+hitID]
 
 
 #include "../include/attribute.glsl"
@@ -39,7 +39,7 @@ void main() {
 
     // accumulate closest hits
     [[flatten]] if (gl_GlobalInvocationID.x == 0) {
-        [[unroll]] for (uint i=0;i<2;i++) {closestHitCounter[WID] += closestHitCounterCurrent[WID], closestHitTypedCounter[hitGroupDirection][WID] += closestHitCounterCurrent[WID];};
+        {closestHitCounter[WID] += closestHitCounterCurrent[WID], closestHitTypedCounter[hitGroupDirection][WID] += closestHitCounterCurrent[WID];};
     };
     
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
@@ -69,8 +69,8 @@ void main() {
 
                     //const lowp uint rID = floatBitsToUint(hit.hitVD.w);
                     //[[unroll]] for (lowp int i=0;i<4;i++) { [[flatten]] if (rID == i) { vtVerifyClosestHit(hitID, i); break; }; };
-                    const uint gPrefix = (1+hitGroupDirection)*MAX_HITS;
-                    closestHits[gPrefix + globalID] = hitID+1;
+                    const uint gPrefix = (1+hitGroupDirection)*(2*MAX_HITS);
+                    closestHits[gPrefix + HPG_OFF + globalID] = hitID+1;
                     //vtVerifyClosestHit(hitID, 0); // use only one hit group (fast-mode)
                 };
             };

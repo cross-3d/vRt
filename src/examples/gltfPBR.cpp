@@ -509,8 +509,8 @@ namespace rnd {
         {
             // create ray tracing set
             VtRayTracingSetCreateInfo rtsi = {};
-            rtsi.maxRays = VkDeviceSize(canvasWidth) * VkDeviceSize(_vt::tiled(VkDeviceSize(canvasHeight), VkDeviceSize(rParts) * blockheight) * blockheight); // prefer that limit
-            rtsi.maxHits = rtsi.maxRays * 2;
+            rtsi.maxRays = 2ull * VkDeviceSize(canvasWidth) * VkDeviceSize(_vt::tiled(VkDeviceSize(canvasHeight), VkDeviceSize(rParts) * blockheight) * blockheight); // prefer that limit
+            rtsi.maxHits = rtsi.maxRays; //* 2;
             vtCreateRayTracingSet(deviceQueue->device->rtDev, &rtsi, &raytracingSet);
         }
     };

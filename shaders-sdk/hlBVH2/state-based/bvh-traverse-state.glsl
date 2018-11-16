@@ -24,7 +24,7 @@
   const highp uint maxIterations  = 16384u;
 
 
-const uint GridSize = 64u; // specialization for future implementation 
+const uint GridSize = 48u*2u; // specialization for future implementation 
 layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYSTEM {
     int stack[WORK_SIZE*GridSize][localStackSize];
     int pages[][localStackSize];
@@ -38,24 +38,23 @@ uint currentState = BVH_STATE_TOP;
 #define sidx  traverseState.stackPtr
 
 // BVH traversing state
-#define _cacheID gl_GlobalInvocationID.x
+#define _cacheID ((gl_WorkGroupSize.x*gl_NumWorkGroups.x*WID)+gl_GlobalInvocationID.x)
 struct BvhTraverseState {
     int maxElements, entryIDBase, diffOffset, defElementID; bool saved;
     int idx;    lowp int stackPtr   , pageID;
     int idxTop; lowp int stackPtrTop, pageIDTop;
     fvec4_ directInv, minusOrig;
-} traverseState; //traverseStates[2];
+} traverseState;
 //#define traverseState traverseStates[currentState] // yes, require two states 
 
 // 13.10.2018 added one mandatory stack page, can't be reached by regular operations 
-#define CACHE_BLOCK_SIZE (gl_WorkGroupSize.x*gl_NumWorkGroups.x*uint(pageCount)) // require one reserved block 
+#define CACHE_BLOCK_SIZE ((gl_WorkGroupSize.x*2u)*gl_NumWorkGroups.x*pageCount) // require one reserved block 
 #define CACHE_BLOCK (_cacheID*pageCount)
 #define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
 
 //#define VTX_PTR (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveOffset : bvhBlockIn.primitiveOffset)
 #define VTX_PTR 0
 int cmpt(in int ts){ return clamp(ts,0,localStackSize-1); };
-
 
 void loadStack(inout int rsl) {
     [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0 ) { // make store/load deferred 

@@ -17,8 +17,8 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 
 
 #define wgs gl_NumWorkGroups.x
-#define hitp hitPayload[hitpId]
-#define hit hits[hitIdc]
+#define hitp hitPayload[HPG_OFF+hitpId]
+#define hit hits[HPG_OFF+hitIdc]
 
 
 // UNUSED: adaptive sample accumulation and super-sampling (i.e. High DPI production support by reducing samples per pixels, using generated resampling)
@@ -36,15 +36,15 @@ void main() {
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 2097152u);
     for (uint w=0;w<wcount;w+=wgs) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        const int rayID = (globalID < wsize ? rayGroupIndicesRead[globalID] : 0)-1;
+        const int rayID = (globalID < wsize ? rayGroupIndicesRead[RPG_OFF+globalID] : 0)-1;
         //const int rayID = (globalID < wsize ? (globalID+1) : 0)-1;
         const bool overflow = globalID >= wsize || globalID < 0; IFALL(overflow) break;
 
         // get ray by id
-        ray = rays[rayID];
+        ray = rays[RPG_OFF+rayID];
         const int hitIdc = vtFetchHitClosest(rayID);
         
-        const int hitpId = hits[hitIdc].payloadID-1;
+        const int hitpId = hit.payloadID-1;
         const vec4 diffuse = hitp.albedo, reflc = hitp.specularGlossiness;
         const float shiftLenght = fma(sqrt(hit.uvt.z),float(One1024),SFN); // TODO: advanced correction of ray starting
 

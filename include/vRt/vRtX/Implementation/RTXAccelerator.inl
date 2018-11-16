@@ -39,7 +39,7 @@ namespace _vt {
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 2ull * _rayTracingNV.shaderGroupHandleSize, _rayTracingNV.shaderGroupHandleSize,
             vk::Buffer(VkBuffer(*accelertExt->_sbtBuffer)), 1ull * _rayTracingNV.shaderGroupHandleSize, _rayTracingNV.shaderGroupHandleSize,
             {}, 0ull, 0ull,
-            4608u, 1u, 1u);
+            4608u, 1u, DUAL_COMPUTE);
 
         return cmdRaytracingBarrierNV(cmdBufVk);
     };

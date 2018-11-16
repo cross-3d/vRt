@@ -54,6 +54,8 @@ ivec2 getUniformCoord(in int indice) {
 }
 
 
+
+
 #ifdef VERTEX_FILLING
 void storeAttribute(in ivec3 cdata, in vec4 fval) {
     const ivec2 ATTRIB_ = gatherMosaic(getUniformCoord(cdata.x*ATTRIB_EXTENT+cdata.y));

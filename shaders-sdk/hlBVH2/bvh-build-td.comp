@@ -3,7 +3,7 @@
 
 #define EXPERIMENTAL_INSTANCING_SUPPORT
 #ifdef FIRST_STEP
-    #define WORK_SIZE_BND 64u
+    #define WORK_SIZE_BND 128u
 #endif
 
 #define EXTEND_LOCAL_GROUPS

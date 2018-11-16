@@ -39,7 +39,6 @@ namespace _vt {
 
     // ray-tracing pipeline 
     VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer> cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
-        constexpr const auto WG_COUNT = 64u, RADICE_AFFINE = 16u;
 
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
@@ -51,13 +50,13 @@ namespace _vt {
         auto rtset = cmdBuf->_rayTracingSet.lock();
         auto vasmp = vertx && vertx->_vertexAssembly ? vertx->_vertexAssembly : device->_nativeVertexAssembler[0];
 
-        const auto rayCount = x * y;
+        const auto TPC = 1ull, TMC = DUAL_COMPUTE;
         rtset->_cuniform.width  = x;
         rtset->_cuniform.height = y;
         rtset->_cuniform.iteration = 0;
         rtset->_cuniform.closestHitOffset = 0;
         rtset->_cuniform.currentGroup = 0;
-        rtset->_cuniform.maxRayCount = rayCount; // try to
+        rtset->_cuniform.maxRayCount = rtset->_cuniform.width * rtset->_cuniform.height; // try to
         rtset->_cuniform.lastIteration = B-1;
 
         // form descriptor sets
@@ -79,7 +78,7 @@ namespace _vt {
             cmdFillBuffer<0u>(*cmdBuf, rtset->_groupCountersBufferRead);
             cmdClean(), cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_rtLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, rtppl->_tiling.width), tiled(y, rtppl->_tiling.height));
+            cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, rtppl->_tiling.width), tiled(y, rtppl->_tiling.height), TMC);
         };
 
         // ray trace command
@@ -102,14 +101,14 @@ namespace _vt {
                 { // stock software BVH traverse (i.e. shader-based)
                     std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
                     vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_traversePipelineLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
-                    cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, RV_INTENSIVITY); 
+                    cmdDispatch(*cmdBuf, acclb->_intersectionPipeline, tiled(RV_INTENSIVITY, TPC), 1u, TMC);
                 };
 
                 // interpolation hits
                 if (vasmp->_intrpPipeline) {
                     std::vector<VkDescriptorSet> _tvSets = { rtset->_descriptorSet, accel->_descriptorSet, vertx->_descriptorSet };
                     vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, vasmp->_pipelineLayout->_rtLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
-                    cmdDispatch(*cmdBuf, vasmp->_intrpPipeline, RV_INTENSIVITY); // interpolate intersections
+                    cmdDispatch(*cmdBuf, vasmp->_intrpPipeline, tiled(RV_INTENSIVITY, TPC), 1u, TMC); // interpolate intersections
                 };
 
                 // multiple-time traversing no more needed since added instancing 
@@ -123,7 +122,7 @@ namespace _vt {
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_groupPipeline.size()); i++) {
                 if (rtppl->_groupPipeline[i]) {
                     cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 64ull * sizeof(cntr_t)) });
-                    cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, rayCount * MAX_RAY_GROUPS * sizeof(uint32_t)) });
+                    cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, (rtset->_cuniform.maxRayCount) * MAX_RAY_GROUPS * sizeof(uint32_t)) });
                     cmdClean(), commandBarrier(*cmdBuf);
                     hasGroupShaders = true; break;
                 };
@@ -134,7 +133,7 @@ namespace _vt {
                 if (rtppl->_closestHitPipeline[i]) {
                     //rtset->_cuniform.currentGroup = i;
                     //cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                    cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], INTENSIVITY, 1u, 1u, false);
+                    cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], tiled(INTENSIVITY, TPC), 1u, TMC, false);
                 };
             };
 
@@ -142,7 +141,7 @@ namespace _vt {
             // moved to after in 11.10.2018
             if (rtppl->_missHitPipeline[0]) {
                 //cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], INTENSIVITY, 1u, 1u, false);
+                cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], tiled(INTENSIVITY, TPC), 1u, TMC, false);
             };
 
             // hit shading barrier
@@ -156,7 +155,7 @@ namespace _vt {
                 if (rtppl->_groupPipeline[i]) {
                     //rtset->_cuniform.currentGroup = i;
                     //cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                    cmdDispatch(*cmdBuf, rtppl->_groupPipeline[i], INTENSIVITY, 1u, 1u, false);
+                    cmdDispatch(*cmdBuf, rtppl->_groupPipeline[i], tiled(INTENSIVITY, TPC), 1u, TMC, false);
                 };
             };
 

@@ -15,16 +15,17 @@
     #endif
 #endif
 
-#ifdef IS_RAY_GEN
+//#ifdef IS_RAY_GEN
 #define Ni 2u
-#else
-#define Ni 1u
-#endif
+//#else
+//#define Ni 1u
+//#endif
 
 #ifdef IS_RAY_SHADER
-#define WID (gl_LaunchIDNV[Ni])
+//#define CPC 2304u
+#define WID (0u+gl_LaunchIDNV[Ni])
 #else
-#define WID (gl_WorkGroupID[Ni])
+#define WID (0u+gl_GlobalInvocationID[Ni])
 #endif
 
 //#ifdef UNIVERSAL_PLATFORM

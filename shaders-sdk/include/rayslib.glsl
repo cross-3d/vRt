@@ -36,7 +36,11 @@ layout ( binding = 6, set = RS_SET, std430 ) readonly restrict buffer VT_CANVAS_
 #define MAX_HITS stageUniform.maxHitCount
 #define MAX_RAYS stageUniform.maxRayCount
 
-#define cntr_t ivec2 
+#define RPG_OFF (MAX_RAYS*WID)
+#define HPG_OFF (MAX_HITS*WID)
+
+
+#define cntr_t int[2] //ivec2 
 
 // counters
 layout ( binding = 7, set = RS_SET, std430 ) restrict buffer VT_RT_COUNTERS { cntr_t vtCounters[8]; };
@@ -93,50 +97,52 @@ int atomicIncAttribCount() {return atomicIncVtCounters(7);}
 
 
 
-#define rHIT hits[hitID]
+#define rHIT hits[HPG_OFF+hitID]
 int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayID) {
     [[flatten]] if (max3_vec(f16_f32(ray.dcolor)) >= 0.002f) {
         parameteri(RAY_TYPE, ray.dcolor.y, int(type));
         const int rID = atomicIncRayTypedCount(rGroupDefault);//atomicIncRayCount();
-        rayID = rayID < 0 ? rID : rayID; rays[rayID] = ray;
+        rayID = rayID < 0 ? rID : rayID; rays[RPG_OFF+rayID] = ray;
         [[flatten]] if (rID < MAX_RAYS) {
             const int gID = rID;//atomicIncRayTypedCount(type);
             [[flatten]] if (gID < MAX_RAYS) {
-                rayGroupIndices[MAX_RAYS*(type+1)+gID] = (rayGroupIndices[rID] = (rayID+1));
+                rayGroupIndices[(2*MAX_RAYS)*(type+1) + RPG_OFF + gID] = (rayGroupIndices[RPG_OFF+rID] = (rayID+1));
             };
         };
     };
     [[flatten]] if (rayID >= 0 && rayID < MAX_RAYS) {
-        imageStore(rayLink, (rayID<<2)|0, 0u.xxxx);
-        imageStore(rayLink, (rayID<<2)|1, p2x_16(c2d).xxxx);
-        imageStore(rayLink, (rayID<<2)|2, 0xFFFFFFFFu.xxxx);
-        imageStore(rayLink, (rayID<<2)|3, 0u.xxxx);
+        imageStore(rayLink, int((RPG_OFF+rayID)<<2)|0, 0u.xxxx);
+        imageStore(rayLink, int((RPG_OFF+rayID)<<2)|1, p2x_16(c2d).xxxx);
+        imageStore(rayLink, int((RPG_OFF+rayID)<<2)|2, 0xFFFFFFFFu.xxxx);
+        imageStore(rayLink, int((RPG_OFF+rayID)<<2)|3, 0u.xxxx);
     };
     return rayID;
 };
 
 int vtEmitRays(in VtRay ray, in highp uvec2 c2d, in uint type) { return vtReuseRays(ray, c2d, type, -1); };
-//int vtFetchHitIdc(in int lidx) { return int(imageAtomicMax(rayLink, lidx<<2, 0u).x)-1; }; // will be replace in traversing by tasks 
-int vtFetchHitIdc(in int lidx) { return int(imageLoad(rayLink, lidx<<2).x)-1; };
+//int vtFetchHitIdc(in int lidx) { return int(imageAtomicMax(rayLink, (RPG_OFF+lidx)<<2, 0u).x)-1; }; // will be replace in traversing by tasks 
+int vtFetchHitIdc(in int lidx) { return int(imageLoad(rayLink, int(RPG_OFF+lidx)<<2).x)-1; };
 int vtFetchHitClosest(in int lidx) { return vtFetchHitIdc(lidx); };
-//int vtFetchHitClosest(in int lidx) { return int(imageAtomicMax(rayLink, (lidx<<2)|2, 0u).x)-1; };
+//int vtFetchHitClosest(in int lidx) { return int(imageAtomicMax(rayLink, (RPG_OFF+lidx)<<2)|2, 0u).x)-1; };
 
 //
-uint vtFetchCode(in int lidx) { return imageLoad(rayLink, (lidx<<2)|1).x; };
+uint vtFetchCode(in int lidx) { return imageLoad(rayLink, int((RPG_OFF+lidx)<<2)|1).x; };
 highp uvec2 vtFetchIndex(in int lidx) { return up2x_16(vtFetchCode(lidx)); };
-int vtRayIdx(in int lidx) { return (lidx >= 0 && lidx < MAX_RAYS ? rayGroupIndices[lidx] : 0)-1; };
+int vtRayIdx(in int lidx) { return (lidx >= 0 && lidx < MAX_RAYS ? rayGroupIndices[RPG_OFF + lidx] : 0)-1; };
 
 int vtVerifyClosestHit(in int closestId, in lowp int g) {
     const int id = g < 0 ? atomicIncClosestHitCount() : atomicIncClosestHitTypedCount(g);
-    [[flatten]] if (id >= 0 && id < MAX_HITS) closestHits[(g+1)*MAX_HITS + id] = closestId+1; return id;
+    [[flatten]] if (id >= 0 && id < MAX_HITS) closestHits[(g+1)*(2*MAX_HITS) + HPG_OFF + id] = closestId+1; return id;
 };
 
 int vtVerifyMissedHit(in int missId, in lowp int g) {
     const int id = atomicIncMissHitTypedCount(g);
-    [[flatten]] if (id >= 0 && id < MAX_HITS) missHits[id] = missId+1; return id;
+    [[flatten]] if (id >= 0 && id < MAX_HITS) missHits[HPG_OFF + id] = missId+1; return id;
 };
 
-int vtClosestId(in int id, in lowp int g) {return (id >= 0 && id < MAX_HITS ? closestHits[(g+1)*MAX_HITS + id] : 0)-1; };
-int vtMissId(in int id, in lowp int g) { return (id >= 0 && id < MAX_HITS ? missHits[id] : 0)-1; };
+int vtClosestId(in int id, in lowp int g) {return (id >= 0 && id < MAX_HITS ? closestHits[(g+1)*(2*MAX_HITS) + HPG_OFF + id] : 0)-1; };
+int vtMissId(in int id, in lowp int g) { return (id >= 0 && id < MAX_HITS ? missHits[HPG_OFF + id] : 0)-1; };
+
+int makeAttribID(in int hAttribID, in int sub) { return int(HPG_OFF+(hAttribID-1))*ATTRIB_EXTENT + sub; };
 
 #endif

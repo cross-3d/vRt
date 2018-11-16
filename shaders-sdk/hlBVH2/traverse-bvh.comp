@@ -26,8 +26,8 @@
 #include "./state-based/bvh-traverse-core.glsl"
 
 #define wgs gl_NumWorkGroups.x
-#define r4ID (RAY_ID<<2)
-#define hit hits[hid]
+#define r4ID int((RPG_OFF+RAY_ID)<<2)
+#define hit hits[HPG_OFF+hid]
 
 
 LOCAL_SIZE_LAYOUT;
@@ -50,8 +50,6 @@ void main() {
 
             //[[flatten]] if (hid < 0) hid = RAY_ID;
             //[[unroll]] for (int i=0;i<1;i++) { //[[flatten]] if (i == 0 || found) 
-
-
 
                 // traversing triangles
                 const int ftrID = traverseBVH2(true)-1; // current found triangle

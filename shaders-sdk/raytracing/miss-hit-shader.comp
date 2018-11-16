@@ -17,9 +17,9 @@
 
 
 #define wgs gl_NumWorkGroups.x
-#define r4ID (rayID<<2)
+#define r4ID int((RPG_OFF+rayID)<<2)
 #define rayID (hit.rayID-1)
-#define cray rays[rayID]
+#define cray rays[RPG_OFF+rayID]
 
 
 VtHitPayload hitp;
@@ -34,9 +34,9 @@ void main() {
         const int hitID = overflow ? -1 : vtMissId(globalID,  stageUniform.currentGroup);
 
 #ifdef DMA_HIT
-        #define hit hits[hitID]
+        #define hit hits[HPG_OFF+hitID]
 #else
-        VtHitData hit = hits[hitID];
+        VtHitData hit = hits[HPG_OFF+hitID];
 #endif
 
         [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0 && vtFetchHitIdc(rayID) == -1) { // if hit is valid and not overriden
@@ -58,16 +58,16 @@ void main() {
             // additional validation of hit (hit point interpolated offset test)
 
             const uint chit = (hitID+1), ghit = imageAtomicCompSwap(rayLink,r4ID,0u,chit.x);//imageAtomicMin(rayLink,r4ID,chit.x);
-            //[[flatten]] if (ghit >= chit && hit.uvt.z <= fma(hits[ghit-1].uvt.z,1.f,SFN)) { // also, required range checking for correct more results
+            //[[flatten]] if (ghit >= chit && hit.uvt.z <= fma(hits[HPG_OFF+(ghit-1)].uvt.z,1.f,SFN)) { // also, required range checking for correct more results
                 //[[flatten]] if (imageAtomicCompSwap(rayLink,r4ID|2,0xFFFFFFFFu,chit.x) == 0xFFFFFFFFu) 
                 [[flatten]] if (ghit == 0u) {
                     const int pid = atomicIncPayloadHitCount();
                     hit.payloadID = pid+1;
                     hit.idat = (-1).xxxx;
 #ifndef DMA_HIT
-                    hits[hitID] = hit;
+                    hits[HPG_OFF+hitID] = hit;
 #endif
-                    hitPayload[pid] = hitp;
+                    hitPayload[HPG_OFF+pid] = hitp;
                 };
             //};
         };

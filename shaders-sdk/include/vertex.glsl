@@ -94,7 +94,7 @@ layout ( binding = 1, set = 1, std430 ) readonly restrict buffer bvhBoxesB { BTY
 
 
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-int INSTANCE_ID = 0;
+int INSTANCE_ID = 0, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
 #define bvhInstance bvhInstance_[INSTANCE_ID]
 #define instanceTransform transformData_[INSTANCE_ID]
 #define bvhBlockIn bvhBlockIn_[bvhInstance.bvhBlockID]

@@ -105,7 +105,7 @@
 #endif
 
 #ifndef WORK_SIZE
-    #define WORK_SIZE 64u
+    #define WORK_SIZE 128u
 #endif
 
 #define LOCAL_SIZE_LAYOUT layout(local_size_x=WORK_SIZE)in
