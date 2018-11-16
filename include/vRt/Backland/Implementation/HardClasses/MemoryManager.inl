@@ -115,7 +115,7 @@ namespace _vt {
             binfo.size = cinfo.bufferSize;//((cinfo.bufferSize >> 5ull) << 5ull) + 32ull;
             binfo.usage = usageFlag;
 
-            if (binfo.size > 0) {
+            if (binfo.size > 0 && binfo.size != VK_WHOLE_SIZE && binfo.size < VK_WHOLE_SIZE) {
 #ifdef VRT_ENABLE_VEZ_INTEROP
                 result = vezCreateBuffer(device->_device, mem, &binfo, &vtDeviceBuffer->_buffer);
 #else
