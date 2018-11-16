@@ -110,13 +110,9 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_countersBuffer);
 
 
-                bfi.bufferSize = 64ull * sizeof(uint32_t);
+                bfi.bufferSize = 128ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_groupCountersBuffer);
-
-
-                bfi.bufferSize = 64ull * sizeof(uint32_t);
-                bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_groupCountersBufferRead);
 
 

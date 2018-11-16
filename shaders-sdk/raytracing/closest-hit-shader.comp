@@ -85,7 +85,7 @@ void main() {
     const vec3 max_fresnel_color = vec3(1.f);
     const vec3 min_fresnel_color = vec3(1.f);
 
-    const uint wsize = min(closestHitTypedCounterRead[stageUniform.currentGroup], MAX_HITS); IFANY (wsize <= 0) return;
+    const uint wsize = min(closestHitTypedCounterRead[stageUniform.currentGroup][WID], MAX_HITS); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
     for (uint w=0;w<wcount;w+=wgs) {
         const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);

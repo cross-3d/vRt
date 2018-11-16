@@ -2,6 +2,7 @@
 #extension GL_NV_ray_tracing : enable
 #extension GL_GOOGLE_include_directive : enable
 
+#define IS_RAY_SHADER
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
 

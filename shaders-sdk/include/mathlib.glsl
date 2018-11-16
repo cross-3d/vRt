@@ -80,8 +80,9 @@ const int _IZERO = 0;
 #define min3_wrap(a,b,c) min(a,min(b,c))
 #define max3_wrap(a,b,c) max(a,max(b,c))
 #endif
-#define max3_vec(a) max3_wrap(a.x,a.y,a.z)
-#define min3_vec(a) min3_wrap(a.x,a.y,a.z)
+#define max3_vec(a) max3_wrap(a[0],a[1],a[2])
+#define min3_vec(a) min3_wrap(a[0],a[1],a[2])
+#define mid3_vec(a) mid3_wrap(a[0],a[1],a[2])
 
 
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
@@ -91,16 +92,11 @@ float mid3_wrap(in float a, in float b, in float c) {
     const float m = max3_wrap(a, b, c);
     [[flatten]] if (m == a) { return max(b, c); } else 
     [[flatten]] if (m == b) { return max(a, c); } else { return max(a, b); }
-}
+};
 
 vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
-    return vec4(
-        mid3_wrap(a.x,b.x,c.x),
-        mid3_wrap(a.y,b.y,c.y),
-        mid3_wrap(a.z,b.z,c.z),
-        mid3_wrap(a.w,b.w,c.w)
-    );
-}
+    return vec4(mid3_wrap(a[0],b[0],c[0]), mid3_wrap(a[1],b[1],c[1]), mid3_wrap(a[2],b[2],c[2]), mid3_wrap(a[3],b[3],c[3]));
+};
 #endif
 
 

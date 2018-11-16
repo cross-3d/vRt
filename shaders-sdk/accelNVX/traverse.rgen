@@ -4,6 +4,7 @@
 
 // enable it, when you will ready...
 //#define RS_SET 1
+#define IS_RAY_SHADER
 #define ENABLE_STACK_SWITCH // still has glitches, when is enabled, will used unified stack (may no enough)
 #define EXPERIMENTAL_INSTANCING_SUPPORT
 //#define REGULAR_ATOMIC_INC
@@ -44,7 +45,7 @@ layout(push_constant) uniform rayParams {
 
 void main() {
     // planned task-based BVH traversing (for two-level BVH support)
-    const uint wsize = min(rayCounter, MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
+    const uint wsize = min(rayCounter[WID], MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
     for (uint Wi=0u;Wi<wsize;Wi+=gl_LaunchSizeNV.x) {
         const uint W = gl_LaunchIDNV.x + Wi;
         
@@ -84,7 +85,6 @@ void main() {
                 
                 {mhit=max(mhit,hid+1),hid=-1;};*/
             };
-            
         };
     };
 };

@@ -34,6 +34,9 @@ namespace _vt {
         return result;
     };
 
+
+    using cntr_t = uint64_t;
+
     // ray-tracing pipeline 
     VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer> cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
         constexpr const auto WG_COUNT = 64u, RADICE_AFFINE = 16u;
@@ -91,7 +94,7 @@ namespace _vt {
                 if (accel->_descriptorSetGenerator) accel->_descriptorSetGenerator();
 
                 // reset hit counter before new intersections
-                auto zero = 0u; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(3), sizeof(uint32_t), &zero);
+                const cntr_t zero = 0ull; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<cntr_t>(3), sizeof(cntr_t), &zero);
                 cmdFillBuffer<-1>(*cmdBuf, rtset->_traverseCache);
 
                 if (device->_hExtensionAccelerator.size() > 0 && device->_hExtensionAccelerator[0] && device->_enabledAdvancedAcceleration)
@@ -111,7 +114,7 @@ namespace _vt {
 
                 // multiple-time traversing no more needed since added instancing 
                 //cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), sizeof(uint32_t)) });
-                //cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<uint32_t>(1), sizeof(uint32_t), &zero); //reset collection hit counter
+                //cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<cntr_t>(1), sizeof(cntr_t), &zero); //reset collection hit counter
             };
 
             // reload to caches and reset counters (if has group shaders)
@@ -119,7 +122,7 @@ namespace _vt {
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_rtLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_groupPipeline.size()); i++) {
                 if (rtppl->_groupPipeline[i]) {
-                    cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 64ull * sizeof(uint32_t)) });
+                    cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 64ull * sizeof(cntr_t)) });
                     cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, rayCount * MAX_RAY_GROUPS * sizeof(uint32_t)) });
                     cmdClean(), commandBarrier(*cmdBuf);
                     hasGroupShaders = true; break;

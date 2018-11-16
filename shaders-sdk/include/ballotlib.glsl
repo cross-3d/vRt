@@ -15,6 +15,18 @@
     #endif
 #endif
 
+#ifdef IS_RAY_GEN
+#define Ni 2u
+#else
+#define Ni 1u
+#endif
+
+#ifdef IS_RAY_SHADER
+#define WID (gl_LaunchIDNV[Ni])
+#else
+#define WID (gl_WorkGroupID[Ni])
+#endif
+
 //#ifdef UNIVERSAL_PLATFORM
 #define Wave_Size_RT (gl_SubgroupSize.x)
 //#else
@@ -89,6 +101,14 @@ T fname(in uint WHERE) {\
     T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
     return T(pfx.y) * T(by) + gadd;\
 };
+
+#define initAtomicSubgroupIncFunctionTargetBinarity(mem, fname, by, T)\
+T fname(in uint WHERE) {\
+    const lowp uvec2 pfx = bPrefixSum();\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem[WID], T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
+    return T(pfx.y) * T(by) + gadd;\
+};
+
 //#endif
 //
 

@@ -36,31 +36,39 @@ layout ( binding = 6, set = RS_SET, std430 ) readonly restrict buffer VT_CANVAS_
 #define MAX_HITS stageUniform.maxHitCount
 #define MAX_RAYS stageUniform.maxRayCount
 
+#define cntr_t ivec2 
 
 // counters
-layout ( binding = 7, set = RS_SET, std430 ) restrict buffer VT_RT_COUNTERS { int vtCounters[8]; };
+layout ( binding = 7, set = RS_SET, std430 ) restrict buffer VT_RT_COUNTERS { cntr_t vtCounters[8]; };
 layout ( binding = 8, set = RS_SET, rg32ui ) uniform uimageBuffer taskList;
 
 // ray and hit linking buffer
 layout ( binding = 10, set = RS_SET, r32ui ) uniform uimageBuffer rayLink;
 layout ( binding = 11, set = RS_SET, rgba32f ) uniform imageBuffer attributes;
 layout ( binding = 12, set = RS_SET, std430 ) restrict buffer VT_GROUPS_COUNTERS {
-    int rayTypedCounter[4];
-    int closestHitTypedCounter[4];
-    int missHitTypedCounter[4];
+    cntr_t rayTypedCounter[4];
+    cntr_t closestHitTypedCounter[4];
+    cntr_t missHitTypedCounter[4];
+    cntr_t reservedCounter[4];
 };
 
 layout ( binding = 13, set = RS_SET, std430 ) readonly coherent buffer VT_RAY_INDICES_READ {int rayGroupIndicesRead[];};
 layout ( binding = 14, set = RS_SET, std430 ) readonly restrict buffer VT_GROUPS_COUNTERS_READ {
-    int rayTypedCounterRead[4];
-    int closestHitTypedCounterRead[4];
-    int missHitTypedCounterRead[4];
+    cntr_t rayTypedCounterRead[4];
+    cntr_t closestHitTypedCounterRead[4];
+    cntr_t missHitTypedCounterRead[4];
+    cntr_t reservedCounterRead[4];
 };
 
-initAtomicSubgroupIncFunctionTarget(vtCounters[WHERE], atomicIncVtCounters, 1, int)
-initAtomicSubgroupIncFunctionTarget(rayTypedCounter[WHERE], atomicIncRayTypedCount, 1, int)
-initAtomicSubgroupIncFunctionTarget(closestHitTypedCounter[WHERE], atomicIncClosestHitTypedCount, 1, int)
-initAtomicSubgroupIncFunctionTarget(missHitTypedCounter[WHERE], atomicIncMissHitTypedCount, 1, int)
+initAtomicSubgroupIncFunctionTargetBinarity(vtCounters[WHERE], atomicIncVtCounters, 1, int)
+initAtomicSubgroupIncFunctionTargetBinarity(rayTypedCounter[WHERE], atomicIncRayTypedCount, 1, int)
+initAtomicSubgroupIncFunctionTargetBinarity(closestHitTypedCounter[WHERE], atomicIncClosestHitTypedCount, 1, int)
+initAtomicSubgroupIncFunctionTargetBinarity(missHitTypedCounter[WHERE], atomicIncMissHitTypedCount, 1, int)
+
+//initAtomicSubgroupIncFunctionTarget(vtCounters[WHERE], atomicIncVtCounters, 1, int)
+//initAtomicSubgroupIncFunctionTarget(rayTypedCounter[WHERE], atomicIncRayTypedCount, 1, int)
+//initAtomicSubgroupIncFunctionTarget(closestHitTypedCounter[WHERE], atomicIncClosestHitTypedCount, 1, int)
+//initAtomicSubgroupIncFunctionTarget(missHitTypedCounter[WHERE], atomicIncMissHitTypedCount, 1, int)
 
 
 // aliased values

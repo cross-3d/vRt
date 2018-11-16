@@ -33,17 +33,21 @@ LOCAL_SIZE_LAYOUT;
 
 // can be replaced by custom interpolation shader with custom vertex assembly pipeline
 void main() {
-    const uint wsize = min(closestHitCounterCurrent, MAX_HITS); IFANY (wsize <= 0) return;
+    const uint wsize = min(closestHitCounterCurrent[WID], MAX_HITS); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize)*4u, gl_WorkGroupSize.x), 2097152u);
     const uint hitGroupDirection = 0u;
 
     // accumulate closest hits
-    [[flatten]] if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { atomicAdd(closestHitCounter, closestHitCounterCurrent), atomicAdd(closestHitTypedCounter[hitGroupDirection], closestHitCounterCurrent); }
+    [[flatten]] if (gl_GlobalInvocationID.x == 0) {
+        [[unroll]] for (uint i=0;i<2;i++) {closestHitCounter[WID] += closestHitCounterCurrent[WID], closestHitTypedCounter[hitGroupDirection][WID] += closestHitCounterCurrent[WID];};
+    };
+    
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         const int GPT4 = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x), IPC = GPT4&3, globalID = (GPT4>>2);
 
         const bool overflow = globalID >= wsize; IFALL(overflow) break;
-        const int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
+        //const int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
+        const int hitID = overflow ? -1 : vtClosestId(globalID, -1);
         [[flatten]] if (!overflow && hitID >= 0) { // verify intersection
             const int triID = hit.idat.y; INSTANCE_ID = hit.idat.x;
             [[flatten]] if (triID >= 0 && INSTANCE_ID >= 0) {
