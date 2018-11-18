@@ -38,8 +38,7 @@ void resetEntry(in bool VALID) {
 bool validIdxTop    (in int idx) { return idx >= 0 && idx  > bvhBlockTop.entryID; };
 bool validIdx       (in int idx) { return idx >= 0 && idx >= traverseState.entryIDBase; };
 bool validIdxEntry  (in int idx) { return idx >= 0 && idx  > traverseState.entryIDBase; };
-//bool validIdxIncluse(in int idx) { return validIdx(idx) && ( idx > bvhBlockTop.entryID ); };
-bool validIdxIncluse(in int idx) { return validIdx(idx) && (currentState == BVH_STATE_BOTTOM || idx > bvhBlockTop.entryID); };
+bool validIdxIncluse(in int idx) { return idx >= 0 && (currentState == BVH_STATE_BOTTOM || idx > traverseState.entryIDBase); };
 
 
 vec4 uniteBoxLv(in vec4 pt) {
@@ -127,7 +126,7 @@ void doIntersection( inout bool switched ) {
         //};
     };
 
-    [[flatten]] if ((isvalid && CSTATE == BVH_STATE_TOP) || (CSTATE == BVH_STATE_BOTTOM && !validIdxEntry(traverseState.idx) && traverseState.idx != bvhBlockTop.entryID && validIdxTop(traverseState.idxTop))) {
+    [[flatten]] if ((isvalid && CSTATE == BVH_STATE_TOP) || (CSTATE == BVH_STATE_BOTTOM && !validIdxEntry(traverseState.idx) && validIdxTop(traverseState.idxTop))) {
         [[flatten]] if (traverseState.idx != bvhBlockTop.entryID) switchStateTo( (CSTATE == BVH_STATE_BOTTOM ? BVH_STATE_TOP : BVH_STATE_BOTTOM), (CSTATE == BVH_STATE_BOTTOM ? -1 : elementID), true), switched = true;
     };
 };
