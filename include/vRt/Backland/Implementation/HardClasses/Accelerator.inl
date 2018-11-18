@@ -205,11 +205,11 @@ namespace _vt {
         { bfi.offset = info.bvhMetaHeadOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhMetaHeadBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, vtDevice); };
 
         // 
-        if (!info.bvhMetaBuffer) {  // create for backward compatibility 
-            bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
-            createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingInBuffer);
-        } else
-        { bfi.offset = info.bvhMetaOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhMetaBuffer, bfi, vtAccelerator->_bvhHeadingInBuffer, vtDevice); };
+        //if (!info.bvhMetaBuffer) {  // create for backward compatibility 
+        //    bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
+        //    createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingInBuffer);
+        //} else
+        //{ bfi.offset = info.bvhMetaOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhMetaBuffer, bfi, vtAccelerator->_bvhHeadingInBuffer, vtDevice); };
 
         // 
         if (!info.bvhInstanceBuffer) { // create for backward compatibility 
@@ -242,6 +242,13 @@ namespace _vt {
                     };
                 };
 
+                // 
+                std::vector<vk::DescriptorBufferInfo> cHeads = { vtAccelerator->_bvhHeadingBuffer->_descriptorInfo() };
+                if (info.bvhMetaBuffer) {
+                    cHeads.push_back({ info.bvhMetaBuffer, info.bvhMetaOffset, VK_WHOLE_SIZE });
+                };
+
+
                 { // descriptor set (TODO: deprecate descriptor sets for bottom levels)
                     //std::vector<vk::PushConstantRange> constRanges = { vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2)) };
                     std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["hlbvh2"]) };
@@ -254,10 +261,10 @@ namespace _vt {
                 { // 
                     const auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                     std::vector<vk::WriteDescriptorSet> writes = {
-                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingBuffer->_descriptorInfo())), // TODO: dedicated meta buffer
+                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo(cHeads.data()).setDescriptorCount(cHeads.size()), // TODO: dedicated meta buffer
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(cStrcts.data()).setDescriptorCount(cStrcts.size()),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhInstancedBuffer->_descriptorInfo())),
-                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingInBuffer->_descriptorInfo())),
+                        //vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingInBuffer->_descriptorInfo())),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhTransformBuffer->_descriptorInfo())),
                     };
                     vk::Device(vkDevice).updateDescriptorSets(writes, {});

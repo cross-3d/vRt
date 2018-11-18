@@ -109,7 +109,7 @@ void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
 // triangle intersection, when it found
 void doIntersection( inout bool switched ) {
     const int elementID = exchange(traverseState.defElementID,0)-1;
-    const bool  isvalid = elementID >= 0; //&& elementID < traverseState.maxElements;
+    const bool isvalid = elementID >= 0; //&& elementID < traverseState.maxElements;
     const uint CSTATE = currentState;
 
     [[flatten]] if (isvalid && CSTATE == BVH_STATE_BOTTOM) {
@@ -127,7 +127,7 @@ void doIntersection( inout bool switched ) {
     };
 
     [[flatten]] if ((isvalid && CSTATE == BVH_STATE_TOP) || (CSTATE == BVH_STATE_BOTTOM && !validIdxEntry(traverseState.idx) && validIdxTop(traverseState.idxTop))) {
-        [[flatten]] if (traverseState.idx != bvhBlockTop.entryID) switchStateTo( (CSTATE == BVH_STATE_BOTTOM ? BVH_STATE_TOP : BVH_STATE_BOTTOM), (CSTATE == BVH_STATE_BOTTOM ? -1 : elementID), true), switched = true;
+        [[flatten]] if (traverseState.idx != bvhBlockTop.entryID) { switchStateTo( (CSTATE == BVH_STATE_BOTTOM ? BVH_STATE_TOP : BVH_STATE_BOTTOM), (CSTATE == BVH_STATE_BOTTOM ? -1 : elementID), true), switched = true; };
     };
 };
 

@@ -97,14 +97,14 @@ T fname(in uint WHERE) {\
 #else*/
 // statically multiplied
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
-T fname(in uint WHERE) {\
+T fname(in nonuniformEXT uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
     T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
     return T(pfx.y) * T(by) + gadd;\
 };
 
 #define initAtomicSubgroupIncFunctionTargetBinarity(mem, fname, by, T)\
-T fname(in uint WHERE) {\
+T fname(in nonuniformEXT uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
     T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem[WID], T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
     return T(pfx.y) * T(by) + gadd;\
@@ -115,7 +115,7 @@ T fname(in uint WHERE) {\
 
 // statically multiplied
 #define initSubgroupIncFunctionTarget(mem, fname, by, T)\
-T fname(in uint WHERE) {\
+T fname(in nonuniformEXT uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
     T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
     return T(pfx.y) * T(by) + gadd;\

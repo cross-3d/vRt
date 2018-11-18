@@ -44,6 +44,8 @@ bbox_t calculateTransformedBox(in uint rI, in uint T, in vec4 bnds[2]) {
     return result;
 };
 
+#define bNodeState bvhBlockState_[1].data
+
 // TODO: complete transformations support
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
@@ -53,13 +55,13 @@ void main() {
             const uint T = clamp(bvhInstance_[rI].bvhBlockID, 0, buildBlock.primitiveCount-1);
 
             // using global optimization transform + input transform of instance 
-            Leafs[I].lbox  = calculateTransformedBox(rI, T, vec4[2](bvhBlockIn_[T].sceneMin, bvhBlockIn_[T].sceneMax));
+            Leafs[I].lbox  = calculateTransformedBox(rI, T, vec4[2](bNodeState[T].sceneMin, bNodeState[T].sceneMax));
             Leafs[I].pdata = ivec4((0).xxx, rI+1);
 
             // getting combined transformation for instance 
             //bvhInstance_[rI].transform = 
             transformData_[rI] = 
-                mat3x4(mult4( mat4(bvhBlockIn_[T].transform), transpose(inverse(transpose( mat4(bvhInstance_[rI].transformIn) ))) ));
+                mat3x4(mult4( mat4(bNodeState[T].transform), transpose(inverse(transpose( mat4(bvhInstance_[rI].transformIn) ))) ));
         };
     };
 };

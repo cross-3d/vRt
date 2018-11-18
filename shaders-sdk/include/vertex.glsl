@@ -50,15 +50,16 @@ struct BvhInstanceT {
     int bvhBlockID, bvhDataID, r1, r2;
 };
 
+#if (defined(USE_F32_BVH) || defined(USE_F16_BVH)) && !defined(EXPERIMENTAL_UNORM16_BVH)
+    #define nbox_t fvec4_[3]
+#else
+    #define nbox_t uvec2[3]
+#endif
 
 
 // required 64-byte per full node 
 struct BTYPE_ {
-#if (defined(USE_F32_BVH) || defined(USE_F16_BVH)) && !defined(EXPERIMENTAL_UNORM16_BVH)
-    fvec4_ cbox[3];
-#else
-    uvec2 cbox[3];
-#endif
+    nbox_t cbox;
 #if (defined(USE_F16_BVH) || defined(EXPERIMENTAL_UNORM16_BVH) || !defined(USE_F32_BVH))
     uvec2 spacing[3]; // when using 16-bit data, need have data space ()
 #endif
@@ -68,18 +69,18 @@ struct BTYPE_ {
 
 #ifndef VERTEX_FILLING
 // Block of main BVH structure (for bottom levels will not required)
-layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { BvhBlockT bvhBlock_[]; }; // bvhBlock of main structure 
+layout ( binding = 0, set = 1, std430 ) readonly restrict buffer bvhBlockB { BvhBlockT data[]; } bvhBlockState_[]; // bvhBlock of main structure 
 
 
 // Accessible blocks and instances for top levels, or task accessing (required shared buffers)
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 #ifdef BVH_CREATION
 layout ( binding = 2, set = 1, std430 ) restrict buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
-layout ( binding = 3, set = 1, std430 ) restrict buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
+//layout ( binding = 3, set = 1, std430 ) restrict buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
 layout ( binding = 4, set = 1, std430 ) restrict buffer BvhTransformB { mat3x4 transformData_[]; };
 #else
 layout ( binding = 2, set = 1, std430 ) readonly restrict buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
-layout ( binding = 3, set = 1, std430 ) readonly restrict buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
+//layout ( binding = 3, set = 1, std430 ) readonly restrict buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
 layout ( binding = 4, set = 1, std430 ) readonly restrict buffer BvhTransformB { mat3x4 transformData_[]; };
 #endif
 #endif
@@ -99,17 +100,17 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 const float SFNa = SFN *1.f;
 const float SFOa = SFNa+1.f;
 
-uint currentState = BVH_STATE_TOP, lastDataID = 0u;
+uint currentState = BVH_STATE_TOP; const uint lastDataID = 0u;
  int INSTANCE_ID = -1, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
 
 // instanced BVH node
 #define bvhInstance bvhInstance_[INSTANCE_ID]
 #define instanceTransform transformData_[INSTANCE_ID]
-#define bvhBlockTop bvhBlock_[0]
-#define bvhBlockIn ((currentState==BVH_STATE_TOP)?bvhBlockTop:bvhBlockIn_[bvhInstance.bvhBlockID])
-//#define bvhNodes bInstances[nonuniformEXT(lastDataID=uint(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhDataID)))].bvhNodes_
+#define bvhBlockTop bvhBlockState_[0].data[0]
+#define bvhBlockIn  bvhBlockState_[nonuniformEXT(currentState)].data[bvhInstance.bvhBlockID*currentState]
 
-#define bvhNodes bInstances[nonuniformEXT(lastDataID)].bvhNodes_
+//#define bvhNodes bInstances[nonuniformEXT(uint(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhDataID)))].bvhNodes_
+  #define bvhNodes bInstances[nonuniformEXT(lastDataID)].bvhNodes_
 //#define bvhNodes bInstances[nonuniformEXT(0u)].bvhNodes_
 
 // instanced BVH entry
@@ -225,20 +226,13 @@ bool intersectCubeF32Single(in vec3 orig, in vec3 dr, in bvec4 sgn, in mat3x2 tM
     #define fcvt4_ fvec4_
 #endif
 
-
 #ifndef VERTEX_FILLING
-//pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in fvec4_[3] tMinMax, inout vec4 nfe2)
-pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, inout int IDX, inout vec4 nfe2)
+pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in nbox_t cbox, inout vec4 nfe2)
 {
     // calculate intersection
-    mat3x4 tMinMax = mat3x4(0.f.xxxx,0.f.xxxx,0.f.xxxx);
-    //[[flatten]] if (IDX >= 0) [[unroll]] for (int i=0;i<3;i++) 
-    [[unroll]] for (int i=0;i<3;i++) 
-    {
-        tMinMax[i] = fcvt4_(bvhNodes[IDX].cbox[i]);
-        tMinMax[i] = fvec4_(fma(tMinMax[i],dr[i].xxxx,orig[i].xxxx));
-        tMinMax[i] = fvec4_(min(tMinMax[i].xy, tMinMax[i].zw), max(tMinMax[i].xy, tMinMax[i].zw));
-    };
+    fvec4_[3] tMinMax = { fcvt4_(cbox[0]),fcvt4_(cbox[1]),fcvt4_(cbox[2]) };
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec4_(fma(tMinMax[i],dr[i].xxxx,orig[i].xxxx));
+    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec4_(min(tMinMax[i].xy,tMinMax[i].zw),max(tMinMax[i].xy,tMinMax[i].zw));
 
     const fvec2_
         tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy), 
