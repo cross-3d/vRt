@@ -98,16 +98,19 @@ const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
 const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 const float SFNa = SFN *1.f;
 const float SFOa = SFNa+1.f;
-uint currentState = BVH_STATE_TOP;
 
-int INSTANCE_ID = -1, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
+uint currentState = BVH_STATE_TOP, lastDataID = 0u;
+ int INSTANCE_ID = -1, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
 
 // instanced BVH node
 #define bvhInstance bvhInstance_[INSTANCE_ID]
 #define instanceTransform transformData_[INSTANCE_ID]
 #define bvhBlockTop bvhBlock_[0]
 #define bvhBlockIn ((currentState==BVH_STATE_TOP)?bvhBlockTop:bvhBlockIn_[bvhInstance.bvhBlockID])
-#define bvhNodes bInstances[nonuniformEXT(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhDataID))].bvhNodes_
+//#define bvhNodes bInstances[nonuniformEXT(lastDataID=uint(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhDataID)))].bvhNodes_
+
+#define bvhNodes bInstances[nonuniformEXT(lastDataID)].bvhNodes_
+//#define bvhNodes bInstances[nonuniformEXT(0u)].bvhNodes_
 
 // instanced BVH entry
 #define BVH_ENTRY bvhBlockIn.entryID
