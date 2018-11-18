@@ -1,14 +1,14 @@
 
 // 
 int traverseBVH2( in bool validTop ) {
-
     {   lastDataID = 0u, currentState = uint(bvhBlockTop.primitiveCount <= 1), LAST_INSTANCE = -1, INSTANCE_ID = currentState == BVH_STATE_BOTTOM ? 0 : -1;
         traverseState.idx = (traverseState.entryIDBase = BVH_ENTRY), lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
         traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0, traverseState.defElementID = 0;
     };
     initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     
-    [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
+    // two loop based BVH traversing
+    [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {
         [[flatten]] if (validIdx(traverseState.idx)) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) {
 
@@ -55,8 +55,7 @@ int traverseBVH2( in bool validTop ) {
         
         // every-step solving 
         bool stateSwitched = false; doIntersection( stateSwitched );
-        //[[flatten]] IFANY (!validIdxEntry(traverseState.idx) || traverseState.defElementID > 0) { doIntersection( stateSwitched ); };
-        [[flatten]] if (!validIdxIncluse(traverseState.idx) || (!stateSwitched && (traverseState.idx <= max(traverseState.entryIDBase, bvhBlockTop.entryID)))) { break; };
+        [[flatten]] if (!validIdxIncluse(traverseState.idx) || (!stateSwitched && traverseState.idx <= traverseState.entryIDBase)) { break; };
     };
     
     return floatBitsToInt(primitiveState.lastIntersection.w);
