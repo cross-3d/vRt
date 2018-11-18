@@ -94,31 +94,25 @@ layout ( binding = 1, set = 1, std430 ) readonly restrict buffer bvhBoxesB { BTY
 
 
 
-#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
-int INSTANCE_ID = 0, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
-#define bvhInstance bvhInstance_[INSTANCE_ID]
-#define instanceTransform transformData_[INSTANCE_ID]
-#define bvhBlockIn bvhBlockIn_[bvhInstance.bvhBlockID]
-#define bvhBlockTop bvhBlock_[0] 
-#else
-#define instanceTransform transformData_[0]
-#define bvhBlockIn bvhBlock_[0] 
-#define bvhBlockTop bvhBlock_[0] 
-#endif
+const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
+const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
+const float SFNa = SFN *1.f;
+const float SFOa = SFNa+1.f;
+uint currentState = BVH_STATE_TOP;
 
+int INSTANCE_ID = -1, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
 
 // instanced BVH node
-#define bvhNodes bInstances[nonuniformEXT((currentState==BVH_STATE_TOP?0u:(1u+bvhInstance.bvhBlockID)))].bvhNodes_
-//#define bvhNodes bInstances[nonuniformEXT(0u)].bvhNodes_
+#define bvhInstance bvhInstance_[INSTANCE_ID]
+#define instanceTransform transformData_[INSTANCE_ID]
+#define bvhBlockTop bvhBlock_[0]
+#define bvhBlockIn ((currentState==BVH_STATE_TOP||INSTANCE_ID<0)?bvhBlockTop:bvhBlockIn_[bvhInstance.bvhBlockID])
+#define bvhNodes bInstances[nonuniformEXT(1+((currentState==BVH_STATE_TOP||INSTANCE_ID<0)?-1:bvhInstance.bvhBlockID))].bvhNodes_
 
-
-#ifdef EXPERIMENTAL_INSTANCING_SUPPORT
+// instanced BVH entry
 #define BVH_ENTRY bvhBlockIn.entryID
 #define BVH_ENTRY_HALF (BVH_ENTRY>>1)
-#else
-#define BVH_ENTRY 0
-#define BVH_ENTRY_HALF (BVH_ENTRY>>1)
-#endif
+
 
 
 
@@ -128,11 +122,6 @@ vec4 uniteBox   (in vec4 glb) { return point4(fma((glb - bvhBlockIn .sceneMin) /
 vec4 uniteBoxTop(in vec4 glb) { return point4(fma((glb - bvhBlockTop.sceneMin) / (bvhBlockTop.sceneMax - bvhBlockTop.sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
 #endif
 
-const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
-const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
-const float SFNa = SFN *1.f;
-const float SFOa = SFNa+1.f;
-uint currentState = BVH_STATE_TOP;
 
 
 #ifndef VERTEX_FILLING

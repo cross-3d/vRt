@@ -2,7 +2,7 @@
 // 
 int traverseBVH2( in bool validTop ) {
 
-    {   INSTANCE_ID = 0, LAST_INSTANCE = -1, currentState = uint(bvhBlockTop.primitiveCount <= 1);
+    {   currentState = uint(bvhBlockTop.primitiveCount <= 1), LAST_INSTANCE = -1, INSTANCE_ID = currentState == BVH_STATE_BOTTOM ? 0 : -1;
         traverseState.idx = (traverseState.entryIDBase = BVH_ENTRY), lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
         traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0, traverseState.defElementID = 0;
     };

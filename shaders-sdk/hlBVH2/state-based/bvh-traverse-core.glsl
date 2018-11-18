@@ -26,7 +26,7 @@ bool isnLeaf(in ivec2 mem) { return mem.x >= 1 && //mem.x!=mem.y &&
 
 
 void resetEntry(in bool VALID) {
-    //MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0, VALID = VALID && MAX_ELEMENTS > 0;
+    VALID = VALID && (currentState == BVH_STATE_TOP || INSTANCE_ID >= 0); //MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0, VALID = VALID && MAX_ELEMENTS > 0;
     traverseState.diffOffset = floatBitsToInt(0.f);
     traverseState.entryIDBase = VALID ? BVH_ENTRY : -1;
     [[flatten]] if (currentState == BVH_STATE_BOTTOM || !VALID) {
@@ -85,25 +85,24 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 
 // 
 void triggerSwitch(in uint stateTo){
-    currentState = stateTo; initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+    currentState = stateTo, initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
 };
 
 // kill switch when traversing 
 void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
     [[flatten]] if (currentState != stateTo) { 
-        [[flatten]] if (stateTo == BVH_STATE_BOTTOM && !traverseState.saved) {
+        [[flatten]] if (stateTo == BVH_STATE_BOTTOM) {
             traverseState.idxTop = traverseState.idx, traverseState.stackPtrTop = traverseState.stackPtr, traverseState.pageIDTop = traverseState.pageID, traverseState.saved = true;
             traverseCache.stack[_cacheID] = lstack;
-        };
+        } else 
 
-        [[flatten]] if (stateTo == BVH_STATE_TOP && traverseState.saved) {
+        [[flatten]] if (stateTo == BVH_STATE_TOP) {
             traverseState.idx = traverseState.idxTop, traverseState.stackPtr = traverseState.stackPtrTop, traverseState.pageID = traverseState.pageIDTop, traverseState.saved = false;
-            traverseState.idxTop = -1, traverseState.stackPtrTop = -1, traverseState.pageIDTop = -1;
+            traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0;
             lstack = traverseCache.stack[_cacheID];
         };
 
-        INSTANCE_ID = instanceTo;
-        if (valid) triggerSwitch(stateTo);
+        INSTANCE_ID = instanceTo, triggerSwitch(stateTo);
     };
 };
 
@@ -111,11 +110,7 @@ void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
 void doIntersection( inout bool switched ) {
     const int elementID = exchange(traverseState.defElementID,0)-1;
     const bool  isvalid = elementID >= 0; //&& elementID < traverseState.maxElements;
-
     const uint CSTATE = currentState;
-    [[flatten]] if ((isvalid && CSTATE == BVH_STATE_TOP) || (CSTATE == BVH_STATE_BOTTOM && !validIdxEntry(traverseState.idx) && traverseState.idx != bvhBlockTop.entryID && validIdxTop(traverseState.idxTop))) {
-        switchStateTo( CSTATE == BVH_STATE_BOTTOM ? BVH_STATE_TOP : BVH_STATE_BOTTOM, CSTATE == BVH_STATE_BOTTOM ? INSTANCE_ID : elementID, true), switched = true;
-    };
 
     [[flatten]] if (isvalid && CSTATE == BVH_STATE_BOTTOM) {
         //vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
@@ -125,10 +120,14 @@ void doIntersection( inout bool switched ) {
         //const float tdiff = nearT-d, tmax = SFN;
         //[[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
             //[[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
-            [[flatten]] if ( isvalid && d.x <= primitiveState.lastIntersection.z ) {
+            [[flatten]] if ( isvalid && d.x <= primitiveState.lastIntersection.z && INSTANCE_ID >= 0 ) {
                 primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
             };
         //};
+    };
+
+    [[flatten]] if ((isvalid && CSTATE == BVH_STATE_TOP) || (CSTATE == BVH_STATE_BOTTOM && !validIdxEntry(traverseState.idx) && traverseState.idx != bvhBlockTop.entryID && validIdxTop(traverseState.idxTop))) {
+        [[flatten]] if (traverseState.idx != bvhBlockTop.entryID) switchStateTo( (CSTATE == BVH_STATE_BOTTOM ? BVH_STATE_TOP : BVH_STATE_BOTTOM), (CSTATE == BVH_STATE_BOTTOM ? -1 : elementID), true), switched = true;
     };
 };
 
