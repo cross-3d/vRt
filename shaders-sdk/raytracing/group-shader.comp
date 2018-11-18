@@ -46,7 +46,7 @@ void main() {
         
         const int hitpId = hit.payloadID-1;
         const vec4 diffuse = hitp.albedo, reflc = hitp.specularGlossiness;
-        const float shiftLenght = fma(sqrt(hit.uvt.z),float(One1024),SFN); // TODO: advanced correction of ray starting
+        const float shiftLenght = fma(max(sqrt(hit.uvt.z),hit.uvt.z),float(One1024),SFN); // TODO: advanced correction of ray starting
 
         // get output image 2D coord
         const uvec2 ucoord = vtFetchIndex(rayID);
@@ -71,7 +71,8 @@ void main() {
             // transparency ray
             VtRay newray = ray; {
                 const vec3 vdir = orgdir, shift = vdir;
-                newray.origin.xyz = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
+                //newray.origin.xyz = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
+                newray.origin.xyz = fma(shift, shiftLenght.xxx, ray.origin.xyz);
                 writeColor(newray.dcolor, vec4(rcolor.xyz * (1.f - alph).xxx, 1.f));
                 //vtEmitRays(newray, ucoord.xy, 0);
                 vtReuseRays(newray, ucoord.xy, 0, rayID);
@@ -81,7 +82,8 @@ void main() {
             const vec3 vcolor = rcolor.xyz * alph; // visible ray color energy
             {
                 const vec3 vdir = reflect(orgdir, normal), shift = vdir;
-                const vec3 orig = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
+                //const vec3 orig = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
+                const vec3 orig = fma(shift, shiftLenght.xxx, ray.origin.xyz);
                 const vec3 rcol = vcolor * reflc.xyz;
 
                 ISTORE(OriginPass, icoord, vec4(orig, 1.f));
