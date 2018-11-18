@@ -35,9 +35,9 @@ void resetEntry(in bool VALID) {
 };
 
 
-bool validIdxTop    (in int idx) { return idx != -1 && idx >= max(0, bvhBlockTop.entryID+1); };
-bool validIdx       (in int idx) { return idx != -1 && idx >= max(0, traverseState.entryIDBase+0); };
-bool validIdxEntry  (in int idx) { return idx != -1 && idx >= max(0, traverseState.entryIDBase+1); };
+bool validIdxTop    (in int idx) { return idx >= max(0, bvhBlockTop.entryID+1); };
+bool validIdx       (in int idx) { return idx >= max(0, traverseState.entryIDBase+0); };
+bool validIdxEntry  (in int idx) { return idx >= max(0, traverseState.entryIDBase+1); };
 bool validIdxIncluse(in int idx) { return validIdx(idx) && (currentState == BVH_STATE_BOTTOM || idx > bvhBlockTop.entryID); };
 
 

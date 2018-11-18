@@ -47,7 +47,7 @@ struct BvhBlockT {
 // 
 struct BvhInstanceT {
     mat3x4 transformIn; // row of traversion correction, combined with transforming to instance space 
-    int bvhBlockID, r0, r1, r2;
+    int bvhBlockID, bvhDataID, r1, r2;
 };
 
 
@@ -107,7 +107,7 @@ int INSTANCE_ID = -1, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
 #define instanceTransform transformData_[INSTANCE_ID]
 #define bvhBlockTop bvhBlock_[0]
 #define bvhBlockIn ((currentState==BVH_STATE_TOP)?bvhBlockTop:bvhBlockIn_[bvhInstance.bvhBlockID])
-#define bvhNodes bInstances[nonuniformEXT(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhBlockID))].bvhNodes_
+#define bvhNodes bInstances[nonuniformEXT(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhDataID))].bvhNodes_
 
 // instanced BVH entry
 #define BVH_ENTRY bvhBlockIn.entryID

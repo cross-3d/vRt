@@ -80,7 +80,7 @@ namespace vrt {
     struct VtBvhInstance {
         VtMat3x4 //transform   = IdentifyMat3x4,
             transformIn = IdentifyMat3x4; // combined transform 
-        int32_t bvhBlockID = 0u, entryID = 0u, r0 = 0u, r1 = 0u;
+        int32_t bvhBlockID = 0u, bvhDataID = -1, r0 = 0u, r1 = 0u;
     };
 
     struct VtBuildConst {

@@ -346,7 +346,7 @@ namespace rnd {
              acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
              acci.bvhDataBuffer = BvhDataBuffer;
              acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(1024u);
-             acci.traversingEntryID = 0u; //1024u; // this information will known when will traversing 
+             acci.traversingEntryID = 1024u; // this information will known when will traversing 
              acci.vertexPointingOffset = 0u;
              vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorGeometry);
          };
@@ -368,11 +368,12 @@ namespace rnd {
                        glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f))*glm::rotate(glm::radians(90.f * (x + z)), glm::vec3(0.f, 1.f, 0.f))); 
                      //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*100.f, 0.f, z*100.f))*glm::rotate(glm::radians(90.f * (x + z)), glm::vec3(0.f, 1.f, 0.f)));
                      //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f)));
-                     BvhInstancedData.push_back(VtBvhInstance{});
-                     BvhInstancedData[BvhInstancedData.size()-1].transformIn = *((VtMat3x4*)&movedFW);
+                     BvhInstancedData.push_back(VtBvhInstance{}); auto & BvhInstanceRef = BvhInstancedData[BvhInstancedData.size() - 1];
+                     memcpy(&BvhInstanceRef.transformIn, &movedFW, sizeof(VtMat3x4));
+                     BvhInstanceRef.bvhDataID = -1;
+                     BvhInstanceRef.bvhBlockID = 0u;
 
-                     RTXInstancedData.push_back(VtRTXInstance{});
-                     auto & RTXInstanceRef = RTXInstancedData[RTXInstancedData.size() - 1];
+                     RTXInstancedData.push_back(VtRTXInstance{}); auto & RTXInstanceRef = RTXInstancedData[RTXInstancedData.size() - 1];
                      memcpy(&RTXInstanceRef.transform, &movedFW, sizeof(VtMat3x4));
                      RTXInstanceRef.instanceId = 0u;//InstCounter++;
                      RTXInstanceRef.mask = 0xff;
