@@ -1,21 +1,18 @@
 
 // 
 int traverseBVH2( in bool validTop ) {
-    //, traverseState.idx = -1, traverseState.entryIDBase = -1;
 
     {   INSTANCE_ID = 0, LAST_INSTANCE = -1, currentState = uint(bvhBlockTop.primitiveCount <= 1);
         traverseState.idx = (traverseState.entryIDBase = BVH_ENTRY), lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
         traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0, traverseState.defElementID = 0;
     };
-
-    
     initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     
     [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
         [[flatten]] if (validIdx(traverseState.idx)) {
         { [[dependency_infinite]] for (;hi<maxIterations;hi++) {
 
-            //int primary = -1;
+            int primary = -1;
             #define bvhNode bvhNodes[traverseState.idx]
             const ivec2 cnode = validIdx(traverseState.idx) ? bvhNode.meta.xy : (0).xx;
             [[flatten]] if ( isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x; traverseState.idx = -1; } else  // if leaf, defer for intersection 
@@ -33,8 +30,7 @@ int traverseBVH2( in bool validTop ) {
                 childIntersect &= binarize(lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz));
 
                 //
-                traverseState.idx = -1;
-                pbool_ fmask = pl_x(childIntersect)|(pl_y(childIntersect)<<true_);
+                pbool_ fmask = pl_x(childIntersect)|(pl_y(childIntersect)<<true_); traverseState.idx = -1;
                 [[flatten]] if (fmask > 0 && fmask != -1) {
                     int secondary = -1;
                     [[flatten]] if (fmask == 3) { fmask &= true_<<pbool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
@@ -51,17 +47,14 @@ int traverseBVH2( in bool validTop ) {
             };
             
             // if all threads had intersection, or does not given any results, break for processing
-            //traverseState.idx = primary;
-            [[flatten]] if (!validIdx(traverseState.idx)) { loadStack(traverseState.idx); }; // load from stack
-            IFANY (traverseState.defElementID > 0 || !validIdxEntry(traverseState.idx)) { break; };
+            [[flatten]] if (!validIdxEntry(traverseState.idx)) { loadStack(traverseState.idx); }; // load from stack
+            IFANY (!validIdxEntry(traverseState.idx) || traverseState.defElementID > 0) { break; };
         }}};
         
         // every-step solving 
-        [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true ); };
-        [[flatten]] if (!validIdxEntry(traverseState.idx) && validIdxTop(traverseState.idxTop) && traverseState.idx != bvhBlockTop.entryID) {
-            switchStateTo(BVH_STATE_TOP, INSTANCE_ID, true);
-        };
-        [[flatten]] if (!validIdxIncluse(traverseState.idx)) { break; };
+        bool stateSwitched = false; doIntersection( stateSwitched );
+        //[[flatten]] IFANY (!validIdxEntry(traverseState.idx) || traverseState.defElementID > 0) { doIntersection( stateSwitched ); };
+        [[flatten]] if (!validIdxIncluse(traverseState.idx) || (!stateSwitched && (traverseState.idx <= max(traverseState.entryIDBase, bvhBlockTop.entryID)))) { break; };
     };
     
     return floatBitsToInt(primitiveState.lastIntersection.w);
