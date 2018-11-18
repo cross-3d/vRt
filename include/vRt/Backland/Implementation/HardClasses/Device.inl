@@ -110,7 +110,7 @@ namespace _vt {
         vtDevice->_pipelineCache = {};//vkPipelineCache;
 
         // make descriptor pool
-        constexpr const auto mult = 0x4u;
+        constexpr const auto mult = 0x800u;
         std::vector<vk::DescriptorPoolSize> dps = {
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(0x100u * mult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageImage).setDescriptorCount(0x100u * mult),
@@ -128,10 +128,10 @@ namespace _vt {
                 
 #ifdef VT_LEGACY_RAYTRACING_NVX
                 vtDevice->_descriptorAccess = VK_SHADER_STAGE_RAYGEN_BIT_NVX | VK_SHADER_STAGE_COMPUTE_BIT;
-                dps.push_back(vk::DescriptorPoolSize().setType(vk::DescriptorType::eAccelerationStructureNVX).setDescriptorCount(16 * mult));
+                dps.push_back(vk::DescriptorPoolSize().setType(vk::DescriptorType::eAccelerationStructureNVX).setDescriptorCount(0x1u * mult));
 #else
                 vtDevice->_descriptorAccess = VK_SHADER_STAGE_RAYGEN_BIT_NV | VK_SHADER_STAGE_COMPUTE_BIT;
-                dps.push_back(vk::DescriptorPoolSize().setType(vk::DescriptorType::eAccelerationStructureNV).setDescriptorCount(16 * mult));
+                dps.push_back(vk::DescriptorPoolSize().setType(vk::DescriptorType::eAccelerationStructureNV).setDescriptorCount(0x1u * mult));
 #endif
 
                 break;
