@@ -106,8 +106,8 @@ int INSTANCE_ID = -1, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
 #define bvhInstance bvhInstance_[INSTANCE_ID]
 #define instanceTransform transformData_[INSTANCE_ID]
 #define bvhBlockTop bvhBlock_[0]
-#define bvhBlockIn ((currentState==BVH_STATE_TOP||INSTANCE_ID<0)?bvhBlockTop:bvhBlockIn_[bvhInstance.bvhBlockID])
-#define bvhNodes bInstances[nonuniformEXT(1+((currentState==BVH_STATE_TOP||INSTANCE_ID<0)?-1:bvhInstance.bvhBlockID))].bvhNodes_
+#define bvhBlockIn ((currentState==BVH_STATE_TOP)?bvhBlockTop:bvhBlockIn_[bvhInstance.bvhBlockID])
+#define bvhNodes bInstances[nonuniformEXT(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhBlockID))].bvhNodes_
 
 // instanced BVH entry
 #define BVH_ENTRY bvhBlockIn.entryID
