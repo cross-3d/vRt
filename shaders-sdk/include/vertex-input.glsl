@@ -24,8 +24,12 @@ layout ( binding = 8, set = VTX_SET, r32ui ) coherent uniform uimageBuffer index
 #endif
 
 
-highp uint M16(in highp usamplerBuffer m, in uint i) { return texelFetch(m, int(i>>1u))[i&1u]; };
-uint M32(in highp usamplerBuffer m, in uint i) { return p2x_16(texelFetch(m, int(i)).xy); };
+//highp uint M16(in highp usamplerBuffer m, in uint i) { return texelFetch(m, int(i>>1u))[i&1u]; };
+//uint M32(in highp usamplerBuffer m, in uint i) { return p2x_16(texelFetch(m, int(i)).xy); };
+
+//highp uint M16(in highp usamplerBuffer m, in uint i) { return texelFetch(m, int(i>>1u))[i&1u]; };
+//uint M32(in highp usamplerBuffer m, in uint i) { return p2x_16(texelFetch(m, int(i)).xy); };
+
 
 
 // buffer region
@@ -68,22 +72,36 @@ int aNormalized(in uint bitfield) { return int(parameteri(NORMALIZED, bitfield))
 int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 
 
-#ifdef ENABLE_NON_UNIFORM_SAMPLER
-#define BFS bufferSpace[nonuniformEXT(bufferID)]
-#else
-#define BFS bufferSpace[bufferID]
-#endif
+//#ifdef ENABLE_NON_UNIFORM_SAMPLER
+//#define BFS bufferSpace[nonuniformEXT(bufferID)]
+//#else
+//#define BFS bufferSpace[bufferID]
+//#endif
+#define BFS uint(bufferID)
 
 
-#if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SUPPORT) && defined(ENABLE_FP16_SAMPLER_HACK)
-layout ( binding = 0, set = 1 )  uniform f16samplerBuffer bufferSpace[8]; // 
-#else
-layout ( binding = 0, set = 1 )  uniform highp usamplerBuffer bufferSpace[8]; // 
-#endif
+//#if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SUPPORT) && defined(ENABLE_FP16_SAMPLER_HACK)
+//layout ( binding = 0, set = 1 )  uniform f16samplerBuffer bufferSpace[8]; // 
+//#else
+//layout ( binding = 0, set = 1 )  uniform highp usamplerBuffer bufferSpace[8]; // 
+//#endif
 
-layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW {VtBufferView bufferViews[]; };
-layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR {VtAccessor accessors[]; };
-layout ( binding = 4, set = 1, std430 ) readonly buffer VT_ATTRIB {VtAttributeBinding attributes[]; };
+layout ( binding = 0, set = 1, std430 ) readonly buffer VT_VINPUT { u16vec2 data[]; } bufferSpace[];
+layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW { VtBufferView bufferViews[]; };
+layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR { VtAccessor accessors[]; };
+layout ( binding = 4, set = 1, std430 ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
+
+
+//
+highp uint M16(in uint BSC, in uint Ot, in uint uI) {
+    const uint I = (Ot+uI)>>1u;
+    return bufferSpace[nonuniformEXT(BSC)].data[I>>1u][I&1u]; 
+};
+
+uint M32(in uint BSC, in uint Ot, in uint uI) {
+    const uint I = (Ot+uI)>>2u;
+    return p2x_16(bufferSpace[nonuniformEXT(BSC)].data[I]); 
+};
 
 
 
@@ -111,27 +129,26 @@ layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
 layout ( binding = 6, set = 1, std430 ) readonly buffer VT_TRANSFORMS { mat3x4 vTransforms[]; };
 
 
-uint calculateByteOffset(in int accessorID, in uint index, in uint bytecorrect) { //bytecorrect -= 1;
+uint calculateByteOffset(in int accessorID, in const uint bytecorrect) { //bytecorrect -= 1;
     const uint bufferView = uint(accessors[accessorID].bufferView);
-    const uint stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1) << bytecorrect); // get true stride 
-    const uint offseT = index * stride + (bufferViews[bufferView].byteOffset+accessors[accessorID].byteOffset); // calculate byte offset 
-    return offseT >> bytecorrect;
+    return ((bufferViews[bufferView].byteOffset+accessors[accessorID].byteOffset) >> bytecorrect);
+};
+
+uint iCR(in int accessorID, in uint index, in const uint cmpc, in const uint bytecorrect) {
+    const uint bufferView = uint(accessors[accessorID].bufferView), stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1)<<bytecorrect);
+    return (index*stride)+(cmpc<<bytecorrect);
 };
 
 void readByAccessorLL(in int accessor, in uint index, inout uvec4 outpx) {
     [[flatten]] if (accessor >= 0) {
         const int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
-        const uint T = calculateByteOffset(accessor, index, 2);
-        const uint D = 0u; // component decoration
-        const uint C = min(aComponents(accessors[accessor].bitfield)+1, 4u-D);
-        [[unroll]] for (int i=0;i<4;i++) {
-            [[flatten]] if (C > i) outpx[D+i] = M32(BFS,T+i);
-        };
+        const uint T = calculateByteOffset(accessor, 0u), D = 0u, C = min(aComponents(accessors[accessor].bitfield)+1, 4u-D);
+        [[unroll]] for (int i=0;i<4;i++) { [[flatten]] if (C > i) outpx[D+i] = M32(BFS,T,iCR(accessor,index,i,2u)); };
     };
 };
 
+// 
 uvec4 readByAccessorLLW(in int accessor, in uint index, in uvec4 outpx) { readByAccessorLL(accessor, index, outpx); return outpx; };
-
 
 // vec4 getter
 void readByAccessor(in int accessor, in uint index, inout vec4 outp) {
@@ -169,9 +186,9 @@ void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
     [[flatten]] if (accessor >= 0) {
         const int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
         const bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
-        const uint T = calculateByteOffset(accessor, index, U16 ? 1 : 2);
-        [[flatten]] if (U16) { outp = M16(BFS,T+0); } else { outp = M32(BFS,T+0); }
-    }
+        const uint T = calculateByteOffset(accessor, 0u);
+        [[flatten]] if (U16) { outp = M16(BFS,T,iCR(accessor,index,0,1u)); } else { outp = M32(BFS,T,iCR(accessor,index,0,2u)); };
+    };
 };
 
 // 

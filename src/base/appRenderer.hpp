@@ -384,7 +384,7 @@ namespace rnd {
         // ray tracing objects
         //std::vector<VkBufferView> VDataSpace = {};
         VtDeviceBuffer VDataBuffer = {};
-        std::vector<VkBufferView> VDataViews = {};
+        std::vector<VtBufferRegion> VDataViews = {};
         std::vector<VtVertexAccessor> accessors = {};
         std::vector<VtVertexBufferView> bufferViews = {};
         std::vector<std::vector<VtVertexInputSet>> vertexInputs = {};

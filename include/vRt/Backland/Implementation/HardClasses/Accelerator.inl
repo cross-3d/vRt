@@ -173,11 +173,11 @@ namespace _vt {
 
 
     // planned advanced accelerator construction too
-    VtResult createAcceleratorSet(std::shared_ptr<Device> _vtDevice, VtAcceleratorSetCreateInfo info, std::shared_ptr<AcceleratorSet>& vtAccelerator) {
+    VtResult createAcceleratorSet(std::shared_ptr<Device> vtDevice, VtAcceleratorSetCreateInfo info, std::shared_ptr<AcceleratorSet>& vtAccelerator) {
         VtResult result = VK_SUCCESS;
-        auto vkDevice = _vtDevice->_device;
+        auto vkDevice = vtDevice->_device;
         vtAccelerator = std::make_shared<AcceleratorSet>();
-        vtAccelerator->_device = _vtDevice;
+        vtAccelerator->_device = vtDevice;
         vtAccelerator->_coverMatrice = info.coverMat;
         vtAccelerator->_elementsOffset = info.vertexPointingOffset;
         //vtAccelerator->_elementsCount = info.maxPrimitives;
@@ -187,7 +187,7 @@ namespace _vt {
 
         // planned import from descriptor
         std::shared_ptr<BufferManager> bManager = {};
-        createBufferManager(_vtDevice, bManager);
+        createBufferManager(vtDevice, bManager);
 
         // 
         VtBufferRegionCreateInfo bfi = {};
@@ -195,34 +195,33 @@ namespace _vt {
             bfi.bufferSize = (info.maxPrimitives * sizeof(VtBvhNodeStruct)) << 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer); 
         } else 
-        { bfi.offset = info.bvhDataOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhDataBuffer, bfi, vtAccelerator->_bvhBoxBuffer, _vtDevice); };
+        { bfi.offset = info.bvhDataOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhDataBuffer, bfi, vtAccelerator->_bvhBoxBuffer, vtDevice); };
 
         // 
         if (!info.bvhMetaHeadBuffer) { 
             bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingBuffer);
         } else 
-        { bfi.offset = info.bvhMetaHeadOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhMetaHeadBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, _vtDevice); };
+        { bfi.offset = info.bvhMetaHeadOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhMetaHeadBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, vtDevice); };
 
         // 
         if (!info.bvhMetaBuffer) {  // create for backward compatibility 
             bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingInBuffer);
         } else
-        { bfi.offset = info.bvhMetaOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhMetaBuffer, bfi, vtAccelerator->_bvhHeadingInBuffer, _vtDevice); };
+        { bfi.offset = info.bvhMetaOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhMetaBuffer, bfi, vtAccelerator->_bvhHeadingInBuffer, vtDevice); };
 
         // 
         if (!info.bvhInstanceBuffer) { // create for backward compatibility 
             bfi.bufferSize = sizeof(VtBvhInstance) * 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhInstancedBuffer);
         } else
-        { bfi.offset = info.bvhInstanceOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhInstanceBuffer, bfi, vtAccelerator->_bvhInstancedBuffer, _vtDevice); };
+        { bfi.offset = info.bvhInstanceOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhInstanceBuffer, bfi, vtAccelerator->_bvhInstancedBuffer, vtDevice); };
 
         { // add special cache for changed transform data 
             bfi.bufferSize = sizeof(VtMat3x4) * info.maxPrimitives;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhTransformBuffer);
         };
-        
 
         { // build final shared buffer for this class
             VtDeviceBufferCreateInfo bfic = {};
@@ -232,13 +231,23 @@ namespace _vt {
 
         vtAccelerator->_descriptorSetGenerator = [=]() { // create caller for generate descriptor set
             if (!vtAccelerator->_descriptorSet) {
+                auto vtDevice = vtAccelerator->_device;
+                auto vkDevice = vtDevice->_device;
+
+                // 
+                std::vector<vk::DescriptorBufferInfo> cStrcts = { vtAccelerator->_bvhBoxBuffer->_descriptorInfo() };
+                if (info.pStructVariations) {
+                    for (uint32_t i = 0u; i < info.structVariationCount; i++) {
+                        cStrcts.push_back(info.pStructVariations[i]->_bvhBoxBuffer->_descriptorInfo());
+                    };
+                };
 
                 { // descriptor set (TODO: deprecate descriptor sets for bottom levels)
                     //std::vector<vk::PushConstantRange> constRanges = { vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2)) };
-                    std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"]) };
+                    std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["hlbvh2"]) };
 
                     // create descriptor set
-                    const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                    const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                     vtAccelerator->_descriptorSet = std::move(dsc[0]);
                 };
 
@@ -246,7 +255,7 @@ namespace _vt {
                     const auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                     std::vector<vk::WriteDescriptorSet> writes = {
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingBuffer->_descriptorInfo())), // TODO: dedicated meta buffer
-                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhBoxBuffer->_descriptorInfo())),
+                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(cStrcts.data()).setDescriptorCount(cStrcts.size()),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhInstancedBuffer->_descriptorInfo())),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingInBuffer->_descriptorInfo())),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhTransformBuffer->_descriptorInfo())),
@@ -258,8 +267,8 @@ namespace _vt {
         };
 
         // use extension
-        if (_vtDevice->_hExtensionAccelerator.size() > 0 && _vtDevice->_hExtensionAccelerator[0]) {
-            _vtDevice->_hExtensionAccelerator[0]->_ConstructAcceleratorSet(vtAccelerator);
+        if (vtDevice->_hExtensionAccelerator.size() > 0 && vtDevice->_hExtensionAccelerator[0]) {
+            vtDevice->_hExtensionAccelerator[0]->_ConstructAcceleratorSet(vtAccelerator);
         };
 
         return result;

@@ -110,16 +110,16 @@ namespace _vt {
         vtDevice->_pipelineCache = {};//vkPipelineCache;
 
         // make descriptor pool
-        const size_t mult = 4;
+        constexpr const auto mult = 0x4u;
         std::vector<vk::DescriptorPoolSize> dps = {
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(256 * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageImage).setDescriptorCount(256 * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageBuffer).setDescriptorCount(256 * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(256 * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampler).setDescriptorCount(64 * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eCombinedImageSampler).setDescriptorCount(256 * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageTexelBuffer).setDescriptorCount(256 * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(256 * mult)
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(0x100u * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageImage).setDescriptorCount(0x100u * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageBuffer).setDescriptorCount(0x100u * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(0x100u * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampler).setDescriptorCount(0x100u * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eCombinedImageSampler).setDescriptorCount(0x100u * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageTexelBuffer).setDescriptorCount(0x100u * mult),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(0x100u * mult)
         };
 
         // if ray tracing NV supported, add additional descriptor pool types
@@ -197,14 +197,17 @@ namespace _vt {
         };
 
         {
+            const std::vector<vk::DescriptorBindingFlagsEXT> _bindingFlags = { {}, vk::DescriptorBindingFlagBitsEXT::ePartiallyBound, {}, {}, {}, };
+            const auto vkfl = vk::DescriptorSetLayoutBindingFlagsCreateInfoEXT().setPBindingFlags(_bindingFlags.data()).setBindingCount(_bindingFlags.size());
+
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
                 vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh main block 
-                vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh nodes 
+                vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eStorageBuffer, 0x80000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh nodes 
                 vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh instances
                 vk::DescriptorSetLayoutBinding(3, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh blocks  
                 vk::DescriptorSetLayoutBinding(4, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess))  // bvh transform buffer
             };
-            vtDevice->_descriptorLayoutMap["hlbvh2"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
+            vtDevice->_descriptorLayoutMap["hlbvh2"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPNext(&vkfl).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         };
 
         {
@@ -266,13 +269,16 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // virtual texture and sampler combinations
                 vk::DescriptorSetLayoutBinding(4 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // material set uniform 
             };
-            vtDevice->_descriptorLayoutMap["materialSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
+
+            const std::vector<vk::DescriptorBindingFlagsEXT> _bindingFlags = { vk::DescriptorBindingFlagBitsEXT::ePartiallyBound, vk::DescriptorBindingFlagBitsEXT::ePartiallyBound, {}, {}, {}, };
+            const auto vkfl = vk::DescriptorSetLayoutBindingFlagsCreateInfoEXT().setPBindingFlags(_bindingFlags.data()).setBindingCount(_bindingFlags.size());
+            vtDevice->_descriptorLayoutMap["materialSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPNext(&vkfl).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         };
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
                 //vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eUniformTexelBuffer, vendorName == VT_VENDOR_INTEL ? 1 : 8, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex raw data
-                vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eUniformTexelBuffer, 8, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex raw data
+                vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eStorageBuffer, 0x80000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex raw data
                 //vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // virtual regions
                 vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // buffer views
                 vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // accessors
@@ -280,7 +286,10 @@ namespace _vt {
                 //vk::DescriptorSetLayoutBinding(5 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex input uniform
                 vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), 
             };
-            vtDevice->_descriptorLayoutMap["vertexInputSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
+
+            const std::vector<vk::DescriptorBindingFlagsEXT> _bindingFlags = { vk::DescriptorBindingFlagBitsEXT::ePartiallyBound, {}, {}, {}, {}, };
+            const auto vkfl = vk::DescriptorSetLayoutBindingFlagsCreateInfoEXT().setPBindingFlags(_bindingFlags.data()).setBindingCount(_bindingFlags.size());
+            vtDevice->_descriptorLayoutMap["vertexInputSet"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPNext(&vkfl).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));
         };
 
         { //

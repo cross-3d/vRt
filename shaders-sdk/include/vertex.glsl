@@ -86,11 +86,12 @@ layout ( binding = 4, set = 1, std430 ) readonly restrict buffer BvhTransformB {
 
 
 #ifdef BVH_CREATION
-layout ( binding = 1, set = 1, std430 )          restrict buffer bvhBoxesB { BTYPE_ bvhNodes[]; };
+layout ( binding = 1, set = 1, std430 )          restrict buffer bvhBoxesB { BTYPE_ bvhNodes_[]; } bInstances[];
 #else
-layout ( binding = 1, set = 1, std430 ) readonly restrict buffer bvhBoxesB { BTYPE_ bvhNodes[]; };
+layout ( binding = 1, set = 1, std430 ) readonly restrict buffer bvhBoxesB { BTYPE_ bvhNodes_[]; } bInstances[];
 #endif
 #endif
+
 
 
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
@@ -105,6 +106,10 @@ int INSTANCE_ID = 0, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
 #define bvhBlockTop bvhBlock_[0] 
 #endif
 
+
+// instanced BVH node
+#define bvhNodes bInstances[nonuniformEXT((currentState==BVH_STATE_TOP?0u:(1u+bvhInstance.bvhBlockID)))].bvhNodes_
+//#define bvhNodes bInstances[nonuniformEXT(0u)].bvhNodes_
 
 
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
@@ -127,6 +132,8 @@ const uint BVH_STATE_TOP = 0, BVH_STATE_BOTTOM = 1;
 const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 const float SFNa = SFN *1.f;
 const float SFOa = SFNa+1.f;
+uint currentState = BVH_STATE_TOP;
+
 
 #ifndef VERTEX_FILLING
 #ifndef BVH_CREATION

@@ -28,24 +28,17 @@ bool isnLeaf(in ivec2 mem) { return mem.x >= 1 && //mem.x!=mem.y &&
 void resetEntry(in bool VALID) {
     VALID = VALID && INSTANCE_ID >= 0;//, MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0, VALID = VALID && MAX_ELEMENTS > 0;
     traverseState.diffOffset = floatBitsToInt(0.f);
-    traverseState.entryIDBase = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.entryID : bvhBlockIn.entryID) : -1;
+    traverseState.entryIDBase = VALID ? BVH_ENTRY : -1;
     [[flatten]] if (currentState == BVH_STATE_BOTTOM || !VALID) {
         traverseState.idx = traverseState.entryIDBase, traverseState.stackPtr = 0, traverseState.pageID = 0, lstack[sidx] = -1;
     };
 };
 
 
-bool validIdxTop(in int idx) {
-    return idx >= 0 && idx > bvhBlockTop.entryID;
-};
-
-bool validIdx(in int idx) {
-    return idx >= 0 && idx >= traverseState.entryIDBase;
-};
-
-bool validIdxIncluse(in int idx) {
-    return validIdx(idx) && idx != bvhBlockTop.entryID;
-};
+bool validIdxTop(in int idx) { return idx >= max(0, bvhBlockTop.entryID+1); };
+bool validIdx(in int idx) { return idx >= max(0, traverseState.entryIDBase); };
+bool validIdxEntry(in int idx) { return idx >= max(0, traverseState.entryIDBase+1); };
+bool validIdxIncluse(in int idx) { return (currentState == BVH_STATE_BOTTOM || idx > bvhBlockTop.entryID) && validIdx(idx); };
 
 
 vec4 uniteBoxLv(in vec4 pt) {

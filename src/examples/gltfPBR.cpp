@@ -341,13 +341,12 @@ namespace rnd {
              VtAcceleratorSetCreateInfo acci = {};
              acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
              acci.coverMat = IdentifyMat4;
-             //acci.coverMat = *((VtMat4*)&optMat);
              acci.maxPrimitives = maxPrimitives;
              acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
              acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
              acci.bvhDataBuffer = BvhDataBuffer;
              acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(1024u);
-             acci.traversingEntryID = 1024u; // this information will known when will traversing 
+             acci.traversingEntryID = 0u; //1024u; // this information will known when will traversing 
              acci.vertexPointingOffset = 0u;
              vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorGeometry);
          };
@@ -428,23 +427,10 @@ namespace rnd {
              //const auto optMat = glm::transpose( glm::inverse(glm::scale(optDensity.xyz())) );
              //const auto optMat = glm::transpose( glm::rotate(glm::radians(60.f), glm::vec3(1.f, 0.f, 0.f)) );
 
-            // create accelerator set in bottom level 
-            VtAcceleratorSetCreateInfo acci = {};
-            acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
-            acci.coverMat = IdentifyMat4;
-            //acci.coverMat = *((VtMat4*)&optMat);
-            acci.maxPrimitives = maxPrimitives;
-            acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
-            acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
-            acci.bvhDataBuffer = BvhDataBuffer;
-            acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(1024u);
-            acci.traversingEntryID = 1024u; // this information will known when will traversing 
-            acci.vertexPointingOffset = 0u;
-
             // create accelerator set in top level 
-            //acci.coverMat = IdentifyMat4;
-            //acci.coverMat = *((VtMat4*)&optMat);
+            VtAcceleratorSetCreateInfo acci = {};
             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_INSTANCE;
+            acci.coverMat = IdentifyMat4;
             acci.maxPrimitives = 1024ull;
             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
             acci.bvhMetaHeadOffset = 0;
@@ -453,9 +439,14 @@ namespace rnd {
             acci.bvhInstanceBuffer = BvhInstancedBuffer;
             acci.bvhInstanceOffset = 0;
             acci.bvhDataBuffer = BvhDataBuffer;
-            acci.bvhDataOffset = 0;
+            acci.bvhDataOffset = 0u;
             acci.traversingEntryID = 0u;
             acci.vertexPointingOffset = 0u;
+
+            // used acceleration structures variations 
+            acci.pStructVariations = &acceleratorGeometry;
+            acci.structVariationCount = 1;
+
             vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorMain);
 
 
@@ -710,7 +701,8 @@ namespace rnd {
          VkDeviceSize fsize = 0ull;
          for (auto B : model.buffers) {
              if (B.data.size() > 0) vrt::vtSetBufferSubData(B.data, VDataMapped, fsize);
-             VDataViews.push_back(deviceQueue->device->logical.createBufferView(vk::BufferViewCreateInfo().setFormat(vk::Format::eR16G16Uint).setBuffer(VkBuffer(VDataBuffer)).setOffset(fsize).setRange(B.data.size())));
+             //VDataViews.push_back(deviceQueue->device->logical.createBufferView(vk::BufferViewCreateInfo().setFormat(vk::Format::eR16G16Uint).setBuffer(VkBuffer(VDataBuffer)).setOffset(fsize).setRange(B.data.size())));
+             VDataViews.push_back({ VDataBuffer, fsize, B.data.size() });
              fsize += B.data.size();
          };
 

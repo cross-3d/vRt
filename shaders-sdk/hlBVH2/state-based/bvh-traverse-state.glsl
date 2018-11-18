@@ -33,7 +33,6 @@ layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYS
 
 // stack system of current BVH traverser
 shared int localStack[WORK_SIZE][localStackSize];
-uint currentState = BVH_STATE_TOP;
 #define lstack localStack[Local_Idx]
 #define sidx  traverseState.stackPtr
 

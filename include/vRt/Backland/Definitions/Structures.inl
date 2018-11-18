@@ -135,7 +135,8 @@ namespace vrt { // store in official namespace
         };
 
         // vertex data sources
-        const VkBufferView * pSourceBuffers = nullptr;
+        //const VkBufferView * pSourceBuffers = nullptr;
+        const VtBufferRegion * pSourceBuffers = nullptr;
         uint32_t sourceBufferCount = 0;
 
         // bindings regions
@@ -241,6 +242,10 @@ namespace vrt { // store in official namespace
 
         VkBuffer bvhMetaHeadBuffer = VK_NULL_HANDLE; VkDeviceSize bvhMetaHeadOffset = 0ull; // buffer, used as header 
         VkBuffer bvhInstanceBuffer = VK_NULL_HANDLE; VkDeviceSize bvhInstanceOffset = 0ull; // will used for top levels 
+
+        // 
+        const VtAcceleratorSet * pStructVariations = nullptr;
+        uint32_t structVariationCount = 0u;
 
         // mat4 of optimization
         VtMat4 coverMat = vrt::IdentifyMat4;

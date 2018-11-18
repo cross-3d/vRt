@@ -13,13 +13,13 @@ namespace _vt {
     };
 
     // also, planned to add support of offsets in buffers 
-    VtResult createVertexInputSet(std::shared_ptr<Device> _vtDevice,  VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& vtVertexInput) {
+    VtResult createVertexInputSet(std::shared_ptr<Device> vtDevice,  VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& vtVertexInput) {
         VtResult result = VK_SUCCESS;
         //auto vtVertexInput = (_vtVertexInput = std::make_shared<VertexInputSet>());
 
-        auto vkDevice = _vtDevice->_device;
+        auto vkDevice = vtDevice->_device;
         vtVertexInput = std::make_shared<VertexInputSet>();
-        vtVertexInput->_device = _vtDevice;
+        vtVertexInput->_device = vtDevice;
         vtVertexInput->_attributeAssembly = info.attributeAssembly;
 
         // 
@@ -41,21 +41,24 @@ namespace _vt {
         vtVertexInput->_uniformBlock.materialAccessor = info.materialAccessor;
 
         // bind input buffer sources
-        const auto vendorName = _vtDevice->_vendorName;
+        const auto vendorName = vtDevice->_vendorName;
         //const auto inputCount = vendorName == VT_VENDOR_INTEL ? 1u : 8u;
-        const auto inputCount = 8u;
-        std::vector<vk::BufferView> sourceBuffers = {};
-        const auto sourceBufferCount = std::min(info.sourceBufferCount, inputCount);
-        for (auto i = 0u; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }
-        for (auto i = sourceBufferCount; i < inputCount; i++) { sourceBuffers.push_back(sourceBuffers[sourceBufferCount-1]); }
+
+        //const auto inputCount = 8u;
+        //std::vector<vk::BufferView> sourceBuffers = {};
+        //const auto sourceBufferCount = std::min(info.sourceBufferCount, inputCount);
+        //for (auto i = 0u; i < sourceBufferCount; i++) { sourceBuffers.push_back(info.pSourceBuffers[i]); }
+        //for (auto i = sourceBufferCount; i < inputCount; i++) { sourceBuffers.push_back(sourceBuffers[sourceBufferCount-1]); }
 
         if (!info.bitfieldDetail.secondary) {
             vtVertexInput->_descriptorSetGenerator = [=]() { // create caller for generate descriptor set
                 if (!vtVertexInput->_descriptorSet) {
+                    auto vtDevice = vtVertexInput->_device;
+                    auto vkDevice = vtDevice->_device;
 
                     // create descriptor sets
-                    std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
-                    const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                    std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
+                    const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                     vtVertexInput->_descriptorSet = std::move(dsc[0]);
 
                     // write descriptors
@@ -70,14 +73,14 @@ namespace _vt {
                     if (!d6.buffer) {
                         VtDeviceBufferCreateInfo dbi = {};
                         dbi.bufferSize = 16ull * sizeof(float);
-                        createBuffer(_vtDevice, dbi, vtVertexInput->_inlineTransformBuffer); // TODO - add support of constant shared buffer
+                        createBuffer(vtDevice, dbi, vtVertexInput->_inlineTransformBuffer); // TODO - add support of constant shared buffer
                         d6.setBuffer(VkBuffer(*vtVertexInput->_inlineTransformBuffer));
                     };
 
                     // 
                     const auto writeTmpl = vk::WriteDescriptorSet(vtVertexInput->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                     std::vector<vk::WriteDescriptorSet> writes = {
-                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(inputCount).setPTexelBufferView(sourceBuffers.data()),
+                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setDescriptorCount(info.sourceBufferCount).setPBufferInfo((vk::DescriptorBufferInfo*)info.pSourceBuffers),
                         //vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(&d1),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo(&d2),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo(&d3),

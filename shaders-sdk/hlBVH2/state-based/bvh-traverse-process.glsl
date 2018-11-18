@@ -3,12 +3,12 @@
 int traverseBVH2( in bool validTop ) {
     //, traverseState.idx = -1, traverseState.entryIDBase = -1;
 
-    {
-        traverseState.idx = (traverseState.entryIDBase = bvhBlockTop.entryID), lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
+    {   INSTANCE_ID = 0, LAST_INSTANCE = -1, currentState = uint(bvhBlockTop.primitiveCount <= 1);
+        traverseState.idx = (traverseState.entryIDBase = BVH_ENTRY), lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
         traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0, traverseState.defElementID = 0;
     };
 
-    INSTANCE_ID = 0, LAST_INSTANCE = -1, currentState = uint(bvhBlockTop.primitiveCount <= 1);
+    
     initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     
     [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {  // two loop based BVH traversing
@@ -53,12 +53,12 @@ int traverseBVH2( in bool validTop ) {
             // if all threads had intersection, or does not given any results, break for processing
             //traverseState.idx = primary;
             [[flatten]] if (!validIdx(traverseState.idx)) { loadStack(traverseState.idx); }; // load from stack
-            IFANY (traverseState.defElementID > 0 || !validIdxIncluse(traverseState.idx)) { break; };
+            IFANY (traverseState.defElementID > 0 || !validIdxEntry(traverseState.idx)) { break; };
         }}};
         
         // every-step solving 
         [[flatten]] IFANY (traverseState.defElementID > 0) { doIntersection( true ); };
-        [[flatten]] if (!validIdx(traverseState.idx) && validIdxTop(traverseState.idxTop) && traverseState.idx != bvhBlockTop.entryID) {
+        [[flatten]] if (!validIdxEntry(traverseState.idx) && validIdxTop(traverseState.idxTop) && traverseState.idx != bvhBlockTop.entryID) {
             switchStateTo(BVH_STATE_TOP, INSTANCE_ID, true);
         };
         [[flatten]] if (!validIdxIncluse(traverseState.idx)) { break; };

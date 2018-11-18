@@ -30,6 +30,9 @@ namespace vrt {
         {0.f,0.f,1.f,0.f},
     } };
 
+    // 
+    //struct VtBufferRegion { VkBuffer buffer = VK_NULL_HANDLE; VkDeviceSize offset = 0ull, range = 4ull; };
+    using VtBufferRegion = VkDescriptorBufferInfo;
 
     // in future planned custom ray structures support
     // in current moment we will using 32-byte standard structuring
