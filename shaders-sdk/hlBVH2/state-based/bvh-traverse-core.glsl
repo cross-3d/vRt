@@ -21,7 +21,7 @@ struct PrimitiveState {
 // BVH traversing itself 
 bool isLeaf(in ivec2 mem) { return mem.x >= 1 && mem.x==mem.y && (currentState == BVH_STATE_TOP || mem.x <= traverseState.maxElements); };
 bool isnLeaf(in ivec2 mem) { return mem.x >= 1 && //mem.x!=mem.y && 
-    (mem.x&1)==1 && (mem.y-mem.x)==1; // additional checking;
+    ((mem.x&1)==1 && (mem.y-mem.x)==1); // additional checking;
 };
 
 
@@ -37,8 +37,14 @@ void resetEntry(inout bool VALID) {
 
 bool validIdxTop    (inout int idx) { return idx >= 0 && idx  > bvhBlockTop.entryID; };
 bool validIdx       (inout int idx) { return idx >= 0 && idx >= traverseState.entryIDBase; };
-bool validIdxEntry  (inout int idx) { return idx >= 0 && idx  > traverseState.entryIDBase; };
+bool validIdxEntry  (inout int idx) { return validIdx(idx) && idx != traverseState.entryIDBase; };
 bool validIdxIncluse(inout int idx) { return validIdx(idx) && (currentState == BVH_STATE_BOTTOM || idx != traverseState.entryIDBase); };
+
+
+//bool validIdx  (inout int idx) { return idx >= 0; };
+//#define validIdxTop     validIdx
+//#define validIdxEntry   validIdx
+//#define validIdxIncluse validIdx
 
 
 vec4 uniteBoxLv(in vec4 pt) {
@@ -111,26 +117,26 @@ void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
 // triangle intersection, when it found
 void doIntersection( inout bool switched ) {
     const int elementID = exchange(traverseState.defElementID,0)-1;
-    const bool isvalid = elementID >= 0; //&& elementID < traverseState.maxElements;
     const uint CSTATE = currentState;
-
-    [[flatten]] if (isvalid && CSTATE == BVH_STATE_BOTTOM) {
+    const bool PVALID = elementID >= 0, IsTop = (CSTATE == BVH_STATE_TOP), IsBottom = !IsTop;
+    
+    [[flatten]] if (PVALID && IsBottom) {
         //vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
-        bool isvalid = isvalid; vec2 uv = vec2(0.f.xx);
+        bool isvalid = true; vec2 uv = vec2(0.f.xx);
         const float d = intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid);
 
         //const float tdiff = nearT-d, tmax = SFN;
         //[[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
             //[[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
-            [[flatten]] if ( isvalid && d.x <= primitiveState.lastIntersection.z && INSTANCE_ID >= 0 ) {
+            [[flatten]] if ( isvalid && d.x <= primitiveState.lastIntersection.z ) {
                 primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
             };
         //};
     };
-
-    const bool IsTop = (CSTATE == BVH_STATE_TOP), IsBottom = !IsTop;
-    [[flatten]] if ( bvhBlockTop.primitiveCount > 1 && (IsTop ? isvalid : !validIdxEntry(traverseState.idx) && validIdxTop(traverseState.idxTop)) ) {
-        [[flatten]] if ( (IsTop || traverseState.idx != bvhBlockTop.entryID) ) { switchStateTo( uint(IsTop), (IsTop ? elementID : -1), true), switched = true; };
+    
+    [[flatten]] if ( IsTop ? PVALID : !validIdxEntry(traverseState.idx) ) {
+        [[flatten]] if ( IsTop ? traverseState.idx != traverseState.entryIDBase : validIdxTop(traverseState.idxTop) )
+            { switchStateTo( uint(IsTop), (IsTop ? elementID : -1), true), switched = true; };
     };
 };
 
