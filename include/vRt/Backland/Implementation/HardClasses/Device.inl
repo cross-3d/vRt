@@ -259,7 +259,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eSampledImage, VRT_MAX_IMAGES, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // textures
                 vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eSampler, VRT_MAX_SAMPLERS, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // samplers
                 vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // material buffer
-                vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // virtual texture and sampler combinations
+                vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eUniformTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // virtual texture and sampler combinations
                 vk::DescriptorSetLayoutBinding(4 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // material set uniform 
             };
 

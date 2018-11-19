@@ -11,10 +11,11 @@ const uint MAX_IMAGES = 256, MAX_SAMPLERS = 16;
 // alternate of https://mynameismjp.wordpress.com/2016/03/25/bindless-texturing-for-deferred-rendering-and-decals/
 layout ( binding = 0, set = SETS_DESC_SET_ID ) uniform texture2D images[];
 layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[];
+layout ( binding = 3, set = SETS_DESC_SET_ID ) uniform usamplerBuffer vtextures;
 
 // material set (in main descriptor set)
 layout ( binding = 2, set = SETS_DESC_SET_ID, std430 ) readonly restrict buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
-layout ( binding = 3, set = SETS_DESC_SET_ID, std430 ) readonly restrict buffer VT_COMBINED { u16vec2 vtexures[]; }; // TODO: replace by native combinations
+//layout ( binding = 3, set = SETS_DESC_SET_ID, std430 ) readonly restrict buffer VT_COMBINED { u16vec2 vtextures[]; }; // TODO: replace by native combinations
 layout ( binding = 4, set = SETS_DESC_SET_ID, std430 ) readonly restrict buffer VT_MATERIAL_INFO { uint materialCount, materialOffset; };
 
 
@@ -25,18 +26,17 @@ int matID = -1;
 bool validateTexture(in uint tbinding) { return tbinding > 0u && tbinding != -1u && int(tbinding) > 0; };
 
 // also fixes AMD Vega texturing issues with nonuniformEXT
-//#define sampler2Dv(m) sampler2D(images[vtexures[m].x-1], samplers[vtexures[m].y-1])
+//#define sampler2Dv(m) sampler2D(images[vtextures[m].x-1], samplers[vtextures[m].y-1])
 //#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(nonuniformEXT(tbinding-1)), tcoord, 0)
 
 
 #ifdef ENABLE_NON_UNIFORM_SAMPLER
-#define sampler2Dv(m) sampler2D(images[nonuniformEXT(vtexures[m].x-1)],samplers[nonuniformEXT(vtexures[m].y-1)]) // TODO: replace by native combinations
-#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(nonuniformEXT(tbinding-1)),tcoord,0)
+#define sampler2Dv(m) sampler2D(images[nonuniformEXT(m.x-1)],samplers[nonuniformEXT(m.y-1)]) // 
 #else
-#define sampler2Dv(m) sampler2D(images[vtexures[m].x-1],samplers[vtexures[m].y-1]) // TODO: replace by native combinations
-#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(tbinding-1),tcoord,0)
+#define sampler2Dv(m) sampler2D(images[m.x-1],samplers[m.y-1]) // 
 #endif
 
+#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(texelFetch(vtextures,int(tbinding)-1)),tcoord,0)
 
 // new texture fetcher with corner sampling 
 vec4 fetchTexNG(in uint tbinding, in vec2 ntxc) {
@@ -48,12 +48,12 @@ vec4 fetchTexNG(in uint tbinding, in vec2 ntxc) {
     for (uint i=0;i<Wave_Size_RT;i++) { // critical section, due AMD hardware has issues
         i = max(i, Wave_Size_RT-(1u+subgroupBallotFindMSB(subgroupBallot(!found))) );
         [[flatten]] if (!found && subgroupBroadcast(tbinding, i) == tbinding) {
-            szi = textureSize(images[vtexures[tbinding-1].x-1],0), found = true;
+            szi = textureSize(images[vtextures[tbinding-1].x-1],0), found = true;
         };
         [[flatten]] if (subgroupAll(found)) break;
     };
 #else
-    const ivec2 szi = textureSize(images[nonuniformEXT(vtexures[tbinding-1].x-1)],0);
+    const ivec2 szi = textureSize(images[nonuniformEXT(vtextures[tbinding-1].x-1)],0);
 #endif
     
     // shifting by half of texel may used in Mineways models
