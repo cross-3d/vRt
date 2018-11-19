@@ -14,12 +14,11 @@
 #define fpOne 1.f
 #endif
 
-//#if defined(ENABLE_VEGA_INSTRUCTION_SET) || defined(ENABLE_TURING_INSTRUCTION_SET) // prefer to run in Turing's too
-//#ifdef ENABLE_VEGA_INSTRUCTION_SET
+#if defined(ENABLE_VEGA_INSTRUCTION_SET) || defined(ENABLE_TURING_INSTRUCTION_SET) // prefer to run in Turing's too
   const  lowp  int localStackSize = 8, pageCount = 4; // 256-bit global memory stack pages
-//#else
-//  const  lowp  int localStackSize = 4, pageCount = 8; // 128-bit capable 
-//#endif
+#else
+  const  lowp  int localStackSize = 4, pageCount = 8; // 128-bit capable 
+#endif
   //const highp uint maxIterations  = 8192u;
   const highp uint maxIterations  = 16384u;
 
@@ -32,6 +31,7 @@ layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYS
 
 
 // stack system of current BVH traverser
+//int lstack[localStackSize];
 shared int localStack[WORK_SIZE][localStackSize];
 #define lstack localStack[Local_Idx]
 #define sidx  traverseState.stackPtr
