@@ -2,24 +2,23 @@
 // 
 int traverseBVH2( in bool validTop ) {
     {   currentState = uint(bvhBlockTop.primitiveCount <= 1), LAST_INSTANCE = -1, INSTANCE_ID = currentState == BVH_STATE_BOTTOM ? 0 : -1;
-        traverseState.idx = (traverseState.entryIDBase = BVH_ENTRY), lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
-        traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0, traverseState.defElementID = 0, traverseState.saved = false;
-        traverseState.topLevelEntry = (currentState == BVH_STATE_TOP ? traverseState.idx : -1);
+        stackState = BvhSubState(traverseState.entryIDBase = BVH_ENTRY, mint_t(0), mint_t(0)), resrvState = BvhSubState(-1, mint_t(0), mint_t(0));
+        traverseState.topLevelEntry = (currentState == BVH_STATE_TOP ? stackState.idx : resrvState.idx);
+        initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     };
-    initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     
     // two loop based BVH traversing
-    [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) 
+    [[flatten]] if (validIdx(stackState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) 
     {
-        //[[flatten]] if (validIdx(traverseState.idx)) //[[dependency_infinite]] for (;hi<maxIterations;hi++) 
+        //[[flatten]] if (validIdx(stackState.idx)) //[[dependency_infinite]] for (;hi<maxIterations;hi++) 
         {
 #ifdef ENABLE_MULTI_BVH // when enabled, can cause big performance drops
             const uint lastDataID=uint(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhDataID));
 #endif
 
-            #define bvhNode bvhNodes[traverseState.idx]
-            const ivec2 cnode = validIdx(traverseState.idx) ? bvhNode.meta.xy : (0).xx;
-            [[flatten]] if ( isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x, traverseState.idx = -1; } else  // if leaf, defer for intersection 
+            #define bvhNode bvhNodes[stackState.idx]
+            const ivec2 cnode = validIdx(stackState.idx) ? bvhNode.meta.xy : (0).xx;
+            [[flatten]] if ( isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x, stackState.idx = -1; } else  // if leaf, defer for intersection 
             [[flatten]] if (isnLeaf(cnode.xy)) { // if not leaf, intersect with nodes
                 #define bbox2x bvhNode.cbox
 
@@ -38,7 +37,7 @@ int traverseBVH2( in bool validTop ) {
                 [[flatten]] if (fmask > 0 && fmask != -1) {
                     int secondary = -1;
                     [[flatten]] if (fmask == 3) { fmask &= true_<<pbool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
-                    traverseState.idx = traverseState.entryIDBase + (cnode.x^int(fmask&1u));
+                    stackState.idx = traverseState.entryIDBase + (cnode.x^int(fmask&1u));
 
                     // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse
                     // also, can reduce useless stack storing, and make more subgroup friendly triangle intersections
@@ -47,19 +46,19 @@ int traverseBVH2( in bool validTop ) {
                         [[flatten]] if (isLeaf(snode)) { traverseState.defElementID = VTX_PTR + snode.x; secondary = -1; }; 
                     };
                     [[flatten]] if (secondary > 0) storeStack(traverseState.entryIDBase+secondary);
-                } else { traverseState.idx = -1; };
+                } else { stackState.idx = -1; };
             };
             
             // if all threads had intersection, or does not given any results, break for processing
-            //traverseState.idx = primary;
-            [[flatten]] if (!validIdxEntry(traverseState.idx)) { loadStack(traverseState.idx); }; // load from stack
-            //IFANY (!validIdxEntry(traverseState.idx) || traverseState.defElementID > 0) { break; };
+            //stackState.idx = primary;
+            [[flatten]] if (!validIdxEntry(stackState.idx)) { loadStack(stackState.idx); }; // load from stack
+            //IFANY (!validIdxEntry(stackState.idx) || traverseState.defElementID > 0) { break; };
         };
         
         // every-step solving 
         bool stateSwitched = false; 
-        IFANY (!validIdxEntry(traverseState.idx) || traverseState.defElementID > 0) doIntersection( stateSwitched );
-        [[flatten]] if (!validIdxIncluse(traverseState.idx) || (!stateSwitched && (traverseState.idx == traverseState.entryIDBase))) { break; };
+        IFANY (!validIdxEntry(stackState.idx) || traverseState.defElementID > 0) doIntersection( stateSwitched );
+        [[flatten]] if (!validIdxIncluse(stackState.idx) || (!stateSwitched && (stackState.idx == traverseState.entryIDBase))) { break; };
     };
     return floatBitsToInt(primitiveState.lastIntersection.w);
 };

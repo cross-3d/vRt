@@ -24,28 +24,18 @@ bool isnLeaf(in ivec2 mem) { return mem.x >= 1 && //mem.x!=mem.y &&
     ((mem.x&1)==1 && (mem.y-mem.x)==1); // additional checking;
 };
 
-
-void resetEntry(inout bool VALID) {
-    VALID = VALID && (currentState == BVH_STATE_TOP || INSTANCE_ID >= 0); //MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0, VALID = VALID && MAX_ELEMENTS > 0;
-    traverseState.entryIDBase = VALID ? BVH_ENTRY : -1;
-    [[flatten]] if (currentState == BVH_STATE_BOTTOM || !VALID) {
-        traverseState.idx = traverseState.entryIDBase, traverseState.stackPtr = 0, traverseState.pageID = 0, lstack[sidx] = -1;
-    };
+void resetEntry(in bool VALID) {
+    { traverseState.entryIDBase = (VALID && (currentState == BVH_STATE_TOP || INSTANCE_ID >= 0)) ? BVH_ENTRY : -1; };
+    [[flatten]] if (currentState == BVH_STATE_BOTTOM) { stackState = BvhSubState( traverseState.entryIDBase, mint_t(0), mint_t(0) ); };
 };
 
+// 
+bool validIdxTop    (in    int idx) { return (currentState == BVH_STATE_TOP || (idx >= 0 && idx > traverseState.topLevelEntry)) && ( traverseState.topLevelEntry >= 0 ); };
+bool validIdx       (inout int idx) { return idx >= 0 && idx >= traverseState.entryIDBase; };
+bool validIdxEntry  (inout int idx) { return validIdx(idx) && idx != traverseState.entryIDBase; };
+bool validIdxIncluse(inout int idx) { return (currentState != BVH_STATE_TOP || idx != traverseState.entryIDBase) && validIdx(idx); };
 
-bool validIdxTop    (in int idx) { return ( traverseState.topLevelEntry >= 0 ) && ( currentState == BVH_STATE_TOP || (idx >= 0 && idx > traverseState.topLevelEntry) ); };
-bool validIdx       (in int idx) { return idx >= 0 && idx >= traverseState.entryIDBase; };
-bool validIdxEntry  (in int idx) { return validIdx(idx) && idx != traverseState.entryIDBase; };
-bool validIdxIncluse(in int idx) { return (currentState != BVH_STATE_TOP || idx != traverseState.entryIDBase) && validIdx(idx); };
-
-
-//bool validIdx  (inout int idx) { return idx >= 0; };
-//#define validIdxTop     validIdx
-//#define validIdxEntry   validIdx
-//#define validIdxIncluse validIdx
-
-
+// 
 vec4 uniteBoxLv(in vec4 pt) {
 #ifdef EXPERIMENTAL_UNORM16_BVH
     return (currentState == BVH_STATE_TOP ? uniteBoxTop(pt) : uniteBox(pt));
@@ -77,37 +67,22 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 
     // initial traversing state
 #ifdef EXPERIMENTAL_UNORM16_BVH
-    [[flatten]] if (valid) {
-        valid = intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe);
-    };
+    resetEntry(intersectCubeF32Single((torig*dirproj).xyz, dirproj.xyz, bsgn, bndsf2, nfe));
+#else
+    resetEntry(true);
 #endif
-    resetEntry(valid);
 
     // traversing inputs
     primitiveState.orig = torig, traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(torig * traverseState.directInv);
 };
 
-// 
-void triggerSwitch(inout uint stateTo){
-    currentState = stateTo, initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
-};
-
 // kill switch when traversing 
+void triggerSwitch(inout uint stateTo) { currentState = stateTo, initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION); };
 void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
     [[flatten]] if (currentState != stateTo) {
         const bool IsTop = (stateTo == BVH_STATE_TOP), IsBottom = !IsTop;
-
-        [[flatten]] if (IsTop) {
-            traverseState.idx = traverseState.idxTop, traverseState.stackPtr = traverseState.stackPtrTop, traverseState.pageID = traverseState.pageIDTop, traverseState.saved = false;
-            traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0;
-            lstack = traverseCache.stack[_cacheID];
-        } else 
-
-        [[flatten]] if (IsBottom) {
-            traverseState.idxTop = traverseState.idx, traverseState.stackPtrTop = traverseState.stackPtr, traverseState.pageIDTop = traverseState.pageID, traverseState.saved = true;
-            traverseCache.stack[_cacheID] = lstack;
-        };
-
+        [[flatten]] if (IsTop) { lstack = traverseCache.stack[cacheID]; } else { traverseCache.stack[cacheID] = lstack; };
+        [[flatten]] if (IsTop) { stackState = resrvState; } else { resrvState = stackState; };
         INSTANCE_ID = instanceTo, triggerSwitch(stateTo);
     };
 };
@@ -132,10 +107,8 @@ void doIntersection( inout bool switched ) {
         //};
     };
     
-    [[flatten]] if ( IsTop ? PVALID : !validIdxEntry(traverseState.idx) ) {
-        [[flatten]] if ( validIdxTop(IsTop ? traverseState.idx : traverseState.idxTop) )
-            { switchStateTo( uint(IsTop), (IsTop ? elementID : -1), true), switched = true; };
-    };
+    [[flatten]] if ((IsTop ? PVALID : !validIdxEntry(stackState.idx)) && validIdxTop(IsTop ? stackState.idx : resrvState.idx)) 
+        { switchStateTo( uint(IsTop), (IsTop ? elementID : -1), true), switched = true; };
 };
 
 // 
