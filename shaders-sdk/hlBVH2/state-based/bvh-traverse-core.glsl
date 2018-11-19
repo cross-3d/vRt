@@ -27,7 +27,6 @@ bool isnLeaf(in ivec2 mem) { return mem.x >= 1 && //mem.x!=mem.y &&
 
 void resetEntry(inout bool VALID) {
     VALID = VALID && (currentState == BVH_STATE_TOP || INSTANCE_ID >= 0); //MAX_ELEMENTS = VALID ? (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveCount : bvhBlockIn.primitiveCount) : 0, VALID = VALID && MAX_ELEMENTS > 0;
-    traverseState.diffOffset = floatBitsToInt(0.f);
     traverseState.entryIDBase = VALID ? BVH_ENTRY : -1;
     [[flatten]] if (currentState == BVH_STATE_BOTTOM || !VALID) {
         traverseState.idx = traverseState.entryIDBase, traverseState.stackPtr = 0, traverseState.pageID = 0, lstack[sidx] = -1;
@@ -35,10 +34,10 @@ void resetEntry(inout bool VALID) {
 };
 
 
-bool validIdxTop    (inout int idx) { return idx >= 0 && idx  > bvhBlockTop.entryID; };
-bool validIdx       (inout int idx) { return idx >= 0 && idx >= traverseState.entryIDBase; };
-bool validIdxEntry  (inout int idx) { return validIdx(idx) && idx != traverseState.entryIDBase; };
-bool validIdxIncluse(inout int idx) { return validIdx(idx) && (currentState == BVH_STATE_BOTTOM || idx != traverseState.entryIDBase); };
+bool validIdxTop    (in int idx) { return ( traverseState.topLevelEntry >= 0 ) && ( currentState == BVH_STATE_TOP || (idx >= 0 && idx > traverseState.topLevelEntry) ); };
+bool validIdx       (in int idx) { return idx >= 0 && idx >= traverseState.entryIDBase; };
+bool validIdxEntry  (in int idx) { return validIdx(idx) && idx != traverseState.entryIDBase; };
+bool validIdxIncluse(in int idx) { return (currentState != BVH_STATE_TOP || idx != traverseState.entryIDBase) && validIdx(idx); };
 
 
 //bool validIdx  (inout int idx) { return idx >= 0; };
@@ -85,8 +84,7 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
     resetEntry(valid);
 
     // traversing inputs
-    traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(vec4(fma(fvec4_(torig), traverseState.directInv, ftype_(intBitsToFloat(traverseState.diffOffset)).xxxx)));
-    primitiveState.orig = fma(primitiveState.orig, traverseState.diffOffset.xxxx, torig);
+    primitiveState.orig = torig, traverseState.directInv = fvec4_(dirproj), traverseState.minusOrig = fvec4_(torig * traverseState.directInv);
 };
 
 // 
@@ -135,7 +133,7 @@ void doIntersection( inout bool switched ) {
     };
     
     [[flatten]] if ( IsTop ? PVALID : !validIdxEntry(traverseState.idx) ) {
-        [[flatten]] if ( IsTop ? traverseState.idx != traverseState.entryIDBase : validIdxTop(traverseState.idxTop) )
+        [[flatten]] if ( validIdxTop(IsTop ? traverseState.idx : traverseState.idxTop) )
             { switchStateTo( uint(IsTop), (IsTop ? elementID : -1), true), switched = true; };
     };
 };

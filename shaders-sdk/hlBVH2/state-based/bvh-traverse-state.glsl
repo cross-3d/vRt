@@ -14,12 +14,12 @@
 #define fpOne 1.f
 #endif
 
-#if defined(ENABLE_VEGA_INSTRUCTION_SET) || defined(ENABLE_TURING_INSTRUCTION_SET) // prefer to run in Turing's too
+//#if defined(ENABLE_VEGA_INSTRUCTION_SET) || defined(ENABLE_TURING_INSTRUCTION_SET) // prefer to run in Turing's too
 //#ifdef ENABLE_VEGA_INSTRUCTION_SET
   const  lowp  int localStackSize = 8, pageCount = 4; // 256-bit global memory stack pages
-#else
-  const  lowp  int localStackSize = 4, pageCount = 8; // 128-bit capable 
-#endif
+//#else
+//  const  lowp  int localStackSize = 4, pageCount = 8; // 128-bit capable 
+//#endif
   //const highp uint maxIterations  = 8192u;
   const highp uint maxIterations  = 16384u;
 
@@ -39,7 +39,7 @@ shared int localStack[WORK_SIZE][localStackSize];
 // BVH traversing state
 #define _cacheID ((gl_WorkGroupSize.x*gl_NumWorkGroups.x*WID)+gl_GlobalInvocationID.x)
 struct BvhTraverseState {
-    int maxElements, entryIDBase, diffOffset, defElementID; bool saved;
+    int maxElements, entryIDBase, topLevelEntry, defElementID; bool saved;
     int idx;    lowp int stackPtr   , pageID;
     int idxTop; lowp int stackPtrTop, pageIDTop;
     fvec4_ directInv, minusOrig;
@@ -51,7 +51,6 @@ struct BvhTraverseState {
 #define CACHE_BLOCK (_cacheID*pageCount)
 #define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
 
-//#define VTX_PTR (currentState == BVH_STATE_TOP ? bvhBlockTop.primitiveOffset : bvhBlockIn.primitiveOffset)
 #define VTX_PTR 0
 int cmpt(in int ts){ return clamp(ts,0,localStackSize-1); };
 
