@@ -346,7 +346,7 @@ namespace rnd {
              acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
              acci.bvhDataBuffer = BvhDataBuffer;
              acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(1024u);
-             acci.traversingEntryID = 0u;//1024u; // this information will known when will traversing 
+             acci.traversingEntryID = 1024u; // this information will known when will traversing 
              acci.vertexPointingOffset = 0u;
              vtCreateAccelerator(deviceQueue->device->rtDev, &acci, &acceleratorGeometry);
          };
@@ -370,7 +370,7 @@ namespace rnd {
                      //glm::mat4 movedFW = glm::transpose(glm::translate(glm::vec3(x*200.f, 0.f, z*200.f)));
                      BvhInstancedData.push_back(VtBvhInstance{}); auto & BvhInstanceRef = BvhInstancedData[BvhInstancedData.size() - 1];
                      memcpy(&BvhInstanceRef.transformIn, &movedFW, sizeof(VtMat3x4));
-                     BvhInstanceRef.bvhDataID = 0u;
+                     BvhInstanceRef.bvhDataID = -1;
                      BvhInstanceRef.bvhBlockID = 0u;
 
                      RTXInstancedData.push_back(VtRTXInstance{}); auto & RTXInstanceRef = RTXInstancedData[RTXInstancedData.size() - 1];

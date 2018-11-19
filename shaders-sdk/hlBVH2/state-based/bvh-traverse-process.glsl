@@ -5,15 +5,18 @@ int traverseBVH2( in bool validTop ) {
         traverseState.idx = (traverseState.entryIDBase = BVH_ENTRY), lstack[traverseState.stackPtr = 0] = -1, traverseState.pageID =  0, 
         traverseState.saved = false, traverseState.idxTop = -1, traverseState.stackPtrTop = 0, traverseState.pageIDTop = 0, traverseState.defElementID = 0;
     };
-    initTraversing(validTop, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
+    initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     
     // two loop based BVH traversing
-    [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) {
-        [[flatten]] if (validIdx(traverseState.idx)) {
-        { [[dependency_infinite]] for (;hi<maxIterations;hi++) {
+    [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) 
+    {
+        [[flatten]] if (validIdx(traverseState.idx)) [[dependency_infinite]] for (;hi<maxIterations;hi++) 
+        {
 
-            //int primary = -1; 
+#ifdef ENABLE_MULTI_BVH // when enabled, can cause big performance drops
             const uint lastDataID=uint(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhDataID));
+#endif
+
             #define bvhNode bvhNodes[traverseState.idx]
             const ivec2 cnode = validIdx(traverseState.idx) ? bvhNode.meta.xy : (0).xx;
             [[flatten]] if ( isLeaf(cnode.xy)) { traverseState.defElementID = VTX_PTR + cnode.x; traverseState.idx = -1; } else  // if leaf, defer for intersection 
@@ -51,12 +54,11 @@ int traverseBVH2( in bool validTop ) {
             //traverseState.idx = primary;
             [[flatten]] if (!validIdxEntry(traverseState.idx)) { loadStack(traverseState.idx); }; // load from stack
             IFANY (!validIdxEntry(traverseState.idx) || traverseState.defElementID > 0) { break; };
-        }}};
+        };
         
         // every-step solving 
         bool stateSwitched = false; doIntersection( stateSwitched );
-        [[flatten]] if (!validIdxIncluse(traverseState.idx) || (!stateSwitched && traverseState.idx <= traverseState.entryIDBase)) { break; };
+        [[flatten]] if (!validIdxIncluse(traverseState.idx) || (!stateSwitched && (traverseState.idx == traverseState.entryIDBase || traverseState.idx == bvhBlockTop.entryID))) { break; };
     };
-    
     return floatBitsToInt(primitiveState.lastIntersection.w);
 };

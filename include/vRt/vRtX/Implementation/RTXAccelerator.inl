@@ -159,7 +159,7 @@ namespace _vt {
             rayPipelineInfo.basePipelineIndex = 0;
             rayPipelineInfo.maxRecursionDepth = 1;
 
-            rtxResult = vkCreateRayTracingPipelinesNV(*device, {}, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNV);
+            rtxResult = vkCreateRayTracingPipelinesNV(*device, *device, 1, &rayPipelineInfo, nullptr, &_intersectionPipelineNV);
             if (rtxResult == VK_SUCCESS) {
                 //rtxResult = vkGetRayTracingShaderGroupHandlesNV(*device, _intersectionPipelineNV, 0, groups.size(), groups.size()*_raytracingProperties.shaderGroupHandleSize, _sbtDebugData);
                 rtxResult = vkGetRayTracingShaderGroupHandlesNV(*device, _intersectionPipelineNV, 0, groups.size(), groups.size()*_rayTracingNV.shaderGroupHandleSize, _sbtBuffer->_hostMapped());

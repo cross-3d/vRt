@@ -56,17 +56,17 @@ struct BvhTraverseState {
 int cmpt(in int ts){ return clamp(ts,0,localStackSize-1); };
 
 void loadStack(inout int rsl) {
-    [[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0 ) { // make store/load deferred 
+    {[[flatten]] if (traverseState.stackPtr <= 0 && traverseState.pageID > 0 ) { // make store/load deferred 
         lstack = traverseCache.pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (--traverseState.pageID)]; traverseState.stackPtr = localStackSize;
-    };
-    [[flatten]] if (sidx > 0) { rsl = exchange(lstack[cmpt(--sidx)],-1); };
+    };};
+    {[[flatten]] if (sidx > 0) { rsl = exchange(lstack[cmpt(--sidx)],-1); };};
 };
 
 void storeStack(in int rsl) {
-    [[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount ) { // make store/load deferred 
+    {[[flatten]] if (traverseState.stackPtr >= localStackSize && traverseState.pageID < pageCount ) { // make store/load deferred 
         traverseCache.pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (traverseState.pageID++)] = lstack; traverseState.stackPtr = 0;
-    };
-    [[flatten]] if (sidx < localStackSize) { lstack[cmpt(sidx++)] = rsl; };
+    };};
+    {[[flatten]] if (sidx < localStackSize) { lstack[cmpt(sidx++)] = rsl; };};
 };
 
 

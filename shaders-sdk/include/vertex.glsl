@@ -103,15 +103,18 @@ const float SFOa = SFNa+1.f;
 uint currentState = BVH_STATE_TOP; const uint lastDataID = 0u;
  int INSTANCE_ID = -1, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
 
+#define NUNIFORM_PROXY nonuniformEXT
+//#define NUNIFORM_PROXY  
+
 // instanced BVH node
 #define bvhInstance bvhInstance_[INSTANCE_ID]
 #define instanceTransform transformData_[INSTANCE_ID]
 #define bvhBlockTop bvhBlockState_[0].data[0]
-#define bvhBlockIn  bvhBlockState_[nonuniformEXT(currentState)].data[bvhInstance.bvhBlockID*currentState]
+#define bvhBlockIn  bvhBlockState_[NUNIFORM_PROXY(currentState)].data[bvhInstance.bvhBlockID*currentState]
 
-//#define bvhNodes bInstances[nonuniformEXT(uint(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhDataID)))].bvhNodes_
-  #define bvhNodes bInstances[nonuniformEXT(lastDataID)].bvhNodes_
-//#define bvhNodes bInstances[nonuniformEXT(0u)].bvhNodes_
+//#define bvhNodes bInstances[NUNIFORM_PROXY(uint(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhDataID)))].bvhNodes_
+  #define bvhNodes bInstances[NUNIFORM_PROXY(lastDataID)].bvhNodes_
+//#define bvhNodes bInstances[NUNIFORM_PROXY(0u)].bvhNodes_
 
 // instanced BVH entry
 #define BVH_ENTRY bvhBlockIn.entryID

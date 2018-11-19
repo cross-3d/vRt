@@ -106,8 +106,7 @@ namespace _vt {
         auto _device = vk::Device(vtDevice->_device);
 
         // create default pipeline cache
-        //auto vkPipelineCache = VkPipelineCache(_device.createPipelineCache(vk::PipelineCacheCreateInfo()));
-        vtDevice->_pipelineCache = {};//vkPipelineCache;
+        vtDevice->_pipelineCache = _device.createPipelineCache(vk::PipelineCacheCreateInfo());
 
         // make descriptor pool
         constexpr const auto mult = 0x800u;
