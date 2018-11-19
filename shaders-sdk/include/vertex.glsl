@@ -197,11 +197,17 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 // compatible with AMD radeon min3 and max3
 
 bool intersectCubeF32Single(in vec3 orig, in vec3 dr, in bvec4 sgn, in mat3x2 tMinMax, inout vec4 nfe) 
-{ nfe = INFINITY.xxxx; // indefined distance
-
-    // calculate intersection
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec2(fma(tMinMax[i], dr[i].xx, orig[i].xx));
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = vec2(min(tMinMax[i].x, tMinMax[i].y), max(tMinMax[i].x, tMinMax[i].y));
+{
+    tMinMax = mat3x2(
+        fma(tMinMax[0], dr.xx, orig.xx), 
+        fma(tMinMax[1], dr.yy, orig.yy), 
+        fma(tMinMax[2], dr.zz, orig.zz)
+    );
+    tMinMax = mat3x2(
+        vec2(min(tMinMax[0].x, tMinMax[0].y), max(tMinMax[0].x, tMinMax[0].y)), 
+        vec2(min(tMinMax[1].x, tMinMax[1].y), max(tMinMax[1].x, tMinMax[1].y)), 
+        vec2(min(tMinMax[2].x, tMinMax[2].y), max(tMinMax[2].x, tMinMax[2].y))
+    );
 
     const float 
         tNear = max3_wrap(tMinMax[0].x, tMinMax[1].x, tMinMax[2].x), 
@@ -209,7 +215,7 @@ bool intersectCubeF32Single(in vec3 orig, in vec3 dr, in bvec4 sgn, in mat3x2 tM
 
     // resolve hit
     const bool isCube = tFar>=tNear && tFar >= -SFN && tNear < N_INFINITY;
-    [[flatten]] if (isCube) nfe.xz = vec2(tNear, tFar);
+    nfe.xz = isCube ? vec2(tNear, tFar) : INFINITY.xx;
     return isCube;
 };
 
@@ -230,9 +236,16 @@ bool intersectCubeF32Single(in vec3 orig, in vec3 dr, in bvec4 sgn, in mat3x2 tM
 pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in nbox_t cbox, inout vec4 nfe2)
 {
     // calculate intersection
-    fvec4_[3] tMinMax = { fcvt4_(cbox[0]),fcvt4_(cbox[1]),fcvt4_(cbox[2]) };
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec4_(fma(tMinMax[i],dr[i].xxxx,orig[i].xxxx));
-    [[unroll]] for (int i=0;i<3;i++) tMinMax[i] = fvec4_(min(tMinMax[i].xy,tMinMax[i].zw),max(tMinMax[i].xy,tMinMax[i].zw));
+    fvec4_[3] tMinMax = { 
+        fma(fcvt4_(cbox[0]),dr.xxxx,orig.xxxx), 
+        fma(fcvt4_(cbox[1]),dr.yyyy,orig.yyyy), 
+        fma(fcvt4_(cbox[2]),dr.zzzz,orig.zzzz)
+    };
+    tMinMax = fvec4_[3](
+        fvec4_(min(tMinMax[0].xy,tMinMax[0].zw),max(tMinMax[0].xy,tMinMax[0].zw)),
+        fvec4_(min(tMinMax[1].xy,tMinMax[1].zw),max(tMinMax[1].xy,tMinMax[1].zw)),
+        fvec4_(min(tMinMax[2].xy,tMinMax[2].zw),max(tMinMax[2].xy,tMinMax[2].zw))
+    );
 
     const fvec2_
         tNear = max3_wrap(tMinMax[0].xy, tMinMax[1].xy, tMinMax[2].xy), 
@@ -240,7 +253,6 @@ pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in n
     
     // TODO: improve performance and ops
     const bvec2 isCube = and(and(greaterThanEqual(tFar, tNear), greaterThan(tFar, fvec2_(SFN))), lessThan(tNear, fvec2_(N_INFINITY)));
-
     nfe2 = mix(INFINITY.xxxx, vec4(tNear, tFar), bvec4(isCube, isCube));
     return binarize(isCube);
 };

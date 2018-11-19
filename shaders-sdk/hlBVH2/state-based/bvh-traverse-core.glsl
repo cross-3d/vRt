@@ -80,18 +80,17 @@ void initTraversing( in bool valid, in int eht, in vec3 orig, in dirtype_t pdir 
 void triggerSwitch(inout uint stateTo) { currentState = stateTo, initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION); };
 void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
     [[flatten]] if (currentState != stateTo) {
-        const bool IsTop = (stateTo == BVH_STATE_TOP), IsBottom = !IsTop;
-        [[flatten]] if (IsTop) { lstack = traverseCache.stack[cacheID]; } else { traverseCache.stack[cacheID] = lstack; };
-        [[flatten]] if (IsTop) { stackState = resrvState; } else { resrvState = stackState; };
+        const bool ToTop = (stateTo == BVH_STATE_TOP), ToBottom = !ToTop;
+        [[flatten]] if (ToTop) { lstack = traverseCache.stack[cacheID]; } else { traverseCache.stack[cacheID] = lstack; };
+        [[flatten]] if (ToTop) { stackState = resrvState; } else { resrvState = stackState; };
         INSTANCE_ID = instanceTo, triggerSwitch(stateTo);
     };
 };
 
 // triangle intersection, when it found
-void doIntersection( inout bool switched ) {
+void doIntersection( in bool ISEND, in bool PVALID, inout bool switched ) {
     const int elementID = exchange(traverseState.defElementID,0)-1;
-    const uint CSTATE = currentState;
-    const bool PVALID = elementID >= 0, IsTop = (CSTATE == BVH_STATE_TOP), IsBottom = !IsTop;
+    const uint CSTATE = currentState; const bool IsTop = (CSTATE == BVH_STATE_TOP), IsBottom = !IsTop;
     
     [[flatten]] if (PVALID && IsBottom) {
         //vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
@@ -107,8 +106,8 @@ void doIntersection( inout bool switched ) {
         //};
     };
     
-    [[flatten]] if ((IsTop ? PVALID : !validIdxEntry(stackState.idx)) && validIdxTop(IsTop ? stackState.idx : resrvState.idx)) 
-        { switchStateTo( uint(IsTop), (IsTop ? elementID : -1), true), switched = true; };
+    [[flatten]] if (IsTop ? PVALID : ISEND) 
+        [[flatten]] if (validIdxTop(IsTop ? stackState.idx : resrvState.idx)) { switchStateTo( uint(IsTop), (IsTop ? elementID : -1), true), switched = true; };
 };
 
 // 

@@ -56,8 +56,8 @@ int traverseBVH2( in bool validTop ) {
         };
         
         // every-step solving 
-        bool stateSwitched = false; 
-        IFANY (!validIdxEntry(stackState.idx) || traverseState.defElementID > 0) doIntersection( stateSwitched );
+        const bool isEnd = !validIdxEntry(stackState.idx), hasElement = traverseState.defElementID > 0;
+        bool stateSwitched = false; IFANY (isEnd || hasElement) doIntersection( isEnd, hasElement, stateSwitched );
         [[flatten]] if (!validIdxIncluse(stackState.idx) || (!stateSwitched && (stackState.idx == traverseState.entryIDBase))) { break; };
     };
     return floatBitsToInt(primitiveState.lastIntersection.w);
