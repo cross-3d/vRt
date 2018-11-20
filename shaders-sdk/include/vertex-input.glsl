@@ -73,7 +73,7 @@ int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 
 
 //#ifdef ENABLE_NON_UNIFORM_SAMPLER
-//#define BFS bufferSpace[nonuniformEXT(bufferID)]
+//#define BFS bufferSpace[NonUniform(bufferID)]
 //#else
 //#define BFS bufferSpace[bufferID]
 //#endif
@@ -95,12 +95,12 @@ layout ( binding = 4, set = 1, std430 ) readonly buffer VT_ATTRIB { VtAttributeB
 //
 highp uint M16(in uint BSC, in uint Ot, in uint uI) {
     const uint I = (Ot+uI)>>1u;
-    return bufferSpace[nonuniformEXT(BSC)].data[I>>1u][I&1u]; 
+    return bufferSpace[NonUniform(BSC)].data[I>>1u][I&1u]; 
 };
 
 uint M32(in uint BSC, in uint Ot, in uint uI) {
     const uint I = (Ot+uI)>>2u;
-    return p2x_16(bufferSpace[nonuniformEXT(BSC)].data[I]); 
+    return p2x_16(bufferSpace[NonUniform(BSC)].data[I]); 
 };
 
 

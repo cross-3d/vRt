@@ -41,8 +41,13 @@
 // 
 #extension GL_EXT_samplerless_texture_functions : enable
 //#extension GL_EXT_subgroupuniform_qualifier : enable
-#extension GL_EXT_nonuniform_qualifier : enable
 
+#extension GL_EXT_nonuniform_qualifier : enable
+#ifndef DISABLE_NON_UNIFORM
+#define NonUniform nonuniformEXT
+#else
+#define NonUniform  
+#endif
 
 // if Vega 10 specific
 #define ENABLE_NON_UNIFORM_SAMPLER

@@ -9,8 +9,8 @@ const uint MAX_IMAGES = 256, MAX_SAMPLERS = 16;
 
 // textrue/sampler set
 // alternate of https://mynameismjp.wordpress.com/2016/03/25/bindless-texturing-for-deferred-rendering-and-decals/
-layout ( binding = 0, set = SETS_DESC_SET_ID ) uniform texture2D images[];
-layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[];
+layout ( binding = 0, set = SETS_DESC_SET_ID ) uniform texture2D images[MAX_IMAGES];
+layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[MAX_SAMPLERS];
 layout ( binding = 3, set = SETS_DESC_SET_ID ) uniform usamplerBuffer vtextures;
 
 // material set (in main descriptor set)
@@ -25,13 +25,13 @@ int matID = -1;
 // validate texture object
 bool validateTexture(in uint tbinding) { return tbinding > 0u && tbinding != -1u && int(tbinding) > 0; };
 
-// also fixes AMD Vega texturing issues with nonuniformEXT
+// also fixes AMD Vega texturing issues with NonUniform
 //#define sampler2Dv(m) sampler2D(images[vtextures[m].x-1], samplers[vtextures[m].y-1])
-//#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(nonuniformEXT(tbinding-1)), tcoord, 0)
+//#define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(NonUniform(tbinding-1)), tcoord, 0)
 
 
 #ifdef ENABLE_NON_UNIFORM_SAMPLER
-#define sampler2Dv(m) sampler2D(images[nonuniformEXT(m.x-1)],samplers[nonuniformEXT(m.y-1)]) // 
+#define sampler2Dv(m) sampler2D(images[NonUniform(m.x-1)],samplers[NonUniform(m.y-1)]) // 
 #else
 #define sampler2Dv(m) sampler2D(images[m.x-1],samplers[m.y-1]) // 
 #endif
@@ -53,7 +53,7 @@ vec4 fetchTexNG(in uint tbinding, in vec2 ntxc) {
         [[flatten]] if (subgroupAll(found)) break;
     };
 #else
-    const ivec2 szi = textureSize(images[nonuniformEXT(vtextures[tbinding-1].x-1)],0);
+    const ivec2 szi = textureSize(images[NonUniform(vtextures[tbinding-1].x-1)],0);
 #endif
     
     // shifting by half of texel may used in Mineways models
