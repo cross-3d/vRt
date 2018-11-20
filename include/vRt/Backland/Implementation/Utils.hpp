@@ -326,6 +326,13 @@ namespace _vt { // store in undercover namespace
         return cmdFillBuffer<Rv>(cmd, *dstBuffer, std::min(dstBuffer->_size(), size), offset + dstBuffer->_offset());
     };
 
+    // write descriptor with later descriptor set proxy
+    static inline VkResult writeDescriptorProxy(const VkDevice& vkDevice, const VkDescriptorSet& vkDescSet, std::vector<vk::WriteDescriptorSet>& writes) {
+        for (auto&w : writes) { w.setDstSet(vkDescSet); };
+        vk::Device(vkDevice).updateDescriptorSets(writes, {});
+        return VK_SUCCESS;
+    };
+
 };
 
 

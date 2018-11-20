@@ -129,24 +129,20 @@ namespace _vt {
 
         };
 
+
         _assemblySet->_descriptorSetGenerator = [=]() { // create caller for generate descriptor set
             if (!_assemblySet->_descriptorSet) { // create desciptor set
-                auto vtDevice = _assemblySet->_device;
-                auto vkDevice = vtDevice->_device;
+                auto& vtDevice = _assemblySet->_device;
+                
 
-                std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                    vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["vertexData"]),
-                    vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["vertexInputSet"]),
-                };
-                const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-                _assemblySet->_descriptorSet = std::move(dsc[0]);
-
-                vk::Sampler attributeSampler = vk::Device(vkDevice).createSampler(vk::SamplerCreateInfo()
+                // 
+                vk::Sampler attributeSampler = vk::Device(*vtDevice).createSampler(vk::SamplerCreateInfo()
                     .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
                     .setMagFilter(vk::Filter::eNearest).setMinFilter(vk::Filter::eNearest).setAddressModeU(vk::SamplerAddressMode::eRepeat)
                     //.setMagFilter(vk::Filter::eLinear ).setMinFilter(vk::Filter::eLinear ).setAddressModeU(vk::SamplerAddressMode::eClampToEdge).setUnnormalizedCoordinates(VK_TRUE)
                 );
 
+                // 
                 const auto writeTmpl = vk::WriteDescriptorSet(_assemblySet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 const auto attrbView = vk::DescriptorImageInfo(info.sharedAttributeImageDescriptor.imageView ? info.sharedAttributeImageDescriptor : _assemblySet->_attributeTexelBuffer->_descriptorInfo()).setSampler(attributeSampler);
                 std::vector<vk::WriteDescriptorSet> writes = {
@@ -161,17 +157,23 @@ namespace _vt {
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_indexBuffer->_bufferView()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(9).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_bufferTraffic[0]->_uniformVIBuffer->_descriptorInfo()),
                 };
-                vk::Device(vkDevice).updateDescriptorSets(writes, {});
+
+                // 
+                {
+                    const VkDevice& vkDevice = *vtDevice;
+                    std::vector<vk::DescriptorSetLayout> dsLayouts = {
+                        vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["vertexData"]),
+                        vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["vertexInputSet"]),
+                    };
+                    const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                    writeDescriptorProxy(vkDevice, _assemblySet->_descriptorSet = std::move(dsc[0]), writes);
+                };
             };
             _assemblySet->_descriptorSetGenerator = {};
         };
 
-
         // use extension
-        if (vtDevice->_hExtensionAccelerator.size() > 0 && vtDevice->_hExtensionAccelerator[0]) {
-            vtDevice->_hExtensionAccelerator[0]->_ConstructVertexAssembly(_assemblySet);
-        };
-
+        if (vtDevice->_hExtensionAccelerator.size() > 0 && vtDevice->_hExtensionAccelerator[0]) { vtDevice->_hExtensionAccelerator[0]->_ConstructVertexAssembly(_assemblySet); };
 
         return result;
     };

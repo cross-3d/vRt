@@ -229,10 +229,11 @@ namespace _vt {
             createSharedBuffer(bManager, bfic, vtAccelerator->_sharedBuffer);
         };
 
+
+
         vtAccelerator->_descriptorSetGenerator = [=]() { // create caller for generate descriptor set
             if (!vtAccelerator->_descriptorSet) {
-                auto vtDevice = vtAccelerator->_device;
-                auto vkDevice = vtDevice->_device;
+                auto& vtDevice = vtAccelerator->_device;
 
                 // 
                 std::vector<vk::DescriptorBufferInfo> cStrcts = { vtAccelerator->_bvhBoxBuffer->_descriptorInfo() };
@@ -248,26 +249,19 @@ namespace _vt {
                     cHeads.push_back({ info.bvhMetaBuffer, info.bvhMetaOffset, VK_WHOLE_SIZE });
                 };
 
-
-                { // descriptor set (TODO: deprecate descriptor sets for bottom levels)
-                    //std::vector<vk::PushConstantRange> constRanges = { vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2)) };
-                    std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["hlbvh2"]) };
-
-                    // create descriptor set
-                    const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-                    vtAccelerator->_descriptorSet = std::move(dsc[0]);
+                const auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
+                std::vector<vk::WriteDescriptorSet> writes = {
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo(cHeads.data()).setDescriptorCount(cHeads.size()), // TODO: dedicated meta buffer
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(cStrcts.data()).setDescriptorCount(cStrcts.size()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhInstancedBuffer->_descriptorInfo())),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhTransformBuffer->_descriptorInfo())),
                 };
 
-                { // 
-                    const auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
-                    std::vector<vk::WriteDescriptorSet> writes = {
-                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo(cHeads.data()).setDescriptorCount(cHeads.size()), // TODO: dedicated meta buffer
-                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo(cStrcts.data()).setDescriptorCount(cStrcts.size()),
-                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhInstancedBuffer->_descriptorInfo())),
-                        //vk::WriteDescriptorSet(writeTmpl).setDstBinding(3).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhHeadingInBuffer->_descriptorInfo())),
-                        vk::WriteDescriptorSet(writeTmpl).setDstBinding(4).setPBufferInfo((vk::DescriptorBufferInfo*)(&vtAccelerator->_bvhTransformBuffer->_descriptorInfo())),
-                    };
-                    vk::Device(vkDevice).updateDescriptorSets(writes, {});
+                { // create descriptor set
+                    const VkDevice& vkDevice = *vtDevice;
+                    std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["hlbvh2"]) };
+                    const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                    writeDescriptorProxy(vkDevice, vtAccelerator->_descriptorSet = std::move(dsc[0]), writes);
                 };
             };
             vtAccelerator->_descriptorSetGenerator = {};

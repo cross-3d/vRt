@@ -53,14 +53,6 @@ namespace _vt {
         if (!info.bitfieldDetail.secondary) {
             vtVertexInput->_descriptorSetGenerator = [=]() { // create caller for generate descriptor set
                 if (!vtVertexInput->_descriptorSet) {
-                    auto vtDevice = vtVertexInput->_device;
-                    auto vkDevice = vtDevice->_device;
-
-                    // create descriptor sets
-                    std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
-                    const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
-                    vtVertexInput->_descriptorSet = std::move(dsc[0]);
-
                     // write descriptors
                     //auto d1 = vk::DescriptorBufferInfo(info.bBufferRegionBindings, 0, VK_WHOLE_SIZE).setOffset(info.bufferRegionByteOffset);
                     auto d2 = vk::DescriptorBufferInfo(info.bBufferViews, 0, VK_WHOLE_SIZE).setOffset(info.bufferViewByteOffset);
@@ -88,10 +80,16 @@ namespace _vt {
                         //vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setPBufferInfo(&d5),
                         vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setPBufferInfo(&d6),
                     };
-                    vk::Device(vkDevice).updateDescriptorSets(writes, {});
-                };
 
-                // was generated, flush
+                    // create descriptor sets
+                    auto& vtDevice = vtVertexInput->_device;
+                    {
+                        const VkDevice& vkDevice = *vtDevice;
+                        std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["vertexInputSet"]) };
+                        const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                        writeDescriptorProxy(vkDevice, vtVertexInput->_descriptorSet = std::move(dsc[0]), writes);
+                    };
+                };
                 vtVertexInput->_descriptorSetGenerator = {};
             };
         };
