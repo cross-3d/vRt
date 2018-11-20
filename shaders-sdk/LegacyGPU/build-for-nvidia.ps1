@@ -1,6 +1,6 @@
 #!/snap/bin/pwsh-preview
 
-$CFLAGSV="--target-env spirv1.3 -V -d -t --aml --nsf -DUSE_MORTON_32 -DUSE_F32_BVH -DNVIDIA_PLATFORM"
+$CFLAGSV="--target-env spirv1.3 -V -d -t --aml --nsf -DUSE_MORTON_32 -DUSE_F32_BVH -DNVIDIA_PLATFORM -DDISABLE_NON_UNIFORM"
 
 $VNDR="nvidia"
 . "./shaders-list.ps1"
