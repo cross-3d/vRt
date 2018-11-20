@@ -67,8 +67,10 @@ namespace _vt {
         vtRTSet->_device = _vtDevice;
 
         { // planned variable size
-            const auto rayCount = tiled(info.maxRays, DUAL_COMPUTE), hitCount = info.maxHits ? tiled(info.maxHits, DUAL_COMPUTE) : rayCount;
-            vtRTSet->_cuniform.maxRayCount = rayCount, vtRTSet->_cuniform.maxHitCount = hitCount;
+            const auto 
+                rayCount = size_t(tiled(size_t(info.maxRays), size_t(DUAL_COMPUTE))),
+                hitCount = size_t(info.maxHits ? tiled(size_t(info.maxHits), size_t(DUAL_COMPUTE)) : size_t(rayCount));
+            vtRTSet->_cuniform.maxRayCount = int32_t(rayCount), vtRTSet->_cuniform.maxHitCount = int32_t(hitCount);
 
             std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
 
