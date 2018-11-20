@@ -42,6 +42,7 @@
 #extension GL_EXT_samplerless_texture_functions : enable
 //#extension GL_EXT_subgroupuniform_qualifier : enable
 
+#define ENABLE_MULTI_BVH
 #extension GL_EXT_nonuniform_qualifier : enable
 #ifndef DISABLE_NON_UNIFORM
 #define NonUniform nonuniformEXT
