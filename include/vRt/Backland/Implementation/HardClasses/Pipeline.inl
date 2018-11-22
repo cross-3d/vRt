@@ -74,13 +74,13 @@ namespace _vt {
 
             std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
 
-            VtDeviceBufferCreateInfo bfic = {};
-            bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
-            
-            VtBufferRegionCreateInfo bfi = {};
 
+            VtDeviceBufferCreateInfo bfic = {};
+            bfic.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+            
 
             const uint64_t U2X = 2ull;
+            VtBufferRegionCreateInfo bfi = {};
             { // allocate buffer regions
                 bfi.bufferSize = rayCount * U2X * (8ull * sizeof(uint32_t));
                 bfi.format = VK_FORMAT_UNDEFINED;

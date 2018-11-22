@@ -118,7 +118,7 @@ namespace _vt {
 
         { // build final shared buffer for this class
             VtDeviceBufferCreateInfo bfic = {};
-            bfic.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
+            bfic.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
             createSharedBuffer(bManager, bfic, vtAccelerator->_sharedBuffer);
         };
 

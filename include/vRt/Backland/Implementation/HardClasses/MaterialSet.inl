@@ -27,7 +27,7 @@ namespace _vt {
 
             {
                 VtDeviceBufferCreateInfo bfi = {};
-                bfi.usageFlag = VkBufferUsageFlags(vk::BufferUsageFlagBits::eStorageBuffer);
+                bfi.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
                 bfi.bufferSize = 8ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
