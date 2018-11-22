@@ -238,9 +238,9 @@ namespace vrt { // store in official namespace
 
         // dedicated buffers for reusing 
         VkBuffer bvhDataBuffer = VK_NULL_HANDLE; VkDeviceSize bvhDataOffset = 0ull; // external BVH data buffer 
-        VkBuffer bvhMetaBuffer = VK_NULL_HANDLE; VkDeviceSize bvhMetaOffset = 0ull; // buffer, used in top levels 
+        VkBuffer bvhHeadBuffer = VK_NULL_HANDLE; VkDeviceSize bvhHeadOffset = 0ull; // buffer, used in top levels 
 
-        VkBuffer bvhMetaHeadBuffer = VK_NULL_HANDLE; VkDeviceSize bvhMetaHeadOffset = 0ull; // buffer, used as header 
+        //VkBuffer bvhMetaHeadBuffer = VK_NULL_HANDLE; VkDeviceSize bvhMetaHeadOffset = 0ull; // buffer, used as header 
         VkBuffer bvhInstanceBuffer = VK_NULL_HANDLE; VkDeviceSize bvhInstanceOffset = 0ull; // will used for top levels 
 
         // 

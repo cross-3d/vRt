@@ -342,8 +342,8 @@ namespace rnd {
              acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
              acci.coverMat = IdentifyMat4;
              acci.maxPrimitives = maxPrimitives;
-             acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
-             acci.bvhMetaHeadOffset = sizeof(VtBvhBlock);
+             acci.bvhHeadBuffer = BvhHeadersBuffer;
+             acci.bvhHeadOffset = sizeof(VtBvhBlock);
              acci.bvhDataBuffer = BvhDataBuffer;
              acci.bvhDataOffset = VtMeasureByteOffsetByEntryID(1024u);
              acci.traversingEntryID = 0u; // this information will known when will traversing 
@@ -433,10 +433,8 @@ namespace rnd {
             acci.structureLevel = VT_ACCELERATOR_SET_LEVEL_INSTANCE;
             acci.coverMat = IdentifyMat4;
             acci.maxPrimitives = 1024ull;
-            acci.bvhMetaHeadBuffer = BvhHeadersBuffer;
-            acci.bvhMetaHeadOffset = 0;
-            acci.bvhMetaBuffer = BvhHeadersBuffer;
-            acci.bvhMetaOffset = sizeof(VtBvhBlock);
+            acci.bvhHeadBuffer = BvhHeadersBuffer;
+            acci.bvhHeadOffset = 0;
             acci.bvhInstanceBuffer = BvhInstancedBuffer;
             acci.bvhInstanceOffset = 0;
             acci.bvhDataBuffer = BvhDataBuffer;

@@ -191,18 +191,20 @@ namespace _vt {
 
         // 
         VtBufferRegionCreateInfo bfi = {};
-        if (!info.bvhDataBuffer) { 
-            bfi.bufferSize = (info.maxPrimitives * sizeof(VtBvhNodeStruct)) << 1ull;
-            createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer); 
-        } else 
-        { bfi.offset = info.bvhDataOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhDataBuffer, bfi, vtAccelerator->_bvhBoxBuffer, vtDevice); };
 
-        // 
-        if (!info.bvhMetaHeadBuffer) { 
+        // BVH meta data buffer (prefer to allocate before)
+        if (!info.bvhHeadBuffer) { 
             bfi.bufferSize = sizeof(VtBvhBlock) * 1ull;
             createBufferRegion(bManager, bfi, vtAccelerator->_bvhHeadingBuffer);
         } else 
-        { bfi.offset = info.bvhMetaHeadOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhMetaHeadBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, vtDevice); };
+        { bfi.offset = info.bvhHeadOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhHeadBuffer, bfi, vtAccelerator->_bvhHeadingBuffer, vtDevice); };
+
+        // BVH data buffer 
+        if (!info.bvhDataBuffer) {
+            bfi.bufferSize = (info.maxPrimitives * sizeof(VtBvhNodeStruct)) << 1ull;
+            createBufferRegion(bManager, bfi, vtAccelerator->_bvhBoxBuffer);
+        } else
+        { bfi.offset = info.bvhDataOffset; bfi.bufferSize = VK_WHOLE_SIZE; createBufferRegion(info.bvhDataBuffer, bfi, vtAccelerator->_bvhBoxBuffer, vtDevice); };
 
         // 
         //if (!info.bvhMetaBuffer) {  // create for backward compatibility 
