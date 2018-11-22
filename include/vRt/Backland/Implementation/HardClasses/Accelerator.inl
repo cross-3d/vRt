@@ -236,18 +236,20 @@ namespace _vt {
                 auto& vtDevice = vtAccelerator->_device;
 
                 // 
+                std::vector<vk::DescriptorBufferInfo> cHeads = { vtAccelerator->_bvhHeadingBuffer->_descriptorInfo() };
                 std::vector<vk::DescriptorBufferInfo> cStrcts = { vtAccelerator->_bvhBoxBuffer->_descriptorInfo() };
                 if (info.pStructVariations) {
                     for (uint32_t i = 0u; i < info.structVariationCount; i++) {
                         cStrcts.push_back(info.pStructVariations[i]->_bvhBoxBuffer->_descriptorInfo());
+                        cHeads.push_back(info.pStructVariations[i]->_bvhHeadingBuffer->_descriptorInfo());
                     };
                 };
 
                 // 
-                std::vector<vk::DescriptorBufferInfo> cHeads = { vtAccelerator->_bvhHeadingBuffer->_descriptorInfo() };
-                if (info.bvhMetaBuffer) {
-                    cHeads.push_back({ info.bvhMetaBuffer, info.bvhMetaOffset, VK_WHOLE_SIZE });
-                };
+                
+                //if (info.bvhMetaBuffer) {
+                //    cHeads.push_back({ info.bvhMetaBuffer, info.bvhMetaOffset, VK_WHOLE_SIZE });
+                //};
 
                 const auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {

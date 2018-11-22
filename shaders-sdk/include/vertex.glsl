@@ -69,7 +69,7 @@ struct BTYPE_ {
 
 #ifndef VERTEX_FILLING
 // Block of main BVH structure (for bottom levels will not required)
-layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB { BvhBlockT data[]; } bvhBlockState_[2]; // bvhBlock of main structure 
+layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB { BvhBlockT data[]; } bvhBlockState_[]; // bvhBlock of main structure 
 
 
 // Accessible blocks and instances for top levels, or task accessing (required shared buffers)
@@ -107,7 +107,8 @@ uint currentState = BVH_STATE_TOP; const uint lastDataID = 0u;
 #define bvhInstance bvhInstance_[INSTANCE_ID]
 #define instanceTransform transformData_[INSTANCE_ID]
 #define bvhBlockTop bvhBlockState_[0].data[0]
-#define bvhBlockIn  bvhBlockState_[NonUniform(currentState)].data[bvhInstance.bvhBlockID*currentState]
+#define bvhBlockIn  bvhBlockState_[NonUniform(lastDataID)].data[currentState==BVH_STATE_TOP?0:bvhInstance.bvhBlockID]
+
 
 //#define bvhNodes bInstances[NonUniform(uint(1+((currentState==BVH_STATE_TOP)?-1:bvhInstance.bvhDataID)))].bvhNodes_
   #define bvhNodes bInstances[NonUniform(lastDataID)].bvhNodes_
