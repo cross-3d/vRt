@@ -23,7 +23,7 @@ namespace vrt { // store in official namespace
         operator T() const { return *_vtHandle; };
         operator bool() const { return !!_vtHandle; };
         //operator std::weak_ptr<T>&&() const { return _vtHandle; }; // may be ambiguous
-        explicit operator std::shared_ptr<T>() const { return _vtHandle; }; // experimental explicit casting
+        operator const std::shared_ptr<T>&() const { return _vtHandle; }; // experimental explicit casting
         operator std::shared_ptr<T>&() { return _vtHandle; };
         //operator T&() { return *_vtHandle; };
     };
@@ -89,24 +89,24 @@ namespace vrt { // store in official namespace
         using P = VtHandle<_vt::RoledBuffer<U>>;
         using T = std::shared_ptr<_vt::RoledBuffer<U>>;
     public:
-        operator VkBuffer() const;
+        operator const VkBuffer&() const;
         operator VkBuffer&();
 
-        operator VkBufferView() const;
+        operator const VkBufferView&() const;
         operator VkBufferView&();
     };
 
     // templated implementations
-    template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBuffer() const { return *P::_vtHandle; };
+    template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator const VkBuffer&() const { return *P::_vtHandle; };
     template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBuffer&() { return *P::_vtHandle; };
-    template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView() const { return *P::_vtHandle; };
+    template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator const VkBufferView&() const { return *P::_vtHandle; };
     template<VtMemoryUsage U> inline VtRoledBuffer<U>::operator VkBufferView&() { return *P::_vtHandle; };
 
 
     class VtDeviceImage : public VtHandle<_vt::DeviceImage> {
     public:
-        operator VkImage() const; //{ return *_vtHandle; };
-        operator VkImageView() const; //{ return *_vtHandle; };
+        operator const VkImage&() const; //{ return *_vtHandle; };
+        operator const VkImageView&() const; //{ return *_vtHandle; };
         operator VkImage&(); //{ return *_vtHandle; };
         operator VkImageView&(); //{ return *_vtHandle; };
     };
@@ -122,10 +122,6 @@ namespace vrt { // store in official namespace
 #endif
 
         const void* _getAllocator() const;
-
-        // casting operators with traffic buffers
-        operator VtHostToDeviceBuffer() const; //{ return VtHostToDeviceBuffer{ _vtHandle->_bufferTraffic->_uploadBuffer }; };
-        operator VtDeviceToHostBuffer() const; //{ return VtDeviceToHostBuffer{ _vtHandle->_bufferTraffic->_downloadBuffer }; };
 
         // getter of descriptor layout from device VtDevice
 #ifdef VRT_ENABLE_STRING_VIEW

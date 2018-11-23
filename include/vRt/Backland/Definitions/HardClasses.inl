@@ -12,7 +12,7 @@ namespace _vt { // store in undercover namespace
     class Instance : public std::enable_shared_from_this<Instance> {
     public:
         VkInstance _instance = {};
-        operator VkInstance() const { return _instance; };
+        operator const VkInstance&() const { return _instance; };
     };
 
     // ray tracing physical device handle
@@ -22,8 +22,8 @@ namespace _vt { // store in undercover namespace
         VkPhysicalDevice _physicalDevice = {};
         std::shared_ptr<Instance> _instance = {};
 
-        operator VkPhysicalDevice() const { return _physicalDevice; };
-        auto _parent() const { return _instance; };
+        operator const VkPhysicalDevice&() const { return _physicalDevice; };
+        const auto& _parent() const { return _instance; };
         auto& _parent() { return _instance; };
     };
 
@@ -59,11 +59,11 @@ namespace _vt { // store in undercover namespace
 
         // features linking
         operator VkPhysicalDeviceFeatures2&() { return _features; };
-        operator VkPhysicalDeviceFeatures2() const { return _features; };
+        operator const VkPhysicalDeviceFeatures2&() const { return _features; };
         operator VkPhysicalDeviceProperties2&() { return _properties; };
-        operator VkPhysicalDeviceProperties2() const { return _properties; };
+        operator const VkPhysicalDeviceProperties2&() const { return _properties; };
 
-        auto _parent() const { return _physicalDevice; };
+        const auto& _parent() const { return _physicalDevice; };
         auto& _parent() { return _physicalDevice; };
     };
 
@@ -85,7 +85,7 @@ namespace _vt { // store in undercover namespace
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         VmaAllocator _allocator = {};
-        operator VmaAllocator() const { return _allocator; };
+        operator const VmaAllocator&() const { return _allocator; };
         operator VmaAllocator&() { return _allocator; };
 #endif
 
@@ -108,14 +108,14 @@ namespace _vt { // store in undercover namespace
         std::map<std::string, VkDescriptorSetLayout> _descriptorLayoutMap = {};
         
 
-        operator VkDevice() const { return _device; };
-        operator VkPipelineCache() const { return _pipelineCache; };
-        operator VkDescriptorPool() const { return _descriptorPool; };
+        operator const VkDevice&() const { return _device; };
+        operator const VkPipelineCache&() const { return _pipelineCache; };
+        operator const VkDescriptorPool&() const { return _descriptorPool; };
 
         //operator std::shared_ptr<HostToDeviceBuffer>() const { return _bufferTraffic[0]->_uploadBuffer; };
         //operator std::shared_ptr<DeviceToHostBuffer>() const { return _bufferTraffic[0]->_downloadBuffer; };
 
-        auto _parent() const { return _physicalDevice; };
+        const auto& _parent() const { return _physicalDevice; };
         auto& _parent() { return _physicalDevice; };
     };
 
@@ -137,9 +137,9 @@ namespace _vt { // store in undercover namespace
         std::vector<VkDescriptorSet> _boundVIDescriptorSets = {};
         std::map<uint32_t, std::vector<VkDescriptorSet>> _perVertexInputDSC = {};
 
-        operator VkCommandBuffer() const { return _commandBuffer; };
+        operator const VkCommandBuffer&() const { return _commandBuffer; };
 
-        auto _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
     };
 
@@ -151,8 +151,9 @@ namespace _vt { // store in undercover namespace
         VtPipelineLayoutType _type = VT_PIPELINE_LAYOUT_TYPE_RAYTRACING;
         std::shared_ptr<Device> _device = {};
 
-        operator VkPipelineLayout() const { return _vsLayout; }; // by default should be return vertex version
-        auto _parent() const { return _device; };
+        operator const VkPipelineLayout&() const { return _vsLayout; }; // by default should be return vertex version
+
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
     };
 
@@ -184,9 +185,8 @@ namespace _vt { // store in undercover namespace
             _attribBuffer = {};
         VtStageUniform _cuniform = {};
 
-        operator VkDescriptorSet() const { return _descriptorSet; };
-
-        auto _parent() const { return _device; };
+        operator const VkDescriptorSet&() const { return _descriptorSet; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
     };
 
@@ -209,9 +209,9 @@ namespace _vt { // store in undercover namespace
         // material and accelerator descriptor sets, that sets to "1" is dedicated by another natives
         std::vector<VkDescriptorSet> _userDefinedDescriptorSets = {}; // beyond than 1 only
 
-        operator VkPipeline() const { return _dullPipeline; };
+        operator const VkPipeline&() const { return _dullPipeline; };
         
-        auto _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
     };
 
@@ -242,9 +242,9 @@ namespace _vt { // store in undercover namespace
         // primitive count 
         uint32_t _calculatedPrimitiveCount = 0;
 
-        operator VkDescriptorSet() const { return _descriptorSet; };
+        operator const VkDescriptorSet&() const { return _descriptorSet; };
         
-        auto _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
     };
 
@@ -255,7 +255,7 @@ namespace _vt { // store in undercover namespace
         VkPipeline _inputPipeline = {}, _intrpPipeline = {};
         std::weak_ptr<Device> _device = {};
         std::shared_ptr<PipelineLayout> _pipelineLayout = {};
-        operator VkPipeline() const { return _inputPipeline; };
+        operator const VkPipeline&() const { return _inputPipeline; };
     };
 
 
@@ -285,8 +285,8 @@ namespace _vt { // store in undercover namespace
         VtBvhBlock _bvhBlockData = {};
         VkDeviceSize _capacity = 0ull;
 
-        operator VkDescriptorSet() const { return _descriptorSet; };
-        auto  _parent() const { return _device; };
+        operator const VkDescriptorSet&() const { return _descriptorSet; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
     };
 
@@ -319,7 +319,7 @@ namespace _vt { // store in undercover namespace
         // 
         VtBuildConst _buildConstData = {};
 
-        operator VkPipeline() const { return _dullPipeline; };
+        operator const VkPipeline&() const { return _dullPipeline; };
     };
 
 
@@ -332,7 +332,7 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<Device> _device = {};
 
         operator VkBuffer&() { return _buffer; }; // cast operator
-        operator VkBuffer() const { return _buffer; }; // cast operator
+        operator const VkBuffer&() const { return _buffer; }; // cast operator
 
 #ifdef AMD_VULKAN_MEMORY_ALLOCATOR_H
         VmaAllocation _allocation = {};
@@ -354,17 +354,17 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<BufferRegion> _bufferRegion = {};
 
         // direct getters and refers
-        VkDescriptorBufferInfo  _descriptorInfo() const;
+        const VkDescriptorBufferInfo& _descriptorInfo() const;
         VkDescriptorBufferInfo& _descriptorInfo();
-        VkBufferView  _bufferView() const;
+        const VkBufferView& _bufferView() const;
         VkBufferView& _bufferView();
 
         // getters and refers attributes
-        auto _offset() const { return _descriptorInfo().offset; };
-        auto _size() const { return _descriptorInfo().range; };
+        const auto& _offset() const { return _descriptorInfo().offset; };
+        const auto& _size() const { return _descriptorInfo().range; };
         auto& _offset() { return _descriptorInfo().offset; };
         auto& _size() { return _descriptorInfo().range; };
-        auto _parent() const { return _device(); };
+        const auto& _parent() const { return _device(); };
         auto& _parent() { return _device(); };
 
         operator std::shared_ptr<RoledBufferBase>&() { return _bufferWrap; };
@@ -372,15 +372,14 @@ namespace _vt { // store in undercover namespace
 
         // typed getters and refers
         operator VkBufferView&() { return this->_bufferView(); };
-        operator VkBufferView() const { return this->_bufferView(); };
+        operator const VkBufferView&() const { return this->_bufferView(); };
         operator VkBuffer&() { return _bufferWrap->_buffer; }; // cast operator
-        operator VkBuffer() const { return _bufferWrap->_buffer; }; // cast operator
+        operator const VkBuffer&() const { return _bufferWrap->_buffer; }; // cast operator
         auto _hostMapped() const { return _bufferWrap->_hostMapped(); };
 
         // direct getters and refers
-        VkDevice  _device() const { return *_bufferWrap->_device; };
-        //VkDevice& _device() { return *_bufferWrap->_device; };
-        VkBuffer  _buffer() const { return _bufferWrap->_buffer; };
+        const VkDevice &_device() const { return *_bufferWrap->_device; };
+        const VkBuffer &_buffer() const { return _bufferWrap->_buffer; };
         VkBuffer& _buffer() { return _bufferWrap->_buffer; };
 
         // redirectors
@@ -419,16 +418,16 @@ namespace _vt { // store in undercover namespace
         VkExtent3D _extent = {1u, 1u, 1u};
         VkDescriptorImageInfo _sDescriptorInfo = {};
 
-        auto _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
 
-        operator VkImage() const { return _image; }; // cast operator
+        operator const VkImage&() const { return _image; }; // cast operator
         operator VkImage&() { return _image; }; // cast operator
-        operator VkImageView() const { return _imageView; }; // cast operator
+        operator const VkImageView&() const { return _imageView; }; // cast operator
         operator VkImageView&() { return _imageView; }; // cast operator
 
         auto  _genDescriptorInfo() const { return VkDescriptorImageInfo{ {}, _imageView, _layout }; };
-        auto  _descriptorInfo() const { return this->_sDescriptorInfo; };
+        const auto&  _descriptorInfo() const { return this->_sDescriptorInfo; };
         auto& _descriptorInfo() { return (this->_sDescriptorInfo = this->_genDescriptorInfo()); };
     };
 
@@ -443,35 +442,35 @@ namespace _vt { // store in undercover namespace
         std::weak_ptr<RoledBufferBase> _boundBuffer = {};
         VkFormat _format = VK_FORMAT_UNDEFINED; VkDescriptorBufferInfo _sDescriptorInfo = {{}, 0, VK_WHOLE_SIZE};
 
-        auto  _descriptorInfo() const { return _sDescriptorInfo; };
+        const auto& _descriptorInfo() const { return _sDescriptorInfo; };
         auto& _descriptorInfo() { return _sDescriptorInfo; };
 
-        auto _offset() const { return _descriptorInfo().offset; };
-        auto _size() const { return _descriptorInfo().range; };
+        const auto& _offset() const { return _descriptorInfo().offset; };
+        const auto& _size() const { return _descriptorInfo().range; };
         auto& _offset() { return _descriptorInfo().offset; };
         auto& _size() { return _descriptorInfo().range; };
-        auto _bufferView() const { return _sBufferView; };
+        const auto& _bufferView() const { return _sBufferView; };
         auto& _bufferView() { return _sBufferView; };
-        auto _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
 
-        operator VkDescriptorBufferInfo() const { return _descriptorInfo(); };
+        operator const VkDescriptorBufferInfo&() const { return _descriptorInfo(); };
         operator VkDescriptorBufferInfo&() { return _descriptorInfo(); };
         
-        operator VkBufferView() const { return _bufferView(); };
+        operator const VkBufferView&() const { return _bufferView(); };
         operator VkBufferView&() { return _bufferView(); };
 
-        operator VkBuffer() const;
+        operator const VkBuffer&() const;
         operator VkBuffer&();
     };
 
 
     // avoid compilation issues
      inline BufferRegion::operator VkBuffer&() { return _descriptorInfo().buffer; };
-     inline BufferRegion::operator VkBuffer() const { return _descriptorInfo().buffer; };
-     template<VtMemoryUsage U> inline VkDescriptorBufferInfo  RoledBuffer<U>::_descriptorInfo() const { return _bufferRegion->_descriptorInfo(); };
+     inline BufferRegion::operator const VkBuffer&() const { return _descriptorInfo().buffer; };
+     template<VtMemoryUsage U> inline const VkDescriptorBufferInfo& RoledBuffer<U>::_descriptorInfo() const { return _bufferRegion->_descriptorInfo(); };
      template<VtMemoryUsage U> inline VkDescriptorBufferInfo& RoledBuffer<U>::_descriptorInfo() { return _bufferRegion->_descriptorInfo(); };
-     template<VtMemoryUsage U> inline VkBufferView  RoledBuffer<U>::_bufferView() const { return _bufferRegion->_bufferView(); };
+     template<VtMemoryUsage U> inline const VkBufferView& RoledBuffer<U>::_bufferView() const { return _bufferRegion->_bufferView(); };
      template<VtMemoryUsage U> inline VkBufferView& RoledBuffer<U>::_bufferView() { return _bufferRegion->_bufferView(); };
 
 
@@ -507,9 +506,9 @@ namespace _vt { // store in undercover namespace
         VkPipelineLayout _pipelineLayout = {}; // use unified pipeline layout 
         VkDescriptorSet _descriptorSet = {};
 
-        auto _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
-        operator VkPipeline() const { return _dullPipeline; };
+        operator const VkPipeline&() const { return _dullPipeline; };
     };
 
     // this class does not using in ray tracing API
@@ -525,9 +524,9 @@ namespace _vt { // store in undercover namespace
         VkPipeline _bufferCopyPipeline = {}, _bufferCopyIndirectPipeline = {}, _imageCopyPipeline = {}, _imageCopyIndirectPipeline = {};
         VkPipelineLayout _bufferCopyPipelineLayout = {}, _imageCopyPipelineLayout = {};
 
-        auto _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
-        operator VkPipeline() const { return _dullPipeline; };
+        operator const VkPipeline&() const { return _dullPipeline; };
     };
 
 
@@ -544,9 +543,9 @@ namespace _vt { // store in undercover namespace
         uint32_t _materialCount = 0, _materialOffset = 0;
 
 
-        auto _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
-        operator VkDescriptorSet() const { return _descriptorSet; };
+        operator const VkDescriptorSet&() const { return _descriptorSet; };
     };
 
 
@@ -565,11 +564,11 @@ namespace _vt { // store in undercover namespace
         std::shared_ptr<DeviceBuffer> _inlineTransformBuffer = {}; // if have no required
         std::function<void()> _descriptorSetGenerator = {};
 
-        auto  _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
-        operator VkDescriptorSet() const { return _descriptorSet; };
+        operator const VkDescriptorSet&() const { return _descriptorSet; };
 
-        auto  uniform() const { return _uniformBlock; };
+        const auto& uniform() const { return _uniformBlock; };
         auto& uniform() { return _uniformBlock; };
     };
 
@@ -623,7 +622,7 @@ namespace _vt { // store in undercover namespace
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }; // accessing by same address
         
-        auto  _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
 
         // built-in method's
@@ -651,7 +650,7 @@ namespace _vt { // store in undercover namespace
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }; // accessing by same address
 
-        auto  _parent() const { return _device; };
+        const auto& _parent() const { return _device; };
         auto& _parent() { return _device; };
 
         // built-in method's

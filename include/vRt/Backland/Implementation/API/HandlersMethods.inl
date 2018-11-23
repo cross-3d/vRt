@@ -17,9 +17,9 @@ namespace vrt { // store in official namespace
      VtVertexAssemblySet::operator VkDescriptorSet() const { return *_vtHandle; };
      VtMaterialSet::operator VkDescriptorSet() const { return *_vtHandle; };
 
-     VtDeviceImage::operator VkImage() const { return *_vtHandle; };
+     VtDeviceImage::operator const VkImage&() const { return *_vtHandle; };
      VtDeviceImage::operator VkImage&() { return *_vtHandle; };
-     VtDeviceImage::operator VkImageView() const { return *_vtHandle; };
+     VtDeviceImage::operator const VkImageView&() const { return *_vtHandle; };
      VtDeviceImage::operator VkImageView&() { return *_vtHandle; };
 
      VtDevice::operator VkDevice() const { return *_vtHandle; };
