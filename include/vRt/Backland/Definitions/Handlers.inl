@@ -20,7 +20,7 @@ namespace vrt { // store in official namespace
         VtHandle(const std::shared_ptr<T>& _H) : _vtHandle(_H) {}; // const reference
         auto* operator->() { return _vtHandle.get(); };
         auto* operator->() const { return _vtHandle.get(); };
-        operator T() const { return *_vtHandle; };
+        operator const T&() const { return *_vtHandle; };
         operator bool() const { return !!_vtHandle; };
         //operator std::weak_ptr<T>&&() const { return _vtHandle; }; // may be ambiguous
         operator const std::shared_ptr<T>&() const { return _vtHandle; }; // experimental explicit casting
