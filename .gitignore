@@ -42,3 +42,15 @@ build-*/
 lib/libglfw3.a
 lib/libglfw3.a.*
 lib/libglfw3
+
+*.png
+*.jpg
+*.glb
+*.obj
+*.hdr
+*.exr
+*.gltf
+*.svg
+*.svgz
+testscene/models/*
+screenshots/*

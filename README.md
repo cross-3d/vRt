@@ -1,4 +1,4 @@
-# vRt (VK-1.1.91)
+# vRt (VK-1.1.92)
 
 <a href="https://gitter.im/world8th/vRt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank" title="Gitter"><img src="https://badges.gitter.im/world8th/vRt.svg" alt="Gitter.RT" height="20px"/></a>
 <a href="https://etherdonation.com/d?to=0xd9b022cDf82eE7eAB9B17C7d85c3ba005E288383" target="_blank" title="Donate ETH"><img src="https://etherdonation.com/i/btn/donate-btn.png" alt="Donate.ETH" height="20px"/></a>
@@ -29,7 +29,7 @@
 
 ### Requirements for testing application
 
-- Vulkan API 1.1.82 support (1.1.92 needs for RTX-based support)
+- Vulkan API 1.1.82 support 
 - [Vulkan Memory Allocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
 - C++17 capable compiler
 - GLSL to SPIR-V 1.3 compiler
