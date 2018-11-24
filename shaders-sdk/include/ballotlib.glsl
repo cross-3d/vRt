@@ -59,6 +59,13 @@
 #define readFLane RLF_
 #define readLane RL_
 
+// subgroup barriers
+#define SB_BARRIER subgroupMemoryBarrier();
+#define LGROUP_BARRIER subgroupBarrier();
+
+#define IFALL(b) [[flatten]]if(subgroupAll(b))
+#define IFANY(b)            if(subgroupAny(b))
+
 //uint_ballot ballotHW(in bool i) { return subgroupBallot(i); }
 //uint_ballot ballotHW() { return subgroupBallot(true); }
 //bool electedInvoc() { return subgroupElect(); }
@@ -85,8 +92,8 @@ void bPrefixSum(in bvec4 val, inout lowp uvec4 sums, inout lowp uvec4 pfxs) {
 #define initAtomicSubgroupIncFunction(mem, fname, by, T)\
 T fname() {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
-    return T(pfx.y) * T(by) + gadd;\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; SB_BARRIER;\
+    return T(pfx.y) * T(by) + readFLane(gadd);\
 };
 /*
 #ifdef REGULAR_ATOMIC_INC
@@ -99,15 +106,15 @@ T fname(in uint WHERE) {\
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in  uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
-    return T(pfx.y) * T(by) + gadd;\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; SB_BARRIER;\
+    return T(pfx.y) * T(by) + readFLane(gadd);\
 };
 
 #define initAtomicSubgroupIncFunctionTargetBinarity(mem, fname, by, T)\
 T fname(in  uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem[WID], T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
-    return T(pfx.y) * T(by) + gadd;\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem[WID], T(pfx.x) * T(by));}; SB_BARRIER;\
+    return T(pfx.y) * T(by) + readFLane(gadd);\
 };
 
 //#endif
@@ -117,8 +124,8 @@ T fname(in  uint WHERE) {\
 #define initSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in  uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
-    return T(pfx.y) * T(by) + gadd;\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));}; SB_BARRIER;\
+    return T(pfx.y) * T(by) + readFLane(gadd);\
 };
 
 /*
@@ -154,12 +161,5 @@ T4 fname(in uint WHERE, in bvec4 a) {\
 // aliases
 //bool allInvoc(in pbool_ bc) { return allInvoc(SSC(bc)); }
 //bool anyInvoc(in pbool_ bc) { return anyInvoc(SSC(bc)); }
-
-#define IFALL(b) [[flatten]]if(subgroupAll(b))
-#define IFANY(b)            if(subgroupAny(b))
-
-// subgroup barriers
-#define SB_BARRIER subgroupMemoryBarrier(),subgroupBarrier();
-#define LGROUP_BARRIER groupMemoryBarrier(),barrier();
 
 #endif
