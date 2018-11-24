@@ -60,13 +60,7 @@
 #define readLane RL_
 
 // subgroup barriers
-#define SB_BARRIER  subgroupMemoryBarrier();
-//#ifdef NVIDIA_PLATFORM
-#define LGROUP_BARRIER subgroupMemoryBarrier(),subgroupBarrier();
-//#else
-//#define LGROUP_BARRIER barrier();
-//#endif
-
+#define LGROUP_BARRIER subgroupBarrier();
 #define IFALL(b) [[flatten]]if(subgroupAll(b))
 #define IFANY(b)            if(subgroupAny(b))
 
@@ -96,7 +90,7 @@ void bPrefixSum(in bvec4 val, inout lowp uvec4 sums, inout lowp uvec4 pfxs) {
 #define initAtomicSubgroupIncFunction(mem, fname, by, T)\
 T fname() {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; SB_BARRIER;\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));};\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 };
 /*
@@ -110,14 +104,14 @@ T fname(in uint WHERE) {\
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in  uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; SB_BARRIER;\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));};\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 };
 
 #define initAtomicSubgroupIncFunctionTargetBinarity(mem, fname, by, T)\
 T fname(in  uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem[WID], T(pfx.x) * T(by));}; SB_BARRIER;\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem[WID], T(pfx.x) * T(by));};\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 };
 
@@ -128,7 +122,7 @@ T fname(in  uint WHERE) {\
 #define initSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in  uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));}; SB_BARRIER;\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));};\
     return T(pfx.y) * T(by) + readFLane(gadd);\
 };
 
