@@ -60,7 +60,7 @@
 #define readLane RL_
 
 // subgroup barriers
-#define LGROUP_BARRIER subgroupBarrier();
+#define LGROUP_BARRIER memoryBarrier(),subgroupBarrier();
 #define IFALL(b) [[flatten]]if(subgroupAll(b))
 #define IFANY(b)            if(subgroupAny(b))
 
