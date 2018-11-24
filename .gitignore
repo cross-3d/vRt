@@ -52,5 +52,5 @@ lib/libglfw3
 *.gltf
 *.svg
 *.svgz
-testscene/models/*
-screenshots/*
+#testscene/models/*
+#screenshots/*
