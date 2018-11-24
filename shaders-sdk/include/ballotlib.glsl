@@ -61,7 +61,11 @@
 
 // subgroup barriers
 #define SB_BARRIER subgroupMemoryBarrier();
+#ifdef NVIDIA_PLATFORM
 #define LGROUP_BARRIER subgroupBarrier();
+#else
+#define LGROUP_BARRIER barrier();
+#endif
 
 #define IFALL(b) [[flatten]]if(subgroupAll(b))
 #define IFANY(b)            if(subgroupAny(b))
