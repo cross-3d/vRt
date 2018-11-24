@@ -60,9 +60,9 @@
 #define readLane RL_
 
 // subgroup barriers
-#define SB_BARRIER  //subgroupMemoryBarrier();
+#define SB_BARRIER  subgroupMemoryBarrier();
 //#ifdef NVIDIA_PLATFORM
-#define LGROUP_BARRIER subgroupBarrier();
+#define LGROUP_BARRIER subgroupMemoryBarrier(),subgroupBarrier();
 //#else
 //#define LGROUP_BARRIER barrier();
 //#endif
