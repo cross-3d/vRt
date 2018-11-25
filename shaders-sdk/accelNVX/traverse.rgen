@@ -45,6 +45,8 @@ layout(push_constant) uniform rayParams {
     uint sbtOffset, sbtStride, missIndex, r0;
 };
 
+#define hid W
+
 void main() {
     // planned task-based BVH traversing (for two-level BVH support)
     const uint wsize = min(rayCounter[WID], MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
@@ -62,7 +64,7 @@ void main() {
             const int ftrID = floatBitsToInt(LAST_INTERSECTION.w)-1;
 
             //int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
-            int hid = int(W);//vtFetchHitIdc(rayID);
+            //int hid = int(W);//vtFetchHitIdc(rayID);
 
             { // resolve hit result 
                 //[[flatten]] if (hid < 0) hid = atomicIncHitCount();
@@ -72,8 +74,8 @@ void main() {
                 hit.idat = primitiveState.binaryData128, hit.uvt = LAST_INTERSECTION;
                 
                 //imageAtomicMax(rayLink,r4ID,(hid+1).x);
-                [[flatten]] if ( ftrID >= 0 ) { hit.attribID = vtVerifyClosestHit(hid,-1)+1; };
-                [[flatten]] if ( ftrID <  0 ) { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
+                [[flatten]] if ( ftrID >= 0 ) { hit.attribID = vtVerifyClosestHit(int(hid),-1)+1; } else 
+                [[flatten]] if ( ftrID <  0 ) { hit.attribID = 0;vtVerifyMissedHit(int(hid),0)+1; };
 
 
                 /*
