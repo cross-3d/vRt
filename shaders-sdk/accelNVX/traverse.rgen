@@ -49,7 +49,8 @@ layout(push_constant) uniform rayParams {
 
 void main() {
     // planned task-based BVH traversing (for two-level BVH support)
-    const uint wsize = min(rayCounter[WID], MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
+    //const uint wsize = min(rayCounter[WID], MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
+    const uint wsize = min(uint(rayTypedCounterRead[stageUniform.currentGroup][WID]), uint(MAX_RAYS)); IFANY (wsize <= 0) return; // TODO: dedicated ray counter 
     const uint tsize = (gl_LaunchSizeNV.x*gl_LaunchSizeNV.y), tWc = (gl_LaunchSizeNV.x*gl_LaunchIDNV.y+gl_LaunchIDNV.x);
     for (uint Wi=0u;Wi<wsize;Wi+=tsize) {
         const uint W = tWc + Wi;

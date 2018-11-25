@@ -78,14 +78,25 @@ namespace _vt {
             cmdFillBuffer<0u>(*cmdBuf, rtset->_groupCountersBufferRead);
             cmdClean(), cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_rtLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, rtppl->_tiling.width), tiled(y, rtppl->_tiling.height), TMC);
+            cmdDispatch(*cmdBuf, rtppl->_generationPipeline[0], tiled(x, rtppl->_tiling.width), tiled(y, rtppl->_tiling.height), TMC, false);
+        };
+
+        bool hasGroupShaders = false;
+        for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_groupPipeline.size()); i++) {
+            if (rtppl->_groupPipeline[i]) { hasGroupShaders = true; break; };
         };
 
         // ray trace command
         for (auto it = 0u; it < B; it++) {
-            // update uniform buffer of ray tracing steps
-            rtset->_cuniform.iteration = it;
-            cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+
+            // reload to caches and reset counters (if has group shaders)
+            {
+                rtset->_cuniform.iteration = it; commandBarrier(*cmdBuf);
+                cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+                cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 64ull * sizeof(cntr_t)) });
+                cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, (rtset->_cuniform.maxRayCount) * MAX_RAY_GROUPS * sizeof(uint32_t)) });
+                cmdClean();
+            };
 
             // run traverse processing (single accelerator supported at now)
             if (vertx && vertx->_calculatedPrimitiveCount > 0) {
@@ -110,57 +121,31 @@ namespace _vt {
                     vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, vasmp->_pipelineLayout->_rtLayout, 0, _tvSets.size(), _tvSets.data(), 0, nullptr);
                     cmdDispatch(*cmdBuf, vasmp->_intrpPipeline, tiled(IV_INTENSIVITY, TPC), 1u, TMC); // interpolate intersections
                 };
-
-                // multiple-time traversing no more needed since added instancing 
-                //cmdCopyBuffer(*cmdBuf, rtset->_countersBuffer, rtset->_constBuffer, { vk::BufferCopy(strided<uint32_t>(3), offsetof(VtStageUniform, closestHitOffset), sizeof(uint32_t)) });
-                //cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<cntr_t>(1), sizeof(cntr_t), &zero); //reset collection hit counter
             };
 
-            // reload to caches and reset counters (if has group shaders)
-            bool hasGroupShaders = false;
+            // use RT pipeline layout
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_rtLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
-            for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_groupPipeline.size()); i++) {
-                if (rtppl->_groupPipeline[i]) {
-                    cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 64ull * sizeof(cntr_t)) });
-                    cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, (rtset->_cuniform.maxRayCount) * MAX_RAY_GROUPS * sizeof(uint32_t)) });
-                    cmdClean(), commandBarrier(*cmdBuf);
-                    hasGroupShaders = true; break;
-                };
-            };
+
+            // handling misses in groups
+            if (rtppl->_missHitPipeline[0]) { cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], tiled(INTENSIVITY, TPC), 1u, TMC, false); };
 
             // handling hits in groups
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
-                if (rtppl->_closestHitPipeline[i]) {
-                    //rtset->_cuniform.currentGroup = i;
-                    //cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                    cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], tiled(INTENSIVITY, TPC), 1u, TMC, false);
-                };
+                if (rtppl->_closestHitPipeline[i]) { cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], tiled(INTENSIVITY, TPC), 1u, TMC, false); };
             };
 
-            // handling misses in groups
-            // moved to after in 11.10.2018
-            if (rtppl->_missHitPipeline[0]) {
-                //cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], tiled(INTENSIVITY, TPC), 1u, TMC, false);
-            };
-
-            // hit shading barrier
+            // pre-group shader barrier 
             commandBarrier(*cmdBuf);
-
-            // clear counters for pushing newer data
-            //if (hasGroupShaders) cmdFillBuffer<0u>(*cmdBuf, rtset->_countersBuffer);
 
             // use resolve shader for resolve ray output or pushing secondaries
             for (auto i = 0u; i < std::min(std::size_t(4ull), rtppl->_groupPipeline.size()); i++) {
-                if (rtppl->_groupPipeline[i]) {
-                    //rtset->_cuniform.currentGroup = i;
-                    //cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
-                    cmdDispatch(*cmdBuf, rtppl->_groupPipeline[i], tiled(INTENSIVITY, TPC), 1u, TMC, false);
-                };
+                if (rtppl->_groupPipeline[i]) { cmdDispatch(*cmdBuf, rtppl->_groupPipeline[i], tiled(INTENSIVITY, TPC), 1u, TMC, false); };
             };
-
-            if (hasGroupShaders) commandBarrier(*cmdBuf);
         };
+
+        // in-end barrier
+        //commandBarrier(*cmdBuf);
+
         return result;
     };
 

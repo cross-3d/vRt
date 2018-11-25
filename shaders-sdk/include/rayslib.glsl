@@ -128,7 +128,8 @@ int vtFetchHitClosest(in int lidx) { return vtFetchHitIdc(lidx); };
 //
 uint vtFetchCode(in int lidx) { return imageLoad(rayLink, int((RPG_OFF+lidx)<<2)|1).x; };
 highp uvec2 vtFetchIndex(in int lidx) { return up2x_16(vtFetchCode(lidx)); };
-int vtRayIdx(in int lidx) { return (lidx >= 0 && lidx < MAX_RAYS ? rayGroupIndices[RPG_OFF + lidx] : 0)-1; };
+//int vtRayIdx(in int lidx) { return (lidx >= 0 && lidx < MAX_RAYS ? rayGroupIndices[RPG_OFF + lidx] : 0)-1; };
+int vtRayIdx(in int lidx) { return (lidx >= 0 && lidx < MAX_RAYS ? rayGroupIndicesRead[RPG_OFF + lidx] : 0)-1; };
 
 int vtVerifyClosestHit(in int closestId, in lowp int g) {
     const int id = g < 0 ? atomicIncClosestHitCount() : atomicIncClosestHitTypedCount(g);

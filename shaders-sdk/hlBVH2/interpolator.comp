@@ -12,7 +12,6 @@
 #define EXTEND_LOCAL_GROUPS
 //#define WORK_SIZE 64u
 
-
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
@@ -34,6 +33,7 @@ LOCAL_SIZE_LAYOUT;
 // can be replaced by custom interpolation shader with custom vertex assembly pipeline
 void main() {
     const uint wsize = min(closestHitCounterCurrent[WID], MAX_HITS); IFANY (wsize <= 0) return;
+    //const uint wsize = min(uint(rayTypedCounterRead[stageUniform.currentGroup][WID]), uint(MAX_RAYS)); IFANY (wsize <= 0) return; // TODO: dedicated ray counter 
     const uint wcount = min(tiled(uint(wsize)*4u, gl_WorkGroupSize.x), 2097152u);
     const uint hitGroupDirection = 0u;
 
