@@ -83,5 +83,6 @@
         "xthread": "cpp",
         "set": "cpp",
         "unordered_set": "cpp"
-    }
+    },
+    "workbench.colorCustomizations": {}
 }
