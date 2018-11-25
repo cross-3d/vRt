@@ -54,3 +54,7 @@ lib/libglfw3
 *.svgz
 #testscene/models/*
 #screenshots/*
+*/GLSLANG.spv
+*/GLSLANG.SPV
+GLSLANG.spv
+GLSLANG.SPV
