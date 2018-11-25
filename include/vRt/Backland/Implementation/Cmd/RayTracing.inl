@@ -90,12 +90,11 @@ namespace _vt {
         for (auto it = 0u; it < B; it++) {
 
             // reload to caches and reset counters (if has group shaders)
-            {
-                rtset->_cuniform.iteration = it; commandBarrier(*cmdBuf);
-                cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform);
+            {   commandBarrier(*cmdBuf);
+                if (it > 0) { rtset->_cuniform.iteration = it; cmdUpdateBuffer(*cmdBuf, rtset->_constBuffer, 0, sizeof(rtset->_cuniform), &rtset->_cuniform); };
                 cmdCopyBuffer(*cmdBuf, rtset->_groupCountersBuffer, rtset->_groupCountersBufferRead, { vk::BufferCopy(0, 0, 64ull * sizeof(cntr_t)) });
                 cmdCopyBuffer(*cmdBuf, rtset->_groupIndicesBuffer, rtset->_groupIndicesBufferRead, { vk::BufferCopy(0, 0, (rtset->_cuniform.maxRayCount) * MAX_RAY_GROUPS * sizeof(uint32_t)) });
-                cmdClean();
+                cmdClean(), commandBarrier(*cmdBuf);
             };
 
             // run traverse processing (single accelerator supported at now)
@@ -134,17 +133,19 @@ namespace _vt {
             // handling misses in groups
             if (rtppl->_missHitPipeline[0]) { cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], tiled(INTENSIVITY, TPC), 1u, TMC, false); };
 
-            // pre-group shader barrier 
-            commandBarrier(*cmdBuf);
+            // if has group shaders 
+            if (hasGroupShaders) 
+            { commandBarrier(*cmdBuf);  // pre-group shader barrier 
 
-            // use resolve shader for resolve ray output or pushing secondaries
-            for (auto i = 0u; i < std::min(std::size_t(4ull), rtppl->_groupPipeline.size()); i++) {
-                if (rtppl->_groupPipeline[i]) { cmdDispatch(*cmdBuf, rtppl->_groupPipeline[i], tiled(INTENSIVITY, TPC), 1u, TMC, false); };
+                // use resolve shader for resolve ray output or pushing secondaries
+                for (auto i = 0u; i < std::min(std::size_t(4ull), rtppl->_groupPipeline.size()); i++) {
+                    if (rtppl->_groupPipeline[i]) { cmdDispatch(*cmdBuf, rtppl->_groupPipeline[i], tiled(INTENSIVITY, TPC), 1u, TMC, false); };
+                };
             };
         };
 
         // in-end barrier
-        //commandBarrier(*cmdBuf);
+        commandBarrier(*cmdBuf);
 
         return result;
     };
