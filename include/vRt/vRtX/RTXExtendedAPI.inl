@@ -10,6 +10,7 @@ namespace vrt {
         virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; }; // in-runtime return acceleration extension name
         virtual VtResult _Criteria(std::shared_ptr<_vt::DeviceFeatures> lwFeatures) const override;
         virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice, std::shared_ptr<_vt::AcceleratorExtensionBase>& _hExtensionAccelerator) const override;
+        virtual VtResult _DeviceInitialization(std::shared_ptr<_vt::Device> vtDevice) const override;
 
     public:
 

@@ -109,8 +109,8 @@ namespace _vt {
         vtDevice->_pipelineCache = _device.createPipelineCache(vk::PipelineCacheCreateInfo());
 
         // make descriptor pool
-        constexpr const auto mult = 0x800u;
-        std::vector<vk::DescriptorPoolSize> dps = {
+        { constexpr const auto mult = 0x800u;
+        std::vector<VkDescriptorPoolSize> dps = {
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(0x100u * mult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageImage).setDescriptorCount(0x100u * mult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageBuffer).setDescriptorCount(0x100u * mult),
@@ -120,51 +120,26 @@ namespace _vt {
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageTexelBuffer).setDescriptorCount(0x100u * mult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(0x100u * mult)
         };
-
-        // if ray tracing NV supported, add additional descriptor pool types
-        for (auto i : vtDevice->_features->_extensions) {
-            if (std::string(i.extensionName).compare("VK_NV_raytracing") == 0 || std::string(i.extensionName).compare("VK_NV_ray_tracing") == 0 || std::string(i.extensionName).compare("VK_NVX_raytracing") == 0) {
-                vtDevice->_descriptorAccess |= VK_SHADER_STAGE_RAYGEN_BIT_NV; //| VK_SHADER_STAGE_COMPUTE_BIT;
-                dps.push_back(vk::DescriptorPoolSize().setType(vk::DescriptorType::eAccelerationStructureNV).setDescriptorCount(0x1u * mult));
-                break;
-            };
-        };
-
-        vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(1024).setPPoolSizes(dps.data()).setPoolSizeCount(dps.size()).setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBindEXT)));
-        //vtDevice->_mainFamilyIndex = vtExtension.mainQueueFamily;
+        vtDevice->_descriptorPoolSizes = dps; };
         vtDevice->_shadersPath = vtExtension.shaderPath;
 
+        // if ray tracing NV supported, add additional descriptor pool types
+        if (vtExtension.enableAdvancedAcceleration && vtExtension.pAccelerationExtension) {
+            vtExtension.pAccelerationExtension->_DeviceInitialization(vtDevice);
+        };
+
+        // 
         if (vtExtension.pFamilyIndices) {
             for (uint32_t i = 0; i < vtExtension.familyIndiceCount; i++) {
                 vtDevice->_familyIndices.push_back(vtExtension.pFamilyIndices[i]);
             };
         };
 
-
-
-        // buffer <--> host traffic buffers
-        /*{ const constexpr uint32_t t = 0u;
-        vtDevice->_bufferTraffic.push_back(std::make_shared<BufferTraffic>());
-
-        // make traffic buffers 
-        VtDeviceBufferCreateInfo dbfi = {};
-        dbfi.bufferSize = strided<uint32_t>(vtExtension.sharedCacheSize);
-        dbfi.format = VkFormat(vk::Format::eR8Uint); // just uint8_t data
-
-        vtDevice->_bufferTraffic[t]->_device = vtDevice;
-        createHostToDeviceBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_uploadBuffer);
-        createDeviceToHostBuffer(vtDevice, dbfi, vtDevice->_bufferTraffic[t]->_downloadBuffer);
-        };*/
-
-
-
-
-
-
         //
-        auto pbindings = vk::DescriptorBindingFlagBitsEXT::ePartiallyBound | vk::DescriptorBindingFlagBitsEXT::eUpdateAfterBind | vk::DescriptorBindingFlagBitsEXT::eVariableDescriptorCount | vk::DescriptorBindingFlagBitsEXT::eUpdateUnusedWhilePending;
-        auto vkfl = vk::DescriptorSetLayoutBindingFlagsCreateInfoEXT().setPBindingFlags(&pbindings);
-        auto vkpi = vk::DescriptorSetLayoutCreateInfo().setPNext(&vkfl);
+         const auto pbindings = vk::DescriptorBindingFlagBitsEXT::ePartiallyBound | vk::DescriptorBindingFlagBitsEXT::eUpdateAfterBind | vk::DescriptorBindingFlagBitsEXT::eVariableDescriptorCount | vk::DescriptorBindingFlagBitsEXT::eUpdateUnusedWhilePending;
+         const auto vkfl = vk::DescriptorSetLayoutBindingFlagsCreateInfoEXT().setPBindingFlags(&pbindings);
+         const auto vkpi = vk::DescriptorSetLayoutCreateInfo().setPNext(&vkfl);
+        vtDevice->_descriptorPool = VkDescriptorPool(_device.createDescriptorPool(vk::DescriptorPoolCreateInfo().setMaxSets(1024).setPPoolSizes((vk::DescriptorPoolSize*)vtDevice->_descriptorPoolSizes.data()).setPoolSizeCount(vtDevice->_descriptorPoolSizes.size()).setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBindEXT)));
 
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {

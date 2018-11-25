@@ -23,6 +23,18 @@ namespace vrt {
         return accelerationExtension->_Init(lwDevice, this);
     };
 
+    VtResult VtRTXAcceleratorExtension::_DeviceInitialization(std::shared_ptr<_vt::Device> vtDevice) const {
+        constexpr const auto mult = 0x800u; VtResult result = VK_ERROR_EXTENSION_NOT_PRESENT;
+        for (auto i : vtDevice->_features->_extensions) {
+            if (std::string(i.extensionName).compare("VK_NV_raytracing") == 0 || std::string(i.extensionName).compare("VK_NV_ray_tracing") == 0 || std::string(i.extensionName).compare("VK_NVX_raytracing") == 0) {
+                vtDevice->_descriptorAccess |= VK_SHADER_STAGE_RAYGEN_BIT_NV;
+                vtDevice->_descriptorPoolSizes.push_back(vk::DescriptorPoolSize().setType(vk::DescriptorType::eAccelerationStructureNV).setDescriptorCount(0x1u * mult));
+                result = VK_SUCCESS; break;
+            };
+        };
+        return result;
+    };
+
     // required for RTX top level support 
     VtResult vtGetAcceleratorHandleNV(VtAcceleratorSet accSet, VtHandleRTX * acceleratorHandleNV) {
         if (accSet->_hExtension && accSet->_hExtension->_AccelerationName() == VT_ACCELERATION_NAME_RTX) {

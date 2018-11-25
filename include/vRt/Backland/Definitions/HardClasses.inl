@@ -93,6 +93,7 @@ namespace _vt { // store in undercover namespace
         VkDescriptorPool _descriptorPool = {};
         VkDescriptorSet _emptyDS = {};
         VkShaderStageFlags _descriptorAccess = VK_SHADER_STAGE_COMPUTE_BIT;
+        std::vector<VkDescriptorPoolSize> _descriptorPoolSizes = {};
 
         // TODO: optional when enabled extensions 
         uint32_t _supportedThreadCount = 1u;
