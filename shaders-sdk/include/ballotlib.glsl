@@ -90,8 +90,8 @@ void bPrefixSum(in bvec4 val, inout lowp uvec4 sums, inout lowp uvec4 pfxs) {
 #define initAtomicSubgroupIncFunction(mem, fname, by, T)\
 T fname() {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));};\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
+    return T(pfx.y) * T(by) + gadd;\
 };
 /*
 #ifdef REGULAR_ATOMIC_INC
@@ -104,15 +104,15 @@ T fname(in uint WHERE) {\
 #define initAtomicSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in  uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));};\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
+    return T(pfx.y) * T(by) + gadd;\
 };
 
 #define initAtomicSubgroupIncFunctionTargetBinarity(mem, fname, by, T)\
 T fname(in  uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem[WID], T(pfx.x) * T(by));};\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = atomicAdd(mem[WID], T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
+    return T(pfx.y) * T(by) + gadd;\
 };
 
 //#endif
@@ -122,8 +122,8 @@ T fname(in  uint WHERE) {\
 #define initSubgroupIncFunctionTarget(mem, fname, by, T)\
 T fname(in  uint WHERE) {\
     const lowp uvec2 pfx = bPrefixSum();\
-    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));};\
-    return T(pfx.y) * T(by) + readFLane(gadd);\
+    T gadd = 0; [[flatten]] if (subgroupElect()) {gadd = add(mem, T(pfx.x) * T(by));}; gadd = readFLane(gadd);\
+    return T(pfx.y) * T(by) + gadd;\
 };
 
 /*

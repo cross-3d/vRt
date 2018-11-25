@@ -62,7 +62,7 @@ void main() {
                     
                     //imageAtomicMax(rayLink,r4ID,(hid+1).x);
                     [[flatten]] if ( ftrID >= 0 ) { hit.attribID = vtVerifyClosestHit(hid,-1)+1; } else 
-                    [[flatten]] if ( ftrID <  0 ) { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
+                                                  { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
 
                     /*
                     const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);
