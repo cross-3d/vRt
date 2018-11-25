@@ -72,11 +72,8 @@ void main() {
                 hit.idat = primitiveState.binaryData128, hit.uvt = LAST_INTERSECTION;
                 
                 //imageAtomicMax(rayLink,r4ID,(hid+1).x);
-                [[flatten]] if ( ftrID >= 0 ) 
-                    { hit.attribID = vtVerifyClosestHit(hid,-1)+1; }
-                else
-                //[[flatten]] if ( ftrID < 0 ) 
-                    { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
+                [[flatten]] if ( ftrID >= 0 ) { hit.attribID = vtVerifyClosestHit(hid,-1)+1; };
+                [[flatten]] if ( ftrID <  0 ) { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
 
 
                 /*
