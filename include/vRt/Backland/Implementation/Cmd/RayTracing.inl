@@ -126,13 +126,13 @@ namespace _vt {
             // use RT pipeline layout
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, rtppl->_pipelineLayout->_rtLayout, 0, _rtSets.size(), _rtSets.data(), 0, nullptr);
 
-            // handling misses in groups
-            if (rtppl->_missHitPipeline[0]) { cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], tiled(INTENSIVITY, TPC), 1u, TMC, false); };
-
             // handling hits in groups
             for (int i = 0; i < std::min(std::size_t(4ull), rtppl->_closestHitPipeline.size()); i++) {
                 if (rtppl->_closestHitPipeline[i]) { cmdDispatch(*cmdBuf, rtppl->_closestHitPipeline[i], tiled(INTENSIVITY, TPC), 1u, TMC, false); };
             };
+
+            // handling misses in groups
+            if (rtppl->_missHitPipeline[0]) { cmdDispatch(*cmdBuf, rtppl->_missHitPipeline[0], tiled(INTENSIVITY, TPC), 1u, TMC, false); };
 
             // pre-group shader barrier 
             commandBarrier(*cmdBuf);
