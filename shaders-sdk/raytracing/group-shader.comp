@@ -1,6 +1,8 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+//#define EXTEND_LOCAL_GROUPS
+
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
