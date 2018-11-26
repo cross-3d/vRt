@@ -131,8 +131,8 @@ namespace _vt {
 
                 // ray traversing local cache extension
                 // phantom performance impacts detected here!
-                constexpr auto LOCAL_SIZE = 1024ull, STACK_SIZE = 8ull, PAGE_COUNT = 4ull, STATE_COUNT = 2ull;
-                bfi.bufferSize = ((RV_INTENSIVITY * STACK_SIZE * (LOCAL_SIZE * PAGE_COUNT * STATE_COUNT + 2048ull)) * sizeof(uint32_t)) * DUAL_COMPUTE;
+                constexpr auto LOCAL_SIZE = 2048ull, STACK_SIZE = 8ull, PAGE_COUNT = 4ull, STATE_COUNT = 2ull;
+                bfi.bufferSize = strided<uint32_t>(RV_INTENSIVITY * STACK_SIZE * LOCAL_SIZE * (PAGE_COUNT * STATE_COUNT + 1)) * DUAL_COMPUTE;
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bManager, bfi, vtRTSet->_traverseCache);
 

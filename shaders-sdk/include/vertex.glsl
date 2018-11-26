@@ -136,13 +136,15 @@ vec4 uniteBoxTop(in vec4 glb) { return point4(fma((glb - bvhBlockTop.sceneMin) /
 #ifndef VRT_USE_FAST_INTERSECTION
 float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, inout bool _valid) {
     float T = INFINITY;
-    IFANY (_valid) {
+    //IFANY (_valid) {
+    [[flatten]] if (_valid) {
         const mat3 ABC = mat3((TLOAD(lvtx, tri*3+0)+orig.x).xyz, (TLOAD(lvtx, tri*3+1)+orig.y).xyz, (TLOAD(lvtx, tri*3+2)+orig.z).xyz)*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf
         vec3 UVW_ = uvwMap[axis] * inverse(ABC);
-        IFANY ((all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx))) && _valid) {
+        //IFANY ((all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx))) && _valid) {
+        [[flatten]] if ((all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx))) && _valid) {
             UVW_ /= (dot(UVW_, 1.f.xxx));
             UV = vec2(UVW_.yz), UVW_ *= ABC; // calculate axis distances
             T = mix(mix(UVW_.z, UVW_.y, axis == 1), UVW_.x, axis == 0);
@@ -157,7 +159,8 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
 #ifdef VRT_USE_FAST_INTERSECTION
 float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, inout bool _valid) {
     float T = INFINITY;
-    IFANY (_valid) {
+    //IFANY (_valid) {
+    [[flatten]] if (_valid) {
 #ifdef VTX_USE_MOLLER_TRUMBORE
         // classic intersection (Möller–Trumbore)
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
@@ -166,7 +169,8 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         const vec3 h = cross(dir.xyz, e2);
         const float a = dot(e1,h);
         [[flatten]] if (abs(a) <= 0.f) { _valid = false; };
-        IFANY (_valid) {
+        //IFANY (_valid) {
+        [[flatten]] if (_valid) {
             const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1), uvt = vec3(dot(s,h),dot(dir.xyz,q), dot(e2,q))/(a);
             uv = uvt.xy, T = uvt.z;
             [[flatten]] if (T >= N_INFINITY || any(lessThanEqual(vec4(SFO-uv.x-uv.y, uv, T), SFN.xxxx))) { _valid = false; };
@@ -177,7 +181,8 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
         const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
         const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/(dz);
         [[flatten]] if ( T >= N_INFINITY || abs(dz) <= 0.f ) { _valid = false; };
-        IFANY (_valid) {
+        //IFANY (_valid) {
+        [[flatten]] if (_valid) {
             const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
             [[flatten]] if (any(lessThanEqual(vec4(SFO-uv.x-uv.y, uv, T), SFN.xxxx))) { _valid = false; };
         };
