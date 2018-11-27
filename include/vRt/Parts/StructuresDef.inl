@@ -33,6 +33,7 @@ namespace vrt { // store in official namespace
     class VtDeviceAdvancedAccelerationExtension;
 
     // constexpr format compositor
+#pragma pack(push, 1)
     struct VtFormatDecomp {
         union { uint32_t _format = 0; struct { uint32_t _components : 2, _type : 4, _normalized : 1; } _formatDecomp; };
 
@@ -50,8 +51,10 @@ namespace vrt { // store in official namespace
         constexpr uint8_t getType() const { return _formatDecomp._type; };
         constexpr bool getNormalized() const { return _formatDecomp._normalized; };
     };
+#pragma pack(pop)
 
     // standart 32-bit combined virtual image
+#pragma pack(push, 1)
     struct VtVirtualCombinedImageV32 {
         union {
             uint64_t _combined = 0ull;
@@ -75,8 +78,10 @@ namespace vrt { // store in official namespace
         operator uint64_t() const { return _combined; };
         operator uint64_t&() { return _combined; };
     };
+#pragma pack(pop)
 
     // experimental 16-bit indexed virtual image
+#pragma pack(push, 1)
     struct VtVirtualCombinedImageV16 {
         union {
             uint32_t _combined = 0ull;
@@ -99,7 +104,7 @@ namespace vrt { // store in official namespace
         operator uint32_t() const { return _combined; };
         operator uint32_t&() { return _combined; };
     };
-
+#pragma pack(pop)
 
 
     typedef enum VtType : uint32_t {
@@ -110,32 +115,40 @@ namespace vrt { // store in official namespace
     } VtType;
 
     // any other vertex accessors can be used by attributes
+#pragma pack(push, 1)
     struct VtVertexAccessor {
         uint32_t bufferViewID = 0;
         uint32_t byteOffset = 0;
         VtFormatDecomp format;
         uint32_t reserved = 0;
     };
+#pragma pack(pop)
 
     // any other vertex bindings can be used by attributes
+#pragma pack(push, 1)
     struct VtVertexRegionBinding {
         uint32_t byteOffset = 0;
         uint32_t byteSize = 0;
     };
+#pragma pack(pop)
 
     // buffer view
+#pragma pack(push, 1)
     struct VtVertexBufferView {
         uint32_t regionID = 0;
         uint32_t byteOffset = 0;
         uint32_t byteStride = 0;
         uint32_t byteLength = 0;
     };
+#pragma pack(pop)
 
     // attribute binding
+#pragma pack(push, 1)
     struct VtVertexAttributeBinding {
         uint32_t attributeBinding = 0;
         uint32_t accessorID = 0;
     };
+#pragma pack(pop)
 
     // retype VtFormatDecomp
     using VtFormat = VtFormatDecomp;
