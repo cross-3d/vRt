@@ -159,35 +159,24 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
 #ifdef VRT_USE_FAST_INTERSECTION
 float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, inout bool _valid) {
     float T = INFINITY;
-    //IFANY (_valid) {
     [[flatten]] if (_valid) {
 #ifdef VTX_USE_MOLLER_TRUMBORE
         // classic intersection (Möller–Trumbore)
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-        const mat3 vT = mat3(TLOAD(lvtx, tri*3+0).xyz, TLOAD(lvtx, tri*3+1).xyz, TLOAD(lvtx, tri*3+2).xyz);
-        const vec3 e1 = vT[1]-vT[0], e2 = vT[2]-vT[0];
-        const vec3 h = cross(dir.xyz, e2);
-        const float a = dot(e1,h);
-        [[flatten]] if (abs(a) <= 0.f) { _valid = false; };
-        //IFANY (_valid) {
-        [[flatten]] if (_valid) {
-            const vec3 s = -(orig.xyz+vT[0]), q = cross(s, e1), uvt = vec3(dot(s,h),dot(dir.xyz,q), dot(e2,q))/(a);
-            uv = uvt.xy, T = uvt.z;
-            [[flatten]] if (T >= N_INFINITY || any(lessThanEqual(vec4(SFO-uv.x-uv.y, uv, T), SFN.xxxx))) { _valid = false; };
-        };
+        //const mat3 vT = mat3(TLOAD(lvtx, tri*3+0).xyz, TLOAD(lvtx, tri*3+1).xyz, TLOAD(lvtx, tri*3+2).xyz);
+        const vec3 v0 = TLOAD(lvtx, tri*3+0).xyz, e1 = TLOAD(lvtx, tri*3+1).xyz-v0, e2 = TLOAD(lvtx, tri*3+2).xyz-v0;
+        const vec3 h = cross(dir.xyz, e2); const float dz = dot(e1,h);
+        const vec3 s = -(orig.xyz+v0), q = cross(s, e1), uvt = vec3(dot(s,h),dot(dir.xyz,q),dot(e2,q))/(dz);
+        uv = uvt.xy, T = uvt.z;
 #else
         // intersect triangle by transform
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
         const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
         const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/(dz);
-        [[flatten]] if ( T >= N_INFINITY || abs(dz) <= 0.f ) { _valid = false; };
-        //IFANY (_valid) {
-        [[flatten]] if (_valid) {
-            const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
-            [[flatten]] if (any(lessThanEqual(vec4(SFO-uv.x-uv.y, uv, T), SFN.xxxx))) { _valid = false; };
-        };
+        const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
 #endif
-    }
+        [[flatten]] if (T >= N_INFINITY || abs(dz) <= 0.f || any(lessThanEqual(vec4(SFO-uv.x-uv.y, uv, T), SFN.xxxx))) { _valid = false; };
+    };
     return (_valid ? T : INFINITY);
 }
 #endif
