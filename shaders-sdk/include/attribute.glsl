@@ -26,10 +26,10 @@ const int VCOUNT = 3;
     #endif
 
     #ifdef VERTEX_FILLING
-    layout ( binding = 1, set = VTX_SET, std430   ) buffer materialsB { int vmaterials[]; };
+    layout ( binding = 1, set = VTX_SET, align_ssbo   ) buffer materialsB { int vmaterials[]; };
     layout ( binding = 4, set = VTX_SET, rgba32f  ) uniform highp image2D attrib_texture_out;
     #else
-    layout ( binding = 1, set = VTX_SET, std430   ) readonly buffer materialsB { int vmaterials[]; };
+    layout ( binding = 1, set = VTX_SET, align_ssbo   ) readonly buffer materialsB { int vmaterials[]; };
     layout ( binding = 6, set = VTX_SET           ) uniform highp sampler2D attrib_texture;
     #endif
 #endif

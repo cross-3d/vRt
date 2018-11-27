@@ -18,9 +18,9 @@
     #endif
 
     #ifdef VERTEX_FILLING
-    layout ( binding = 2, set = VTX_SET, std430 ) coherent buffer bitfieldsB { uint vbitfields[]; };
+    layout ( binding = 2, set = VTX_SET, align_ssbo ) coherent buffer bitfieldsB { uint vbitfields[]; };
     #else
-    layout ( binding = 2, set = VTX_SET, std430 ) readonly buffer bitfieldsB { uint vbitfields[]; };
+    layout ( binding = 2, set = VTX_SET, align_ssbo ) readonly buffer bitfieldsB { uint vbitfields[]; };
     #endif
 
     #if (defined(LEAF_GEN) || defined(VERTEX_FILLING))
@@ -69,27 +69,27 @@ struct BTYPE_ {
 
 #ifndef VERTEX_FILLING
 // Block of main BVH structure (for bottom levels will not required)
-layout ( binding = 0, set = 1, std430 ) readonly buffer bvhBlockB { BvhBlockT data[]; } bvhBlockState_[]; // bvhBlock of main structure 
+layout ( binding = 0, set = 1, align_ssbo ) readonly buffer bvhBlockB { BvhBlockT data[]; } bvhBlockState_[]; // bvhBlock of main structure 
 
 
 // Accessible blocks and instances for top levels, or task accessing (required shared buffers)
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 #ifdef BVH_CREATION
-layout ( binding = 2, set = 1, std430 ) buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
-//layout ( binding = 3, set = 1, std430 ) buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
-layout ( binding = 4, set = 1, std430 ) buffer BvhTransformB { mat3x4 transformData_[]; };
+layout ( binding = 2, set = 1, align_ssbo ) buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
+//layout ( binding = 3, set = 1, align_ssbo ) buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
+layout ( binding = 4, set = 1, align_ssbo ) buffer BvhTransformB { mat3x4 transformData_[]; };
 #else
-layout ( binding = 2, set = 1, std430 ) readonly buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
-//layout ( binding = 3, set = 1, std430 ) readonly buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
-layout ( binding = 4, set = 1, std430 ) readonly buffer BvhTransformB { mat3x4 transformData_[]; };
+layout ( binding = 2, set = 1, align_ssbo ) readonly buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
+//layout ( binding = 3, set = 1, align_ssbo ) readonly buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
+layout ( binding = 4, set = 1, align_ssbo ) readonly buffer BvhTransformB { mat3x4 transformData_[]; };
 #endif
 #endif
 
 
 #ifdef BVH_CREATION
-layout ( binding = 1, set = 1, std430 )          buffer bvhBoxesB { BTYPE_ bvhNodes_[]; } bInstances[];
+layout ( binding = 1, set = 1, align_ssbo )          buffer bvhBoxesB { BTYPE_ bvhNodes_[]; } bInstances[];
 #else
-layout ( binding = 1, set = 1, std430 ) readonly buffer bvhBoxesB { BTYPE_ bvhNodes_[]; } bInstances[];
+layout ( binding = 1, set = 1, align_ssbo ) readonly buffer bvhBoxesB { BTYPE_ bvhNodes_[]; } bInstances[];
 #endif
 #endif
 

@@ -24,7 +24,7 @@ const lowp int
 #define stack_t int[localStackSize]
 #define cacheID ((gl_WorkGroupSize.x*gl_NumWorkGroups.x*WID)+gl_GlobalInvocationID.x)
 const highp uint maxIterations = 16384u, GridSize = 64u*2u;
-layout ( binding = _CACHE_BINDING, set = 0, std430 ) coherent buffer VT_PAGE_SYSTEM {
+layout ( binding = _CACHE_BINDING, set = 0, align_ssbo ) coherent buffer VT_PAGE_SYSTEM {
     stack_t stack[WORK_SIZE*GridSize];
     stack_t pages[];
 } traverseCache;

@@ -16,14 +16,14 @@ const uint R_BLOCK_SIZE = R_BLOCK_WIDTH * R_BLOCK_HEIGHT;
 layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT) in;
 //LOCAL_SIZE_LAYOUT;
 
-layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
+layout (binding = 0, set = 2, align_ssbo) readonly buffer VT_GEN_EXAMPLE {
     mat4x4 camInv;
     mat4x4 projInv;
     vec4 sceneRes;
     int enable360, variant, r1, r2;
 } cameraUniform;
 
-layout ( binding = 3, set = 2, std430 ) readonly buffer VT_PARTITION {
+layout ( binding = 3, set = 2, align_ssbo ) readonly buffer VT_PARTITION {
     int partID, partSize, r0, r1;
 } partitionUniform;
 

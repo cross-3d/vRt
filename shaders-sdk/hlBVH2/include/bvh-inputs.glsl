@@ -8,36 +8,36 @@
 #endif
 
 
-layout ( binding = 0, set = 0, std430 ) restrict buffer MortoncodesB {
+layout ( binding = 0, set = 0, align_ssbo ) restrict buffer MortoncodesB {
     morton_t Mortoncodes[];
 };
 
-layout ( binding = 1, set = 0, std430 ) restrict buffer MortoncodesIndicesB {
+layout ( binding = 1, set = 0, align_ssbo ) restrict buffer MortoncodesIndicesB {
     int MortoncodesIndices[];
 };
 
-layout ( binding = 3, set = 0, std430 ) restrict buffer LeafsB {
+layout ( binding = 3, set = 0, align_ssbo ) restrict buffer LeafsB {
     leaf_t Leafs[];
 };
 
-layout ( binding = 4, set = 0, std430 ) restrict buffer bvhBoxesWorkB { 
+layout ( binding = 4, set = 0, align_ssbo ) restrict buffer bvhBoxesWorkB { 
     vec4 bvhBoxesWork[][2];
 };
 
-layout ( binding = 5, set = 0, std430 ) restrict buffer FlagsB {
+layout ( binding = 5, set = 0, align_ssbo ) restrict buffer FlagsB {
     int Flags[];
 };
 
-layout ( binding = 6, set = 0, std430 ) restrict buffer ActivesB {
+layout ( binding = 6, set = 0, align_ssbo ) restrict buffer ActivesB {
     //int Actives[][2];
     int Actives[];
 };
 
-layout ( binding = 7, set = 0, std430 ) restrict buffer LeafIndicesB {
+layout ( binding = 7, set = 0, align_ssbo ) restrict buffer LeafIndicesB {
     int LeafIndices[];
 };
 
-layout ( binding = 8, set = 0, std430 ) restrict buffer CountersB {
+layout ( binding = 8, set = 0, align_ssbo ) restrict buffer CountersB {
     int aCounter[2];
     int vtCounters[6];
 };
@@ -45,7 +45,7 @@ layout ( binding = 8, set = 0, std430 ) restrict buffer CountersB {
 
 // 
 struct VtBuildConst { int primitiveCount, primitiveOffset; };
-layout ( binding = 2, set = 0, std430 ) readonly restrict buffer BuildConstB {
+layout ( binding = 2, set = 0, align_ssbo ) readonly restrict buffer BuildConstB {
     VtBuildConst buildConst_[];
 };
 #define buildBlock buildConst_[0]

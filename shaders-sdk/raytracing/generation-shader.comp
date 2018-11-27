@@ -16,7 +16,7 @@ const uint R_BLOCK_WIDTH = 8, R_BLOCK_HEIGHT = 8;
 const uint R_BLOCK_SIZE = R_BLOCK_WIDTH * R_BLOCK_HEIGHT;
 layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT) in;
 
-layout ( binding = 0, set = 2, std430 ) readonly buffer VT_GEN_EXAMPLE {
+layout ( binding = 0, set = 2, align_ssbo ) readonly buffer VT_GEN_EXAMPLE {
     mat4x4 camInv, projInv;
     vec4 sceneRes;
     int enable360, variant, r1, r2;
@@ -28,7 +28,7 @@ layout ( binding = 2, set = 2, rgba32f ) uniform image2D _devImages[4];
 #define OriginPass _devImages[2]
 #define SpecularPass _devImages[3]
 
-layout ( binding = 3, set = 2, std430 ) readonly buffer VT_PARTITION {
+layout ( binding = 3, set = 2, align_ssbo ) readonly buffer VT_PARTITION {
     int partID, partSize, r0, r1;
 } partitionUniform;
 

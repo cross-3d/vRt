@@ -86,10 +86,10 @@ int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 //layout ( binding = 0, set = 1 )  uniform highp usamplerBuffer bufferSpace[8]; // 
 //#endif
 
-layout ( binding = 0, set = 1, std430 ) readonly buffer VT_VINPUT { u16vec2 data[]; } bufferSpace[];
-layout ( binding = 2, set = 1, std430 ) readonly buffer VT_BUFFER_VIEW { VtBufferView bufferViews[]; };
-layout ( binding = 3, set = 1, std430 ) readonly buffer VT_ACCESSOR { VtAccessor accessors[]; };
-layout ( binding = 4, set = 1, std430 ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
+layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { u16vec2 data[]; } bufferSpace[];
+layout ( binding = 2, set = 1, align_ssbo ) readonly buffer VT_BUFFER_VIEW { VtBufferView bufferViews[]; };
+layout ( binding = 3, set = 1, align_ssbo ) readonly buffer VT_ACCESSOR { VtAccessor accessors[]; };
+layout ( binding = 4, set = 1, align_ssbo ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
 
 
 //
@@ -122,11 +122,11 @@ struct VtVIUniform {
 };
 
 // uniform input of vertex loader
-//layout ( binding = 5, set = 1, std430 ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
-layout ( binding = 9, set = VTX_SET, std430 ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
+//layout ( binding = 5, set = 1, align_ssbo ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
+layout ( binding = 9, set = VTX_SET, align_ssbo ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
 layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
 #define vertexBlock _vertexBlock[gl_GlobalInvocationID.y + cblock.inputID]
-layout ( binding = 6, set = 1, std430 ) readonly buffer VT_TRANSFORMS { mat3x4 vTransforms[]; };
+layout ( binding = 6, set = 1, align_ssbo ) readonly buffer VT_TRANSFORMS { mat3x4 vTransforms[]; };
 
 
 uint calculateByteOffset(in int accessorID, in const uint bytecorrect) { //bytecorrect -= 1;

@@ -20,15 +20,15 @@ struct VtHitPayload {
 };
 
 // basic ray tracing buffers
-layout ( binding = 0, set = RS_SET, std430 ) coherent buffer VT_RAYS { VtRay rays[]; };
-layout ( binding = 1, set = RS_SET, std430 ) coherent buffer VT_HITS { VtHitData hits[]; };
-layout ( binding = 2, set = RS_SET, std430 ) coherent buffer VT_CLOSEST_HITS { int closestHits[]; };
-layout ( binding = 3, set = RS_SET, std430 ) coherent buffer VT_MISS_HITS { int missHits[]; };
-layout ( binding = 4, set = RS_SET, std430 ) coherent buffer VT_HIT_PAYLOAD { VtHitPayload hitPayload[]; };
-layout ( binding = 5, set = RS_SET, std430 ) coherent buffer VT_RAY_INDICES { int rayGroupIndices[]; };
+layout ( binding = 0, set = RS_SET, align_ssbo ) coherent buffer VT_RAYS { VtRay rays[]; };
+layout ( binding = 1, set = RS_SET, align_ssbo ) coherent buffer VT_HITS { VtHitData hits[]; };
+layout ( binding = 2, set = RS_SET, align_ssbo ) coherent buffer VT_CLOSEST_HITS { int closestHits[]; };
+layout ( binding = 3, set = RS_SET, align_ssbo ) coherent buffer VT_MISS_HITS { int missHits[]; };
+layout ( binding = 4, set = RS_SET, align_ssbo ) coherent buffer VT_HIT_PAYLOAD { VtHitPayload hitPayload[]; };
+layout ( binding = 5, set = RS_SET, align_ssbo ) coherent buffer VT_RAY_INDICES { int rayGroupIndices[]; };
 
 // system canvas info
-layout ( binding = 6, set = RS_SET, std430 ) readonly restrict buffer VT_CANVAS_INFO {
+layout ( binding = 6, set = RS_SET, align_ssbo ) readonly restrict buffer VT_CANVAS_INFO {
     int currentGroup, maxRayCount, maxHitCount, closestHitOffset;
     ivec2 size; int lastIteration, iteration;
 } stageUniform;
@@ -43,21 +43,21 @@ layout ( binding = 6, set = RS_SET, std430 ) readonly restrict buffer VT_CANVAS_
 #define cntr_t int[2] //ivec2 
 
 // counters
-layout ( binding = 7, set = RS_SET, std430 ) restrict buffer VT_RT_COUNTERS { cntr_t vtCounters[8]; };
+layout ( binding = 7, set = RS_SET, align_ssbo ) restrict buffer VT_RT_COUNTERS { cntr_t vtCounters[8]; };
 layout ( binding = 8, set = RS_SET, rg32ui ) uniform uimageBuffer taskList;
 
 // ray and hit linking buffer
 layout ( binding = 10, set = RS_SET, r32ui ) uniform uimageBuffer rayLink;
 layout ( binding = 11, set = RS_SET, rgba32f ) uniform imageBuffer attributes;
-layout ( binding = 12, set = RS_SET, std430 ) restrict buffer VT_GROUPS_COUNTERS {
+layout ( binding = 12, set = RS_SET, align_ssbo ) restrict buffer VT_GROUPS_COUNTERS {
     cntr_t rayTypedCounter[4];
     cntr_t closestHitTypedCounter[4];
     cntr_t missHitTypedCounter[4];
     cntr_t reservedCounter[4];
 };
 
-layout ( binding = 13, set = RS_SET, std430 ) readonly coherent buffer VT_RAY_INDICES_READ {int rayGroupIndicesRead[];};
-layout ( binding = 14, set = RS_SET, std430 ) readonly restrict buffer VT_GROUPS_COUNTERS_READ {
+layout ( binding = 13, set = RS_SET, align_ssbo ) readonly coherent buffer VT_RAY_INDICES_READ {int rayGroupIndicesRead[];};
+layout ( binding = 14, set = RS_SET, align_ssbo ) readonly restrict buffer VT_GROUPS_COUNTERS_READ {
     cntr_t rayTypedCounterRead[4];
     cntr_t closestHitTypedCounterRead[4];
     cntr_t missHitTypedCounterRead[4];

@@ -36,7 +36,7 @@ void precalculateNormals(in int rofft, in int trip, in mat3x4 transformNrm) {
 }
 
 //struct Transforms { mat3x4 transform, transformNrm; };
-//layout ( binding = 0, set = 2, std430 ) readonly buffer VTE_TRANSFORMS { mat3x4 vTransforms[]; };
+//layout ( binding = 0, set = 2, align_ssbo ) readonly buffer VTE_TRANSFORMS { mat3x4 vTransforms[]; };
 
 #define wsize vertexBlock.primitiveCount
 

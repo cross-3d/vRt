@@ -21,8 +21,8 @@ struct BvhBlockT {
 };
 
 
-layout ( binding = 9, set = 0, std430 ) readonly buffer SceneBoxB { vec4 minmax[]; };
-layout ( binding = 0, set = 1, std430 ) restrict buffer bvhBlockB { BvhBlockT data[]; } bvhBlockState_[];
+layout ( binding = 9, set = 0, align_ssbo ) readonly buffer SceneBoxB { vec4 minmax[]; };
+layout ( binding = 0, set = 1, align_ssbo ) restrict buffer bvhBlockB { BvhBlockT data[]; } bvhBlockState_[];
 #define bvhBlock bvhBlockState_[0].data[0]
 
 LOCAL_SIZE_LAYOUT;

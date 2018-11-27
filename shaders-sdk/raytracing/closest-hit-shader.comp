@@ -51,7 +51,7 @@ struct VtAppMaterial {
 
 #include "../include/hitlib.glsl"
 
-layout (binding = 0, set = 2, std430) readonly buffer VT_GEN_EXAMPLE {
+layout (binding = 0, set = 2, align_ssbo) readonly buffer VT_GEN_EXAMPLE {
     mat4x4 camInv;
     mat4x4 projInv;
     vec4 sceneRes;
