@@ -39,7 +39,6 @@ layout ( binding = 6, set = RS_SET, align_ssbo ) readonly restrict buffer VT_CAN
 #define RPG_OFF (MAX_RAYS*WID)
 #define HPG_OFF (MAX_HITS*WID)
 
-
 #define cntr_t int[2] //ivec2 
 
 // counters

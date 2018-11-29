@@ -125,7 +125,7 @@ struct VtVIUniform {
 //layout ( binding = 5, set = 1, align_ssbo ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
 layout ( binding = 9, set = VTX_SET, align_ssbo ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
 layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
-#define vertexBlock _vertexBlock[gl_GlobalInvocationID.y + cblock.inputID]
+#define vertexBlock _vertexBlock[readFLane(gl_GlobalInvocationID.y + cblock.inputID)]
 layout ( binding = 6, set = 1, align_ssbo ) readonly buffer VT_TRANSFORMS { mat3x4 vTransforms[]; };
 
 

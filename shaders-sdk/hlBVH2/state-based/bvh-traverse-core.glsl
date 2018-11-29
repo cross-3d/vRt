@@ -30,7 +30,7 @@ void resetEntry(in bool VALID) {
 };
 
 // 
-bool validIdxTop    (in    int idx) { return (currentState == BVH_STATE_TOP || (idx >= 0 && idx > traverseState.topLevelEntry)) && ( traverseState.topLevelEntry >= 0 ); };
+bool validIdxTop    (in    int idx) { return (currentState == BVH_STATE_TOP || (idx >= 0 && idx > topLevelEntry)) && ( topLevelEntry >= 0 ); };
 bool validIdx       (inout int idx) { return idx >= 0 && idx >= traverseState.entryIDBase; };
 bool validIdxEntry  (inout int idx) { return validIdx(idx) && idx != traverseState.entryIDBase; };
 bool validIdxIncluse(inout int idx) { return (currentState != BVH_STATE_TOP || idx != traverseState.entryIDBase) && validIdx(idx); };

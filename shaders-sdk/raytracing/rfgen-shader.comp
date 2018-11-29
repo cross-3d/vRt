@@ -39,7 +39,7 @@ shared VtRay lrays[R_BLOCK_SIZE];
 // planned ray generation shader example
 void main() {
     //ivec2 wh = stageUniform.size.xy, xy = ivec2(Launch_Idx.xy);
-    const ivec2 wh = /*stageUniform.size.xy*/ ivec2(cameraUniform.sceneRes.xy), xy = ivec2(Launch_Idx.xy) + ivec2(0, stageUniform.size.y*partitionUniform.partID);
+    const ivec2 wh = /*stageUniform.size.xy*/ readFLane(ivec2(cameraUniform.sceneRes.xy)), xy = ivec2(Launch_Idx.xy) + ivec2(0, stageUniform.size.y*partitionUniform.partID);
     //xy.y = (xy.y<<1) + ((int(WID)+xy.x)&1); // make checkerboard from direct pointers
     [[flatten]] IFANY (WID > 0) return;
     [[flatten]] if (all(greaterThanEqual(xy,(0).xx)) && all(lessThan(xy,wh))) {

@@ -3,7 +3,7 @@
 int traverseBVH2( in bool validTop ) {
     {   currentState = uint(bvhBlockTop.primitiveCount <= 1), LAST_INSTANCE = -1, INSTANCE_ID = currentState == BVH_STATE_BOTTOM ? 0 : -1;
         stackState = BvhSubState(traverseState.entryIDBase = BVH_ENTRY, mint_t(0), mint_t(0)), resrvState = BvhSubState(-1, mint_t(0), mint_t(0));
-        traverseState.topLevelEntry = (currentState == BVH_STATE_TOP ? stackState.idx : resrvState.idx);
+        topLevelEntry = readFLane(readFLane(currentState == BVH_STATE_TOP) ? stackState.idx : resrvState.idx);
         initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
     };
     

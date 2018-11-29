@@ -23,9 +23,9 @@
 
 #ifdef IS_RAY_SHADER
 //#define CPC 2304u
-#define WID (0u+gl_LaunchIDNV[Ni])
+#define WID readFLane(0u+gl_LaunchIDNV[Ni]) // shuld be uniform (scalar)
 #else
-#define WID (0u+gl_GlobalInvocationID[Ni])
+#define WID readFLane(0u+gl_GlobalInvocationID[Ni]) // shuld be uniform (scalar)
 #endif
 
 //#ifdef UNIVERSAL_PLATFORM
@@ -50,14 +50,11 @@
     //#endif
 #endif
 
+// 
 #define uint_ballot uvec4
-#define RL_ subgroupBroadcast
-#define RLF_ subgroupBroadcastFirst
+#define readLane subgroupBroadcast
+#define readFLane subgroupBroadcastFirst
 #define electedInvoc subgroupElect
-
-// universal aliases
-#define readFLane RLF_
-#define readLane RL_
 
 // subgroup barriers
 #define LGROUP_BARRIER memoryBarrier(),subgroupBarrier();

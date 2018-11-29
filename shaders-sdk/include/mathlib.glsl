@@ -9,7 +9,7 @@
 // Ray tracing NEXT capable shader standard development planned begin in 2019 year
 const float PHI = 1.6180339887498948482f;
 const float INFINITY = 1e+5f;
-const float SFN = 0.00000011920928955078125f, SFO = 1.00000011920928955078125f;
+const float SFN = 0.00000011920928955078125f, SFO = 1.f+SFN;//1.00000011920928955078125f;
 
 
 const float PI = 3.1415926535897932384626422832795028841971f;
