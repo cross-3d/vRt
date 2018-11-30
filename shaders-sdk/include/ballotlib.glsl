@@ -23,9 +23,9 @@
 
 #ifdef IS_RAY_SHADER
 //#define CPC 2304u
-#define WID readFLane(0u+gl_LaunchIDNV[Ni]) // shuld be uniform (scalar)
+#define WID (0u+gl_LaunchIDNV[Ni]) // shuld be uniform (scalar)
 #else
-#define WID readFLane(0u+gl_GlobalInvocationID[Ni]) // shuld be uniform (scalar)
+#define WID (0u+gl_GlobalInvocationID[Ni]) // shuld be uniform (scalar)
 #endif
 
 //#ifdef UNIVERSAL_PLATFORM

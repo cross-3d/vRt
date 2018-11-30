@@ -62,33 +62,28 @@ void main() {
             const vec4 ecolor = point4(f16_f32(ray.dcolor));
             const vec4 rcolor = ecolor * float(hit.idat.y>=0), bcolor = imageLoad(ColorOutput, icoord);
             const vec3 orgdir = dcts(ray.cdirect);
-            const vec3 normal = hitp.normalHeight.xyz;
+            const vec3 normal = hitp.normalHeight.xyz, orignv = fma(orgdir, hit.uvt.zzz, ray.origin.xyz);
 
             // get real origin of ray
-            ray.origin.xyz = fma(orgdir, hit.uvt.zzz, ray.origin.xyz); 
-            writeColor(ray.dcolor, vec4(0.f.xxx, 1.f));
+            ray.origin.xyz = orignv;
+            vtWriteColor(ray.dcolor, vec4(0.f.xxx, 1.f));
 
             // alternate of http://www.cwyman.org/papers/i3d17_hashedAlpha.pdf
             float alph = diffuse.a >= hrand(uvec4( vtFetchCode(rayID), stageUniform.iteration, packSnorm4x16(vec4(orgdir, 0.f)) )) ? 1.f : 0.f;
             [[flatten]] if (stageUniform.iteration == stageUniform.lastIteration) alph = diffuse.a;
 
             // transparency ray
-            VtRay newray = ray; {
-                const vec3 vdir = orgdir, shift = vdir;
-                //newray.origin.xyz = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
-                newray.origin.xyz = fma(shift, shiftLenght.xxx, ray.origin.xyz);
-                writeColor(newray.dcolor, vec4(rcolor.xyz * (1.f - alph).xxx, 1.f));
-                //vtEmitRays(ucoord.xy, 0);
+            {   const vec3 vdir = orgdir, shift = vdir;
+                ray.origin.xyz = fma(shift, shiftLenght.xxx, orignv);
+                vtWriteColor(ray.dcolor, vec4(rcolor.xyz * (1.f - alph).xxx, 1.f));
                 vtReuseRays(ucoord.xy, 0, rayID);
             };
             
             // create data for reflection rays
-            const vec3 vcolor = rcolor.xyz * alph; // visible ray color energy
             {
                 const vec3 vdir = reflect(orgdir, normal), shift = vdir;
-                //const vec3 orig = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
-                const vec3 orig = fma(shift, shiftLenght.xxx, ray.origin.xyz);
-                const vec3 rcol = vcolor * reflc.xyz;
+                const vec3 orig = fma(shift, shiftLenght.xxx, orignv);
+                const vec3 rcol = (rcolor.xyz * alph) * reflc.xyz;
 
                 ISTORE(OriginPass, icoord, vec4(orig, 1.f));
 #ifdef EXPERIMENTAL_UNORM16_DIRECTION
@@ -97,12 +92,12 @@ void main() {
                 ISTORE(NormalPass, icoord, vec4(uintBitsToFloat(lcts(vdir)),0.f.xx));
 #endif
                 ISTORE(SpecularPass, icoord, vec4(rcol, reflc.w));
-            }
+            };
 
             { // output color
                 const vec3 outcolor = ecolor.xyz * (1.f - reflc.xyz) * alph;
                 ISTORE(ColorOutput, icoord, vec4(fma(diffuse.xyz, outcolor.xyz, bcolor.xyz), 1.f));
-            }
+            };
         }
     }
 

@@ -48,7 +48,7 @@ struct VtRay { vec4 fdata; uvec4 bitspace; };
 
 
 // write color, but don't write (save) last element
-uvec2 writeColor(inout uvec2 rwby, in vec4 color) {
+uvec2 vtWriteColor(inout uvec2 rwby, in vec4 color) {
     const uvec2 clr = f32_f16(color);
     rwby = uvec2(clr.x, BFI_HW(clr.y, BFE_HW(rwby.y, 16, 16), 16, 16));
     return rwby;

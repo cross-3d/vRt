@@ -92,16 +92,14 @@ layout ( binding = 3, set = 1, align_ssbo ) readonly buffer VT_ACCESSOR { VtAcce
 layout ( binding = 4, set = 1, align_ssbo ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
 
 
-//
-highp uint M16(in uint BSC, in uint Ot, in uint uI) {
-    const uint I = (Ot+uI)>>1u;
-    return bufferSpace[NonUniform(BSC)].data[I>>1u][I&1u]; 
-};
-
-uint M32(in uint BSC, in uint Ot, in uint uI) {
-    const uint I = (Ot+uI)>>2u;
-    return p2x_16(bufferSpace[NonUniform(BSC)].data[I]); 
-};
+// 
+#ifdef ENABLE_INT16_SUPPORT
+uint16_t 
+#else
+highp uint 
+#endif
+     M16(in uint BSC, in uint Ot, in uint uI) { return bufferSpace[NonUniform(BSC)].data[(Ot+uI)>>2u][(uI>>1u)&1u]; };
+uint M32(in uint BSC, in uint Ot, in uint uI) { return p2x_16(bufferSpace[NonUniform(BSC)].data[(Ot+uI)>>2u]); };
 
 
 
@@ -125,7 +123,7 @@ struct VtVIUniform {
 //layout ( binding = 5, set = 1, align_ssbo ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
 layout ( binding = 9, set = VTX_SET, align_ssbo ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
 layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
-#define vertexBlock _vertexBlock[readFLane(gl_GlobalInvocationID.y + cblock.inputID)]
+#define vertexBlock _vertexBlock[gl_GlobalInvocationID.y + cblock.inputID]
 layout ( binding = 6, set = 1, align_ssbo ) readonly buffer VT_TRANSFORMS { mat3x4 vTransforms[]; };
 
 

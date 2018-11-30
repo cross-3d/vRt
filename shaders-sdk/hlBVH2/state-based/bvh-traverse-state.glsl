@@ -50,6 +50,7 @@ struct BvhTraverseState {
 } traverseState;
 
 BvhSubState stackState, resrvState;
+//#define topLevelEntry traverseState.topLevelEntry_
 
 //BvhSubState[2] stackStates;//stackState, resrvState;
 //#define stackState stackStates[0]
@@ -62,7 +63,7 @@ BvhSubState stackState, resrvState;
 //#define traverseState traverseStates[currentState] // yes, require two states 
 
 // 13.10.2018 added one mandatory stack page, can't be reached by regular operations 
-#define CACHE_BLOCK_SIZE readFLane((gl_WorkGroupSize.x*2u)*gl_NumWorkGroups.x*pageCount) // require one reserved block 
+#define CACHE_BLOCK_SIZE (gl_WorkGroupSize.x*2u)*gl_NumWorkGroups.x*pageCount // require one reserved block 
 #define CACHE_BLOCK (cacheID*pageCount)
 #define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
 

@@ -42,7 +42,7 @@ layout ( binding = 3, set = 2, align_ssbo ) readonly buffer VT_PARTITION {
 // planned ray generation shader example
 void main() {
     ray.fdata = 0.f.xxxx, ray.bitspace = 0u.xxxx;
-    const ivec2 wh = /*stageUniform.size.xy*/ readFLane(ivec2(cameraUniform.sceneRes.xy)), xy = ivec2(Launch_Idx.xy) + ivec2(0, stageUniform.size.y*partitionUniform.partID);
+    const ivec2 wh = /*stageUniform.size.xy*/ ivec2(cameraUniform.sceneRes.xy), xy = ivec2(Launch_Idx.xy) + ivec2(0, stageUniform.size.y*partitionUniform.partID);
     //xy.y = (xy.y<<1) + ((int(WID)+xy.x)&1); // make checkerboard from direct pointers
     [[flatten]] IFANY (WID > 0) return;
     [[flatten]] if (all(greaterThanEqual(xy,(0).xx)) && all(lessThan(xy,wh))) {
@@ -61,7 +61,7 @@ void main() {
         //};
 
         ray.dcolor = uvec2(0u.xx);
-        writeColor(ray.dcolor, 1.f.xxxx);
+        vtWriteColor(ray.dcolor, 1.f.xxxx);
         parameterb(RAY_ACTIVED, ray.dcolor.y, true);
         
         ray.origin.xyz = orig.xyz;

@@ -38,12 +38,12 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 void main() {
     ray.fdata = 0.f.xxxx, ray.bitspace = 0u.xxxx;
     //ivec2 wh = stageUniform.size.xy, xy = ivec2(Launch_Idx.xy);
-    const ivec2 wh = /*stageUniform.size.xy*/ readFLane(ivec2(cameraUniform.sceneRes.xy)), xy = ivec2(Launch_Idx.xy) + ivec2(0, stageUniform.size.y*partitionUniform.partID);
+    const ivec2 wh = /*stageUniform.size.xy*/ ivec2(cameraUniform.sceneRes.xy), xy = ivec2(Launch_Idx.xy) + ivec2(0, stageUniform.size.y*partitionUniform.partID);
     //xy.y = (xy.y<<1) + ((int(WID)+xy.x)&1); // make checkerboard from direct pointers
     [[flatten]] IFANY (WID > 0) return;
     [[flatten]] if (all(greaterThanEqual(xy,(0).xx)) && all(lessThan(xy,wh))) {
         ray.dcolor = uvec2(0u.xx);
-        writeColor(ray.dcolor, imageLoad(SpecularPass, xy));
+        vtWriteColor(ray.dcolor, imageLoad(SpecularPass, xy));
         parameterb(RAY_ACTIVED, ray.dcolor.y, true);
         
         ray.origin  = imageLoad(OriginPass, xy).xyz;
