@@ -3,6 +3,7 @@
 
 //#define EXTEND_LOCAL_GROUPS
 
+#define ENABLE_RAY_PUSH
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
@@ -28,12 +29,12 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 // Also, we have another vision of "DPI-pixel-sampling" problem, so we can use sample locations for generation bigger images by progressing smaller count of samples
 // papers: ???.pdf ( no direct equivalent )
 
-shared VtRay lrays[WORK_SIZE];
-#define ray lrays[Local_Idx]
+
 LOCAL_SIZE_LAYOUT;
 // 
 
 void main() {
+    //ray.fdata = 0.f.xxxx, ray.bitspace = 0u.xxxx;
     const uint wsize = min(uint(rayTypedCounterRead[stageUniform.currentGroup][WID]), uint(MAX_RAYS)); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 2097152u);
     for (uint w=0;w<wcount;w+=wgs) {
@@ -43,7 +44,8 @@ void main() {
         const bool overflow = globalID >= wsize || globalID < 0; IFALL(overflow) break;
 
         // get ray by id
-        ray = rays[RPG_OFF+rayID];
+        ray.fdata = 0.f.xxxx, ray.bitspace = 0u.xxxx;
+        if (!overflow) ray = rays[RPG_OFF+rayID];
         const int hitIdc = vtFetchHitClosest(rayID);
         
         const int hitpId = hit.payloadID-1;
@@ -76,8 +78,8 @@ void main() {
                 //newray.origin.xyz = fma(faceforward(normal, -shift, normal), shiftLenght.xxx, fma(shift, shiftLenght.xxx, ray.origin.xyz));
                 newray.origin.xyz = fma(shift, shiftLenght.xxx, ray.origin.xyz);
                 writeColor(newray.dcolor, vec4(rcolor.xyz * (1.f - alph).xxx, 1.f));
-                //vtEmitRays(newray, ucoord.xy, 0);
-                vtReuseRays(newray, ucoord.xy, 0, rayID);
+                //vtEmitRays(ucoord.xy, 0);
+                vtReuseRays(ucoord.xy, 0, rayID);
             };
             
             // create data for reflection rays

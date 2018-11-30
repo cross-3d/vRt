@@ -95,9 +95,17 @@ int atomicIncTaskCount() {return atomicIncVtCounters(6);}
 int atomicIncAttribCount() {return atomicIncVtCounters(7);}
 
 
+const uint R_BLOCK_WIDTH = 8, R_BLOCK_HEIGHT = 8;
+const uint R_BLOCK_SIZE = R_BLOCK_WIDTH * R_BLOCK_HEIGHT;
 
 #define rHIT hits[HPG_OFF+hitID]
-int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayID) {
+
+#ifdef ENABLE_RAY_PUSH
+const float center_p = 0.5f-SFN;
+shared VtRay lrays[WORK_SIZE];
+#define ray lrays[Local_Idx]
+
+int vtReuseRays(in highp uvec2 c2d, in uint type, in lowp int rayID) {
     [[flatten]] if (max3_vec(f16_f32(ray.dcolor)) > 1e-3f) {
         parameteri(RAY_TYPE, ray.dcolor.y, int(type));
         const int rID = atomicIncRayTypedCount(rGroupDefault);//atomicIncRayCount();
@@ -118,7 +126,9 @@ int vtReuseRays(in VtRay ray, in highp uvec2 c2d, in uint type, in lowp int rayI
     return rayID;
 };
 
-int vtEmitRays(in VtRay ray, in highp uvec2 c2d, in uint type) { return vtReuseRays(ray, c2d, type, -1); };
+int vtEmitRays(in highp uvec2 c2d, in uint type) { return vtReuseRays(c2d, type, -1); };
+#endif
+
 //int vtFetchHitIdc(in int lidx) { return int(imageAtomicMax(rayLink, (RPG_OFF+lidx)<<2, 0u).x)-1; }; // will be replace in traversing by tasks 
 int vtFetchHitIdc(in int lidx) { return int(imageLoad(rayLink, int(RPG_OFF+lidx)<<2).x)-1; };
 int vtFetchHitClosest(in int lidx) { return vtFetchHitIdc(lidx); };

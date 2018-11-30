@@ -1,6 +1,8 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+#define WORK_SIZE R_BLOCK_SIZE
+#define ENABLE_RAY_PUSH
 #define EXTEND_LOCAL_GROUPS
 #define IS_RAY_GEN
 #include "../include/driver.glsl"
@@ -11,8 +13,6 @@
 #include "../include/random.glsl"
 
 // use partition by 8x8
-const uint R_BLOCK_WIDTH = 8, R_BLOCK_HEIGHT = 8;
-const uint R_BLOCK_SIZE = R_BLOCK_WIDTH * R_BLOCK_HEIGHT;
 layout (local_size_x = R_BLOCK_WIDTH, local_size_y = R_BLOCK_HEIGHT) in;
 //LOCAL_SIZE_LAYOUT;
 
@@ -33,17 +33,15 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 #define OriginPass _devImages[2]
 #define SpecularPass _devImages[3]
 
-shared VtRay lrays[R_BLOCK_SIZE];
-#define ray lrays[Local_Idx]
 
 // planned ray generation shader example
 void main() {
+    ray.fdata = 0.f.xxxx, ray.bitspace = 0u.xxxx;
     //ivec2 wh = stageUniform.size.xy, xy = ivec2(Launch_Idx.xy);
     const ivec2 wh = /*stageUniform.size.xy*/ readFLane(ivec2(cameraUniform.sceneRes.xy)), xy = ivec2(Launch_Idx.xy) + ivec2(0, stageUniform.size.y*partitionUniform.partID);
     //xy.y = (xy.y<<1) + ((int(WID)+xy.x)&1); // make checkerboard from direct pointers
     [[flatten]] IFANY (WID > 0) return;
     [[flatten]] if (all(greaterThanEqual(xy,(0).xx)) && all(lessThan(xy,wh))) {
-
         ray.dcolor = uvec2(0u.xx);
         writeColor(ray.dcolor, imageLoad(SpecularPass, xy));
         parameterb(RAY_ACTIVED, ray.dcolor.y, true);
@@ -61,7 +59,7 @@ void main() {
         ISTORE(NormalPass, xy, vec4(0.f.xxx, 0.f));
         ISTORE(OriginPass, xy, vec4(0.f.xxx, 1.f));
         ISTORE(SpecularPass, xy, vec4(0.f.xxx, 0.f));
-        //vtReuseRays(ray, uvec2(xy), 0, int(Launch_Idx.y * wh.x + Launch_Idx.x)); // prefer strict layout
-        vtEmitRays(ray, uvec2(xy), 0);
+        //vtReuseRays(uvec2(xy), 0, int(Launch_Idx.y * wh.x + Launch_Idx.x)); // prefer strict layout
+        vtEmitRays(uvec2(xy), 0);
     };
 };
