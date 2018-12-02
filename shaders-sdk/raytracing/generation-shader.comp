@@ -32,13 +32,6 @@ layout ( binding = 3, set = 2, align_ssbo ) readonly buffer VT_PARTITION {
     int partID, partSize, r0, r1;
 } partitionUniform;
 
-
-
-// UNUSED: https://developer.oculus.com/blog/tech-note-mask-based-foveated-rendering-with-unreal-engine-4-/ (sort of... been in past)
-//   USED: sorts of VK_EXT_sample_locations or GL_NV_sample_locations
-
-
-
 // planned ray generation shader example
 void main() {
     ray.fdata = 0.f.xxxx, ray.bitspace = 0u.xxxx;
@@ -47,7 +40,7 @@ void main() {
     [[flatten]] IFANY (WID > 0) return;
     [[flatten]] if (all(greaterThanEqual(xy,(0).xx)) && all(lessThan(xy,wh))) {
         //const vec2 rnd = center_p.xx;
-        const vec2 rnd = unorm16x2Construct(hash(uvec2(p2x_16(uvec2(xy)), 1u)));
+        const vec2 rnd = 0.f.xx; //unorm16x2Construct(hash(uvec2(p2x_16(uvec2(xy)), 1u)));
         const vec2 coord = vec2(vec2(xy)+rnd)/vec2(wh);
 
         vec4 dir = vec4(0.f), orig = mult4(cameraUniform.camInv, vec4(vec3(0.0f), 1.0f)), eye = orig;

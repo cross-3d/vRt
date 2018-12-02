@@ -23,9 +23,9 @@
 
 #ifdef IS_RAY_SHADER
 //#define CPC 2304u
-#define WID (0u+gl_LaunchIDNV[Ni]) // shuld be uniform (scalar)
+#define WID (gl_LaunchIDNV[Ni].x) // shuld be uniform (scalar)
 #else
-#define WID (0u+gl_GlobalInvocationID[Ni]) // shuld be uniform (scalar)
+#define WID (gl_GlobalInvocationID[Ni].x) // shuld be uniform (scalar)
 #endif
 
 //#ifdef UNIVERSAL_PLATFORM
@@ -38,8 +38,8 @@
 
 #ifndef OUR_INVOC_TERM
     #define Launch_Idx (gl_GlobalInvocationID.xy)
-    #define Local_Idx (gl_LocalInvocationIndex)
-    #define Local_2D (gl_LocalInvocationIndex.xy)
+    #define Local_Idx (gl_LocalInvocationIndex.x)
+    //#define Local_2D (gl_LocalInvocationID.xy)
     //#define Global_Idx ()
     //#ifdef UNIVERSAL_PLATFORM
         #define Wave_Idx (gl_SubgroupID.x)
