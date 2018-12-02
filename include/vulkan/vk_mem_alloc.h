@@ -391,7 +391,9 @@ There are some exceptions though, when you should consider mapping memory only f
   for the time of any call to `vkQueueSubmit()` or `vkQueuePresentKHR()`, this
   block is migrated by WDDM to system RAM, which degrades performance. It doesn't
   matter if that particular memory block is actually used by the command buffer
-  being submitted. 
+  being submitted.
+- On Mac/MoltenVK there is a known bug - [Issue #175](https://github.com/KhronosGroup/MoltenVK/issues/175)
+  which requires unmapping before GPU can see updated texture.
 - Keeping many large memory blocks mapped may impact performance or stability of some debugging tools.
 
 \section memory_mapping_cache_control Cache control
@@ -1686,7 +1688,8 @@ typedef struct VmaAllocatorCreateInfo
     smaller amount of memory, because graphics driver doesn't necessary fail new
     allocations with `VK_ERROR_OUT_OF_DEVICE_MEMORY` result when memory capacity is
     exceeded. It may return success and just silently migrate some device memory
-    blocks to system RAM.
+    blocks to system RAM. This driver behavior can also be controlled using
+    VK_AMD_memory_overallocation_behavior extension.
     */
     const VkDeviceSize* pHeapSizeLimit;
     /** \brief Pointers to Vulkan functions. Can be null if you leave define `VMA_STATIC_VULKAN_FUNCTIONS 1`.
@@ -1949,6 +1952,9 @@ typedef enum VmaAllocationCreateFlagBits {
     VMA_ALLOCATION_CREATE_STRATEGY_WORST_FIT_BIT = 0x00020000,
     /** Allocation strategy that chooses first suitable free range for the
     allocation.
+
+    "First" doesn't necessarily means the one with smallest offset in memory,
+    but rather the one that is easiest and fastest to find.
     */
     VMA_ALLOCATION_CREATE_STRATEGY_FIRST_FIT_BIT = 0x00040000,
 
@@ -2373,6 +2379,31 @@ VkResult vmaAllocateMemoryForImage(
 void vmaFreeMemory(
     VmaAllocator allocator,
     VmaAllocation allocation);
+
+/** \brief Tries to resize an allocation in place, if there is enough free memory after it.
+
+Tries to change allocation's size without moving or reallocating it.
+You can both shrink and grow allocation size.
+When growing, it succeeds only when the allocation belongs to a memory block with enough
+free space after it.
+
+Returns `VK_SUCCESS` if allocation's size has been successfully changed.
+Returns `VK_ERROR_OUT_OF_POOL_MEMORY` if allocation's size could not be changed.
+
+After successful call to this function, VmaAllocationInfo::size of this allocation changes.
+All other parameters stay the same: memory pool and type, alignment, offset, mapped pointer.
+
+- Calling this function on allocation that is in lost state fails with result `VK_ERROR_VALIDATION_FAILED_EXT`.
+- Calling this function with `newSize` same as current allocation size does nothing and returns `VK_SUCCESS`.
+- Resizing dedicated allocations, as well as allocations created in pools that use linear
+  or buddy algorithm, is not supported.
+  The function returns `VK_ERROR_FEATURE_NOT_PRESENT` in such cases.
+  Support may be added in the future.
+*/
+VkResult vmaResizeAllocation(
+    VmaAllocator allocator,
+    VmaAllocation allocation,
+    VkDeviceSize newSize);
 
 /** \brief Returns current information about specified allocation and atomically marks it as used in current frame.
 
@@ -4504,7 +4535,9 @@ public:
     void ChangeBlockAllocation(
         VmaAllocator hAllocator,
         VmaDeviceMemoryBlock* block,
-        VkDeviceSize offset);
+        VkDeviceSize offset); 
+
+    void ChangeSize(VkDeviceSize newSize);
 
     // pMappedData not null means allocation is created with MAPPED flag.
     void InitDedicatedAllocation(
@@ -4766,6 +4799,9 @@ public:
     virtual void Free(const VmaAllocation allocation) = 0;
     virtual void FreeAtOffset(VkDeviceSize offset) = 0;
 
+    // Tries to resize (grow or shrink) space for given allocation, in place.
+    virtual bool ResizeAllocation(const VmaAllocation alloc, VkDeviceSize newSize) { return false; }
+
 protected:
     const VkAllocationCallbacks* GetAllocationCallbacks() const { return m_pAllocationCallbacks; }
 
@@ -4844,6 +4880,8 @@ public:
 
     virtual void Free(const VmaAllocation allocation);
     virtual void FreeAtOffset(VkDeviceSize offset);
+
+    virtual bool ResizeAllocation(const VmaAllocation alloc, VkDeviceSize newSize);
 
 private:
     uint32_t m_FreeCount;
@@ -5597,6 +5635,10 @@ public:
         VmaAllocation allocation);
     void RecordFreeMemory(uint32_t frameIndex,
         VmaAllocation allocation);
+    void RecordResizeAllocation(
+        uint32_t frameIndex,
+        VmaAllocation allocation,
+        VkDeviceSize newSize);
     void RecordSetAllocationUserData(uint32_t frameIndex,
         VmaAllocation allocation,
         const void* pUserData);
@@ -5762,6 +5804,10 @@ public:
 
     // Main deallocation function.
     void FreeMemory(const VmaAllocation allocation);
+
+    VkResult ResizeAllocation(
+        const VmaAllocation alloc,
+        VkDeviceSize newSize);
 
     void CalculateStats(VmaStats* pStats);
 
@@ -6294,6 +6340,12 @@ void VmaAllocation_T::ChangeBlockAllocation(
 
     m_BlockAllocation.m_Block = block;
     m_BlockAllocation.m_Offset = offset;
+}
+
+void VmaAllocation_T::ChangeSize(VkDeviceSize newSize)
+{
+    VMA_ASSERT(newSize > 0);
+    m_Size = newSize;
 }
 
 VkDeviceSize VmaAllocation_T::GetOffset() const
@@ -7220,6 +7272,133 @@ void VmaBlockMetadata_Generic::FreeAtOffset(VkDeviceSize offset)
         }
     }
     VMA_ASSERT(0 && "Not found!");
+}
+
+bool VmaBlockMetadata_Generic::ResizeAllocation(const VmaAllocation alloc, VkDeviceSize newSize)
+{
+    typedef VmaSuballocationList::iterator iter_type;
+    for(iter_type suballocItem = m_Suballocations.begin();
+        suballocItem != m_Suballocations.end();
+        ++suballocItem)
+    {
+        VmaSuballocation& suballoc = *suballocItem;
+        if(suballoc.hAllocation == alloc)
+        {
+            iter_type nextItem = suballocItem;
+            ++nextItem;
+
+            // Should have been ensured on higher level.
+            VMA_ASSERT(newSize != alloc->GetSize() && newSize > 0);
+
+            // Shrinking.
+            if(newSize < alloc->GetSize())
+            {
+                const VkDeviceSize sizeDiff = suballoc.size - newSize;
+
+                // There is next item.
+                if(nextItem != m_Suballocations.end())
+                {
+                    // Next item is free.
+                    if(nextItem->type == VMA_SUBALLOCATION_TYPE_FREE)
+                    {
+                        // Grow this next item backward.
+                        UnregisterFreeSuballocation(nextItem);
+                        nextItem->offset -= sizeDiff;
+                        nextItem->size += sizeDiff;
+                        RegisterFreeSuballocation(nextItem);
+                    }
+                    // Next item is not free.
+                    else
+                    {
+                        // Create free item after current one.
+                        VmaSuballocation newFreeSuballoc;
+                        newFreeSuballoc.hAllocation = VK_NULL_HANDLE;
+                        newFreeSuballoc.offset = suballoc.offset + newSize;
+                        newFreeSuballoc.size = sizeDiff;
+                        newFreeSuballoc.type = VMA_SUBALLOCATION_TYPE_FREE;
+                        iter_type newFreeSuballocIt = m_Suballocations.insert(nextItem, newFreeSuballoc);
+                        RegisterFreeSuballocation(newFreeSuballocIt);
+
+                        ++m_FreeCount;
+                    }
+                }
+                // This is the last item.
+                else
+                {
+                    // Create free item at the end.
+                    VmaSuballocation newFreeSuballoc;
+                    newFreeSuballoc.hAllocation = VK_NULL_HANDLE;
+                    newFreeSuballoc.offset = suballoc.offset + newSize;
+                    newFreeSuballoc.size = sizeDiff;
+                    newFreeSuballoc.type = VMA_SUBALLOCATION_TYPE_FREE;
+                    m_Suballocations.push_back(newFreeSuballoc);
+
+                    iter_type newFreeSuballocIt = m_Suballocations.end();
+                    RegisterFreeSuballocation(--newFreeSuballocIt);
+
+                    ++m_FreeCount;
+                }
+
+                suballoc.size = newSize;
+                m_SumFreeSize += sizeDiff;
+            }
+            // Growing.
+            else
+            {
+                const VkDeviceSize sizeDiff = newSize - suballoc.size;
+
+                // There is next item.
+                if(nextItem != m_Suballocations.end())
+                {
+                    // Next item is free.
+                    if(nextItem->type == VMA_SUBALLOCATION_TYPE_FREE)
+                    {
+                        // There is not enough free space, including margin.
+                        if(nextItem->size < sizeDiff + VMA_DEBUG_MARGIN)
+                        {
+                            return false;
+                        }
+
+                        // There is more free space than required.
+                        if(nextItem->size > sizeDiff)
+                        {
+                            // Move and shrink this next item.
+                            UnregisterFreeSuballocation(nextItem);
+                            nextItem->offset += sizeDiff;
+                            nextItem->size -= sizeDiff;
+                            RegisterFreeSuballocation(nextItem);
+                        }
+                        // There is exactly the amount of free space required.
+                        else
+                        {
+                            // Remove this next free item.
+                            UnregisterFreeSuballocation(nextItem);
+                            m_Suballocations.erase(nextItem);
+                            --m_FreeCount;
+                        }
+                    }
+                    // Next item is not free - there is no space to grow.
+                    else
+                    {
+                        return false;
+                    }
+                }
+                // This is the last item - there is no space to grow.
+                else
+                {
+                    return false;
+                }
+
+                suballoc.size = newSize;
+                m_SumFreeSize -= sizeDiff;
+            }
+
+            // We cannot call Validate() here because alloc object is updated to new size outside of this call.
+            return true;
+        }
+    }
+    VMA_ASSERT(0 && "Not found!");
+    return false;
 }
 
 bool VmaBlockMetadata_Generic::ValidateFreeSuballocationList() const
@@ -11368,7 +11547,7 @@ VkResult VmaRecorder::Init(const VmaRecordSettings& settings, bool useMutex)
 
     // Write header.
     fprintf(m_File, "%s\n", "Vulkan Memory Allocator,Calls recording");
-    fprintf(m_File, "%s\n", "1,3");
+    fprintf(m_File, "%s\n", "1,4");
 
     return VK_SUCCESS;
 }
@@ -11521,6 +11700,20 @@ void VmaRecorder::RecordFreeMemory(uint32_t frameIndex,
     VmaMutexLock lock(m_FileMutex, m_UseMutex);
     fprintf(m_File, "%u,%.3f,%u,vmaFreeMemory,%p\n", callParams.threadId, callParams.time, frameIndex,
         allocation);
+    Flush();
+}
+
+void VmaRecorder::RecordResizeAllocation(
+    uint32_t frameIndex,
+    VmaAllocation allocation,
+    VkDeviceSize newSize)
+{
+    CallParams callParams;
+    GetBasicParams(callParams);
+
+    VmaMutexLock lock(m_FileMutex, m_UseMutex);
+    fprintf(m_File, "%u,%.3f,%u,vmaResizeAllocation,%p,%llu\n", callParams.threadId, callParams.time, frameIndex,
+        allocation, newSize);
     Flush();
 }
 
@@ -12485,6 +12678,40 @@ void VmaAllocator_T::FreeMemory(const VmaAllocation allocation)
 
     allocation->SetUserData(this, VMA_NULL);
     vma_delete(this, allocation);
+}
+
+VkResult VmaAllocator_T::ResizeAllocation(
+    const VmaAllocation alloc,
+    VkDeviceSize newSize)
+{
+    if(newSize == 0 || alloc->GetLastUseFrameIndex() == VMA_FRAME_INDEX_LOST)
+    {
+        return VK_ERROR_VALIDATION_FAILED_EXT;
+    }
+    if(newSize == alloc->GetSize())
+    {
+        return VK_SUCCESS;
+    }
+
+    switch(alloc->GetType())
+    {
+    case VmaAllocation_T::ALLOCATION_TYPE_DEDICATED:
+        return VK_ERROR_FEATURE_NOT_PRESENT;
+    case VmaAllocation_T::ALLOCATION_TYPE_BLOCK:
+        if(alloc->GetBlock()->m_pMetadata->ResizeAllocation(alloc, newSize))
+        {
+            alloc->ChangeSize(newSize);
+            VMA_HEAVY_ASSERT(alloc->GetBlock()->m_pMetadata->Validate());
+            return VK_SUCCESS;
+        }
+        else
+        {
+            return VK_ERROR_OUT_OF_POOL_MEMORY;
+        }
+    default:
+        VMA_ASSERT(0);
+        return VK_ERROR_VALIDATION_FAILED_EXT;
+    }
 }
 
 void VmaAllocator_T::CalculateStats(VmaStats* pStats)
@@ -13887,6 +14114,30 @@ void vmaFreeMemory(
 #endif
     
     allocator->FreeMemory(allocation);
+}
+
+VkResult vmaResizeAllocation(
+    VmaAllocator allocator,
+    VmaAllocation allocation,
+    VkDeviceSize newSize)
+{
+    VMA_ASSERT(allocator && allocation);
+    
+    VMA_DEBUG_LOG("vmaResizeAllocation");
+    
+    VMA_DEBUG_GLOBAL_MUTEX_LOCK
+
+#if VMA_RECORDING_ENABLED
+    if(allocator->GetRecorder() != VMA_NULL)
+    {
+        allocator->GetRecorder()->RecordResizeAllocation(
+            allocator->GetCurrentFrameIndex(),
+            allocation,
+            newSize);
+    }
+#endif
+    
+    return allocator->ResizeAllocation(allocation, newSize);
 }
 
 void vmaGetAllocationInfo(

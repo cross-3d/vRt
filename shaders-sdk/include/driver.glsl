@@ -44,8 +44,12 @@
 
 
 // aligment mode 
+#ifdef ENABLE_SCALAR_BLOCK_LAYOUT
+#extension GL_EXT_scalar_block_layout : enable
+#define align_ssbo scalar
+#else
 #define align_ssbo std430
-
+#endif
 
 #define ENABLE_MULTI_BVH
 #extension GL_EXT_nonuniform_qualifier : enable

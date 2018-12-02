@@ -44,7 +44,7 @@ namespace _vt {
 
             // get properties and features
             gpu.getFeatures2(&_vkfeatures), gpu.getProperties2(&_vkproperties);
-            features->_features = _vkfeatures, features->_properties = _vkproperties;
+            features->_features = _vkfeatures, features->_properties = _vkproperties, features->_limits = features->_properties.properties.limits;
         };
 
         // only next-gen GPU can have native uint16_t support
@@ -109,18 +109,17 @@ namespace _vt {
         vtDevice->_pipelineCache = vk::PipelineCache{};//_device.createPipelineCache(vk::PipelineCacheCreateInfo());
 
         // make descriptor pool
-        { constexpr const auto mult = 0x800u;
         std::vector<VkDescriptorPoolSize> dps = {
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(0x100u * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageImage).setDescriptorCount(0x100u * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageBuffer).setDescriptorCount(0x100u * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(0x100u * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampler).setDescriptorCount(0x100u * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eCombinedImageSampler).setDescriptorCount(0x100u * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageTexelBuffer).setDescriptorCount(0x100u * mult),
-            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(0x100u * mult)
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(vtDevice->_features->_limits.maxDescriptorSetSampledImages >> 1u),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageImage).setDescriptorCount(vtDevice->_features->_limits.maxDescriptorSetStorageImages >> 1u),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageBuffer).setDescriptorCount(vtDevice->_features->_limits.maxDescriptorSetStorageBuffers >> 1u),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(vtDevice->_features->_limits.maxDescriptorSetUniformBuffers >> 1u),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampler).setDescriptorCount(vtDevice->_features->_limits.maxDescriptorSetSamplers >> 1u),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eCombinedImageSampler).setDescriptorCount(vtDevice->_features->_limits.maxDescriptorSetSampledImages >> 1u),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageTexelBuffer).setDescriptorCount(vtDevice->_features->_limits.maxDescriptorSetStorageImages >> 1u),
+            vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformTexelBuffer).setDescriptorCount(vtDevice->_features->_limits.maxDescriptorSetSampledImages >> 1u)
         };
-        vtDevice->_descriptorPoolSizes = dps; };
+        vtDevice->_descriptorPoolSizes = dps;
         vtDevice->_shadersPath = vtExtension.shaderPath;
 
         // if ray tracing NV supported, add additional descriptor pool types

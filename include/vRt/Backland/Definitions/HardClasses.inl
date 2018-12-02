@@ -52,6 +52,7 @@ namespace _vt { // store in undercover namespace
 
         // extensions
         std::vector<VkExtensionProperties> _extensions = {};
+        VkPhysicalDeviceLimits _limits = {};
         VkPhysicalDeviceProperties2 _properties = {};
         VkPhysicalDevice16BitStorageFeatures _storage16 = {};
         VkPhysicalDevice8BitStorageFeaturesKHR _storage8 = {};
@@ -62,6 +63,10 @@ namespace _vt { // store in undercover namespace
         operator const VkPhysicalDeviceFeatures2&() const { return _features; };
         operator VkPhysicalDeviceProperties2&() { return _properties; };
         operator const VkPhysicalDeviceProperties2&() const { return _properties; };
+        operator VkPhysicalDeviceProperties&() { return _properties.properties; };
+        operator const VkPhysicalDeviceProperties&() const { return _properties.properties; };
+        operator VkPhysicalDeviceLimits&() { return _properties.properties.limits; };
+        operator const VkPhysicalDeviceLimits&() const { return _properties.properties.limits; };
 
         const auto& _parent() const { return _physicalDevice; };
         auto& _parent() { return _physicalDevice; };
