@@ -4,15 +4,14 @@
 #define DISCARD_SHARED_CACHING
 #define USE_SINGLE_THREAD_RAY_MANAGMENT
 #define SIMPLIFIED_RAY_MANAGMENT
-//#define CACHE_HIT_PAYLOAD
-//#define DMA_HIT // unpreferred
+#define DMA_HIT 
 
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
 #include "../include/rayslib.glsl"
-#include "../include/random.glsl"
+//#include "../include/random.glsl"
 #include "./submodules/environment.glsl"
 
 
@@ -39,15 +38,15 @@ void main() {
         VtHitData hit = hits[HPG_OFF+hitID];
 #endif
 
+        //globalInvocationSMP = uint(rayID);
         [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0 && vtFetchHitIdc(rayID) == -1) { // if hit is valid and not overriden
             const vec3 viewVec = dcts(cray.cdirect), rorigin = cray.origin.xyz;
-            globalInvocationSMP = globalID;
 
             // environment
             hitp.specularGlossiness = vec4(0.f.xxx, 1.f);
             hitp.albedo = vec4(0.f.xxx, 1.f);
             //EnvironmentShader(hitp.emission, cray); // we doesn't enabled HDRI support ( we add support later )
-            
+
             // ray direction debug emission
             //hitp.emission = vec4((viewVec*0.5f+0.5f)*0.5f, 1.f); // 
             //hitp.emission = vec4(toLinear(vec3(0.05f, 0.05f, 0.2f)), 1.f);
@@ -61,7 +60,7 @@ void main() {
             //[[flatten]] if (ghit >= chit && hit.uvt.z <= fma(hits[HPG_OFF+(ghit-1)].uvt.z,1.f,SFN)) { // also, required range checking for correct more results
                 //[[flatten]] if (imageAtomicCompSwap(rayLink,r4ID|2,0xFFFFFFFFu,chit.x) == 0xFFFFFFFFu) 
                 [[flatten]] if (ghit == 0u) {
-                    const int pid = atomicIncPayloadHitCount();
+                    const int pid = hitID;//atomicIncPayloadHitCount();
                     hit.payloadID = pid+1;
                     hit.idat = (-1).xxxx;
 #ifndef DMA_HIT

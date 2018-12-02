@@ -129,7 +129,7 @@ int vtReuseRays(in highp uvec2 c2d, in uint type, in lowp int rayID) {
 int vtEmitRays(in highp uvec2 c2d, in uint type) { return vtReuseRays(c2d, type, -1); };
 #endif
 
-//int vtFetchHitIdc(in int lidx) { return int(imageAtomicMax(rayLink, (RPG_OFF+lidx)<<2, 0u).x)-1; }; // will be replace in traversing by tasks 
+//int vtFetchHitIdc(in int lidx) { return int(imageAtomicMax(rayLink, int(RPG_OFF+lidx)<<2, 0u).x)-1; }; // will be replace in traversing by tasks 
 int vtFetchHitIdc(in int lidx) { return int(imageLoad(rayLink, int(RPG_OFF+lidx)<<2).x)-1; };
 int vtFetchHitClosest(in int lidx) { return vtFetchHitIdc(lidx); };
 //int vtFetchHitClosest(in int lidx) { return int(imageAtomicMax(rayLink, (RPG_OFF+lidx)<<2)|2, 0u).x)-1; };

@@ -12,7 +12,7 @@
 #include "../include/structs.glsl"
 #include "../include/rayslib.glsl"
 #include "../include/morton.glsl"
-#include "../include/random.glsl"
+//#include "../include/random.glsl"
 
 
 // sort alike "surface shaders" in Unity engines 
@@ -98,10 +98,10 @@ void main() {
         VtHitData hit = hits[HPG_OFF+hitID];
 #endif
 
-        uint ghit = hitID+1u;
+        //globalInvocationSMP = rayID; //uint ghit = hitID+1u;
         [[flatten]] if (!overflow && rayID >= 0 && hitID >= 0) {
-            hitp = hitPayload[HPG_OFF+(hit.payloadID-1)];
-            globalInvocationSMP = globalID;
+            //hitp = hitPayload[HPG_OFF+(hit.payloadID-1)];
+            
 
             matID = hit.idat.z;//floatBitsToInt(hit.uvt.w);
             const bool overflow = overflow || rayID < 0;
@@ -145,13 +145,14 @@ void main() {
             
             
             // z-fighting by hashing (if fail to alpha test, back layers will still showing)
-            [[flatten]] if (hrand(uvec4( vtFetchCode(rayID), stageUniform.iteration, packSnorm4x16(vec4(rdirect, 0.f)) )) <= hitp.albedo.w) {
+            //[[flatten]] if (hrand(uvec4( vtFetchCode(rayID), stageUniform.iteration, packSnorm4x16(vec4(rdirect, 0.f)) )) <= hitp.albedo.w) 
+            {
                 const uint chit = hitID+1, ghit = imageAtomicMin(rayLink,r4ID,chit.x);
                 [[flatten]] if (ghit >= chit && hit.uvt.z <= fma(hits[HPG_OFF+(ghit-1)].uvt.z,1.f,SFN))  // also, required range checking for correct more results
                 {
                     //[[flatten]] if (imageAtomicMin(rayLink,r4ID|2,chit.x) >= chit) 
                     {
-                        int pid = atomicIncPayloadHitCount();
+                        int pid = hitID;//atomicIncPayloadHitCount();
                         hit.payloadID = pid+1;
 #ifndef DMA_HIT
                         hits[HPG_OFF+hitID] = hit;
