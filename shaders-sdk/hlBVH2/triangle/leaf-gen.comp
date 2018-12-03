@@ -44,7 +44,7 @@ void main() {
 #ifdef VTX_USE_MOLLER_TRUMBORE
                 lvtx[0].data[tri*3+0] = -triverts[0];
 #ifndef EXPERIMENTAL_UNORM16_BVH
-                [[unroll]] for (int i=1;i<3;i++) lvtx[0].data[tri*3+i] = triverts[i];
+                [[unroll]] for (int i=1;i<3;i++) lvtx[0].data[tri*3+i] = triverts[i]-triverts[0];
 #endif
 #else
 
