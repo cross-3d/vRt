@@ -109,7 +109,7 @@ namespace _vt {
         vtDevice->_pipelineCache = vk::PipelineCache{};//_device.createPipelineCache(vk::PipelineCacheCreateInfo());
 
         // make descriptor pool
-        const auto dmult = 0x80u;
+        const auto dmult = 0x800u;
         std::vector<VkDescriptorPoolSize> dps = {
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(0x100u * dmult),
             vk::DescriptorPoolSize().setType(vk::DescriptorType::eStorageImage).setDescriptorCount(0x100u * dmult),
