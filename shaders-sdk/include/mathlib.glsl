@@ -63,13 +63,9 @@ const float One1024 = 0.0009765625f;
 const float _FZERO = 0.f;
 const int _IZERO = 0;
 
-//#ifdef ENABLE_VEGA_INSTRUCTION_SET
-//    #define ISTORE(img, crd, data) imageStoreLodAMD(img,crd,_IZERO,data)
-//    #define SGATHER(smp, crd, chnl) textureGatherLodAMD(smp,crd,_FZERO,chnl)
-//#else
-    #define ISTORE(img, crd, data) imageStore(img,crd,data)
-    #define SGATHER(smp, crd, chnl) textureGather(smp,crd,chnl)
-//#endif
+
+#define ISTORE(img, crd, data) imageStore(img,crd,data)
+#define SGATHER(smp, crd, chnl) textureGather(smp,crd,chnl)
 
 
 // AMD min3/max3 ...
@@ -220,15 +216,12 @@ vec4  clamp01(in vec4 c)  { return clamp(c, 0.f.xxxx, (1.f-SFN).xxxx); };
 // matrix math (simular DX12)
 vec4 mult4(in vec4 vec, in mat4 tmat) { return tmat * vec; };
 vec4 mult4(in mat4 tmat, in vec4 vec) { return vec * tmat; };
-//vec4 mult4(in mat4 tmat, in vec4 vec) { return vec4(dot(vec,tmat[0]),dot(vec,tmat[1]),dot(vec,tmat[2]),dot(vec,tmat[3])); };
 
 vec4 mult4(in vec3 vec, in mat3x4 tmat) { return tmat * vec; };
 vec3 mult4(in mat3x4 tmat, in vec4 vec) { return vec * tmat; };
-//vec3 mult4(in mat3x4 tmat, in vec4 vec) { return vec3(dot(vec,tmat[0]),dot(vec,tmat[1]),dot(vec,tmat[2])); };
 
 vec3 mult4(in vec4 vec, in mat4x3 tmat) { return tmat * vec; };
 vec4 mult4(in mat4x3 tmat, in vec3 vec) { return vec * tmat; };
-//vec4 mult4(in mat4x3 tmat, in vec3 vec) { return vec4(dot(vec,tmat[0]),dot(vec,tmat[1]),dot(vec,tmat[2]),dot(vec,tmat[3])); };
 
 // it can be preferred in RTX shaders (column major)
 vec3 mult4(in mat4x3 tmat, in vec4 vec) { return tmat * vec; };
@@ -315,7 +308,6 @@ pbool_ all(in pbvec2_ b) {return pl_x(b)&pl_y(b);};
 
 
 // BVH utility
-//uint64_t bitfieldReverse64(in uint64_t a) {uvec2 p = U2P(a);p=bitfieldReverse(p);return P2U(p.yx);}
 uvec2 bitfieldReverse64(in uvec2 p) {return bitfieldReverse(p).yx;}
 
 
@@ -335,20 +327,10 @@ int nlz(in int x) { return nlz(uint(x)); }
 #endif
 
 
-dirtype_t lcts(in highp vec3 direct) {
-    //direct = normalize(direct); // normalize before
-    return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),INV_TWO_PI,0.5f),acos(-direct.y)*INV_PI)); // to unorm
-};
+dirtype_t lcts(in vec3 direct) { return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),INV_TWO_PI,0.5f),acos(-direct.y)*INV_PI)); };
+vec3 dcts(in vec2 hr) { hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f)); const float up=-cos(hr.y),over=sqrt(fma(up,-up,1.f)); return vec3(cos(hr.x)*over,up,sin(hr.x)*over); };
+vec3 dcts(in dirtype_t hr) { return dcts(dirtype_t_decode(hr)); };
 
-highp vec3 dcts(in highp vec2 hr) {
-    hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f));
-    return //normalize
-        (vec3(cos(hr.x)*sin(hr.y), -cos(hr.y), sin(hr.x)*sin(hr.y)));
-};
-
-highp vec3 dcts(in dirtype_t hr) {
-    return dcts(dirtype_t_decode(hr));
-};
 
 #ifdef ENABLE_INT16_SUPPORT
 uint p2x_16(in u16vec2 a) { return packUint2x16(a); };
@@ -378,16 +360,8 @@ lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFFu;};
 #define f16_f32 unpackHalf4x16
 
 // issue compatible gather (may haven't optimization itself)
-vec4 sifonGather(in sampler2D SMP, in vec2 TXL, in const int CMP) {
-    //vec4 result = vec4(0.f);
-    //[[ flatten ]] if (CMP == 3) { result = textureGather(SMP, TXL, 3); } else 
-    //[[ flatten ]] if (CMP == 2) { result = textureGather(SMP, TXL, 2); } else 
-    //[[ flatten ]] if (CMP == 1) { result = textureGather(SMP, TXL, 1); } else 
-    //                            { result = textureGather(SMP, TXL, 0); };
-    //return result;
-
-    // nested conditions 
-    return ( CMP == 3 ? textureGather(SMP, TXL, 3) : ( CMP == 2 ? textureGather(SMP, TXL, 2) : ( CMP == 1 ? textureGather(SMP, TXL, 1) : textureGather(SMP, TXL, 0) ) ) );
+vec4 sifonGather(in sampler2D SMP, in vec2 TXL, in const int CMP) { 
+    return ( CMP == 3 ? textureGather(SMP, TXL, 3) : ( CMP == 2 ? textureGather(SMP, TXL, 2) : ( CMP == 1 ? textureGather(SMP, TXL, 1) : textureGather(SMP, TXL, 0) ) ) ); 
 };
 
 // bilinear interpolation remedy 
@@ -395,30 +369,7 @@ const vec2 offsetf[4] = { vec2(0,1), vec2(1,1), vec2(1,0), vec2(0,0) };
 vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     const vec2 sz = textureSize(SMP,LOD), is = 1.f/sz, tc = fma(TXL,sz,-0.5f.xx), tm = (floor(tc+SFN)+0.5f)*is;
     const vec4 il = vec4(fract(tc),1.f-fract(tc)), cf = vec4(il.z*il.y,il.x*il.y,il.x*il.w,il.z*il.w);
-
-    //vec4 fcol = 0.f.xxxx;
-    //[[unroll]] for (int i=0;i<4;i++) fcol=fma(textureLod(SMP,fma(offsetf[i],is,tm),LOD),cf[i].xxxx,fcol);
-    //[[unroll]] for (int i=0;i<4;i++) fcol[i]=dot(sifonGather(SMP,tm,i),cf); // tensor capable production 
-    //return fcol;
     return mult4(mat4(textureGather(SMP,tm,0),textureGather(SMP,tm,1),textureGather(SMP,tm,2),textureGather(SMP,tm,3)),cf);
 };
-
-vec2 borderClamp(in vec2 tvc, in vec2 tsize) {
-    const vec2 cornsze = (tsize-1.f), incrnsz = (tsize-1.5f), snormed = fma((tvc*tsize/cornsze),2.f.xx,-1.f.xx);
-    return fma(snormed*(incrnsz/tsize),0.5f.xx,0.5f.xx);
-    //return tvc * tsize/(tsize-1.f);
-};
-
-vec2 corneredCoordinates (in vec2 tvc, in vec2 tsize) {
-    //return borderClamp(tvc-0.5f/tsize, tsize);
-    //return borderClamp(tvc, tsize);
-    //return tvc-0.5f/tsize;
-    return tvc;
-};
-
-
-// Legacy imageLoad wrapper (early had imageLoad with LOD support)
-// TODO: deprecate and replace to better version 
-#define TLOAD(s,t) imageLoad(s,t+0)
 
 #endif

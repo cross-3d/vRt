@@ -118,10 +118,10 @@ int vtReuseRays(in highp uvec2 c2d, in uint type, in lowp int rayID) {
         };
     };
     [[flatten]] if (rayID >= 0 && rayID < MAX_RAYS) {
-        imageStore(rayLink, int((RPG_OFF+rayID)<<2)|0, 0u.xxxx);
-        imageStore(rayLink, int((RPG_OFF+rayID)<<2)|1, p2x_16(c2d).xxxx);
-        imageStore(rayLink, int((RPG_OFF+rayID)<<2)|2, 0xFFFFFFFFu.xxxx);
-        imageStore(rayLink, int((RPG_OFF+rayID)<<2)|3, 0u.xxxx);
+        ISTORE(rayLink, int((RPG_OFF+rayID)<<2)|0, 0u.xxxx);
+        ISTORE(rayLink, int((RPG_OFF+rayID)<<2)|1, p2x_16(c2d).xxxx);
+        ISTORE(rayLink, int((RPG_OFF+rayID)<<2)|2, 0xFFFFFFFFu.xxxx);
+        ISTORE(rayLink, int((RPG_OFF+rayID)<<2)|3, 0u.xxxx);
     };
     return rayID;
 };

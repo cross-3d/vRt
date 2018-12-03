@@ -3,25 +3,7 @@
 
 
 #ifdef VERTEX_FILLING
-//layout ( binding = 3, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtxIn;
-//layout ( binding = 8, set = VTX_SET, r32ui ) coherent uniform uimageBuffer indexI;
 layout ( binding = 3, set = VTX_SET, align_ssbo ) coherent buffer VTX_BUFFER_IN { vec4 data[]; } lvtxIn[];
-#endif
-
-
-#if defined(ENABLE_VEGA_INSTRUCTION_SET) && defined(ENABLE_FP16_SAMPLER_HACK) && defined(ENABLE_FP16_SUPPORT)
-    #ifdef ENABLE_INT16_SUPPORT // native 16-bit integer support
-    uint16_t M16(in f16samplerBuffer m, in uint i) {
-        return float16BitsToUint16(texelFetch(m, int(i>>1u)).xy)[i&1u];
-    };
-    #else
-    highp uint M16(in f16samplerBuffer m, in uint i) {
-        return bitfieldExtract(packFloat2x16(texelFetch(m, int(i>>1u)).xy), int(i&1u)<<4, 16); // unified sentence of uint16_t values
-    };
-    #endif
-    uint M32(in f16samplerBuffer m, in uint i) { 
-        return packFloat2x16(texelFetch(m, int(i)).xy);
-    };
 #endif
 
 
