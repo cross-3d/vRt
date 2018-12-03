@@ -93,9 +93,9 @@ void doIntersection( in bool ISEND, in bool PVALID, inout bool switched ) {
     const uint CSTATE = currentState; const bool IsTop = (CSTATE == BVH_STATE_TOP), IsBottom = !IsTop;
     
     [[flatten]] if (PVALID && IsBottom) {
-        //vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
-        vec3 uvt = vec3(0.f.xx, INFINITY);
-        bool isvalid = intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uvt);
+        //vec3 uvt = vec3(0.f.xx, INFINITY); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner);
+        vec3 uvt = vec3(0.f.xx, INFINITY); bool isvalid = true;
+        intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uvt, isvalid);
 
         //const float tdiff = nearT-d, tmax = SFN;
         //[[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
