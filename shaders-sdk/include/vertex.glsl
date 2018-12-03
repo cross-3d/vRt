@@ -163,22 +163,22 @@ float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout 
 
 
 #ifdef VRT_USE_FAST_INTERSECTION
-float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, inout bool _valid) {
+float intersectTriangle(inout vec4 orig, inout vec4 dir, in int tri, inout vec2 uv, inout bool _valid) {
     float T = INFINITY;
     [[flatten]] if (_valid) {
 #ifdef VTX_USE_MOLLER_TRUMBORE
         // classic intersection (Möller–Trumbore)
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-        const vec3 v0 = v3fetch(lvtxT[0],tri*3+0),e1=v3fetch(lvtxT[0],tri*3+1)-v0,e2=v3fetch(lvtxT[0],tri*3+2)-v0;
-        const vec3 h = cross(dir.xyz, e2); const float dz = dot(e1,h);
-        const vec3 s = -(orig.xyz+v0), q = cross(s, e1), uvt = vec3(dot(s,h),dot(dir.xyz,q),dot(e2,q))/(dz);
-        uv = uvt.xy, T = uvt.z;
+        const vec3 v0 = v3fetch(lvtxT[0],tri*3+0),e1=v3fetch(lvtxT[0],tri*3+1)-v0,e2=v3fetch(lvtxT[0],tri*3+2)-v0,s=-(orig.xyz+v0);
+        const vec3 h = cross(dir.xyz, e2), q = cross(s, e1);
+        const float dz = dot(e1,h), dtm = 1.f/dz;
+        uv = vec2(dot(s,h),dot(dir.xyz,q))*dtm, T = dot(e2,q)*dtm;
 #else
         // intersect triangle by transform
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
         const mat3x4 vT = mat3x4(v4fetch(lvtxT[0],tri*3+0),v4fetch(lvtxT[0],tri*3+1),v4fetch(lvtxT[0],tri*3+2));
-        const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/(dz);
-        const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
+        const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/dz;
+        const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]),dot(hit,vT[1]));
 #endif
         [[flatten]] if (T >= N_INFINITY || abs(dz) <= 0.f || any(lessThanEqual(vec4(SFO-uv.x-uv.y, uv, T), SFN.xxxx))) { _valid = false; };
     };
