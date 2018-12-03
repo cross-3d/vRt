@@ -24,13 +24,17 @@
     #endif
 
     #if (defined(LEAF_GEN) || defined(VERTEX_FILLING))
-    layout ( binding = 5, set = VTX_SET, rgba32f ) coherent uniform  imageBuffer lvtx;
-    layout ( binding = 7, set = VTX_SET, rgba32f ) coherent uniform  imageBuffer lnrm;
-    layout ( binding = 8, set = VTX_SET, r32ui   )   coherent uniform uimageBuffer indx;
+    layout ( binding = 5, set = VTX_SET, align_ssbo ) coherent buffer VTX_BUFFER { vec4 data[]; } lvtx[];
+    layout ( binding = 7, set = VTX_SET, align_ssbo ) coherent buffer NRM_BUFFER { vec4 data[]; } lnrm[];
+    //layout ( binding = 5, set = VTX_SET, rgba32f ) coherent uniform  imageBuffer lvtx;
+    //layout ( binding = 7, set = VTX_SET, rgba32f ) coherent uniform  imageBuffer lnrm;
+    //layout ( binding = 8, set = VTX_SET, r32ui   ) coherent uniform uimageBuffer indx;
     #else
-    layout ( binding = 5, set = VTX_SET, rgba32f ) readonly uniform  imageBuffer lvtx;
-    layout ( binding = 7, set = VTX_SET, rgba32f ) readonly uniform  imageBuffer lnrm;
-    layout ( binding = 8, set = VTX_SET, r32ui   )   readonly uniform uimageBuffer indx;
+    layout ( binding = 5, set = VTX_SET, align_ssbo ) readonly buffer VTX_BUFFER { vec4 data[]; } lvtx[];
+    layout ( binding = 7, set = VTX_SET, align_ssbo ) readonly buffer NRM_BUFFER { vec4 data[]; } lnrm[];
+    //layout ( binding = 5, set = VTX_SET, rgba32f ) readonly uniform  imageBuffer lvtx;
+    //layout ( binding = 7, set = VTX_SET, rgba32f ) readonly uniform  imageBuffer lnrm;
+    //layout ( binding = 8, set = VTX_SET, r32ui   ) readonly uniform uimageBuffer indx;
     #endif
 
 #endif
@@ -138,9 +142,8 @@ vec4 uniteBoxTop(in vec4 glb) { return point4(fma((glb - bvhBlockTop.sceneMin) /
 #ifndef VRT_USE_FAST_INTERSECTION
 float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, inout bool _valid) {
     float T = INFINITY;
-    //IFANY (_valid) {
     [[flatten]] if (_valid) {
-        const mat3 ABC = mat3((TLOAD(lvtx, tri*3+0)+orig.x).xyz, (TLOAD(lvtx, tri*3+1)+orig.y).xyz, (TLOAD(lvtx, tri*3+2)+orig.z).xyz)*M;
+        const mat3 ABC = mat3(lvtx[0].data[tri*3+0].xyz, lvtx[0].data[tri*3+1].xyz, lvtx[0].data[tri*3+2].xyz)*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf
@@ -165,15 +168,14 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 #ifdef VTX_USE_MOLLER_TRUMBORE
         // classic intersection (Möller–Trumbore)
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-        //const mat3 vT = mat3(TLOAD(lvtx, tri*3+0).xyz, TLOAD(lvtx, tri*3+1).xyz, TLOAD(lvtx, tri*3+2).xyz);
-        const vec3 v0 = TLOAD(lvtx, tri*3+0).xyz, e1 = TLOAD(lvtx, tri*3+1).xyz-v0, e2 = TLOAD(lvtx, tri*3+2).xyz-v0;
+        const vec3 v0 = lvtx[0].data[tri*3+0].xyz, e1 = lvtx[0].data[tri*3+1].xyz-v0, e2 = lvtx[0].data[tri*3+2].xyz-v0;
         const vec3 h = cross(dir.xyz, e2); const float dz = dot(e1,h);
         const vec3 s = -(orig.xyz+v0), q = cross(s, e1), uvt = vec3(dot(s,h),dot(dir.xyz,q),dot(e2,q))/(dz);
         uv = uvt.xy, T = uvt.z;
 #else
         // intersect triangle by transform
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
-        const mat3x4 vT = mat3x4(TLOAD(lvtx, tri*3+0), TLOAD(lvtx, tri*3+1), TLOAD(lvtx, tri*3+2));
+        const mat3x4 vT = mat3x4(lvtx[0].data[tri*3+0], lvtx[0].data[tri*3+1], lvtx[0].data[tri*3+2]);
         const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/(dz);
         const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
 #endif

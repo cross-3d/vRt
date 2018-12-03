@@ -3,8 +3,9 @@
 
 
 #ifdef VERTEX_FILLING
-layout ( binding = 3, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtxIn;
-layout ( binding = 8, set = VTX_SET, r32ui ) coherent uniform uimageBuffer indexI;
+//layout ( binding = 3, set = VTX_SET, rgba32f ) coherent uniform imageBuffer lvtxIn;
+//layout ( binding = 8, set = VTX_SET, r32ui ) coherent uniform uimageBuffer indexI;
+layout ( binding = 3, set = VTX_SET, align_ssbo ) coherent buffer VTX_BUFFER_IN { vec4 data[]; } lvtxIn[];
 #endif
 
 
@@ -168,8 +169,7 @@ void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
 void storePosition(in ivec2 cdata, in vec4 fval) {
     const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
     fval.xyz = mult4(vTransforms[inputID], fval);
-    ISTORE(indexI, cdata.x*3+cdata.y, uint(cdata.x*3+cdata.y).xxxx);
-    ISTORE(lvtxIn, cdata.x*3+cdata.y, fval);
+    lvtxIn[0].data[cdata.x*3+cdata.y] = fval;
 };
 
 

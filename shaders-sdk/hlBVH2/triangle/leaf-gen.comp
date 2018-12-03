@@ -31,19 +31,19 @@ void main() {
         const uint tri = buildBlock.primitiveOffset+clamp(to, 0, buildBlock.primitiveCount-1);
         [[flatten]] if (to < wsize && to >= 0) { // planned dedidcated geometry re-calculator when will ESC support 
 #ifdef EXPERIMENTAL_UNORM16_BVH
-            const mat3x4 triverts = mat3x4(uniteBoxTop(TLOAD(lvtx, int(tri*3+0))), uniteBoxTop(TLOAD(lvtx, int(tri*3+1))), uniteBoxTop(TLOAD(lvtx, int(tri*3+2)))); // incarnated mode 
+            const mat3x4 triverts = mat3x4(uniteBoxTop(lvtx[0].data[tri*3+0]), uniteBoxTop(lvtx[0].data[tri*3+1]), uniteBoxTop(lvtx[0].data[tri*3+2])); // incarnated mode 
 #else
-            const mat3x4 triverts = mat3x4(TLOAD(lvtx, int(tri*3+0)), TLOAD(lvtx, int(tri*3+1)), TLOAD(lvtx, int(tri*3+2))); // incarnated mode 
+            const mat3x4 triverts = mat3x4(lvtx[0].data[tri*3+0], lvtx[0].data[tri*3+1], lvtx[0].data[tri*3+2]); // incarnated mode 
 #endif
 
             {
 #ifndef VRT_USE_FAST_INTERSECTION
                 const mat4x3 triverts = transpose(triverts);
-                ISTORE(lvtx, int(tri*3+0), point4(triverts[0])), ISTORE(lvtx, int(tri*3+1), point4(triverts[1])), ISTORE(lvtx, int(tri*3+2), point4(triverts[2]));
+                [[unroll]] for (int i=0;i<3;i++) lvtx[0].data[tri*3+i] = point4(triverts[i]);
 #else
 #ifdef VTX_USE_MOLLER_TRUMBORE
 #ifndef EXPERIMENTAL_UNORM16_BVH
-                ISTORE(lvtx, int(tri*3+0), triverts[0]), ISTORE(lvtx, int(tri*3+1), triverts[1]), ISTORE(lvtx, int(tri*3+2), triverts[2]);
+                [[unroll]] for (int i=0;i<3;i++) lvtx[0].data[tri*3+i] = triverts[i];
 #endif
 #else
 
@@ -81,7 +81,7 @@ void main() {
                 
                 // get transposed version (for full-filling)
                 const mat3x4 TVIt = transpose(TVI);
-                ISTORE(lvtx, int(tri*3+0), TVIt[0]), ISTORE(lvtx, int(tri*3+1), TVIt[1]), ISTORE(lvtx, int(tri*3+2), TVIt[2]);
+                [[unroll]] for (int i=0;i<3;i++) lvtx[0].data[tri*3+i] = TVIt[i];
 #endif
 #endif
             };
