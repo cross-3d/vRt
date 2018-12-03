@@ -128,6 +128,7 @@ uint currentState = BVH_STATE_TOP;
 
 
 
+
 #ifndef VERTEX_FILLING
 //vec4 uniteBox(in vec4 glb) { return fma((glb - vec4(bvhBlock.sceneMin.xyz, 0.f)) / vec4((bvhBlock.sceneMax.xyz - bvhBlock.sceneMin.xyz), 1.f), vec4( 2.f.xxx,  1.f), vec4(-1.f.xxx, 0.f)); };
 vec4 uniteBox   (in vec4 glb) { return point4(fma((glb - bvhBlockIn .sceneMin) / (bvhBlockIn .sceneMax - bvhBlockIn .sceneMin), 2.f.xxxx, -1.f.xxxx), glb.w); };
@@ -141,49 +142,45 @@ vec4 uniteBoxTop(in vec4 glb) { return point4(fma((glb - bvhBlockTop.sceneMin) /
 #ifdef ENABLE_VSTORAGE_DATA
 
 #ifndef VRT_USE_FAST_INTERSECTION
-float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, inout bool _valid) {
-    float T = INFINITY;
+struct wt_input_t { mat3 M; int axis; };
+bool intersectTriangle(inout vec4 orig, inout wt_input_t dir, in int tri, inout vec3 UVT) {
+    bool _valid = true;
     [[flatten]] if (_valid) {
-        const mat3 ABC = mat3(v3fetch(lvtxT[0],tri*3+0),v3fetch(lvtxT[0],tri*3+1),v3fetch(lvtxT[0],tri*3+2))*M;
+        const mat3 ABC = mat3(v3fetch(lvtxT[0],tri*3+0)+orig.x, v3fetch(lvtxT[0],tri*3+1)+orig.y, v3fetch(lvtxT[0],tri*3+2)+orig.z)*dir.M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf
-        vec3 UVW_ = uvwMap[axis] * inverse(ABC);
-        //IFANY ((all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx))) && _valid) {
-        [[flatten]] if ((all(greaterThan(UVW_, 0.f.xxx)) || all(lessThan(UVW_, 0.f.xxx))) && _valid) {
-            UVW_ /= (dot(UVW_, 1.f.xxx));
-            UV = vec2(UVW_.yz), UVW_ *= ABC; // calculate axis distances
-            T = mix(mix(UVW_.z, UVW_.y, axis == 1), UVW_.x, axis == 0);
-            [[flatten]] if ( T < (-SFN) || T >= N_INFINITY ) _valid = false;
-        }
-    }
-    return (_valid ? T : INFINITY);
-}
-#endif
-
-
-#ifdef VRT_USE_FAST_INTERSECTION
-float intersectTriangle(inout vec4 orig, inout vec4 dir, in int tri, inout vec2 uv, inout bool _valid) {
-    float T = INFINITY;
+        vec3 UVW = uvwMap[dir.axis] * inverse(ABC); UVW /= dot(UVW,1.f.xxx);
+        [[flatten]] if (all(greaterThan(UVW,0.f.xxx)) || all(lessThan(UVW,0.f.xxx))) {
+            UVT = vec3(UVW.yz,dot(UVW,ABC[dir.axis])); // calculate axis distances
+            [[flatten]] if ( UVT.z < (-SFN) || UVT.z >= N_INFINITY ) _valid = false;
+        } else { _valid = false; };
+    };
+    [[flatten]] if (!_valid) UVT.z = INFINITY;
+    return _valid;
+};
+#else
+bool intersectTriangle(inout vec4 orig, inout vec4 dir, in int tri, inout vec3 UVT) {
+    bool _valid = true;
     [[flatten]] if (_valid) {
 #ifdef VTX_USE_MOLLER_TRUMBORE
         // classic intersection (Möller–Trumbore)
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-        const vec3 v0 = v3fetch(lvtxT[0],tri*3+0),e1=v3fetch(lvtxT[0],tri*3+1)-v0,e2=v3fetch(lvtxT[0],tri*3+2)-v0,s=-(orig.xyz+v0);
-        const vec3 h = cross(dir.xyz, e2), q = cross(s, e1);
-        const float dz = dot(e1,h), dtm = 1.f/dz;
-        uv = vec2(dot(s,h),dot(dir.xyz,q))*dtm, T = dot(e2,q)*dtm;
+        const vec3 v0 = v3fetch(lvtxT[0],tri*3+0), e1 = v3fetch(lvtxT[0],tri*3+1)+v0, e2 = v3fetch(lvtxT[0],tri*3+2)+v0, s = v0-orig.xyz;
+        const vec3 h = cross(dir.xyz,e2), q = cross(s,e1); const float dz = dot(e1,h);
+        UVT = vec3(dot(s,h),dot(dir.xyz,q),dot(e2,q)) / dz;
 #else
         // intersect triangle by transform
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
-        const mat3x4 vT = mat3x4(v4fetch(lvtxT[0],tri*3+0),v4fetch(lvtxT[0],tri*3+1),v4fetch(lvtxT[0],tri*3+2));
-        const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/dz;
-        const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]),dot(hit,vT[1]));
+        const mat3x4 vT = mat3x4(v4fetch(lvtxT[0], tri*3+0), v4fetch(lvtxT[0], tri*3+1), v4fetch(lvtxT[0], tri*3+2));
+        const float  dz = dot(dir,vT[2]),oz = dot(orig,vT[2]); UVT.z = oz/dz;
+        const vec4  hit = fma(dir, UVT.zzzz, -orig); UVT.xy = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
 #endif
-        [[flatten]] if (T >= N_INFINITY || abs(dz) <= 0.f || any(lessThanEqual(vec4(SFO-uv.x-uv.y, uv, T), SFN.xxxx))) { _valid = false; };
+        [[flatten]] if (UVT.z >= N_INFINITY || abs(dz) <= 0.f || any(lessThanEqual(vec4(SFO-UVT.x-UVT.y,UVT),SFN.xxxx))) { _valid = false; };
     };
-    return (_valid ? T : INFINITY);
-}
+    [[flatten]] if (!_valid) UVT.z = INFINITY;
+    return _valid;
+};
 #endif
 
 #endif

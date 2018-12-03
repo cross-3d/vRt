@@ -94,14 +94,14 @@ void doIntersection( in bool ISEND, in bool PVALID, inout bool switched ) {
     
     [[flatten]] if (PVALID && IsBottom) {
         //vec2 uv = vec2(0.f.xx); const float nearT = fma(primitiveState.lastIntersection.z,fpOne,fpInner), d = 
-        bool isvalid = true; vec2 uv = vec2(0.f.xx);
-        const float d = intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uv.xy, isvalid);
+        vec3 uvt = vec3(0.f.xx, INFINITY);
+        bool isvalid = intersectTriangle(primitiveState.orig, primitiveState.dir, elementID, uvt);
 
         //const float tdiff = nearT-d, tmax = SFN;
         //[[flatten]] if (tdiff >= -tmax && d < N_INFINITY && isvalid) {
             //[[flatten]] if (tdiff >= tmax || elementID >= floatBitsToInt(primitiveState.lastIntersection.w)) {
-            [[flatten]] if ( isvalid && d.x <= primitiveState.lastIntersection.z ) {
-                primitiveState.lastIntersection = vec4(uv.xy, d.x, intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
+            [[flatten]] if ( isvalid && uvt.z <= primitiveState.lastIntersection.z ) {
+                primitiveState.lastIntersection = vec4(uvt, intBitsToFloat(elementID+1)); LAST_INSTANCE = INSTANCE_ID;
             };
         //};
     };
