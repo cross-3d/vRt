@@ -33,6 +33,13 @@ layout ( rgba32f, binding = 2, set = 2 ) uniform image2D _devImages[4];
 #define OriginPass _devImages[2]
 #define SpecularPass _devImages[3]
 
+dirtype_t getDirect(in vec4 src) {
+#ifdef EXPERIMENTAL_UNORM16_DIRECTION
+    return src.x;
+#else
+    return floatBitsToUint(src.xy);
+#endif
+};
 
 // planned ray generation shader example
 void main() {
@@ -42,19 +49,10 @@ void main() {
     //xy.y = (xy.y<<1) + ((int(WID)+xy.x)&1); // make checkerboard from direct pointers
     [[flatten]] IFANY (WID > 0) return;
     [[flatten]] if (all(greaterThanEqual(xy,(0).xx)) && all(lessThan(xy,wh))) {
-        ray.dcolor = uvec2(0u.xx);
+        ray.dcolor = uvec2(0u.xx), ray.origin = imageLoad(OriginPass, xy).xyz, ray.cdirect = getDirect(imageLoad(NormalPass, xy));
         vtWriteColor(ray.dcolor, imageLoad(SpecularPass, xy));
         parameterb(RAY_ACTIVED, ray.dcolor.y, true);
-        
-        ray.origin  = imageLoad(OriginPass, xy).xyz;
-    #ifdef EXPERIMENTAL_UNORM16_DIRECTION
-        ray.cdirect = imageLoad(NormalPass, xy).x;
-    #else
-        ray.cdirect = floatBitsToUint(imageLoad(NormalPass, xy).xy); // use cheaper method in this example
-    #endif
 
-        // filtering off rays by resolution
-    
         //ISTORE(ColorOutput, xy, vec4(0.f.xxx, 1.f));
         ISTORE(NormalPass, xy, vec4(0.f.xxx, 0.f));
         ISTORE(OriginPass, xy, vec4(0.f.xxx, 1.f));
