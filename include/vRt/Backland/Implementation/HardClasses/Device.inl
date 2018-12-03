@@ -204,7 +204,7 @@ namespace _vt {
                   vk::DescriptorSetLayoutBinding(6 , vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // readonly attributes (DEPRECATED row)
                 //vk::DescriptorSetLayoutBinding(7 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // precomputed normals
                   vk::DescriptorSetLayoutBinding(7 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // precomputed normals
-                  vk::DescriptorSetLayoutBinding(8 , vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
+                  vk::DescriptorSetLayoutBinding(8 , vk::DescriptorType::eUniformTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
                   vk::DescriptorSetLayoutBinding(9 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex input uniform buffer (TEMPORARY)
             };
             vtDevice->_descriptorLayoutMap["vertexData"] = _device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo(vkpi).setPBindings(_bindings.data()).setBindingCount(_bindings.size()));

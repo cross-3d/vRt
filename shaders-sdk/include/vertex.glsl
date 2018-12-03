@@ -26,15 +26,18 @@
     #if (defined(LEAF_GEN) || defined(VERTEX_FILLING))
     layout ( binding = 5, set = VTX_SET, align_ssbo ) coherent buffer VTX_BUFFER { vec4 data[]; } lvtx[];
     layout ( binding = 7, set = VTX_SET, align_ssbo ) coherent buffer NRM_BUFFER { vec4 data[]; } lnrm[];
-    //layout ( binding = 5, set = VTX_SET, rgba32f ) coherent uniform  imageBuffer lvtx;
-    //layout ( binding = 7, set = VTX_SET, rgba32f ) coherent uniform  imageBuffer lnrm;
-    //layout ( binding = 8, set = VTX_SET, r32ui   ) coherent uniform uimageBuffer indx;
+
     #else
-    layout ( binding = 5, set = VTX_SET, align_ssbo ) readonly buffer VTX_BUFFER { vec4 data[]; } lvtx[];
+    //layout ( binding = 5, set = VTX_SET, align_ssbo ) readonly buffer VTX_BUFFER { vec4 data[]; } lvtx[];
     layout ( binding = 7, set = VTX_SET, align_ssbo ) readonly buffer NRM_BUFFER { vec4 data[]; } lnrm[];
-    //layout ( binding = 5, set = VTX_SET, rgba32f ) readonly uniform  imageBuffer lvtx;
-    //layout ( binding = 7, set = VTX_SET, rgba32f ) readonly uniform  imageBuffer lnrm;
-    //layout ( binding = 8, set = VTX_SET, r32ui   ) readonly uniform uimageBuffer indx;
+    layout ( binding = 8, set = VTX_SET ) uniform samplerBuffer lvtxT[];
+
+    // fetchers 
+    const int vtd = 4; // vertex input striding 
+    //vec3 v3fetch(in samplerBuffer lvtxT, in int t) { return vec3(texelFetch(lvtxT,t*vtd+0).x,texelFetch(lvtxT,t*vtd+1).x,texelFetch(lvtxT,t*vtd+2).x); };
+    //vec4 v4fetch(in samplerBuffer lvtxT, in int t) { return vec4(texelFetch(lvtxT,t*vtd+0).x,texelFetch(lvtxT,t*vtd+1).x,texelFetch(lvtxT,t*vtd+2).x,texelFetch(lvtxT,t*vtd+3).x); };
+    vec3 v3fetch(in samplerBuffer lvtxT, in int t) { return texelFetch(lvtxT,t).xyz; };
+    vec4 v4fetch(in samplerBuffer lvtxT, in int t) { return texelFetch(lvtxT,t); };
     #endif
 
 #endif
@@ -80,11 +83,9 @@ layout ( binding = 0, set = 1, align_ssbo ) readonly buffer bvhBlockB { BvhBlock
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 #ifdef BVH_CREATION
 layout ( binding = 2, set = 1, align_ssbo ) buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
-//layout ( binding = 3, set = 1, align_ssbo ) buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
 layout ( binding = 4, set = 1, align_ssbo ) buffer BvhTransformB { mat3x4 transformData_[]; };
 #else
 layout ( binding = 2, set = 1, align_ssbo ) readonly buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
-//layout ( binding = 3, set = 1, align_ssbo ) readonly buffer bvhBlockInB { BvhBlockT bvhBlockIn_[]; };
 layout ( binding = 4, set = 1, align_ssbo ) readonly buffer BvhTransformB { mat3x4 transformData_[]; };
 #endif
 #endif
@@ -143,7 +144,7 @@ vec4 uniteBoxTop(in vec4 glb) { return point4(fma((glb - bvhBlockTop.sceneMin) /
 float intersectTriangle(in vec4 orig, in mat3 M, in int axis, in int tri, inout vec2 UV, inout bool _valid) {
     float T = INFINITY;
     [[flatten]] if (_valid) {
-        const mat3 ABC = mat3(lvtx[0].data[tri*3+0].xyz, lvtx[0].data[tri*3+1].xyz, lvtx[0].data[tri*3+2].xyz)*M;
+        const mat3 ABC = mat3(v3fetch(lvtxT[0],tri*3+0),v3fetch(lvtxT[0],tri*3+1),v3fetch(lvtxT[0],tri*3+2))*M;
 
         // watertight triangle intersection (our, GPU-GLSL adapted version)
         // http://jcgt.org/published/0002/01/05/paper.pdf
@@ -168,14 +169,14 @@ float intersectTriangle(in vec4 orig, in vec4 dir, in int tri, inout vec2 uv, in
 #ifdef VTX_USE_MOLLER_TRUMBORE
         // classic intersection (Möller–Trumbore)
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-        const vec3 v0 = lvtx[0].data[tri*3+0].xyz, e1 = lvtx[0].data[tri*3+1].xyz-v0, e2 = lvtx[0].data[tri*3+2].xyz-v0;
+        const vec3 v0 = v3fetch(lvtxT[0],tri*3+0),e1=v3fetch(lvtxT[0],tri*3+1)-v0,e2=v3fetch(lvtxT[0],tri*3+2)-v0;
         const vec3 h = cross(dir.xyz, e2); const float dz = dot(e1,h);
         const vec3 s = -(orig.xyz+v0), q = cross(s, e1), uvt = vec3(dot(s,h),dot(dir.xyz,q),dot(e2,q))/(dz);
         uv = uvt.xy, T = uvt.z;
 #else
         // intersect triangle by transform
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
-        const mat3x4 vT = mat3x4(lvtx[0].data[tri*3+0], lvtx[0].data[tri*3+1], lvtx[0].data[tri*3+2]);
+        const mat3x4 vT = mat3x4(v4fetch(lvtxT[0],tri*3+0),v4fetch(lvtxT[0],tri*3+1),v4fetch(lvtxT[0],tri*3+2));
         const float dz = dot(dir, vT[2]), oz = dot(orig, vT[2]); T = oz/(dz);
         const vec4 hit = fma(dir,T.xxxx,-orig); uv = vec2(dot(hit,vT[0]), dot(hit,vT[1]));
 #endif

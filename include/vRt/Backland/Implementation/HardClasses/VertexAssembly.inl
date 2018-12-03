@@ -78,18 +78,11 @@ namespace _vt {
             bfi.offset = 0ull;
             if (info.sharedVertexInUseBuffer) { bfi.offset = info.sharedVertexInUseOffset; createBufferRegion(info.sharedVertexInUseBuffer, bfi, _assemblySet->_verticeBufferInUse, vtDevice); } else
             { createBufferRegion(bManager, bfi, _assemblySet->_verticeBufferInUse); };
-             
+            
             // vertex data for caching
             bfi.offset = 0ull;
             if (info.sharedVertexCacheBuffer) { bfi.offset = info.sharedVertexCacheOffset; createBufferRegion(info.sharedVertexCacheBuffer, bfi, _assemblySet->_verticeBufferCached, vtDevice); } else
             { createBufferRegion(bManager, bfi, _assemblySet->_verticeBufferCached); };
-
-            // 
-            bfi.bufferSize = 3ull * sizeof(uint32_t) * 4ull;
-            //bfi.bufferSize = 3ull * sizeof(uint32_t) * maxPrimitives;
-            bfi.format = VK_FORMAT_R32_UINT;
-            bfi.offset = 0ull;
-            { createBufferRegion(bManager, bfi, _assemblySet->_indexBuffer); };
 
             // counters for assembling ( no using in traversing or interpolation )
             bfi.bufferSize = sizeof(uint32_t) * 8ull;
@@ -154,7 +147,7 @@ namespace _vt {
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(5).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_verticeBufferInUse->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(6).setDescriptorType(vk::DescriptorType::eCombinedImageSampler).setPImageInfo(&attrbView),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(7).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_normalBuffer->_descriptorInfo()),
-                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_indexBuffer->_bufferView()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(8).setDescriptorType(vk::DescriptorType::eUniformTexelBuffer).setPTexelBufferView((vk::BufferView*)&_assemblySet->_verticeBufferInUse->_bufferView()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(9).setPBufferInfo((vk::DescriptorBufferInfo*)&_assemblySet->_bufferTraffic[0]->_uniformVIBuffer->_descriptorInfo()),
                 };
 

@@ -49,16 +49,26 @@ int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 
 #define BFS uint(bufferID)
 
+#ifdef ENABLE_INT16_SUPPORT
 layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { u16vec2 data[]; } bufferSpace[];
+#else
+layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint data[]; } bufferSpace[];
+#endif
+
 layout ( binding = 2, set = 1, align_ssbo ) readonly buffer VT_BUFFER_VIEW { VtBufferView bufferViews[]; };
 layout ( binding = 3, set = 1, align_ssbo ) readonly buffer VT_ACCESSOR { VtAccessor accessors[]; };
 layout ( binding = 4, set = 1, align_ssbo ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
 
 
 // 
+#ifdef ENABLE_INT16_SUPPORT
 highp uint M16(in uint BSC, in uint Ot, in uint uI) { return bufferSpace[NonUniform(BSC)].data[(Ot+uI)>>2u][(uI>>1u)&1u]; };
 uint M32(in uint BSC, in uint Ot, in uint uI) { return p2x_16(bufferSpace[NonUniform(BSC)].data[(Ot+uI)>>2u]); };
-
+#else
+const lowp ivec2 b16m = {0,16};
+highp uint M16(in uint BSC, in uint Ot, in uint uI) { return bitfieldExtract(bufferSpace[NonUniform(BSC)].data[(Ot+uI)>>2u],b16m[(uI>>1u)&1u],16); };
+uint M32(in uint BSC, in uint Ot, in uint uI) { return bufferSpace[NonUniform(BSC)].data[(Ot+uI)>>2u]; };
+#endif
 
 
 struct VtVIUniform {
