@@ -233,7 +233,13 @@ mat4 mult4(in mat4 tmat, in mat4 otmat) { return otmat*tmat; };
 const vec2 swiz01 = vec2(0.f,1.f);
 vec4 point4(in vec4 p) {return p*swiz01.yyyx+swiz01.xxxy;};
 vec4 point4(in vec4 p, in float w) {return p*swiz01.yyyx+w*swiz01.xxxy;};
+vec4 point4(in vec3 p) {return vec4(p,1.f);};
+vec4 point4(in vec3 p, in float w) {return vec4(p,w);};
 vec4 vector4(in vec4 p) {return p*swiz01.yyyx;};
+//vec4 crossp4(in vec4 a, in vec4 b) { return vec4(cross(a.xyz,b.xyz),a.w*b.w); };
+vec4 crossp4(in vec3 a, in vec3 b) { return vec4(cross(a,b),0.f); };
+vec4 crossp4(in vec4 a, in vec4 b) { return crossp4(a.xyz,b.xyz); };
+
 
 // 64-bit packing
 #define U2P unpackUint2x32

@@ -166,9 +166,9 @@ bool intersectTriangle(inout vec4 orig, inout vec4 dir, in int tri, inout vec3 U
 #ifdef VTX_USE_MOLLER_TRUMBORE
         // classic intersection (Möller–Trumbore)
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-        const vec3 e1 = v3fetch(lvtxT[0],tri*3+1), e2 = v3fetch(lvtxT[0],tri*3+2), s = v3fetch(lvtxT[0],tri*3+0)-orig.xyz;
-        const vec3 h = cross(dir.xyz,e2), q = cross(s,e1); const float dz = dot(e1,h);
-        UVT = vec3(dot(s,h),dot(dir.xyz,q),dot(e2,q)) / dz;
+        const vec4 s = v4fetch(lvtxT[0],tri*3+0)-orig, e1 = v4fetch(lvtxT[0],tri*3+1), e2 = v4fetch(lvtxT[0],tri*3+2);
+        const vec4 h = crossp4(dir,e2), q = crossp4(s,e1); const float dz = dot(e1,h);
+        UVT = vec3(dot(s,h),dot(dir,q),dot(e2,q))/dz;
 #else
         // intersect triangle by transform
         // alternate of http://jcgt.org/published/0005/03/03/paper.pd
