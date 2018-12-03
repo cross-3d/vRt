@@ -5,7 +5,7 @@
 // intersection current state
 struct PrimitiveState {
     vec4 lastIntersection, orig;
-#ifdef VRT_USE_FAST_INTERSECTION
+#ifdef USE_FAST_INTERSECTION
     vec4 dir;
 #else
     int axis; mat3 iM;

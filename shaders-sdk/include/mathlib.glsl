@@ -97,7 +97,7 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 
 
 // experimental new paired logic system
-#ifdef ENABLE_INT16_BOOL_PAIR
+#ifdef USE_INT16_BOOL_PAIR
 #define pbvec2_ u16vec2
 #define pbool_ uint16_t
 #else
@@ -106,7 +106,7 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 #endif
 
 
-#ifdef ENABLE_INT16_BOOL_PAIR
+#ifdef USE_INT16_BOOL_PAIR
 const pbool_ true_ = 1us, false_ = 0us; 
 const pbvec2_ true2_ = 1us.xx, false2_ = 0us.xx;
 #else
@@ -115,14 +115,14 @@ const pbvec2_ true2_ = 0x00010001u, false2_ = 0x00000000u;
 #endif
 
 pbvec2_ binarize(in bvec2 tbl){
-#ifdef ENABLE_INT16_BOOL_PAIR
+#ifdef USE_INT16_BOOL_PAIR
     return pbvec2_(tbl);
 #else
     return pbool_(tbl.x)|(pbool_(tbl.y)<<16u);
 #endif
 };
 
-#ifdef ENABLE_INT16_BOOL_PAIR
+#ifdef USE_INT16_BOOL_PAIR
 pbvec2_ binarize(in lowp uvec2 tbl){ return pbvec2_(tbl); }; // accepts u32vec2
 pbvec2_ binarize(in pbvec2_ tbl){ return tbl; }; // accepts u16vec2
 #else
@@ -130,7 +130,7 @@ pbvec2_ binarize(in lowp uvec2 tbl){ return pbvec2_(tbl.x|(tbl.y<<16u)); }; // a
 #endif
 
 pbvec2_ binarize(in bool tbl){
-#ifdef ENABLE_INT16_BOOL_PAIR
+#ifdef USE_INT16_BOOL_PAIR
     return pbvec2_(tbl.xx);
 #else
     return pbool_(tbl)|(pbool_(tbl)<<16u);
@@ -138,7 +138,7 @@ pbvec2_ binarize(in bool tbl){
 };
 
 pbvec2_ binarize(in pbool_ tbl){
-#ifdef ENABLE_INT16_BOOL_PAIR
+#ifdef USE_INT16_BOOL_PAIR
     return pbvec2_(tbl.xx);
 #else
     return tbl|(tbl<<16u);
@@ -146,7 +146,7 @@ pbvec2_ binarize(in pbool_ tbl){
 };
 
 pbool_ pl_x(in pbvec2_ tbl){
-#ifdef ENABLE_INT16_BOOL_PAIR
+#ifdef USE_INT16_BOOL_PAIR
     return tbl.x;
 #else
     return tbl&1u;
@@ -154,7 +154,7 @@ pbool_ pl_x(in pbvec2_ tbl){
 };
 
 pbool_ pl_y(in pbvec2_ tbl){
-#ifdef ENABLE_INT16_BOOL_PAIR
+#ifdef USE_INT16_BOOL_PAIR
     return tbl.y;
 #else
     return tbl>>16u;

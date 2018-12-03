@@ -2,7 +2,7 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #define EXPERIMENTAL_INSTANCING_SUPPORT
-#define VRT_USE_FAST_INTERSECTION
+#define USE_FAST_INTERSECTION
 #define ENABLE_VSTORAGE_DATA
 #define BVH_CREATION
 #define LEAF_GEN
@@ -37,11 +37,11 @@ void main() {
 #endif
 
             {
-#ifndef VRT_USE_FAST_INTERSECTION
+#ifndef USE_FAST_INTERSECTION
                 const mat4x3 triverts = transpose(triverts);
                 [[unroll]] for (int i=0;i<3;i++) lvtx[0].data[tri*3+i] = point4(triverts[i]);
 #else
-#ifdef VTX_USE_MOLLER_TRUMBORE
+#ifdef USE_MOLLER_TRUMBORE
                 lvtx[0].data[tri*3+0] = -triverts[0];
 #ifndef EXPERIMENTAL_UNORM16_BVH
                 [[unroll]] for (int i=1;i<3;i++) lvtx[0].data[tri*3+i] = triverts[i]-triverts[0];

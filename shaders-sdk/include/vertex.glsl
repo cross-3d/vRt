@@ -141,7 +141,7 @@ vec4 uniteBoxTop(in vec4 glb) { return point4(fma((glb - bvhBlockTop.sceneMin) /
 #ifndef BVH_CREATION
 #ifdef ENABLE_VSTORAGE_DATA
 
-#ifndef VRT_USE_FAST_INTERSECTION
+#ifndef USE_FAST_INTERSECTION
 struct wt_input_t { mat3 M; int axis; };
 bool intersectTriangle(inout vec4 orig, inout wt_input_t dir, in int tri, inout vec3 UVT, inout bool _valid) {
     [[flatten]] if (_valid) 
@@ -163,7 +163,7 @@ bool intersectTriangle(inout vec4 orig, inout wt_input_t dir, in int tri, inout 
 bool intersectTriangle(inout vec4 orig, inout vec4 dir, in int tri, inout vec3 UVT, inout bool _valid) {
     [[flatten]] if (_valid) 
     {
-#ifdef VTX_USE_MOLLER_TRUMBORE
+#ifdef USE_MOLLER_TRUMBORE
         // classic intersection (Möller–Trumbore)
         // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
         const vec4 s = v4fetch(lvtxT[0],tri*3+0)-orig, e1 = v4fetch(lvtxT[0],tri*3+1), e2 = v4fetch(lvtxT[0],tri*3+2);

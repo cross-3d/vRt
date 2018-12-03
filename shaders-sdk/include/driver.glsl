@@ -11,6 +11,16 @@
 #undef ENABLE_TURING_INSTRUCTION_SET
 #endif
 
+
+// current features
+#define EXPERIMENTAL_UNORM16_DIRECTION // packing direction as unorm16x2 (may be inaccurate)
+//#define EXPERIMENTAL_UNORM16_BVH     // packing BVH boxes as unorm16x2 (may drop performance)
+#define USE_FAST_INTERSECTION          // disable water-tight intersection method (make faster)
+#define USE_MOLLER_TRUMBORE            // use Moller Trumbore intersection method (doesn't produce UV holes)
+//#define USE_INT16_FOR_MORTON
+//#define USE_INT16_BOOL_PAIR
+
+
 // AMuDe extensions
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
 #extension GL_AMD_shader_trinary_minmax : enable
@@ -64,14 +74,13 @@
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
     #define ENABLE_INT16_SUPPORT
     #define ENABLE_FP16_SUPPORT
-    //#define ENABLE_NON_UNIFORM_SAMPLER
-    //#define ENABLE_FP16_SAMPLER_HACK
 #endif
 
 // if Turing specific
 #ifdef ENABLE_TURING_INSTRUCTION_SET
     #define ENABLE_INT16_SUPPORT
     #define ENABLE_FP16_SUPPORT
+    
     #extension GL_NV_shader_subgroup_partitioned : enable // volta and above should support it
     #extension GL_NV_compute_shader_derivatives : enable
     #extension GL_NV_shader_atomic_int64 : enable // unknown status
@@ -96,6 +105,7 @@
 // if int16 no supported, use plain int32
 #ifndef ENABLE_INT16_SUPPORT
     #undef USE_INT16_FOR_MORTON
+    #undef USE_INT16_BOOL_PAIR // use RPM based booleans
 #endif
 
 // platform-oriented compute
@@ -133,15 +143,6 @@
 
 #ifndef WORK_SIZE_BND
 #define WORK_SIZE_BND WORK_SIZE
-#endif
-
-// packing as unorm16x2 (experimental)
-#define EXPERIMENTAL_UNORM16_DIRECTION
-//#define EXPERIMENTAL_UNORM16_BVH
-#define VTX_USE_MOLLER_TRUMBORE
-
-#ifdef ENABLE_INT16_SUPPORT
-//#define ENABLE_INT16_BOOL_PAIR // use RPM based booleans
 #endif
 
 // uint32_t
