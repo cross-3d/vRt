@@ -35,12 +35,17 @@ namespace _vt {
             // features support list
             auto _vkfeatures = vk::PhysicalDeviceFeatures2{};
             auto _vkproperties = vk::PhysicalDeviceProperties2{};
+            
 
             // get features 
+            features->_float16int8 = vk::PhysicalDeviceFloat16Int8FeaturesKHR{};
             features->_storage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
             features->_storage16 = vk::PhysicalDevice16BitStorageFeatures{};
             features->_descriptorIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
-            _vkfeatures.pNext = &features->_storage16, features->_storage16.pNext = &features->_storage8, features->_storage8.pNext = &features->_descriptorIndexing;
+            _vkfeatures.pNext = &features->_storage16, 
+                features->_storage16.pNext = &features->_storage8, 
+                features->_storage8.pNext = &features->_descriptorIndexing, 
+                features->_descriptorIndexing.pNext = &features->_float16int8;
 
             // get properties 
             features->_subgroup = vk::PhysicalDeviceSubgroupProperties{};

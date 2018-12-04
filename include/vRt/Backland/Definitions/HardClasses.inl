@@ -58,6 +58,7 @@ namespace _vt { // store in undercover namespace
         VkPhysicalDevice8BitStorageFeaturesKHR _storage8 = {};
         VkPhysicalDeviceDescriptorIndexingFeaturesEXT _descriptorIndexing = {};
         VkPhysicalDeviceSubgroupProperties _subgroup = {};
+        VkPhysicalDeviceFloat16Int8FeaturesKHR _float16int8 = {};
 
         // features linking
         operator VkPhysicalDeviceFeatures2&() { return _features; };

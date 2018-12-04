@@ -87,13 +87,13 @@ struct RadicePropStruct { uint Descending; uint IsSigned; };
 const KEYTYPE OutOfRange = KEYTYPE(0xFFFFFFFFu);
 
 //#define KEYTYPE uint
-layout ( binding = 0, set = INDIR, align_ssbo )  readonly coherent buffer KeyInB {KEYTYPE KeyIn[]; };
-layout ( binding = 1, set = INDIR, align_ssbo )  readonly coherent buffer ValueInB {uint ValueIn[]; };
-layout ( binding = 0, set = OUTDIR, align_ssbo )  coherent buffer KeyTmpB {KEYTYPE KeyTmp[]; };
-layout ( binding = 1, set = OUTDIR, align_ssbo )  coherent buffer ValueTmpB {uint ValueTmp[]; };
+layout ( binding = 0, set = INDIR, align_ssbo )  readonly subgroupcoherent buffer KeyInB {KEYTYPE KeyIn[]; };
+layout ( binding = 1, set = INDIR, align_ssbo )  readonly subgroupcoherent buffer ValueInB {uint ValueIn[]; };
+layout ( binding = 0, set = OUTDIR, align_ssbo )  subgroupcoherent buffer KeyTmpB {KEYTYPE KeyTmp[]; };
+layout ( binding = 1, set = OUTDIR, align_ssbo )  subgroupcoherent buffer ValueTmpB {uint ValueTmp[]; };
 layout ( binding = 2, set = 0, align_ssbo )  readonly buffer VarsB { RadicePropStruct radProps[]; };
-layout ( binding = 3, set = 0, align_ssbo )  restrict buffer HistogramB {uint Histogram[]; };
-layout ( binding = 4, set = 0, align_ssbo )  restrict buffer PrefixSumB {uint PrefixSum[]; };
+layout ( binding = 3, set = 0, align_ssbo )  subgroupcoherent buffer HistogramB {uint Histogram[]; };
+layout ( binding = 4, set = 0, align_ssbo )  subgroupcoherent buffer PrefixSumB {uint PrefixSum[]; };
 
 // push constant in radix sort
 layout ( push_constant ) uniform PushBlock { uint NumKeys; int Shift; } push_block;

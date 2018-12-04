@@ -8,36 +8,36 @@
 #endif
 
 
-layout ( binding = 0, set = 0, align_ssbo ) restrict buffer MortoncodesB {
+layout ( binding = 0, set = 0, align_ssbo )   buffer MortoncodesB {
     morton_t Mortoncodes[];
 };
 
-layout ( binding = 1, set = 0, align_ssbo ) restrict buffer MortoncodesIndicesB {
+layout ( binding = 1, set = 0, align_ssbo )   buffer MortoncodesIndicesB {
     int MortoncodesIndices[];
 };
 
-layout ( binding = 3, set = 0, align_ssbo ) restrict buffer LeafsB {
+layout ( binding = 3, set = 0, align_ssbo )   buffer LeafsB {
     leaf_t Leafs[];
 };
 
-layout ( binding = 4, set = 0, align_ssbo ) restrict buffer bvhBoxesWorkB { 
+layout ( binding = 4, set = 0, align_ssbo )   buffer bvhBoxesWorkB { 
     vec4 bvhBoxesWork[][2];
 };
 
-layout ( binding = 5, set = 0, align_ssbo ) restrict buffer FlagsB {
+layout ( binding = 5, set = 0, align_ssbo ) subgroupcoherent buffer FlagsB {
     int Flags[];
 };
 
-layout ( binding = 6, set = 0, align_ssbo ) restrict buffer ActivesB {
+layout ( binding = 6, set = 0, align_ssbo ) subgroupcoherent buffer ActivesB {
     //int Actives[][2];
     int Actives[];
 };
 
-layout ( binding = 7, set = 0, align_ssbo ) restrict buffer LeafIndicesB {
+layout ( binding = 7, set = 0, align_ssbo ) subgroupcoherent buffer LeafIndicesB {
     int LeafIndices[];
 };
 
-layout ( binding = 8, set = 0, align_ssbo ) restrict buffer CountersB {
+layout ( binding = 8, set = 0, align_ssbo ) subgroupcoherent buffer CountersB {
     int aCounter[2];
     int vtCounters[6];
 };
@@ -45,9 +45,7 @@ layout ( binding = 8, set = 0, align_ssbo ) restrict buffer CountersB {
 
 // 
 struct VtBuildConst { int primitiveCount, primitiveOffset; };
-layout ( binding = 2, set = 0, align_ssbo ) readonly restrict buffer BuildConstB {
-    VtBuildConst buildConst_[];
-};
+layout ( binding = 2, set = 0, align_ssbo ) readonly devicecoherent buffer BuildConstB { VtBuildConst buildConst_[]; };
 #define buildBlock buildConst_[0]
 
 

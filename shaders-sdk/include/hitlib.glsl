@@ -14,9 +14,9 @@ layout ( binding = 1, set = SETS_DESC_SET_ID ) uniform sampler samplers[MAX_SAMP
 layout ( binding = 3, set = SETS_DESC_SET_ID ) uniform usamplerBuffer vtextures;
 
 // material set (in main descriptor set)
-layout ( binding = 2, set = SETS_DESC_SET_ID, align_ssbo ) readonly restrict buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
-//layout ( binding = 3, set = SETS_DESC_SET_ID, align_ssbo ) readonly restrict buffer VT_COMBINED { u16vec2 vtextures[]; }; // TODO: replace by native combinations
-layout ( binding = 4, set = SETS_DESC_SET_ID, align_ssbo ) readonly restrict buffer VT_MATERIAL_INFO { uint materialCount, materialOffset; };
+layout ( binding = 2, set = SETS_DESC_SET_ID, align_ssbo ) readonly   buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
+//layout ( binding = 3, set = SETS_DESC_SET_ID, align_ssbo ) readonly   buffer VT_COMBINED { u16vec2 vtextures[]; }; // TODO: replace by native combinations
+layout ( binding = 4, set = SETS_DESC_SET_ID, align_ssbo ) readonly   buffer VT_MATERIAL_INFO { uint materialCount, materialOffset; };
 
 
 int matID = -1;

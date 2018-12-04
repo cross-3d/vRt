@@ -82,8 +82,8 @@ layout ( binding = 0, set = 1, align_ssbo ) readonly buffer bvhBlockB { BvhBlock
 // Accessible blocks and instances for top levels, or task accessing (required shared buffers)
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
 #ifdef BVH_CREATION
-layout ( binding = 2, set = 1, align_ssbo ) buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
-layout ( binding = 4, set = 1, align_ssbo ) buffer BvhTransformB { mat3x4 transformData_[]; };
+layout ( binding = 2, set = 1, align_ssbo ) coherent buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
+layout ( binding = 4, set = 1, align_ssbo ) coherent buffer BvhTransformB { mat3x4 transformData_[]; };
 #else
 layout ( binding = 2, set = 1, align_ssbo ) readonly buffer BvhInstanceB { BvhInstanceT bvhInstance_[]; };
 layout ( binding = 4, set = 1, align_ssbo ) readonly buffer BvhTransformB { mat3x4 transformData_[]; };
@@ -92,7 +92,7 @@ layout ( binding = 4, set = 1, align_ssbo ) readonly buffer BvhTransformB { mat3
 
 
 #ifdef BVH_CREATION
-layout ( binding = 1, set = 1, align_ssbo )          buffer bvhBoxesB { BTYPE_ bvhNodes_[]; } bInstances[];
+layout ( binding = 1, set = 1, align_ssbo ) coherent buffer bvhBoxesB { BTYPE_ bvhNodes_[]; } bInstances[];
 #else
 layout ( binding = 1, set = 1, align_ssbo ) readonly buffer bvhBoxesB { BTYPE_ bvhNodes_[]; } bInstances[];
 #endif
