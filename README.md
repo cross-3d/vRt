@@ -39,7 +39,6 @@
 
 - RX Vega 64
 - RTX 2070 (but still have some dumbs)
-- GTX 1070 (need new tests)
 
 ### Roadmaps
 
