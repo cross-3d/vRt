@@ -84,7 +84,7 @@ namespace _vt {
 
             const uint64_t U2X = 2ull;
             VtBufferRegionCreateInfo bfi = {};
-            constexpr auto LOCAL_SIZE = 1024ull, STACK_SIZE = 8ull, PAGE_COUNT = 8ull, STATE_COUNT = 2ull;
+            constexpr auto LOCAL_SIZE = 1024ull, STACK_SIZE = 8ull, PAGE_COUNT = 4ull, STATE_COUNT = 2ull;
 
             { // allocate buffer regions
                 bfi.bufferSize = rayCount * U2X * (8ull * sizeof(uint32_t));
@@ -135,7 +135,7 @@ namespace _vt {
 
 
                 // planned buffer chunking per subgroups support
-                bfi.bufferSize = strided<uint32_t>(RV_INTENSIVITY * STACK_SIZE * LOCAL_SIZE * (PAGE_COUNT * STATE_COUNT + 1)) * DUAL_COMPUTE;
+                bfi.bufferSize = strided<uint32_t>(STACK_SIZE * PAGE_COUNT * STATE_COUNT) * RV_INTENSIVITY * LOCAL_SIZE * DUAL_COMPUTE;
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bStackManager, bfi, vtRTSet->_traverseCache);
 

@@ -16,19 +16,19 @@
 #define Ni 2u
 
 #ifdef IS_RAY_SHADER
-#define WID (0u+gl_LaunchIDNV[Ni].x) // shuld be uniform (scalar)
+#define WID gl_LaunchIDNV[Ni].x // shuld be uniform (scalar)
 #else
-#define WID (0u+gl_GlobalInvocationID[Ni].x) // shuld be uniform (scalar)
+#define WID gl_GlobalInvocationID[Ni].x // shuld be uniform (scalar)
 #endif
 
-#define Wave_Size_RT (gl_SubgroupSize.x)
-#define Wave_Count_RT (gl_NumSubgroups.x)
+#define Wave_Size_RT gl_SubgroupSize
+#define Wave_Count_RT gl_NumSubgroups
 
 #ifndef OUR_INVOC_TERM
-    #define Launch_Idx (gl_GlobalInvocationID.xy)
-    #define Local_Idx (gl_LocalInvocationIndex.x)
-    #define Wave_Idx (gl_SubgroupID.x)
-    #define Lane_Idx (gl_SubgroupInvocationID.x)
+    #define Launch_Idx gl_GlobalInvocationID
+    #define Local_Idx gl_LocalInvocationIndex
+    #define Wave_Idx gl_SubgroupID
+    #define Lane_Idx gl_SubgroupInvocationID
 #endif
 
 // 

@@ -16,9 +16,9 @@
 
 const lowp int 
 #if defined(ENABLE_VEGA_INSTRUCTION_SET) || defined(ENABLE_TURING_INSTRUCTION_SET) // prefer to run in Turing's too
-   localStackSize = 8, pageCount = 4; // 256-bit global memory stack pages
+   localStackSize = 8, pageCount = 3; // 256-bit global memory stack pages
 #else
-   localStackSize = 4, pageCount = 8; // 128-bit capable 
+   localStackSize = 4, pageCount = 7; // 128-bit capable 
 #endif
 
 #define stack_t int[localStackSize]
@@ -31,7 +31,7 @@ const highp uint maxIterations = 8192u;//* 12u;
 //} traverseCache;
 
 layout ( binding = _CACHE_BINDING, set = 0, align_ssbo ) coherent buffer VT_PAGE_SYSTEM {
-    stack_t stack[Wave_Size], pages[];
+    stack_t stack[Wave_Size], pages[Wave_Size*pageCount*2u];
 } cache[];
 
 
