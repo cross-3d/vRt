@@ -2,7 +2,7 @@
 #extension GL_GOOGLE_include_directive : enable
 
 
-#define EXTEND_LOCAL_GROUPS
+//#define EXTEND_LOCAL_GROUPS
 //#define USE_PUSH_CONSTANT
 #define VERTEX_FILLING
 

@@ -12,7 +12,8 @@
 #define ENABLE_VSTORAGE_DATA
 #define DMA_HIT
 
-#define EXTEND_LOCAL_GROUPS
+  #define WORK_SIZE 128u
+//#define EXTEND_LOCAL_GROUPS
 
 #include "../include/driver.glsl"
 #include "../include/mathlib.glsl"
