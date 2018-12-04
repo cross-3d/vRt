@@ -30,14 +30,22 @@
 #endif
 
 // 
-#extension GL_ARB_gpu_shader_int64 : enable
+//#extension GL_ARB_gpu_shader_int64 : enable // historical
 #extension GL_EXT_shader_atomic_int64 : enable
 #extension GL_EXT_shader_8bit_storage : enable
 #extension GL_EXT_shader_16bit_storage : enable
 #extension GL_EXT_control_flow_attributes : enable
 #extension GL_EXT_shader_image_load_formatted : enable
 #extension GL_KHR_memory_scope_semantics : enable // no actual support
-#extension GL_KHX_shader_explicit_arithmetic_types : enable
+
+// 
+#extension GL_EXT_shader_explicit_arithmetic_types : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_float32 : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_float16 : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_int64 : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_int32 : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_int16 : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_int8 : enable
 
 // subgroup operations
 #extension GL_KHR_shader_subgroup_basic            : require
@@ -83,9 +91,10 @@
     
     #extension GL_NV_shader_subgroup_partitioned : enable // volta and above should support it
     #extension GL_NV_compute_shader_derivatives : enable
-    #extension GL_NV_shader_atomic_int64 : enable // unknown status
+    //#extension GL_NV_shader_atomic_int64 : enable // unknown status
 #endif
 
+#ifdef AMD_PLATFORM // only under AMD shaders
 // sampler f16 support
 #ifdef ENABLE_FP16_SAMPLER_HACK
     #extension GL_AMD_gpu_shader_half_float_fetch : enable
@@ -93,13 +102,13 @@
 
 // enable fp16 support
 #ifdef ENABLE_FP16_SUPPORT
-    #extension GL_AMD_gpu_shader_half_float : enable
-    //#extension GL_KHR_gpu_shader_float16 : enable // unknown status
+    #extension GL_AMD_gpu_shader_half_float : enable // better to still save
+#endif
 #endif
 
 // enable int16 support
 #ifdef ENABLE_INT16_SUPPORT
-    #extension GL_AMD_gpu_shader_int16 : enable
+    #extension GL_AMD_gpu_shader_int16 : enable // better to still save
 #endif
 
 // if int16 no supported, use plain int32
@@ -144,18 +153,5 @@
 #ifndef WORK_SIZE_BND
 #define WORK_SIZE_BND WORK_SIZE
 #endif
-
-// uint32_t
-#define uint32_t uint
-#define u32vec2 uvec2
-#define u32vec3 uvec3
-#define u32vec4 uvec4
-
-// int32_t
-#define int32_t uint
-#define i32vec2 ivec2
-#define i32vec3 ivec3
-#define i32vec4 ivec4
-
 
 #endif

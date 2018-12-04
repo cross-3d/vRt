@@ -242,12 +242,12 @@ vec4 crossp4(in vec4 a, in vec4 b) { return crossp4(a.xyz,b.xyz); };
 
 
 // 64-bit packing
-#define U2P unpackUint2x32
-#define P2U packUint2x32
+#define U2P unpack32
+#define P2U pack64
 
 // 128-bit packing (2x64bit)
-uvec4 U4P(in u64vec2 pckg) { return uvec4(U2P(pckg.x), U2P(pckg.y)); }
-u64vec2 P4U(in uvec4 pckg) { return u64vec2(uint64_t(P2U(pckg.xy)), uint64_t(P2U(pckg.zw))); }
+uvec4 U4P(in u64vec2 pckg) { return uvec4(U2P(pckg.x), U2P(pckg.y)); };
+u64vec2 P4U(in uvec4 pckg) { return u64vec2(P2U(pckg.xy), P2U(pckg.zw)); };
 
 // float packing
 uvec2 packHalf4x16(in vec4 floats) { return uvec2(packHalf2x16(floats.xy), packHalf2x16(floats.zw)); }
@@ -339,13 +339,13 @@ vec3 dcts(in dirtype_t hr) { return dcts(dirtype_t_decode(hr)); };
 
 
 #ifdef ENABLE_INT16_SUPPORT
-uint p2x_16(in u16vec2 a) { return packUint2x16(a); };
+uint p2x_16(in u16vec2 a) { return pack32(a); };
 #endif
 uint p2x_16(in highp uvec2 a) { return bitfieldInsert(a.x,a.y,16,16); };
 
 
 #ifdef ENABLE_INT16_SUPPORT
-u16vec2 up2x_16(in uint a) { return unpackUint2x16(a); }; // cast uint32 memory
+u16vec2 up2x_16(in uint a) { return unpack16(a); }; // cast uint32 memory
 u16vec2 up2x_16(in u16vec2 a) { return a; }; // just return value
 #else
 highp uvec2 up2x_16(in uint a) { return uvec2(a&0xFFFFu,a>>16u); }; // unpack uint32 value
