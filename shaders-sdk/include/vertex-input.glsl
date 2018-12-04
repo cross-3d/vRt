@@ -55,7 +55,8 @@ int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 //layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint data[]; } bufferSpace[];
 //#endif
 
-layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint8_t data[]; } bufferSpace[];
+//layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint8_t data[]; } bufferSpace[];
+layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint16_t data[]; } bufferSpace[];
 layout ( binding = 2, set = 1, align_ssbo ) readonly buffer VT_BUFFER_VIEW { VtBufferView bufferViews[]; };
 layout ( binding = 3, set = 1, align_ssbo ) readonly buffer VT_ACCESSOR { VtAccessor accessors[]; };
 layout ( binding = 4, set = 1, align_ssbo ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
@@ -73,9 +74,12 @@ layout ( binding = 4, set = 1, align_ssbo ) readonly buffer VT_ATTRIB { VtAttrib
 
 
 // First in world ByteAddressBuffer in Vulkan API by Ispanec (tested in RTX 2070 only)
-uint16_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { return pack16(u8vec2(bufferSpace[BSC].data[Ot+=uI],bufferSpace[BSC].data[Ot+1u])); };
-uint32_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { return pack32(u8vec4(bufferSpace[BSC].data[Ot+=uI],bufferSpace[BSC].data[Ot+1u],bufferSpace[BSC].data[Ot+2u],bufferSpace[BSC].data[Ot+3u])); };
+//uint16_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return pack16(u8vec2(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
+//uint32_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return pack32(u8vec4(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u],bufferSpace[BSC].data[Ot+2u],bufferSpace[BSC].data[Ot+3u])); };
 
+// 16-bit wide version (with RX Vega support) 
+uint16_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return uint16_t(bufferSpace[BSC].data[Ot+0u]); };
+uint32_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return pack32(u16vec2(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
 
 
 struct VtVIUniform {
