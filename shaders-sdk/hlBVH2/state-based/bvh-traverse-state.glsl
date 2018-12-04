@@ -64,8 +64,8 @@ BvhSubState stackState, resrvState;
 
 #define sidx  stackState.stackPtr
 
-#define CACHE_OFFSET (Wave_Size_RT*currentState+Lane_Idx)*pageCount
-#define CACHE_ID readFLane(gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx) // access should be unified in same subgroups
+//#define CACHE_OFFSET (Wave_Size_RT*currentState+Lane_Idx)*pageCount
+//#define CACHE_ID readFLane(gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx) // access should be unified in same subgroups
 
 
 #define VTX_PTR 0

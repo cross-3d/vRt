@@ -2,6 +2,7 @@
 #extension GL_GOOGLE_include_directive : enable
 
 // enable it, when you will ready...
+#define IS_TRAVERSING
 #define ENABLE_STACK_SWITCH // still has glitches, when is enabled, will used unified stack (may no enough)
 #define EXPERIMENTAL_INSTANCING_SUPPORT
 
@@ -35,6 +36,10 @@ void main() {
     //const uint wsize  = min(rayCounter[WID], MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
     const uint wsize = min(uint(rayTypedCounterRead[stageUniform.currentGroup][WID]), uint(MAX_RAYS)); IFANY (wsize <= 0) return; // TODO: dedicated ray counter 
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 2097152u);
+
+    // 
+    //[[flatten]] if (subgroupElect()) 
+    { topLevelEntry = bvhBlockTop.primitiveCount > 1 ? bvhBlockTop.entryID : -1, CACHE_ID = int(gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx), CACHE_OFFSET = int((Wave_Size_RT*currentState+Lane_Idx)*pageCount); }; // should be subgroup uniform
 
     // planned task-based BVH traversing (for two-level BVH support)
     for (uint w=0;w<wcount;w+=wgs) {

@@ -105,10 +105,16 @@ const mat3 uvwMap = mat3(vec3(1.f,0.f,0.f),vec3(0.f,1.f,0.f),vec3(0.f,0.f,1.f));
 const float SFNa = SFN *1.f, SFOa = SFNa+1.f;
 const uint lastDataID = 0u;
 
-// int topLevelEntry = 0; // should be scalar value
- int topLevelEntry = 0; // should be scalar 
+// int topLevelEntry = 0; // should be scalar 
+#ifdef IS_TRAVERSING
+shared int varset[WORK_SIZE/Wave_Size][2]; // dedicated shared data
+#endif
+
 uint currentState = BVH_STATE_TOP;
  int INSTANCE_ID = -1, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
+ int topLevelEntry = -1, CACHE_ID = 0, CACHE_OFFSET = 0;
+//#define topLevelEntry varset[Wave_Idx][0]
+//#define CACHE_ID varset[Wave_Idx][1]
 
 // instanced BVH node
 #define bvhInstance bvhInstance_[INSTANCE_ID]

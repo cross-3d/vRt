@@ -1,7 +1,7 @@
 
 // 
 int traverseBVH2( in bool validTop ) {
-    {   topLevelEntry = bvhBlockTop.primitiveCount > 1 ? bvhBlockTop.entryID : -1;
+    {   
         currentState = uint(topLevelEntry == -1), LAST_INSTANCE = -1, INSTANCE_ID = currentState == BVH_STATE_BOTTOM ? 0 : -1;
         stackState = BvhSubState(traverseState.entryIDBase = BVH_ENTRY, mint_t(0), mint_t(0)), resrvState = BvhSubState(-1, mint_t(0), mint_t(0));
         initTraversing(true, -1, ORIGINAL_ORIGIN, ORIGINAL_DIRECTION);
