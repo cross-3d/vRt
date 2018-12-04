@@ -121,16 +121,16 @@
 #ifndef WORK_SIZE
 #ifdef EXTEND_LOCAL_GROUPS
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
-    #define WORK_SIZE 1024u // not sure 
+    #define WORK_SIZE 1024u
 #else
     #ifdef ENABLE_TURING_INSTRUCTION_SET
           #define WORK_SIZE 512u
-        //#define WORK_SIZE 768u  // half of TU106 and TU102 
-        //#define WORK_SIZE 1536u // useful for RTX 2070, RTX 2080 Ti, Titan tX, Quadro RTX 6000 and Quadro RTX 8000. NVIDIA, please, extend compute support for TU106 and TU102!
-        //#define WORK_SIZE 1024u // useful only for RTX 2080 and Quadro RTX 5000 (i.e. TU104), but can be covered by "1536u" 
+        //#define WORK_SIZE 768u
+        //#define WORK_SIZE 1536u
+        //#define WORK_SIZE 1024u
     #else
         #ifdef AMD_PLATFORM
-            #define WORK_SIZE 256u // best cover for Polaris
+            #define WORK_SIZE 512u // best cover for Polaris
         #else
             #define WORK_SIZE 640u // blocks of Pascal 
         #endif
