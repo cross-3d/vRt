@@ -30,7 +30,7 @@ const highp uint maxIterations = 8192u;//* 12u;
 //    stack_t pages[];
 //} traverseCache;
 
-layout ( binding = _CACHE_BINDING, set = 0, align_ssbo ) coherent buffer VT_PAGE_SYSTEM {
+layout ( binding = _CACHE_BINDING, set = 0, align_ssbo ) subgroupcoherent buffer VT_PAGE_SYSTEM {
     stack_t stack[Wave_Size], pages[Wave_Size*pageCount*2u];
 } cache[];
 
@@ -65,7 +65,7 @@ BvhSubState stackState, resrvState;
 #define sidx  stackState.stackPtr
 
 #define CACHE_OFFSET (Wave_Size_RT*currentState+Lane_Idx)*pageCount
-#define CACHE_ID readFLane(gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx)
+#define CACHE_ID readFLane(gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx) // access should be unified in same subgroups
 
 
 #define VTX_PTR 0
