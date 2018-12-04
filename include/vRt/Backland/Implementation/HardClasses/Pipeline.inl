@@ -73,6 +73,7 @@ namespace _vt {
             vtRTSet->_cuniform.maxRayCount = int32_t(rayCount), vtRTSet->_cuniform.maxHitCount = int32_t(hitCount);
 
             std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
+            std::shared_ptr<BufferManager> bStackManager = {}; createBufferManager(_vtDevice, bStackManager);
 
 
             VtDeviceBufferCreateInfo bfic = {};
@@ -129,12 +130,11 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_rayLinkPayload);
 
 
-                // ray traversing local cache extension
-                // phantom performance impacts detected here!
-                constexpr auto LOCAL_SIZE = 128ull, STACK_SIZE = 8ull, PAGE_COUNT = 4ull, STATE_COUNT = 2ull;
+                // planned buffer chunking per subgroups support 
+                constexpr auto LOCAL_SIZE = 1024ull, STACK_SIZE = 8ull, PAGE_COUNT = 4ull, STATE_COUNT = 2ull;
                 bfi.bufferSize = strided<uint32_t>(RV_INTENSIVITY * STACK_SIZE * LOCAL_SIZE * (PAGE_COUNT * STATE_COUNT + 1)) * DUAL_COMPUTE;
                 bfi.format = VK_FORMAT_R32_UINT;
-                createBufferRegion(bManager, bfi, vtRTSet->_traverseCache);
+                createBufferRegion(bStackManager, bfi, vtRTSet->_traverseCache);
 
 
                 bfi.bufferSize = sizeof(VtStageUniform);
@@ -153,8 +153,9 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_attribBuffer);
 
 
-                // build final shared buffer for this class
-                createSharedBuffer(bManager, bfic, vtRTSet->_sharedBuffer);
+                // create buffers 
+                createSharedBuffer(bManager, bfic, vtRTSet->_sharedBuffer); // build final shared buffer for this class
+                createSharedBuffer(bStackManager, bfic, vtRTSet->_stackBuffer); // prefer dedicated buffer for stack
             };
 
             {

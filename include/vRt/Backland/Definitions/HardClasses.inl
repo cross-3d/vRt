@@ -173,7 +173,7 @@ namespace _vt { // store in undercover namespace
 
         // in-set buffers
         //std::shared_ptr<DeviceBuffer> 
-        std::shared_ptr<DeviceBuffer> _sharedBuffer = {};
+        std::shared_ptr<DeviceBuffer> _sharedBuffer = {}, _stackBuffer = {};
         std::shared_ptr<BufferRegion> 
             _rayBuffer = {},
             _groupIndicesBuffer = {},
