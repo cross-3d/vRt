@@ -33,52 +33,27 @@
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    //const uint wsize  = min(rayCounter[WID], MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
     const uint wsize = min(uint(rayTypedCounterRead[stageUniform.currentGroup][WID]), uint(MAX_RAYS)); IFANY (wsize <= 0) return; // TODO: dedicated ray counter 
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 2097152u);
 
     // 
     //[[flatten]] if (subgroupElect()) 
     { topLevelEntry = readFLane(bvhBlockTop.primitiveCount > 1 ? bvhBlockTop.entryID : -1), CACHE_ID = readFLane(int(gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx)); }; // should be subgroup uniform
+    { traverseState.maxElements = 0x7FFFFFFF; };
 
     // planned task-based BVH traversing (for two-level BVH support)
     for (uint w=0;w<wcount;w+=wgs) {
-        const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        const bool overflow = it >= wsize; IFALL(overflow) break;
-
-        // planned multiple-hits support
-        { RAY_ID = vtRayIdx(it), traverseState.maxElements = int(!overflow) * 0x7FFFFFFF, primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO); };
+        const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x); const bool overflow = it >= wsize; IFALL(overflow) break;
+        { RAY_ID = vtRayIdx(it), primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO); };
 
         [[flatten]] if (!overflow && RAY_ID >= 0) {
-            //int hid = vtFetchHitIdc(RAY_ID), mhit = hid+1; bool found = false; // last possible found hit
-            const int hid = it;//vtFetchHitIdc(RAY_ID);
-
-            //[[flatten]] if (hid < 0) hid = RAY_ID;
-            //[[unroll]] for (int i=0;i<1;i++) { //[[flatten]] if (i == 0 || found) 
-
-                // traversing triangles
-                const int ftrID = traverseBVH2(true)-1; // current found triangle
-                //traverseState.maxElements = min(traverseState.maxElements, ftrID);
-
-                { // resolve hit result 
-                    //[[flatten]] if (hid < 0) hid = atomicIncHitCount();
-                    hit.rayID = RAY_ID+1, hit.attribID = 0, hit.payloadID = 0, hit.hitVD = 0.f.xxxx;
-                    hit.idat = ivec4(LAST_INSTANCE, ftrID, (-1).xx), hit.uvt = primitiveState.lastIntersection;//, primitiveState.lastIntersection.w = FINT_ZERO;
-                    
-                    //imageAtomicMax(rayLink,r4ID,(hid+1).x);
-                    [[flatten]] if ( ftrID >= 0 ) { hit.attribID = vtVerifyClosestHit(hid,-1)+1; } else 
-                                                  { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
-
-                    /*
-                    const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);
-                    [[flatten]] if ( ftrID >= 0 ) 
-                        { hit.attribID = vtVerifyClosestHit(hid,-1)+1; found = true; }; 
-                    [[flatten]] if ( !found && lhit == mhit ) 
-                        { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
-                    {mhit=max(mhit,hid+1),hid=-1;};
-                    */
-                };
-            //};//};
+            const int hid = it, ftrID = traverseBVH2(true)-1;
+            {
+                hit.rayID = RAY_ID+1, hit.attribID = 0, hit.payloadID = 0, hit.hitVD = 0.f.xxxx;
+                hit.idat = ivec4(LAST_INSTANCE, ftrID, (-1).xx), hit.uvt = primitiveState.lastIntersection;
+                [[flatten]] if ( ftrID >= 0 ) { hit.attribID = vtVerifyClosestHit(hid,-1)+1; } else 
+                                              { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
+            };
         };
     };
 };

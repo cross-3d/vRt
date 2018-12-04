@@ -28,65 +28,32 @@
 #include "../include/structs.glsl"
 #include "../include/rayslib.glsl"
 
-struct VtCustomPayload {
-     vec4 lastIntersection;
-    ivec4 binaryData128;
-};
+struct VtCustomPayload { vec4 lastIntersection; ivec4 binaryData128; };
 #define LAST_INSTANCE primitiveState.binaryData128.x
 #define LAST_INTERSECTION primitiveState.lastIntersection
 
 layout (binding = 0, set = 1) uniform accelerationStructureNV accelStructure;
 layout (location = 0) rayPayloadNV VtCustomPayload primitiveState;
+layout (push_constant) uniform rayParams { uint sbtOffset, sbtStride, missIndex, r0; };
 
 #define r4ID int((RPG_OFF+rayID)<<2)
 #define hit hits[HPG_OFF+hid]
 
-layout(push_constant) uniform rayParams {
-    uint sbtOffset, sbtStride, missIndex, r0;
-};
-
-#define hid W
-
 void main() {
-    // planned task-based BVH traversing (for two-level BVH support)
-    //const uint wsize = min(rayCounter[WID], MAX_RAYS); [[flatten]] IFANY (wsize <= 0) return;
     const uint wsize = min(uint(rayTypedCounterRead[stageUniform.currentGroup][WID]), uint(MAX_RAYS)); IFANY (wsize <= 0) return; // TODO: dedicated ray counter 
     const uint tsize = (gl_LaunchSizeNV.x*gl_LaunchSizeNV.y), tWc = (gl_LaunchSizeNV.x*gl_LaunchIDNV.y+gl_LaunchIDNV.x);
     for (uint Wi=0u;Wi<wsize;Wi+=tsize) {
-        const uint W = tWc + Wi;
+        const int it = int(tWc + Wi); const bool overflow = it >= wsize; IFALL(overflow) break;
+        const int RAY_ID = vtRayIdx(it);
         
-        const int rayID = vtRayIdx(int(W)); const bool overflow = W >= wsize; IFALL(overflow) break;
-        const vec3 ORIGINAL_ORIGIN = rays[RPG_OFF+rayID].origin.xyz; const dirtype_t ORIGINAL_DIRECTION = rays[RPG_OFF+rayID].cdirect;
-        const uint rayFlags = gl_RayFlagsOpaqueNV, cullMask = !overflow ? 0xff : 0x00;
-        [[flatten]] if (!overflow) {
-            //LAST_INTERSECTION = vec4(0.f.xx, INFINITY, FINT_ZERO);
-            traceNV(accelStructure, rayFlags, cullMask, sbtOffset, sbtStride, missIndex, ORIGINAL_ORIGIN, SFN, dcts(ORIGINAL_DIRECTION), INFINITY, 0);
-
-            const int ftrID = floatBitsToInt(LAST_INTERSECTION.w)-1;
-
-            //int hid = vtFetchHitIdc(rayID), mhit = hid+1; bool found = false; // last possible found hit
-            //int hid = int(W);//vtFetchHitIdc(rayID);
-
-            { // resolve hit result 
-                //[[flatten]] if (hid < 0) hid = atomicIncHitCount();
-                //hid = atomicIncHitCount();
-                
-                hit.rayID = rayID+1, hit.attribID = 0, hit.payloadID = 0, hit.hitVD = 0.f.xxxx;
+        [[flatten]] if (!overflow && RAY_ID >= 0) {
+            traceNV(accelStructure, gl_RayFlagsOpaqueNV, !overflow ? 0xff : 0x00, sbtOffset, sbtStride, missIndex, rays[RPG_OFF+RAY_ID].origin.xyz, SFN, dcts(rays[RPG_OFF+RAY_ID].cdirect), INFINITY, 0);
+            const int hid = it, ftrID = floatBitsToInt(LAST_INTERSECTION.w)-1;
+            {
+                hit.rayID = RAY_ID+1, hit.attribID = 0, hit.payloadID = 0, hit.hitVD = 0.f.xxxx;
                 hit.idat = primitiveState.binaryData128, hit.uvt = LAST_INTERSECTION;
-                
-                //imageAtomicMax(rayLink,r4ID,(hid+1).x);
                 [[flatten]] if ( ftrID >= 0 ) { hit.attribID = vtVerifyClosestHit(int(hid),-1)+1; } else 
                                               { hit.attribID = 0;vtVerifyMissedHit(int(hid),0)+1; };
-
-
-                /*
-                const uint lhit = imageAtomicMax(rayLink,r4ID,(hid+1).x);
-                [[flatten]] if ( ftrID >= 0 ) 
-                    { hit.attribID = vtVerifyClosestHit(hid,-1)+1; found = true; }; 
-                [[flatten]] if ( !found && lhit == mhit ) 
-                    { hit.attribID = 0;vtVerifyMissedHit(hid,0)+1; };
-                
-                {mhit=max(mhit,hid+1),hid=-1;};*/
             };
         };
     };
