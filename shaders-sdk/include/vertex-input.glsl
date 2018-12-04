@@ -56,30 +56,30 @@ int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 //#endif
 
 //layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint8_t data[]; } bufferSpace[];
+#ifdef ENABLE_INT16_SUPPORT
 layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint16_t data[]; } bufferSpace[];
+#else
+layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint     data[]; } bufferSpace[]; // legacy GPU's
+#endif
+
 layout ( binding = 2, set = 1, align_ssbo ) readonly buffer VT_BUFFER_VIEW { VtBufferView bufferViews[]; };
 layout ( binding = 3, set = 1, align_ssbo ) readonly buffer VT_ACCESSOR { VtAccessor accessors[]; };
 layout ( binding = 4, set = 1, align_ssbo ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
-
-
-// 
-//#ifdef ENABLE_INT16_SUPPORT
-//highp uint M16(in uint BSC, in uint Ot, in uint uI) { return bufferSpace[NonUniform(BSC)].data[(Ot+uI)>>2u][(uI>>1u)&1u]; };
-//uint M32(in uint BSC, in uint Ot, in uint uI) { return p2x_16(bufferSpace[NonUniform(BSC)].data[(Ot+uI)>>2u]); };
-//#else
-//const lowp ivec2 b16m = {0,16};
-//highp uint M16(in uint BSC, in uint Ot, in uint uI) { return bitfieldExtract(bufferSpace[NonUniform(BSC)].data[(Ot+uI)>>2u],b16m[(uI>>1u)&1u],16); };
-//uint M32(in uint BSC, in uint Ot, in uint uI) { return bufferSpace[NonUniform(BSC)].data[(Ot+uI)>>2u]; };
-//#endif
 
 
 // First in world ByteAddressBuffer in Vulkan API by Ispanec (tested in RTX 2070 only)
 //uint16_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return pack16(u8vec2(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
 //uint32_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return pack32(u8vec4(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u],bufferSpace[BSC].data[Ot+2u],bufferSpace[BSC].data[Ot+3u])); };
 
-// 16-bit wide version (with RX Vega support) 
+
+#ifdef ENABLE_INT16_SUPPORT // 16-bit wide version, optimized (with RX Vega support) 
 uint16_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return uint16_t(bufferSpace[BSC].data[Ot+0u]); };
 uint32_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return pack32(u16vec2(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
+#else // for legacy GPU support
+const lowp ivec2 b16m = {0,16};
+highp uint M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return bitfieldExtract(bufferSpace[BSC].data[Ot>>1u],b16m[Ot&1u],16); };
+      uint M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=2; return bufferSpace[BSC].data[Ot]; };
+#endif
 
 
 struct VtVIUniform {
