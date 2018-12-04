@@ -80,8 +80,12 @@ namespace _vt {
             bfic.usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
             
 
+            std::vector<vk::DescriptorBufferInfo> chunks = {};
+
             const uint64_t U2X = 2ull;
             VtBufferRegionCreateInfo bfi = {};
+            constexpr auto LOCAL_SIZE = 1024ull, STACK_SIZE = 8ull, PAGE_COUNT = 8ull, STATE_COUNT = 2ull;
+
             { // allocate buffer regions
                 bfi.bufferSize = rayCount * U2X * (8ull * sizeof(uint32_t));
                 bfi.format = VK_FORMAT_UNDEFINED;
@@ -130,8 +134,7 @@ namespace _vt {
                 createBufferRegion(bManager, bfi, vtRTSet->_rayLinkPayload);
 
 
-                // planned buffer chunking per subgroups support 
-                constexpr auto LOCAL_SIZE = 1024ull, STACK_SIZE = 8ull, PAGE_COUNT = 4ull, STATE_COUNT = 2ull;
+                // planned buffer chunking per subgroups support
                 bfi.bufferSize = strided<uint32_t>(RV_INTENSIVITY * STACK_SIZE * LOCAL_SIZE * (PAGE_COUNT * STATE_COUNT + 1)) * DUAL_COMPUTE;
                 bfi.format = VK_FORMAT_R32_UINT;
                 createBufferRegion(bStackManager, bfi, vtRTSet->_traverseCache);
@@ -158,6 +161,16 @@ namespace _vt {
                 createSharedBuffer(bStackManager, bfic, vtRTSet->_stackBuffer); // prefer dedicated buffer for stack
             };
 
+
+            { // compute stack chunks 
+                const VkDeviceSize stackChunkSize = strided<uint32_t>(_vtDevice->_features->_subgroup.subgroupSize * (PAGE_COUNT * STATE_COUNT) * STACK_SIZE * DUAL_COMPUTE);
+                const VkDeviceSize stackChunkCount = RV_INTENSIVITY * tiled(VkDeviceSize(LOCAL_SIZE), VkDeviceSize(_vtDevice->_features->_subgroup.subgroupSize));
+                for (uint32_t t = 0u; t < stackChunkCount; t++) {
+                    chunks.push_back({ VkBuffer(*vtRTSet->_traverseCache), vtRTSet->_traverseCache->_offset() + t*stackChunkSize, stackChunkSize });
+                };
+            };
+
+
             {
                 std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]), };
                 const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
@@ -168,7 +181,8 @@ namespace _vt {
                 std::vector<vk::WriteDescriptorSet> writes = {
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(10).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&vtRTSet->_rayLinkPayload->_bufferView()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(11).setDescriptorType(vk::DescriptorType::eStorageTexelBuffer).setPTexelBufferView((vk::BufferView*)&vtRTSet->_attribBuffer->_bufferView()),
-                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(9).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_traverseCache->_descriptorInfo()),
+                    //vk::WriteDescriptorSet(writeTmpl).setDstBinding(9).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_traverseCache->_descriptorInfo()),
+                    vk::WriteDescriptorSet(writeTmpl).setDstBinding(9).setPBufferInfo(chunks.data()).setDescriptorCount(chunks.size()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(0).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_rayBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(1).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_hitBuffer->_descriptorInfo()),
                     vk::WriteDescriptorSet(writeTmpl).setDstBinding(2).setPBufferInfo((vk::DescriptorBufferInfo*)&vtRTSet->_closestHitIndiceBuffer->_descriptorInfo()),

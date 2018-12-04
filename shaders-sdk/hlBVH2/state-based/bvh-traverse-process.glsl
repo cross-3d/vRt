@@ -9,7 +9,7 @@ int traverseBVH2( in bool validTop ) {
     
     // two loop based BVH traversing
     bool stateSwitched = false;
-    [[flatten]] if (validIdx(stackState.idx)) [[dependency_infinite]] do //for (uint hi=0;hi<maxIterations;hi++) 
+    [[flatten]] if (validIdx(stackState.idx)) [[dependency_infinite]] for (uint hi=0;hi<maxIterations;hi++) 
     {
         //[[flatten]] if (validIdx(stackState.idx)) //[[dependency_infinite]] for (;hi<maxIterations;hi++) 
         {
@@ -59,7 +59,7 @@ int traverseBVH2( in bool validTop ) {
         // every-step solving 
         const bool isEnd = !validIdxEntry(stackState.idx), hasElement = traverseState.defElementID > 0;
         [[flatten]] if (isEnd || hasElement) doIntersection( isEnd, hasElement, stateSwitched );
-        //[[flatten]] if (!validIdxIncluse(stackState.idx) || (!stateSwitched && (stackState.idx == traverseState.entryIDBase))) { break; };
-    } while (validIdxIncluse(stackState.idx) && (stateSwitched || stackState.idx != traverseState.entryIDBase));
+        [[flatten]] if (!validIdxIncluse(stackState.idx) || (!stateSwitched && (stackState.idx == traverseState.entryIDBase))) { break; };
+    }; //while (validIdxIncluse(stackState.idx) && (stateSwitched || stackState.idx != traverseState.entryIDBase));
     return floatBitsToInt(primitiveState.lastIntersection.w);
 };

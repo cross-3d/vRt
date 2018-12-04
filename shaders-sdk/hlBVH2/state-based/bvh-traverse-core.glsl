@@ -81,7 +81,7 @@ void triggerSwitch(inout uint stateTo) { currentState = stateTo, initTraversing(
 void switchStateTo(in uint stateTo, in int instanceTo, in bool valid) {
     [[flatten]] if (currentState != stateTo) {
         const bool ToTop = (stateTo == BVH_STATE_TOP), ToBottom = !ToTop;
-        [[flatten]] if (ToTop) { lstack = traverseCache.stack[cacheID]; } else { traverseCache.stack[cacheID] = lstack; };
+        [[flatten]] if (ToTop) { lstack = cache[CACHE_ID].stack[Lane_Idx]; } else { cache[CACHE_ID].stack[Lane_Idx] = lstack; };
         [[flatten]] if (ToTop) { stackState = resrvState; } else { resrvState = stackState; };
         INSTANCE_ID = instanceTo, triggerSwitch(stateTo);
     };

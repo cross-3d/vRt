@@ -22,12 +22,17 @@ const lowp int
 #endif
 
 #define stack_t int[localStackSize]
-#define cacheID ((gl_WorkGroupSize.x*gl_NumWorkGroups.x*WID)+gl_GlobalInvocationID.x)
-const highp uint maxIterations = 16384u, GridSize = 64u*2u;//* 12u;
+//#define cacheID ((gl_WorkGroupSize.x*gl_NumWorkGroups.x*WID)+gl_GlobalInvocationID.x)
+const highp uint maxIterations = 8192u;//* 12u;
+
+//layout ( binding = _CACHE_BINDING, set = 0, align_ssbo ) coherent buffer VT_PAGE_SYSTEM {
+//    stack_t stack[WORK_SIZE*GridSize];
+//    stack_t pages[];
+//} traverseCache;
+
 layout ( binding = _CACHE_BINDING, set = 0, align_ssbo ) coherent buffer VT_PAGE_SYSTEM {
-    stack_t stack[WORK_SIZE*GridSize];
-    stack_t pages[];
-} traverseCache;
+    stack_t stack[Wave_Size], pages[];
+} cache[];
 
 
 // stack system of current BVH traverser
@@ -59,27 +64,23 @@ BvhSubState stackState, resrvState;
 
 #define sidx  stackState.stackPtr
 
+#define CACHE_OFFSET (Wave_Size_RT*currentState+Lane_Idx)*pageCount
+#define CACHE_ID (gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx)
 
-//#define traverseState traverseStates[currentState] // yes, require two states 
-
-// 13.10.2018 added one mandatory stack page, can't be reached by regular operations 
-#define CACHE_BLOCK_SIZE (gl_WorkGroupSize.x*2u)*gl_NumWorkGroups.x*pageCount // require one reserved block 
-#define CACHE_BLOCK (cacheID*pageCount)
-#define STATE_PAGE_OFFSET (CACHE_BLOCK_SIZE*currentState)
 
 #define VTX_PTR 0
 int cmpt(in int ts){ return clamp(ts,0,localStackSize-1); };
 
 void loadStack(inout int rsl) {
     {[[flatten]] if (stackState.stackPtr <= 0 && stackState.pageID > 0 ) { // make store/load deferred 
-        lstack = traverseCache.pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (--stackState.pageID)]; stackState.stackPtr = mint_t(localStackSize);
+        lstack = cache[CACHE_ID].pages[CACHE_OFFSET + (--stackState.pageID)]; stackState.stackPtr = mint_t(localStackSize);
     };};
     {[[flatten]] if (sidx > 0) { rsl = lstack[cmpt(--sidx)]; };};
 };
 
 void storeStack(in int rsl) {
     {[[flatten]] if (stackState.stackPtr >= localStackSize && stackState.pageID < pageCount ) { // make store/load deferred 
-        traverseCache.pages[STATE_PAGE_OFFSET + CACHE_BLOCK + (stackState.pageID++)] = lstack; stackState.stackPtr = mint_t(0);
+        cache[CACHE_ID].pages[CACHE_OFFSET + (stackState.pageID++)] = lstack; stackState.stackPtr = mint_t(0);
     };};
     {[[flatten]] if (sidx < localStackSize) { lstack[cmpt(sidx++)] = rsl; };};
 };

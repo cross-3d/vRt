@@ -36,13 +36,17 @@ namespace _vt {
             auto _vkfeatures = vk::PhysicalDeviceFeatures2{};
             auto _vkproperties = vk::PhysicalDeviceProperties2{};
 
-            // features properties
+            // get features 
             features->_storage8 = vk::PhysicalDevice8BitStorageFeaturesKHR{};
             features->_storage16 = vk::PhysicalDevice16BitStorageFeatures{};
             features->_descriptorIndexing = vk::PhysicalDeviceDescriptorIndexingFeaturesEXT{};
             _vkfeatures.pNext = &features->_storage16, features->_storage16.pNext = &features->_storage8, features->_storage8.pNext = &features->_descriptorIndexing;
 
-            // get properties and features
+            // get properties 
+            features->_subgroup = vk::PhysicalDeviceSubgroupProperties{};
+            _vkproperties.pNext = &features->_subgroup;
+
+            // call getters
             gpu.getFeatures2(&_vkfeatures), gpu.getProperties2(&_vkproperties);
             features->_features = _vkfeatures, features->_properties = _vkproperties, features->_limits = features->_properties.properties.limits;
         };
@@ -152,7 +156,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(6, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // constant buffer
                 vk::DescriptorSetLayoutBinding(7, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // counters 
                 vk::DescriptorSetLayoutBinding(8, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),  // task lists
-                vk::DescriptorSetLayoutBinding(9, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
+                vk::DescriptorSetLayoutBinding(9, vk::DescriptorType::eStorageBuffer, 0x80000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
                 vk::DescriptorSetLayoutBinding(10, vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // ray<->hit binding payload 
                 vk::DescriptorSetLayoutBinding(11, vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
                 vk::DescriptorSetLayoutBinding(12, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // group counters 
