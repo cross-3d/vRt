@@ -39,7 +39,7 @@ void main() {
 
     // 
     //[[flatten]] if (subgroupElect()) 
-    { topLevelEntry = readFLane(bvhBlockTop.primitiveCount > 1 ? bvhBlockTop.entryID : -1), CACHE_ID = readFLane(int(gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx)), CACHE_OFFSET = int((Wave_Size_RT*currentState+Lane_Idx)*pageCount); }; // should be subgroup uniform
+    { topLevelEntry = readFLane(bvhBlockTop.primitiveCount > 1 ? bvhBlockTop.entryID : -1), CACHE_ID = readFLane(int(gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx)); }; // should be subgroup uniform
 
     // planned task-based BVH traversing (for two-level BVH support)
     for (uint w=0;w<wcount;w+=wgs) {

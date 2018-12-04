@@ -112,7 +112,7 @@ shared int varset[WORK_SIZE/Wave_Size][2]; // dedicated shared data
 
 uint currentState = BVH_STATE_TOP;
  int INSTANCE_ID = -1, LAST_INSTANCE = -1, RAY_ID = -1, MAX_ELEMENTS = 0;
- int topLevelEntry = -1, CACHE_ID = 0, CACHE_OFFSET = 0;
+ int topLevelEntry = -1, CACHE_ID = 0;
 //#define topLevelEntry varset[Wave_Idx][0]
 //#define CACHE_ID varset[Wave_Idx][1]
 
