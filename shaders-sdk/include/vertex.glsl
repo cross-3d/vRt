@@ -236,7 +236,7 @@ bool intersectCubeF32Single(in vec3 orig, in vec3 dr, in bvec4 sgn, in mat3x2 tM
 #endif
 
 #ifndef VERTEX_FILLING
-pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in nbox_t cbox, inout vec4 nfe2)
+bvec2 intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in nbox_t cbox, inout vec4 nfe2)
 {
     // calculate intersection
     fvec4_[3] tMinMax = { 
@@ -257,7 +257,7 @@ pbvec2_ intersectCubeDual(inout fvec3_ orig, inout fvec3_ dr, in bvec4 sgn, in n
     // TODO: improve performance and ops
     const bvec2 isCube = and(and(greaterThanEqual(tFar, tNear), greaterThan(tFar, fvec2_(SFN))), lessThan(tNear, fvec2_(N_INFINITY)));
     nfe2 = mix(INFINITY.xxxx, vec4(tNear, tFar), bvec4(isCube, isCube));
-    return binarize(isCube);
+    return isCube;
 };
 #endif
 

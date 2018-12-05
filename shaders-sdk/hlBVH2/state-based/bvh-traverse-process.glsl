@@ -24,17 +24,15 @@ int traverseBVH2( in bool validTop ) {
                 #define bbox2x bvhNode.cbox
 
                 vec4 nfe = vec4(0.f.xx, INFINITY.xx);
-                pbvec2_ childIntersect = intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe);
-                //pbvec2_ childIntersect = mix(false2_, intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe), bool(cnode.x&1));
+                bvec2 childIntersect = intersectCubeDual(traverseState.minusOrig.xyz, traverseState.directInv.xyz, bsgn, bbox2x, nfe); // this variable should be two of uint64_t/uint32_t wide in subgroup (scalar)
 
                 // found simular technique in http://www.sci.utah.edu/~wald/Publications/2018/nexthit-pgv18.pdf
                 // but we came up in past years, so sorts of patents may failure 
                 // also, they uses hit queue, but it can very overload stacks, so saving only indices...
-                //childIntersect &= binarize(lessThanEqual(nfe.xy, fma(primitiveState.lastIntersection.z,fpOne,fpInner).xx)); // it increase FPS by filtering nodes by first triangle intersection
-                childIntersect &= binarize(lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz));
+                childIntersect = and(childIntersect, lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz));
 
                 //
-                pbool_ fmask = pl_x(childIntersect)|(pl_y(childIntersect)<<true_);
+                pbool_ fmask = pbool_(childIntersect.x)|(pbool_(childIntersect.y)<<true_);
                 [[flatten]] if (fmask > 0 && fmask != -1) {
                     int secondary = -1;
                     [[flatten]] if (fmask == 3) { fmask &= true_<<pbool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
