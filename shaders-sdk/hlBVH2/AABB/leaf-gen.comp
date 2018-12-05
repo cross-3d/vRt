@@ -22,6 +22,12 @@ LOCAL_SIZE_LAYOUT;
 #define wsize bvhBlockTop.leafCount
 //#define lbox Leafs[to].lbox
 
+#ifdef USE_MORTON_32
+#define cUNRM packUnorm4x8
+#else
+#define cUNRM packUnorm4x16
+#endif
+
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
@@ -48,12 +54,7 @@ void main() {
 #endif
 
                 // save morton codes 
-    #ifdef USE_MORTON_32
-                Mortoncodes[I] = encodeMorton(packUnorm4x8(bcenter));
-    #else
-                Mortoncodes[I] = encodeMorton(uvec2(packUnorm2x16(bcenter.xy), packUnorm2x16(bcenter.zw)));
-    #endif
-
+                Mortoncodes[I] = encodeMorton(cUNRM(bcenter));
                 MortoncodesIndices[I] = int(I+1);
             };
         };
