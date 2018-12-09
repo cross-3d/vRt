@@ -17,7 +17,7 @@ $RTXI="accelNVX/"
 $CMPPROF="-S comp"
 $FRGPROF="-S frag"
 $VRTPROF="-S vert"
-$OPTFLAGS="-O --inline-entry-points-exhaustive "
+$OPTFLAGS=" --inline-entry-points-exhaustive --workaround-1209 --replace-invalid-opcode --ccp --unify-const --simplify-instructions --remove-duplicates --combine-access-chains  --convert-local-access-chains --private-to-local --merge-return --merge-blocks --if-conversion --cfg-cleanup --flatten-decorations --freeze-spec-const "
 
 function Pause ($Message = "Press any key to continue . . . ") {
     if ((Test-Path variable:psISE) -and $psISE) {
@@ -78,7 +78,7 @@ function BuildEXT($Name, $InDir = "", $OutDir = "", $AddArg = "", $AltName = $Na
 function OptimizeMainline($Pfx = "") {
     # optimize accelerator structure (hlBVH2)
     Optimize "interpolator.comp" "$HRDDIR$HLBV"
-    #Optimize "traverse-bvh.comp" "$HRDDIR$HLBV" 
+    Optimize "traverse-bvh.comp" "$HRDDIR$HLBV" 
     
     Optimize "bvh-build-first.comp" "$HRDDIR$HLBV" 
     Optimize "bvh-build.comp" "$HRDDIR$HLBV" 
@@ -94,9 +94,9 @@ function OptimizeMainline($Pfx = "") {
     Optimize "/AABB/box-calc.comp" "$HRDDIR$HLBV" 
     
     # optimize vertex assemblers
-    #Optimize "vinput.comp"       "$HRDDIR$NTVE" # native
-    #Optimize "vtransformed.comp" "$OUTDIR$VRTX" 
-
+    Optimize "vinput.comp"       "$HRDDIR$NTVE" # native
+    Optimize "vattributes.comp"  "$OUTDIR$VRTX"
+    
     # optimize radix sort
     Optimize "permute.comp"   "$HRDDIR$RDXI"
     Optimize "histogram.comp" "$HRDDIR$RDXI"
@@ -166,7 +166,7 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "copyhack.comp"   "$INDIR$RDXI" "$HRDDIR$RDXI"
 
     # optimize built shaders
-    #OptimizeMainline
+    OptimizeMainline
 
     [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
 }
