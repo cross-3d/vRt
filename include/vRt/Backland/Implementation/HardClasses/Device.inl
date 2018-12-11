@@ -161,7 +161,7 @@ namespace _vt {
                 vk::DescriptorSetLayoutBinding(6, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // constant buffer
                 vk::DescriptorSetLayoutBinding(7, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // counters 
                 vk::DescriptorSetLayoutBinding(8, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),  // task lists
-                vk::DescriptorSetLayoutBinding(9, vk::DescriptorType::eStorageBuffer, 0x80000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
+                vk::DescriptorSetLayoutBinding(9, vk::DescriptorType::eStorageBuffer, 0x10000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
                 vk::DescriptorSetLayoutBinding(10, vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // ray<->hit binding payload 
                 vk::DescriptorSetLayoutBinding(11, vk::DescriptorType::eStorageTexelBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)),
                 vk::DescriptorSetLayoutBinding(12, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // group counters 
@@ -177,8 +177,8 @@ namespace _vt {
             const auto vkfl = vk::DescriptorSetLayoutBindingFlagsCreateInfoEXT().setPBindingFlags(_bindingFlags.data()).setBindingCount(_bindingFlags.size());
 
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
-                vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 0x60000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh main block 
-                vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eStorageBuffer, 0x60000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh nodes 
+                vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 0x10000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh main block 
+                vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eStorageBuffer, 0x10000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh nodes 
                 vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh instances
                 //vk::DescriptorSetLayoutBinding(3, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // bvh blocks  
                 vk::DescriptorSetLayoutBinding(4, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess))  // bvh transform buffer
@@ -256,7 +256,7 @@ namespace _vt {
         {
             const std::vector<vk::DescriptorSetLayoutBinding> _bindings = {
                 //vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eUniformTexelBuffer, vendorName == VT_VENDOR_INTEL ? 1 : 8, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex raw data
-                vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eStorageBuffer, 0x80000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex raw data
+                vk::DescriptorSetLayoutBinding(0 , vk::DescriptorType::eStorageBuffer, 0x10000, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // vertex raw data
                 //vk::DescriptorSetLayoutBinding(1 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // virtual regions
                 vk::DescriptorSetLayoutBinding(2 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // buffer views
                 vk::DescriptorSetLayoutBinding(3 , vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlags(vtDevice->_descriptorAccess)), // accessors
