@@ -9,7 +9,7 @@
         "request": "launch",
         "name": "Launch Program",
         "target": "${workspaceFolder}/build/gltfPBR",
-        "arguments": " -g 1 -s 2000.0 -T 0 -R 1  -m ./models/BoomBoxWithAxes/BoomBoxWithAxes.gltf ",
+        "arguments": " -g 1 -s 2000.0 -T 0 -R 1  -m ./models/TwoSidedPlane/TwoSidedPlane.gltf ",
         "cwd": "${workspaceFolder}/build/"
     }]
 }
