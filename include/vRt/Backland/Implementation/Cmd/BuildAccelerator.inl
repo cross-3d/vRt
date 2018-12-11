@@ -210,7 +210,10 @@ namespace _vt {
             const auto workGroupSize = 16u;
             if (accel->_descriptorSetGenerator) accel->_descriptorSetGenerator();
             std::vector<VkDescriptorSet> _sets = { acclb->_buildDescriptorSet, accel->_descriptorSet };
-            if (vertx && accel->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY) _sets.push_back(vertx->_descriptorSet);
+
+            if (vertx->_descriptorSetGenerator) { vertx->_descriptorSetGenerator(); };
+            if (vertx && vertx->_descriptorSet) _sets.push_back(vertx->_descriptorSet);
+            //if (vertx && accel->_level == VT_ACCELERATOR_SET_LEVEL_GEOMETRY) _sets.push_back(vertx->_descriptorSet);
             
             vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             cmdDispatch(*cmdBuf, acclb->_boxCalcPipeline[accel->_level], INTENSIVITY); // calculate general box of BVH

@@ -3,13 +3,44 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": 
-    [{
+    "configurations": [{
         "type": "gdb",
         "request": "launch",
         "name": "Launch Program",
         "target": "${workspaceFolder}/build/gltfPBR",
-        "arguments": " -g 1 -s 2000.0 -T 0 -R 1  -m ./models/TwoSidedPlane/TwoSidedPlane.gltf ",
-        "cwd": "${workspaceFolder}/build/"
+        "cwd": "${workspaceFolder}/build/",
+        "arguments": "-m ./models/TwoSidedPlane/TwoSidedPlane.gltf -g 0 -s 50.0 -T 0 -R 1 -F "
+    },
+    {
+        "type": "lldb-mi",
+        "request": "launch",
+        "name": "Launch Program",
+        "target": "${workspaceFolder}/build/gltfPBR",
+        "cwd": "${workspaceFolder}/build/",
+        "arguments": "-m ./models/TwoSidedPlane/TwoSidedPlane.gltf -g 0 -s 50.0 -T 0 -R 1 -F "
+    },{
+        "name": "(gdb) Launch",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/gltfPBR",
+        "args": [
+            "-g","1",
+            "-s","50.0",
+            "-T","0",
+            "-R","1",
+            "-m","./models/TwoSidedPlane/TwoSidedPlane.gltf"
+        ],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}/build/",
+        "environment": [],
+        "externalConsole": true,
+        "MIMode": "gdb",
+        "setupCommands": [
+            {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            }
+        ]
     }]
 }

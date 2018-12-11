@@ -104,7 +104,7 @@ namespace _vt {
 
                 // reset hit counter before new intersections
                 const cntr_t zero = 0ull; cmdUpdateBuffer(*cmdBuf, rtset->_countersBuffer, strided<cntr_t>(3), sizeof(cntr_t), &zero);
-                cmdFillBuffer<-1>(*cmdBuf, rtset->_traverseCache);
+                cmdFillBuffer<~0u>(*cmdBuf, rtset->_traverseCache);
 
                 if (device->_hExtensionAccelerator.size() > 0 && device->_hExtensionAccelerator[0] && device->_enabledAdvancedAcceleration)
                 { result = device->_hExtensionAccelerator[0]->_DoIntersections(cmdBuf, accel, rtset); } else // extension-based
