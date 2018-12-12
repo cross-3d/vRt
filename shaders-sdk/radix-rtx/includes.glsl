@@ -14,17 +14,19 @@
 //#define RADICES 4u
 //#define RADICES_MASK 0x3u
 
+#ifdef ENABLE_TURING_INSTRUCTION_SET
+// 8-bit (risen again, but Turing only)
+#define BITS_PER_PASS 8
+#define RADICES 256u
+#define RADICES_MASK 0xFFu
+#define READ_U8
+#else
 // 4-bit
 #define BITS_PER_PASS 4
 #define RADICES 16u
 #define RADICES_MASK 0xFu
 #define SIMPLER_SORT
-
-// 8-bit (risen again, but Turing only)
-//#define BITS_PER_PASS 8
-//#define RADICES 256u
-//#define RADICES_MASK 0xFFu
-//#define READ_U8
+#endif
 
 
 // general work groups

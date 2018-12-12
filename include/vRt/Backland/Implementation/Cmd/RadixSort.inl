@@ -9,12 +9,14 @@ namespace _vt {
     // radix sorting command (qRadix)
     VtResult radixSort(std::shared_ptr<CommandBuffer> cmdBuf, VkDescriptorSet inputSet, uint32_t primCount = 2) {
         //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 4ull : 8ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // 8-bit (NOT effective in RX Vega)
-        constexpr const auto STEPS = VRT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // QLC
+        //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // QLC
         //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 16ull : 32ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; // MLC
 
+        auto device = cmdBuf->_parent();
+        auto STEPS = VRT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull;
+        if (device->_vendorName == VT_VENDOR_NV_TURING) { STEPS = VRT_USE_MORTON_32 ? 4ull : 8ull, WG_COUNT = 64ull, RADICE_AFFINE = 1ull; };
 
         VtResult result = VK_SUCCESS;
-        auto device = cmdBuf->_parent();
         auto radix = device->_radixSort[0];
         std::vector<VkDescriptorSet> _sets = { radix->_descriptorSet, inputSet };
         vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, radix->_pipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
