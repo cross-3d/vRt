@@ -1,0 +1,16 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#define COPY_HACK_IDENTIFY // buffer names was swapped
+#include "./includes.glsl"
+
+LOCAL_SIZE_LAYOUT;
+
+void main() {
+#define wsize push_block.NumKeys
+    IFANY (wsize <= 0) return; const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 2097152u);
+    [[dependency_infinite]] for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
+        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + Local_Idx;
+        [[flatten]] if (globalID < wsize) { KeyTmp[globalID] = KeyIn[globalID], ValueTmp[globalID] = ValueIn[globalID]; }
+    };
+};

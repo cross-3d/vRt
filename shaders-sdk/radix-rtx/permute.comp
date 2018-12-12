@@ -1,0 +1,78 @@
+#version 460 core
+#extension GL_GOOGLE_include_directive : enable
+
+#include "./includes.glsl"
+
+layout (local_size_x = BLOCK_SIZE) in;
+
+shared uint localHistogram[RADICES];
+
+// wide of 128 elements, each element should be in uint16_t, but for compatibility used uint32_t
+//#ifdef PREFER_UNPACKED 
+//shared lowp uvec4 _data[Wave_Size];
+shared m8pq u8x4_t _data[Wave_Size];
+//#else
+//shared uint_rdc_wave_lcm _data[Wave_Size];
+//#endif
+
+shared blocks_info blocks;
+#define key _data[Lane_Idx]
+
+#ifndef ENABLE_TURING_INSTRUCTION_SET
+initSubgroupIncFunctionTarget(localHistogram[WHERE], countOffset, 1, uint)
+#endif
+
+#define bcount blocks.count
+
+void main() {
+    const m8pq utype_t Radice_Idx = utype_t(gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx);
+    const lowp uint w = Wave_Idx; // should be reference, not register
+
+    // set prefix sum (planned distribute threads)
+    [[flatten]] if (Wave_Idx == 0u) 
+    [[unroll]] for (m8pq utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(Wave_Size_RT)) {
+        const m8pq utype_t radice = utype_t(rk) + utype_t(Lane_Idx);
+        [[flatten]] if (radice < utype_t(RADICES)) localHistogram[radice+0u] = PrefixSum[gl_WorkGroupID.x * RADICES + radice];
+    };
+    [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 1048576u);
+    LGROUP_BARRIER
+    [[flatten]] IFANY (bcount <= 0) return;
+
+    // calculate blocks
+    WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR4(blocks.offset.xxxx) + WPTR4(Lane_Idx.xxxx);
+    [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
+        LGROUP_BARRIER
+
+        const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
+        [[flatten]] if (w < 4u) { key[w] = u8x1_t(BFE(validAddress[w] ? KeyIn[addr[w]] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)); };
+        LGROUP_BARRIER
+
+        // WARP-optimized histogram calculation
+#ifdef ENABLE_TURING_INSTRUCTION_SET
+        // subgroup partition supported now 
+        [[flatten]] if (Wave_Idx == 0u) 
+        [[unroll]] for (int w=0;w<4;w++) {
+            const uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddress[w]);
+            const uint btc = subgroupPartitionedAddNV(1u,blt), btl = subgroupPartitionedExclusiveAddNV(1u,blt), fLn = subgroupBallotFindMSB(blt);
+            uint cntl = 0u; [[flatten]] if (fLn == Lane_Idx && validAddress[w]) { cntl = add(localHistogram[uint(key[w])], btc); };
+            {
+                const uint offset = subgroupShuffle(cntl,fLn) + btl;
+                [[flatten]] if (validAddress[w]) { ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]]; };
+            };
+        };
+#else
+        [[unroll]] for (m8pq utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {
+            const m8pq utype_t radice = rk + utype_t(Radice_Idx);
+            [[flatten]] if (radice < utype_t(RADICES)) {
+                const bvec4 owned = and(equal(utype_v(upfunc(key)), radice.xxxx), validAddress);
+                [[unroll]] for (int w=0;w<4;w++) { [[flatten]] if (owned[w]) {
+                    const uint offset = countOffset(radice);
+                    ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]]; 
+                }};
+            };
+            IFALL (all(or((radice >= RADICES).xxxx, not(validAddress)))) break;
+        };
+#endif
+        addr += ( Wave_Size_RT << 2u );
+    };
+};
