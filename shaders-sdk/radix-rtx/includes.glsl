@@ -18,6 +18,7 @@
 #define BITS_PER_PASS 4
 #define RADICES 16
 #define RADICES_MASK 0xF
+#define SIMPLER_SORT
 
 // 8-bit (risen again)
 //#define BITS_PER_PASS 8

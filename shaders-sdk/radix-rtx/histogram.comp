@@ -47,14 +47,21 @@ void main() {
             const uint btc = subgroupPartitionedAddNV(1u,blt), fLn = subgroupBallotFindMSB(blt);
             [[flatten]] if (fLn == Lane_Idx && validAddress[w]) { localHistogram[uint(key[w])] += btc; };
 #else
+#ifdef SIMPLER_SORT
+            [[flatten]] if (key[w] == Wr && validAddress[w]) {
+                const lowp uint btc = subgroupAdd(1u);
+                [[flatten]] if (subgroupElect()) { localHistogram[uint(key[w])] += btc; };
+            };
+#else
             bool found = !validAddress[w] || key[w]<Wr || key[w]>=(Wr+Wc);
-            [[unroll]] for (lowp uint t=0;t<BSIZE;t+=1u) {
+             for (lowp uint t=0;t<BSIZE;t+=1u) {
                 [[flatten]] if (!found && (found = subgroupMin(key[w])==key[w])) {
                     const lowp uint btc = subgroupAdd(1u);
                     [[flatten]] if (subgroupElect()) { localHistogram[uint(key[w])] += btc; };
                 };
-                [[flatten]] if (found) { break; };
+                IFALL (found) { break; };
             };
+#endif
 #endif
         };
 

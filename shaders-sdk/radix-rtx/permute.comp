@@ -55,14 +55,21 @@ void main() {
                 [[flatten]] if (validAddress[w]) { ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]]; };
             };
 #else
+#ifdef SIMPLER_SORT
+            [[flatten]] if (key[w] == Wr && validAddress[w]) {
+                const uint offset = countOffset(key[w]);
+                ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]];
+            };
+#else
             bool found = !validAddress[w] || key[w]<Wr || key[w]>=(Wr+Wc);
-            [[unroll]] for (lowp uint t=0;t<BSIZE;t+=1u) {
+             for (lowp uint t=0;t<BSIZE;t+=1u) {
                 [[flatten]] if (!found && (found = subgroupMin(key[w])==key[w])) {
                     const uint offset = countOffset(key[w]);
                     ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]];
                 };
-                [[flatten]] if (found) { break; };
+                IFALL (found) { break; };
             };
+#endif
 #endif
         };
         addr += ( Wave_Size_RT << 2u );
