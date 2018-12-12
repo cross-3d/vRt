@@ -66,41 +66,6 @@ layout ( binding = 2, set = 1, align_ssbo ) readonly buffer VT_BUFFER_VIEW { VtB
 layout ( binding = 3, set = 1, align_ssbo ) readonly buffer VT_ACCESSOR { VtAccessor accessors[]; };
 layout ( binding = 4, set = 1, align_ssbo ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
 
-// uint32_t 
-#define u32x1_t uint32_t
-#define p32x1_t(a) u16x2pack(u16x2_t(a))
-
-// uint16_t support to read (extended)
-#ifdef ENABLE_INT16_SUPPORT
-#define u16x1_t uint16_t
-#define u16x4_t u16vec4
-#define u16x2_t u16vec2
-#define u16x2pack pack32
-#define m8pq  
-#else
-#define u16x1_t uint
-#define u16x4_t uvec4
-#define u16x2_t uvec2
-#define m8pq lowp
-u32x1_t u16x2pack (in highp u16x2_t a) { return (a.y<<16u)|a.x; };
-#endif
-
-// uint8_t support to read
-#ifdef ENABLE_NATIVE_U8
-#define u8x4_t u8vec4
-#define u8x2_t u8vec2
-#define u8x1_t uint8_t
-#define u8x4pack pack32
-#define u8x2pack pack16
-#else
-#define u8x4_t u16x4_t
-#define u8x2_t u16x2_t
-#define u8x1_t u16x1_t
-const m8pq u8x2_t bshift16 = {0u,8u}; const m8pq u8x4_t bshift32 = bshift16.xyxy;
-u32x1_t u8x4pack(in m8pq u8x4_t v4) { v4 <<= bshift32; return p32x1_t(v4.xz|v4.yw); };
-u16x1_t u8x2pack(in m8pq u8x2_t v2) { v2 <<= bshift16; return u16x1_t(v2[0]|v2[1]); };
-#endif
-
 // First in world ByteAddressBuffer in Vulkan API by Ispanec (tested in RTX 2070 only)
 u16x1_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return u8x2pack(u8x2_t(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
 u32x1_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return u8x4pack(u8x4_t(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u],bufferSpace[BSC].data[Ot+2u],bufferSpace[BSC].data[Ot+3u])); };

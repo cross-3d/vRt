@@ -17,7 +17,7 @@
 //#define EXPERIMENTAL_UNORM16_BVH     // packing BVH boxes as unorm16x2 (may drop performance)
 #define USE_FAST_INTERSECTION          // disable water-tight intersection method (make faster)
 #define USE_MOLLER_TRUMBORE            // use Moller Trumbore intersection method (doesn't produce UV holes)
-//#define USE_INT16_FOR_MORTON
+#define USE_INT16_FOR_MORTON           // WARNING! Fixed only 32-bit types support!
 //#define USE_INT16_BOOL_PAIR
 
 

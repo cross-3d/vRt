@@ -1,3 +1,6 @@
+// TODO: required to update this library! 
+// We're to bused, bored and tired! 
+
 #ifdef USE_INT16_FOR_MORTON
     // minimal supported
     #define U8s uint16_t
@@ -9,11 +12,11 @@
 
     // 
     uint splitBy4_low(in U8s a) {
-        u16vec2 r = u16vec2(a&U8s(0xFus),a>>U8s(4us)); // ---- ----  ---- 7654  ---- ---- ---- 3210
+        //u16vec2 r = u16vec2(a&U8s(0xFus),a>>U8s(4us)); // ---- ----  ---- 7654  ---- ---- ---- 3210 // broken shifting and masking 
                 r = (r | (r << 6us.xx)) & 0x0303us.xx; // ---- --76  ---- --54  ---- --32 ---- --10
                 r = (r | (r << 3us.xx)) & 0x1111us.xx; // ---7 ---6  ---5 ---4  ---3 ---2 ---1 ---0
         return packUint2x16(r);
-    }
+    };
 
     // use dual uvec2
     uvec2 splitBy4(in uint16_t a) {
@@ -23,7 +26,7 @@
         r = (r | (r <<  3u.xx)) & 0x11111111u.xx;   // ---f ---e  ---d ---c  ---b ---a ---9 ---8   ---7 ---6  ---5 ---4  ---3 ---2 ---1 ---0
         return r;
         //return splitBy4_low(U8s(a&0xFFus),U8s(a>>8us));
-    }
+    };
 
     // consist of 4 uint16 as uint32 format
     uvec2 encodeMorton(in u16vec4 a) {
@@ -32,7 +35,7 @@
             (splitBy4(a.y) << 1u) | 
             (splitBy4(a.z) << 2u) | 
             (splitBy4(a.w) << 3u);
-    }
+    };
 #else
     // use dual uvec2
     uvec2 splitBy4(in highp uint a) {

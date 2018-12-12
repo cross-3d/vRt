@@ -334,35 +334,13 @@ int nlz(in int x) { return nlz(uint(x)); }
 
 
 dirtype_t lcts(in vec3 direct) { return dirtype_t_encode(vec2(fma(atan(direct.z,direct.x),INV_TWO_PI,0.5f),acos(-direct.y)*INV_PI)); };
-vec3 dcts(in vec2 hr) { hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f)); const float up=-cos(hr.y),over=sqrt(fma(up,-up,1.f)); return vec3(cos(hr.x)*over,up,sin(hr.x)*over); };
-vec3 dcts(in dirtype_t hr) { return dcts(dirtype_t_decode(hr)); };
+     vec3 dcts(in vec2 hr) { hr = fma(hr,vec2(TWO_PI,PI),vec2(-PI,0.f)); const float up=-cos(hr.y),over=sqrt(fma(up,-up,1.f)); return vec3(cos(hr.x)*over,up,sin(hr.x)*over); };
+     vec3 dcts(in dirtype_t hr) { return dcts(dirtype_t_decode(hr)); };
 
 
-#ifdef ENABLE_INT16_SUPPORT
-uint p2x_16(in u16vec2 a) { return pack32(a); };
-#endif
-uint p2x_16(in highp uvec2 a) { return bitfieldInsert(a.x,a.y,16,16); };
 
 
-#ifdef ENABLE_INT16_SUPPORT
-u16vec2 up2x_16(in uint a) { return unpack16(a); }; // cast uint32 memory
-u16vec2 up2x_16(in u16vec2 a) { return a; }; // just return value
-#else
-highp uvec2 up2x_16(in uint a) { return uvec2(a&0xFFFFu,a>>16u); }; // unpack uint32 value
-#endif
-
-
-#ifdef ENABLE_INT16_SUPPORT
-// it should be 8-bit, but there is no native support
-uint p4x_8(in lowp uvec4 a) {return (a.x<<0)|(a.y<<8)|(a.z<<16)|(a.w<<24);};
-u16vec4 up4x_8(in uint a) {return u16vec4(a>>0,a>>8,a>>16,a>>24)&0xFFus;};
-#else
-uint p4x_8(in lowp uvec4 a) {return (a.x<<0)|(a.y<<8)|(a.z<<16)|(a.w<<24);};
-lowp uvec4 up4x_8(in uint a) {return uvec4(a>>0,a>>8,a>>16,a>>24)&0xFFu;};
-#endif
-
-
-#define f32_f16 packHalf4x16
+#define f32_f16   packHalf4x16
 #define f16_f32 unpackHalf4x16
 
 // issue compatible gather (may haven't optimization itself)
@@ -377,5 +355,66 @@ vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
     const vec4 il = vec4(fract(tc),1.f-fract(tc)), cf = vec4(il.z*il.y,il.x*il.y,il.x*il.w,il.z*il.w);
     return mult4(mat4(textureGather(SMP,tm,0),textureGather(SMP,tm,1),textureGather(SMP,tm,2),textureGather(SMP,tm,3)),cf);
 };
+
+
+
+
+
+
+
+
+// new packing library 
+
+// uint32_t 
+#define u32x1_t uint32_t
+#define p32x1_t(a) u16x2pack(u16x2_t(a))
+
+// uint16_t support to read (extended)
+#ifdef ENABLE_INT16_SUPPORT
+#define u16x1_t uint16_t
+#define u16x4_t u16vec4
+#define u16x2_t u16vec2
+#define u16x2pack pack32
+#define u16x2unpack unpack16
+#define m8pq  
+#else
+#define u16x1_t uint
+#define u16x4_t uvec4
+#define u16x2_t uvec2
+#define m8pq lowp
+u32x1_t u16x2pack (in highp u16x2_t a) { return (a.y<<16u)|a.x; };
+highp u16x2_t u16x2unpack(in u32x1_t a) { return u16x2_t(a&0xFFFFu,a>>16u); };
+#endif
+
+// uint8_t support to read
+#ifdef ENABLE_NATIVE_U8
+#define u8x4_t u8vec4
+#define u8x2_t u8vec2
+#define u8x1_t uint8_t
+#define u8x4pack pack32
+#define u8x2pack pack16
+#else
+#define u8x4_t u16x4_t
+#define u8x2_t u16x2_t
+#define u8x1_t u16x1_t
+const m8pq u8x2_t bshift16 = {0u,8u}; const m8pq u8x4_t bshift32 = bshift16.xyxy;
+u32x1_t u8x4pack(in m8pq u8x4_t v4) { v4 <<= bshift32; return p32x1_t(v4.xz|v4.yw); };
+u16x1_t u8x2pack(in m8pq u8x2_t v2) { v2 <<= bshift16; return u16x1_t(v2[0]|v2[1]); };
+#endif
+
+// coding library (16-bit)
+#ifdef ENABLE_INT16_SUPPORT
+u32x1_t p2x_16(in u16x2_t a) { return u16x2pack(a); };
+u32x1_t p2x_16(in highp uvec2 a) { return bitfieldInsert(a.x,a.y,16,16); };
+#else
+#define p2x_16 u16x2pack
+#endif
+#define up2x_16 u16x2unpack
+
+// coding library (8-bit)
+const lowp uvec4 u8x4shf = {0u,8u,16u,24u};
+u32x1_t p4x_8(in lowp uvec4 a) { a<<=u8x4shf; return (a[0]|a[1]|a[2]|a[3]); };
+m8pq u8x4_t up4x_8(in u32x1_t a) { return u8x4_t((a.xxxx>>u8x4shf)&0xFFu); };
+
 
 #endif
