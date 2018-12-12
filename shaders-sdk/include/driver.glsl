@@ -82,12 +82,14 @@
 #ifdef ENABLE_VEGA_INSTRUCTION_SET
     #define ENABLE_INT16_SUPPORT
     #define ENABLE_FP16_SUPPORT
+    //#define ENABLE_NATIVE_U8
 #endif
 
 // if Turing specific
 #ifdef ENABLE_TURING_INSTRUCTION_SET
     #define ENABLE_INT16_SUPPORT
     #define ENABLE_FP16_SUPPORT
+    #define ENABLE_NATIVE_U8
     
     #extension GL_NV_shader_subgroup_partitioned : enable // volta and above should support it
     #extension GL_NV_compute_shader_derivatives : enable

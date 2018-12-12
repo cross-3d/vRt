@@ -56,30 +56,65 @@ int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
 //#endif
 
 //layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint8_t data[]; } bufferSpace[];
-#ifdef ENABLE_INT16_SUPPORT
-layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint16_t data[]; } bufferSpace[];
-#else
-layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint     data[]; } bufferSpace[]; // legacy GPU's
-#endif
+//#ifdef ENABLE_INT16_SUPPORT
+  layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint8_t data[]; } bufferSpace[];
+//#else
+//layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint     data[]; } bufferSpace[]; // legacy GPU's
+//#endif
 
 layout ( binding = 2, set = 1, align_ssbo ) readonly buffer VT_BUFFER_VIEW { VtBufferView bufferViews[]; };
 layout ( binding = 3, set = 1, align_ssbo ) readonly buffer VT_ACCESSOR { VtAccessor accessors[]; };
 layout ( binding = 4, set = 1, align_ssbo ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
 
+const lowp uvec4 bshift32 = {0u,8u,16u,24u};
+const lowp uvec2 bshift16 = {0u,8u};
+
+
+// alias for 32-bit packed
+#define u32x1_t uint32_t
+#define p32x1_t(a) p32x1_k(u16x2_t(a))
+
+// uint16_t support to read (extended)
+#ifdef ENABLE_INT16_SUPPORT
+#define u16x1_t uint16_t
+#define u16x4_t u16vec4
+#define u16x2_t u16vec2
+#define p32x1_k pack32
+#define lowq  
+#else
+#define u16x1_t uint
+#define u16x4_t uvec4
+#define u16x2_t uvec2
+#define lowq lowp
+u32x1_t p32x1_k (in highp u16x2_t a) { return (a.y<<16u)|a.x; };
+#endif
+
+// uint8_t support to read
+#ifdef ENABLE_NATIVE_U8
+#define u8x4_t u8vec4
+#define u8x2_t u8vec2
+#define u8x4pack pack32
+#define u8x2pack pack16
+#else
+#define u8x4_t u16x4_t
+#define u8x2_t u16x2_t
+u32x1_t u8x4pack(in lowq u8x4_t v4) { v4 <<= bshift16.xyxy; return p32x1_t(v4.xz|v4.yw); };
+u16x1_t u8x2pack(in lowq u8x2_t v2) { v2 <<= bshift16.xy  ; return u16x1_t(v2[0]|v2[1]); };
+#endif
 
 // First in world ByteAddressBuffer in Vulkan API by Ispanec (tested in RTX 2070 only)
-//uint16_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return pack16(u8vec2(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
-//uint32_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return pack32(u8vec4(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u],bufferSpace[BSC].data[Ot+2u],bufferSpace[BSC].data[Ot+3u])); };
+u16x1_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return u8x2pack(u8x2_t(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
+u32x1_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return u8x4pack(u8x4_t(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u],bufferSpace[BSC].data[Ot+2u],bufferSpace[BSC].data[Ot+3u])); };
 
 
-#ifdef ENABLE_INT16_SUPPORT // 16-bit wide version, optimized (with RX Vega support) 
-uint16_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return uint16_t(bufferSpace[BSC].data[Ot+0u]); };
-uint32_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return pack32(u16vec2(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
-#else // for legacy GPU support
-const lowp ivec2 b16m = {0,16};
-highp uint M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return bitfieldExtract(bufferSpace[BSC].data[Ot>>1u],b16m[Ot&1u],16); };
-      uint M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=2; return bufferSpace[BSC].data[Ot]; };
-#endif
+//#ifdef ENABLE_INT16_SUPPORT // 16-bit wide version, optimized (with RX Vega support) 
+//uint16_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return uint16_t(bufferSpace[BSC].data[Ot+0u]); };
+//uint32_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return pack32(u16vec2(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
+//#else // for legacy GPU support
+//const lowp ivec2 b16m = {0,16};
+//highp uint M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return bitfieldExtract(bufferSpace[BSC].data[Ot>>1u],b16m[Ot&1u],16); };
+//      uint M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=2; return bufferSpace[BSC].data[Ot]; };
+//#endif
 
 
 struct VtVIUniform {
