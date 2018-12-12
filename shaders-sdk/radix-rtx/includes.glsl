@@ -31,13 +31,13 @@
 #define Wave_Count_RX Wave_Count_RT //(gl_WorkGroupSize.x / Wave_Size_RT.x)
 //#define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)
 
-#ifdef ENABLE_INT16_SUPPORT
-    #define U8s uint16_t
-    #define U8v4 u16vec4
-#else
-    #define U8s uint
-    #define U8v4 uvec4
-#endif
+//#ifdef ENABLE_INT16_SUPPORT
+//    #define U8s uint16_t
+//    #define U8v4 u16vec4
+//#else
+//    #define U8s uint
+//    #define U8v4 uvec4
+//#endif
 
 // default values
 #ifndef BLOCK_SIZE
@@ -59,13 +59,6 @@
 #define PREFER_UNPACKED
 
 
-//#ifdef ENABLE_INT16_SUPPORT
-//#define utype_t uint16_t
-//#define utype_v u16vec4
-//#else
-//#define utype_t uint
-//#define utype_v uvec4
-//#endif
 #define utype_t u8x1_t
 #define utype_v u8x4_t
 

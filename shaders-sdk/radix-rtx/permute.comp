@@ -4,32 +4,24 @@
 #include "./includes.glsl"
 
 layout (local_size_x = BLOCK_SIZE) in;
-
 shared uint localHistogram[RADICES];
 
-// wide of 128 elements, each element should be in uint16_t, but for compatibility used uint32_t
-//#ifdef PREFER_UNPACKED 
-//shared lowp uvec4 _data[Wave_Size];
-shared m8pq u8x4_t _data[Wave_Size];
-//#else
-//shared uint_rdc_wave_lcm _data[Wave_Size];
-//#endif
-
+// planned 64-wide for Turing
+shared m8pq utype_v _data[Wave_Size];
 shared blocks_info blocks;
 #define key _data[Lane_Idx]
+#define bcount blocks.count
 
 #ifndef ENABLE_TURING_INSTRUCTION_SET
 initSubgroupIncFunctionTarget(localHistogram[WHERE], countOffset, 1, uint)
 #endif
-
-#define bcount blocks.count
 
 void main() {
     const m8pq utype_t Radice_Idx = utype_t(gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx);
     const lowp uint w = Wave_Idx; // should be reference, not register
 
     // set prefix sum (planned distribute threads)
-    [[flatten]] if (Wave_Idx == 0u) 
+    [[flatten]] if (w == 0u) 
     [[unroll]] for (m8pq utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(Wave_Size_RT)) {
         const m8pq utype_t radice = utype_t(rk) + utype_t(Lane_Idx);
         [[flatten]] if (radice < utype_t(RADICES)) localHistogram[radice+0u] = PrefixSum[gl_WorkGroupID.x * RADICES + radice];
@@ -50,9 +42,10 @@ void main() {
         // WARP-optimized histogram calculation
 #ifdef ENABLE_TURING_INSTRUCTION_SET
         // subgroup partition supported now 
-        [[flatten]] if (Wave_Idx == 0u) 
-        [[unroll]] for (int w=0;w<4;w++) {
-            const uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddress[w]);
+        [[flatten]] if (w == 0u) [[unroll]] for (lowp uint w=0;w<4;w++) 
+        //[[flatten]] if (w < 4u) 
+        {
+            const highp uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddress[w]);
             const uint btc = subgroupPartitionedAddNV(1u,blt), btl = subgroupPartitionedExclusiveAddNV(1u,blt), fLn = subgroupBallotFindMSB(blt);
             uint cntl = 0u; [[flatten]] if (fLn == Lane_Idx && validAddress[w]) { cntl = add(localHistogram[uint(key[w])], btc); };
             {
