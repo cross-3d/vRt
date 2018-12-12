@@ -15,16 +15,16 @@
 //#define RADICES_MASK 0x3u
 
 // 4-bit
-//#define BITS_PER_PASS 4
-//#define RADICES 16u
-//#define RADICES_MASK 0xFu
-//#define SIMPLER_SORT
+#define BITS_PER_PASS 4
+#define RADICES 16u
+#define RADICES_MASK 0xFu
+#define SIMPLER_SORT
 
 // 8-bit (risen again, but Turing only)
-#define BITS_PER_PASS 8
-#define RADICES 256u
-#define RADICES_MASK 0xFFu
-#define READ_U8
+//#define BITS_PER_PASS 8
+//#define RADICES 256u
+//#define RADICES_MASK 0xFFu
+//#define READ_U8
 
 
 // general work groups
