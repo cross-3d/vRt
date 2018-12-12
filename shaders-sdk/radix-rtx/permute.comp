@@ -16,15 +16,17 @@ shared blocks_info blocks;
 initSubgroupIncFunctionTarget(localHistogram[WHERE], countOffset, 1, uint)
 #endif
 
+const uint BSIZE = min(RADICES/Wave_Count,Wave_Size);
+
 void main() {
-    const m8pq utype_t Radice_Idx = utype_t(gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx);
-    const lowp uint w = Wave_Idx; // should be reference, not register
+    //const m8pq utype_t Radice_Idx = utype_t(gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx);
+    const lowp uint w = Wave_Idx, Wc = RADICES/Wave_Count_RT, Wr = Wc * Wave_Idx;
 
     // set prefix sum (planned distribute threads)
     [[flatten]] if (w == 0u) 
-    [[unroll]] for (m8pq utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(Wave_Size_RT)) {
-        const m8pq utype_t radice = utype_t(rk) + utype_t(Lane_Idx);
-        [[flatten]] if (radice < utype_t(RADICES)) localHistogram[radice+0u] = PrefixSum[gl_WorkGroupID.x * RADICES + radice];
+        [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=Wave_Size_RT) {
+        const lowp uint radice = rk + Lane_Idx;
+        [[flatten]] if (radice < RADICES) localHistogram[radice+0u] = PrefixSum[gl_WorkGroupID.x * RADICES + radice];
     };
     [[flatten]] if (Local_Idx == 0) blocks = get_blocks_info(push_block.NumKeys), bcount = min(blocks.count, 1048576u);
     LGROUP_BARRIER
@@ -34,17 +36,17 @@ void main() {
     WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR4(blocks.offset.xxxx) + WPTR4(Lane_Idx.xxxx);
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
-
         const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
-        [[flatten]] if (w < 4u) { key[w] = u8x1_t(BFE(validAddress[w] ? KeyIn[addr[w]] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)); };
+        [[flatten]] if (w < 4u) { key[w] = utype_t(BFE(validAddress[w] ? KeyIn[addr[w]] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)); };
         LGROUP_BARRIER
 
-        // WARP-optimized histogram calculation
 #ifdef ENABLE_TURING_INSTRUCTION_SET
-        // subgroup partition supported now 
-        [[flatten]] if (w == 0u) [[unroll]] for (lowp uint w=0;w<4;w++) 
+        [[flatten]] if (w == 0u) 
+#endif
         //[[flatten]] if (w < 4u) 
+        [[unroll]] for (lowp uint w=0;w<4;w++) 
         {
+#ifdef ENABLE_TURING_INSTRUCTION_SET
             const highp uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddress[w]);
             const uint btc = subgroupPartitionedAddNV(1u,blt), btl = subgroupPartitionedExclusiveAddNV(1u,blt), fLn = subgroupBallotFindMSB(blt);
             uint cntl = 0u; [[flatten]] if (fLn == Lane_Idx && validAddress[w]) { cntl = add(localHistogram[uint(key[w])], btc); };
@@ -52,20 +54,17 @@ void main() {
                 const uint offset = subgroupShuffle(cntl,fLn) + btl;
                 [[flatten]] if (validAddress[w]) { ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]]; };
             };
-        };
 #else
-        [[unroll]] for (m8pq utype_t rk=utype_t(0u);rk<utype_t(RADICES);rk+=utype_t(WRK_SIZE_RT)) {
-            const m8pq utype_t radice = rk + utype_t(Radice_Idx);
-            [[flatten]] if (radice < utype_t(RADICES)) {
-                const bvec4 owned = and(equal(utype_v(upfunc(key)), radice.xxxx), validAddress);
-                [[unroll]] for (int w=0;w<4;w++) { [[flatten]] if (owned[w]) {
-                    const uint offset = countOffset(radice);
-                    ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]]; 
-                }};
+            bool found = !validAddress[w] || key[w]<Wr || key[w]>=(Wr+Wc);
+            [[unroll]] for (lowp uint t=0;t<BSIZE;t+=1u) {
+                [[flatten]] if (!found && (found = subgroupMin(key[w])==key[w])) {
+                    const uint offset = countOffset(key[w]);
+                    ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]];
+                };
+                [[flatten]] if (found) { break; };
             };
-            IFALL (all(or((radice >= RADICES).xxxx, not(validAddress)))) break;
-        };
 #endif
+        };
         addr += ( Wave_Size_RT << 2u );
     };
 };

@@ -19,7 +19,7 @@
 #define RADICES 16
 #define RADICES_MASK 0xF
 
-// 8-bit
+// 8-bit (risen again)
 //#define BITS_PER_PASS 8
 //#define RADICES 256
 //#define RADICES_MASK 0xFF
@@ -39,13 +39,15 @@
 //    #define U8v4 uvec4
 //#endif
 
+#ifdef ENABLE_TURING_INSTRUCTION_SET
+#define Wave_Count 4u
+#else
+#define Wave_Count 16u
+#endif
+
 // default values
 #ifndef BLOCK_SIZE
-#ifdef ENABLE_TURING_INSTRUCTION_SET
-#define BLOCK_SIZE (Wave_Size*4u) // enough for...
-#else
-#define BLOCK_SIZE (Wave_Size*16u)
-#endif
+#define BLOCK_SIZE (Wave_Size*Wave_Count)
 #endif
 
 
