@@ -66,10 +66,6 @@ layout ( binding = 2, set = 1, align_ssbo ) readonly buffer VT_BUFFER_VIEW { VtB
 layout ( binding = 3, set = 1, align_ssbo ) readonly buffer VT_ACCESSOR { VtAccessor accessors[]; };
 layout ( binding = 4, set = 1, align_ssbo ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
 
-const lowp uvec4 bshift32 = {0u,8u,16u,24u};
-const lowp uvec2 bshift16 = {0u,8u};
-
-
 // alias for 32-bit packed
 #define u32x1_t uint32_t
 #define p32x1_t(a) p32x1_k(u16x2_t(a))
@@ -98,8 +94,10 @@ u32x1_t p32x1_k (in highp u16x2_t a) { return (a.y<<16u)|a.x; };
 #else
 #define u8x4_t u16x4_t
 #define u8x2_t u16x2_t
-u32x1_t u8x4pack(in lowq u8x4_t v4) { v4 <<= bshift16.xyxy; return p32x1_t(v4.xz|v4.yw); };
-u16x1_t u8x2pack(in lowq u8x2_t v2) { v2 <<= bshift16.xy  ; return u16x1_t(v2[0]|v2[1]); };
+const lowq u8x2_t bshift16 = {0u,8u};
+const lowq u8x4_t bshift32 = bshift16.xyxy;
+u32x1_t u8x4pack(in lowq u8x4_t v4) { v4 <<= bshift32; return p32x1_t(v4.xz|v4.yw); };
+u16x1_t u8x2pack(in lowq u8x2_t v2) { v2 <<= bshift16; return u16x1_t(v2[0]|v2[1]); };
 #endif
 
 // First in world ByteAddressBuffer in Vulkan API by Ispanec (tested in RTX 2070 only)
