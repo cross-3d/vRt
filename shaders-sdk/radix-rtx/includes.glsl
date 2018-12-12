@@ -81,9 +81,9 @@ struct RadicePropStruct { uint Descending; uint IsSigned; };
 const KEYTYPE OutOfRange = KEYTYPE(0xFFFFFFFFu);
 
 //#define KEYTYPE uint
-#ifdef READ_U8
+//#ifdef READ_U8
 layout ( binding = 0, set = INDIR, align_ssbo )  readonly subgroupcoherent buffer KeyInU8B {uint8_t[4] Key8n[]; };
-#endif
+//#endif
 layout ( binding = 0, set = INDIR, align_ssbo )  readonly subgroupcoherent buffer KeyInB {KEYTYPE KeyIn[]; };
 layout ( binding = 1, set = INDIR, align_ssbo )  readonly subgroupcoherent buffer ValueInB {uint ValueIn[]; };
 layout ( binding = 0, set = OUTDIR, align_ssbo )  subgroupcoherent buffer KeyTmpB {KEYTYPE KeyTmp[]; };

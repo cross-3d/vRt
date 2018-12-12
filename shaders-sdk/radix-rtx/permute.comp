@@ -42,7 +42,7 @@ void main() {
 #ifdef READ_U8
             { key[Wave_Idx] = validAddress[Wave_Idx] ? Key8n[addr[Wave_Idx]][push_block.Shift] : utype_t(0xFFu); };
 #else
-            { key[Wave_Idx] = utype_t(BFE(validAddress[Wave_Idx] ? KeyIn[addr[Wave_Idx]] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)); };
+            { key[Wave_Idx] = utype_t(BFE(validAddress[Wave_Idx] ? Key8n[addr[Wave_Idx]][push_block.Shift>>1u] : OutOfRange, (push_block.Shift&1)*BITS_PER_PASS, BITS_PER_PASS)); };
 #endif
         LGROUP_BARRIER
 
