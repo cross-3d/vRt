@@ -16,11 +16,12 @@ shared blocks_info blocks;
 initSubgroupIncFunctionTarget(localHistogram[WHERE], countOffset, 1, uint)
 #endif
 
-const uint BSIZE = min(RADICES/Wave_Count,Wave_Size);
+const uint Wc = RADICES/Wave_Count;
+const uint BSIZE = min(Wc,Wave_Size);
 
 void main() {
     //const m8pq utype_t Radice_Idx = utype_t(gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx);
-    const lowp uint w = Wave_Idx, Wc = RADICES/Wave_Count_RT, Wr = Wc * Wave_Idx;
+    const lowp uint w = Wave_Idx, Wr = Wc * Wave_Idx;
 
     // set prefix sum (planned distribute threads)
     [[flatten]] if (w == 0u) 
