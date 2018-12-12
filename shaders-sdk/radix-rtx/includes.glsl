@@ -11,20 +11,20 @@
 
 // 2-bit
 //#define BITS_PER_PASS 2
-//#define RADICES 4
-//#define RADICES_MASK 0x3
+//#define RADICES 4u
+//#define RADICES_MASK 0x3u
 
 // 4-bit
-#define BITS_PER_PASS 4
-#define RADICES 16
-#define RADICES_MASK 0xF
-#define SIMPLER_SORT
+//#define BITS_PER_PASS 4
+//#define RADICES 16u
+//#define RADICES_MASK 0xFu
+//#define SIMPLER_SORT
 
-// 8-bit (risen again)
-//#define BITS_PER_PASS 8
-//#define RADICES 256
-//#define RADICES_MASK 0xFF
-
+// 8-bit (risen again, but Turing only)
+#define BITS_PER_PASS 8
+#define RADICES 256u
+#define RADICES_MASK 0xFFu
+#define READ_U8
 
 
 // general work groups
@@ -32,13 +32,6 @@
 #define Wave_Count_RX Wave_Count_RT //(gl_WorkGroupSize.x / Wave_Size_RT.x)
 //#define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)
 
-//#ifdef ENABLE_INT16_SUPPORT
-//    #define U8s uint16_t
-//    #define U8v4 u16vec4
-//#else
-//    #define U8s uint
-//    #define U8v4 uvec4
-//#endif
 
 #ifdef ENABLE_TURING_INSTRUCTION_SET
 #define Wave_Count 4u
@@ -88,6 +81,9 @@ struct RadicePropStruct { uint Descending; uint IsSigned; };
 const KEYTYPE OutOfRange = KEYTYPE(0xFFFFFFFFu);
 
 //#define KEYTYPE uint
+#ifdef READ_U8
+layout ( binding = 0, set = INDIR, align_ssbo )  readonly subgroupcoherent buffer KeyInU8B {uint8_t[4] Key8n[]; };
+#endif
 layout ( binding = 0, set = INDIR, align_ssbo )  readonly subgroupcoherent buffer KeyInB {KEYTYPE KeyIn[]; };
 layout ( binding = 1, set = INDIR, align_ssbo )  readonly subgroupcoherent buffer ValueInB {uint ValueIn[]; };
 layout ( binding = 0, set = OUTDIR, align_ssbo )  subgroupcoherent buffer KeyTmpB {KEYTYPE KeyTmp[]; };

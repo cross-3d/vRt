@@ -38,7 +38,12 @@ void main() {
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
         const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
-        [[flatten]] if (Wave_Idx < 4u) { key[Wave_Idx] = utype_t(BFE(validAddress[Wave_Idx] ? KeyIn[addr[Wave_Idx]] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)); };
+        [[flatten]] if (Wave_Idx < 4u)
+#ifdef READ_U8
+            { key[Wave_Idx] = validAddress[Wave_Idx] ? Key8n[addr[Wave_Idx]][push_block.Shift] : utype_t(0xFFu); };
+#else
+            { key[Wave_Idx] = utype_t(BFE(validAddress[Wave_Idx] ? KeyIn[addr[Wave_Idx]] : OutOfRange, (push_block.Shift)*BITS_PER_PASS, BITS_PER_PASS)); };
+#endif
         LGROUP_BARRIER
 
 #ifdef ENABLE_TURING_INSTRUCTION_SET
@@ -68,7 +73,7 @@ void main() {
                     const uint offset = countOffset(key[w]);
                     ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]];
                 };
-                IFALL (found) { break; };
+                [[flatten]] if ( subgroupAll(found) ) { break; };
             };
 #endif
 #endif

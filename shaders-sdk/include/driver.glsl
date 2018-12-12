@@ -51,10 +51,14 @@
 #extension GL_KHR_shader_subgroup_basic            : require
 #extension GL_KHR_shader_subgroup_vote             : require
 #extension GL_KHR_shader_subgroup_ballot           : require
-#extension GL_KHR_shader_subgroup_arithmetic       : enable
+#extension GL_KHR_shader_subgroup_arithmetic       : require
 #extension GL_KHR_shader_subgroup_shuffle          : enable
 #extension GL_KHR_shader_subgroup_shuffle_relative : enable
+#ifndef NVIDIA_PLATFORM
 #extension GL_KHR_shader_subgroup_clustered        : enable
+#else
+#extension GL_KHR_shader_subgroup_clustered        : require
+#endif
 
 // 
 #extension GL_EXT_samplerless_texture_functions : enable
@@ -91,7 +95,7 @@
     #define ENABLE_FP16_SUPPORT
     #define ENABLE_NATIVE_U8
     
-    #extension GL_NV_shader_subgroup_partitioned : enable // volta and above should support it
+    #extension GL_NV_shader_subgroup_partitioned : require // volta and above should support it
     #extension GL_NV_compute_shader_derivatives : enable
     //#extension GL_NV_shader_atomic_int64 : enable // unknown status
 #endif

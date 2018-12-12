@@ -1,9 +1,11 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+// default values
 #ifndef BLOCK_SIZE
-#define BLOCK_SIZE 256u
+#define BLOCK_SIZE (Wave_Size*16u)
 #endif
+
 
 #include "./includes.glsl"
 
@@ -19,7 +21,7 @@ layout (local_size_x = BLOCK_SIZE) in; // use many as possible
 
 // X axis is workgroup count, Y is radices
 void main() {
-    localHistogram[Local_Idx] = 0u;
+    [[flatten]] if (Local_Idx < RADICES) localHistogram[Local_Idx] = 0u;
     LGROUP_BARRIER
 
     [[unroll]] for (lowp uint rk=0u;rk<RADICES;rk+=Wave_Count_RX) {
