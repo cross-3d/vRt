@@ -13,6 +13,7 @@
 
 
 // current features
+#define ENABLE_SCALAR_BLOCK_LAYOUT
 #define EXPERIMENTAL_UNORM16_DIRECTION // packing direction as unorm16x2 (may be inaccurate)
 //#define EXPERIMENTAL_UNORM16_BVH     // packing BVH boxes as unorm16x2 (may drop performance)
 #define USE_FAST_INTERSECTION          // disable water-tight intersection method (make faster)
