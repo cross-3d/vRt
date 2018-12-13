@@ -36,7 +36,7 @@
 
 
 #ifdef ENABLE_TURING_INSTRUCTION_SET
-#define Wave_Count 4u
+#define Wave_Count 1u
 #else
 #define Wave_Count 16u
 #endif

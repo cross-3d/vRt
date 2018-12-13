@@ -34,19 +34,25 @@ void main() {
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
         const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
-        [[flatten]] if (Wave_Idx < 4u)
-#ifdef READ_U8
-            { key[Wave_Idx] = validAddress[Wave_Idx] ? Key8n[addr[Wave_Idx]][push_block.Shift] : utype_t(0xFFu); };
+
+#ifdef ENABLE_TURING_INSTRUCTION_SET
+        [[unroll]] for (lowp uint w=0u;w<4u;w++) {
 #else
-            { key[Wave_Idx] = utype_t(BFE(validAddress[Wave_Idx] ? Key8n[addr[Wave_Idx]][push_block.Shift>>1u] : OutOfRange, (push_block.Shift&1)*BITS_PER_PASS, BITS_PER_PASS)); };
+        [[flatten]] if (Wave_Idx < 4u) { const lowp uint w = Wave_Idx;
 #endif
+#ifdef READ_U8
+            { key[w] = validAddress[w] ? Key8n[addr[w]][push_block.Shift] : utype_t(0xFFu); };
+#else
+            { key[w] = utype_t(BFE(validAddress[w] ? Key8n[addr[w]][push_block.Shift>>1u] : OutOfRange, (push_block.Shift&1)*BITS_PER_PASS, BITS_PER_PASS)); };
+#endif
+        };
         LGROUP_BARRIER
 
 #ifdef ENABLE_TURING_INSTRUCTION_SET
         [[flatten]] if (Wave_Idx == 0u) 
 #endif
         //[[flatten]] if (w < 4u) 
-        [[unroll]] for (lowp uint w=0;w<4;w++) 
+        [[unroll]] for (lowp uint w=0u;w<4u;w++) 
         {
 #ifdef ENABLE_TURING_INSTRUCTION_SET // subgroup partition supported now 
             const highp uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddress[w]);
