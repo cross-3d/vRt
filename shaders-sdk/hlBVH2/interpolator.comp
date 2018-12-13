@@ -51,7 +51,7 @@ void main() {
             const int triID = hit.idat.y; INSTANCE_ID = hit.idat.x;
             [[flatten]] if (triID >= 0 && INSTANCE_ID >= 0) {
                 interpolateMeshData(hitID, triID, IPC); // interplate hit for every invocation
-                [[flatten]] if (IPC == 0) { // handle hit in every available invocation
+                [[flatten]] if (!overflow && IPC == 0) { // handle hit in every available invocation
                     //hit.uvt.w = intBitsToFloat(vmaterials[triID]); // set material ID to UVT (for backward compatibility)
                     hit.hitVD = lnrm[0].data[triID]; // pick-up pre-computed physical normal
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
