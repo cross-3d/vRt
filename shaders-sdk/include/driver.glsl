@@ -12,6 +12,11 @@
 #endif
 
 
+// for NVIDIA doesn't require nonuniform wrapper
+#ifdef NVIDIA_PLATFORM
+#define DISABLE_NON_UNIFORM_WRAP
+#endif
+
 // current features
 #define ENABLE_SCALAR_BLOCK_LAYOUT
 #define ENABLE_MULTI_BVH
@@ -78,7 +83,7 @@
 
 // non uniform wrapper
 #extension GL_EXT_nonuniform_qualifier : enable
-#ifndef DISABLE_NON_UNIFORM
+#ifndef DISABLE_NON_UNIFORM_WRAP
 #define NonUniform nonuniformEXT
 #else
 #define NonUniform  
