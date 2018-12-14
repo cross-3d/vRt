@@ -25,9 +25,9 @@ namespace vrt { // store in official namespace
 
     public: // API in-runtime implementation (dynamic polymorphism)
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERATION_NAME_UNKNOWN; }; // in-runtime return acceleration extension name
-        virtual VtResult _Criteria(std::shared_ptr<_vt::DeviceFeatures> lwFeatures) const { return VK_ERROR_EXTENSION_NOT_PRESENT; };
-        virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice, std::shared_ptr<_vt::AcceleratorExtensionBase>& _hExtensionAccelerator) const { return VK_ERROR_EXTENSION_NOT_PRESENT; };
-        virtual VtResult _DeviceInitialization(std::shared_ptr<_vt::Device> lwDevice) const { return VK_ERROR_EXTENSION_NOT_PRESENT; };
+        virtual VtResult _Criteria(const std::shared_ptr<_vt::DeviceFeatures>& lwFeatures) const { return VK_ERROR_EXTENSION_NOT_PRESENT; };
+        virtual VtResult _Initialization(const std::shared_ptr<_vt::Device>& lwDevice, std::shared_ptr<_vt::AcceleratorExtensionBase>& _hExtensionAccelerator) const { return VK_ERROR_EXTENSION_NOT_PRESENT; };
+        virtual VtResult _DeviceInitialization(const std::shared_ptr<_vt::Device>& lwDevice) const { return VK_ERROR_EXTENSION_NOT_PRESENT; };
 
     public: // can have custom data...
 

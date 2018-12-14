@@ -8,9 +8,9 @@ namespace vrt {
     class VtRTXAcceleratorExtension : public VtDeviceAdvancedAccelerationExtension {
     protected: // API in-runtime implementation (dynamic polymorphism)
         virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; }; // in-runtime return acceleration extension name
-        virtual VtResult _Criteria(std::shared_ptr<_vt::DeviceFeatures> lwFeatures) const override;
-        virtual VtResult _Initialization(std::shared_ptr<_vt::Device> lwDevice, std::shared_ptr<_vt::AcceleratorExtensionBase>& _hExtensionAccelerator) const override;
-        virtual VtResult _DeviceInitialization(std::shared_ptr<_vt::Device> vtDevice) const override;
+        virtual VtResult _Criteria(const std::shared_ptr<_vt::DeviceFeatures>& lwFeatures) const override;
+        virtual VtResult _Initialization(const std::shared_ptr<_vt::Device>& lwDevice, std::shared_ptr<_vt::AcceleratorExtensionBase>& _hExtensionAccelerator) const override;
+        virtual VtResult _DeviceInitialization(const std::shared_ptr<_vt::Device>& vtDevice) const override;
 
     public:
 
@@ -36,6 +36,6 @@ namespace vrt {
 #pragma pack(pop)
 
     // required for RTX top level support 
-    VtResult vtGetAcceleratorHandleNV(VtAcceleratorSet accSet, VtHandleRTX * acceleratorHandleNVX);
+    VtResult vtGetAcceleratorHandleNV( VtAcceleratorSet accSet, VtHandleRTX * acceleratorHandleNVX );
 
 };

@@ -6,19 +6,19 @@
 namespace _vt {
     using namespace vrt;
 
-    VtResult createAssemblyPipeline(std::shared_ptr<Device> _vtDevice, VtAttributePipelineCreateInfo info, std::shared_ptr<AssemblyPipeline>& assemblyPipeline, const bool native) {
+    VtResult createAssemblyPipeline(const std::shared_ptr<Device>& vtDevice, const VtAttributePipelineCreateInfo& info, std::shared_ptr<AssemblyPipeline>& assemblyPipeline, const bool native) {
         VtResult result = VK_SUCCESS;
-        auto vkDevice = _vtDevice->_device;
-        auto vkPipelineCache = _vtDevice->_pipelineCache;
+        auto vkDevice = vtDevice->_device;
+        auto vkPipelineCache = vtDevice->_pipelineCache;
         assemblyPipeline = std::make_shared<AssemblyPipeline>();
-        assemblyPipeline->_device = _vtDevice;
+        assemblyPipeline->_device = vtDevice;
 
         // 
-        auto originalAssembler = _vtDevice->_nativeVertexAssembler[0];
+        auto originalAssembler = vtDevice->_nativeVertexAssembler[0];
         if (originalAssembler) {
-            assemblyPipeline->_pipelineLayout = _vtDevice->_nativeVertexAssembler[0]->_pipelineLayout;
-            assemblyPipeline->_intrpPipeline = _vtDevice->_nativeVertexAssembler[0]->_intrpPipeline;
-            assemblyPipeline->_inputPipeline = _vtDevice->_nativeVertexAssembler[0]->_inputPipeline;
+            assemblyPipeline->_pipelineLayout = vtDevice->_nativeVertexAssembler[0]->_pipelineLayout;
+            assemblyPipeline->_intrpPipeline = vtDevice->_nativeVertexAssembler[0]->_intrpPipeline;
+            assemblyPipeline->_inputPipeline = vtDevice->_nativeVertexAssembler[0]->_inputPipeline;
         };
         if (info.pipelineLayout) assemblyPipeline->_pipelineLayout = info.pipelineLayout;
         if (info.assemblyModule.module) assemblyPipeline->_inputPipeline = createCompute(vkDevice, info.assemblyModule, assemblyPipeline->_pipelineLayout->_vsLayout, vkPipelineCache);
@@ -32,7 +32,7 @@ namespace _vt {
         _descriptorSet = {};
     };
 
-    VtResult createVertexAssemblySet(std::shared_ptr<Device> vtDevice, VtVertexAssemblySetCreateInfo info, std::shared_ptr<VertexAssemblySet>& _assemblySet) {
+    VtResult createVertexAssemblySet(const std::shared_ptr<Device>& vtDevice, const VtVertexAssemblySetCreateInfo& info, std::shared_ptr<VertexAssemblySet>& _assemblySet) {
         VtResult result = VK_SUCCESS;
         _assemblySet = std::make_shared<VertexAssemblySet>();
         _assemblySet->_device = vtDevice;

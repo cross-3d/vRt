@@ -11,7 +11,7 @@ namespace _vt {
         friend Device;
         friend AcceleratorSetExtensionBase;
         virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; };
-        virtual VtResult _Construction(std::shared_ptr<AcceleratorSet> accelSet = {}) override;
+        virtual VtResult _Construction(const std::shared_ptr<AcceleratorSet>& accelSet = {}) override;
 
         // acceleration structure
         VkAccelerationStructureNV _accelStructureNV = {};
@@ -44,12 +44,12 @@ namespace _vt {
         virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; };
 
         // 
-        virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) override;
-        virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, VtAcceleratorBuildInfo buildInfo) override;
-        virtual VtResult _Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) override;
-        //virtual VtResult _Criteria(std::shared_ptr<DeviceFeatures> supportedFeatures) override;
-        virtual VtResult _ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet = {}) override;
-        virtual VtResult _ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet = {}) override;
+        virtual VtResult _DoIntersections(const std::shared_ptr<CommandBuffer>& cmdBuf, const std::shared_ptr<AcceleratorSet>& acceleratorSet, const std::shared_ptr<RayTracingSet>& rayTracingSet) override;
+        virtual VtResult _BuildAccelerator(const std::shared_ptr<CommandBuffer>& cmdBuf, const std::shared_ptr<AcceleratorSet>& acceleratorSet, const VtAcceleratorBuildInfo& buildInfo) override;
+        virtual VtResult _Init(const std::shared_ptr<Device>& device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) override;
+        //virtual VtResult _Criteria(const std::shared_ptr<DeviceFeatures> supportedFeatures) override;
+        virtual VtResult _ConstructAcceleratorSet(const std::shared_ptr<AcceleratorSet>& accelSet = {}) override;
+        virtual VtResult _ConstructVertexAssembly(const std::shared_ptr<VertexAssemblySet>& assemblySet = {}) override;
 
         // 
         VkDescriptorSetLayout _raytracingDescriptorLayout = {};
@@ -68,7 +68,7 @@ namespace _vt {
         friend Device;
         friend VertexAssemblyExtensionBase;
         virtual VtAccelerationName _AccelerationName() const override { return VT_ACCELERATION_NAME_RTX; };
-        virtual VtResult _Construction(std::shared_ptr<VertexAssemblySet> _assemblySet = {}) override;
+        virtual VtResult _Construction(const std::shared_ptr<VertexAssemblySet>& _assemblySet = {}) override;
 
         // 
         VkGeometryNV _vDataNV = {};

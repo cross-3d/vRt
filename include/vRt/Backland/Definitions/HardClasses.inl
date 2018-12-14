@@ -492,7 +492,7 @@ namespace _vt { // store in undercover namespace
         VkDeviceSize _size = 0; // accumulatable size
 
         // create structuring 
-        VtResult _prealloc(VtBufferRegionCreateInfo cinfo, std::shared_ptr<BufferRegion>& bRegion);
+        VtResult _prealloc(const VtBufferRegionCreateInfo& cinfo, std::shared_ptr<BufferRegion>& bRegion);
     };
 
     // this class does not using in ray tracing API
@@ -596,14 +596,14 @@ namespace _vt { // store in undercover namespace
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERATION_NAME_UNKNOWN; };
 
         // 
-        virtual VtResult _DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet);
-        virtual VtResult _BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, VtAcceleratorBuildInfo buildInfo);
-        virtual VtResult _Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo);
-        virtual VtResult _Criteria(std::shared_ptr<DeviceFeatures> supportedFeatures);
+        virtual VtResult _DoIntersections(const std::shared_ptr<CommandBuffer>& cmdBuf, const std::shared_ptr<AcceleratorSet>& acceleratorSet, const std::shared_ptr<RayTracingSet>& rayTracingSet);
+        virtual VtResult _BuildAccelerator(const std::shared_ptr<CommandBuffer>& cmdBuf, const std::shared_ptr<AcceleratorSet>& acceleratorSet, const VtAcceleratorBuildInfo& buildInfo);
+        virtual VtResult _Init(const std::shared_ptr<Device>& device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo);
+        virtual VtResult _Criteria(const std::shared_ptr<DeviceFeatures>& supportedFeatures);
 
         // connectors with extension classes
-        virtual VtResult _ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet = {});
-        virtual VtResult _ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet = {});
+        virtual VtResult _ConstructAcceleratorSet(const std::shared_ptr<AcceleratorSet>& accelSet = {});
+        virtual VtResult _ConstructVertexAssembly(const std::shared_ptr<VertexAssemblySet>& assemblySet = {});
 
          // built-in method's
         //auto* operator->() { return _dataPtr.get(); };
@@ -626,7 +626,7 @@ namespace _vt { // store in undercover namespace
         //operator VkDescriptorSet() const { return _descriptorSet; };
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERATION_NAME_UNKNOWN; };
 
-        virtual VtResult _Construction(std::shared_ptr<AcceleratorSet> accelSet = {}) {
+        virtual VtResult _Construction(const std::shared_ptr<AcceleratorSet>& accelSet = {}) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }; // accessing by same address
         
@@ -654,7 +654,7 @@ namespace _vt { // store in undercover namespace
         //operator VkDescriptorSet() const { return _descriptorSet; };
         virtual VtAccelerationName _AccelerationName() const { return VT_ACCELERATION_NAME_UNKNOWN; };
 
-        virtual VtResult _Construction(std::shared_ptr<VertexAssemblySet> accelSet = {}) {
+        virtual VtResult _Construction(const std::shared_ptr<VertexAssemblySet>& accelSet = {}) {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }; // accessing by same address
 

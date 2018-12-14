@@ -6,7 +6,7 @@
 namespace _vt {
 
     // constructor for accelerator set when enabled extension
-    VtResult RTXAcceleratorSetExtension::_Construction(std::shared_ptr<AcceleratorSet> accelSet) {
+    VtResult RTXAcceleratorSetExtension::_Construction(const std::shared_ptr<AcceleratorSet>& accelSet) {
         // identify as RTX extension
         _nativeAccelerationName = VT_ACCELERATION_NAME_RTX;
 
@@ -136,7 +136,7 @@ namespace _vt {
     };
 
 
-    VtResult RTXAcceleratorExtension::_ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet) {
+    VtResult RTXAcceleratorExtension::_ConstructAcceleratorSet(const std::shared_ptr<AcceleratorSet>& accelSet) {
         auto accelSetExt = std::make_shared<RTXAcceleratorSetExtension>();
         accelSet->_hExtension = accelSetExt;
         return accelSetExt->_Construction(accelSet);

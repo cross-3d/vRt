@@ -5,7 +5,7 @@
 namespace _vt {
 
     // construction of extended vertex assembly
-    VtResult RTXVertexAssemblyExtension::_Construction(std::shared_ptr<VertexAssemblySet> _assemblySet) {
+    VtResult RTXVertexAssemblyExtension::_Construction(const std::shared_ptr<VertexAssemblySet>& _assemblySet) {
         // identify as RTX extension
         _nativeAccelerationName = VT_ACCELERATION_NAME_RTX;
 
@@ -40,7 +40,7 @@ namespace _vt {
     };
 
     // helper for connection
-    VtResult RTXAcceleratorExtension::_ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet) {
+    VtResult RTXAcceleratorExtension::_ConstructVertexAssembly(const std::shared_ptr<VertexAssemblySet>& assemblySet) {
         auto assemblySetExt = std::make_shared<RTXVertexAssemblyExtension>();
         assemblySet->_hExtension = assemblySetExt;
         return assemblySetExt->_Construction(assemblySet);

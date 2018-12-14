@@ -13,7 +13,7 @@ namespace _vt {
     };
 
     // also, planned to add support of offsets in buffers 
-    VtResult createVertexInputSet(std::shared_ptr<Device> vtDevice,  VtVertexInputCreateInfo info, std::shared_ptr<VertexInputSet>& vtVertexInput) {
+    VtResult createVertexInputSet(const std::shared_ptr<Device>& vtDevice, const VtVertexInputCreateInfo& info, std::shared_ptr<VertexInputSet>& vtVertexInput) {
         VtResult result = VK_SUCCESS;
         //auto vtVertexInput = (_vtVertexInput = std::make_shared<VertexInputSet>());
 
@@ -29,7 +29,7 @@ namespace _vt {
         bfi.format = VK_FORMAT_UNDEFINED;
 
         // planned add external buffer support
-        //vtVertexInput->_uniformBlockBuffer = _vtDevice->_bufferTraffic[0]->_uniformVIBuffer; // use unified BUS only 
+        //vtVertexInput->_uniformBlockBuffer = vtDevice->_bufferTraffic[0]->_uniformVIBuffer; // use unified BUS only 
         vtVertexInput->_uniformBlock.primitiveCount = info.primitiveCount;
         vtVertexInput->_uniformBlock.verticeAccessor = info.verticeAccessor;
         vtVertexInput->_uniformBlock.indiceAccessor = info.indiceAccessor;

@@ -7,7 +7,7 @@ namespace _vt {
     using namespace vrt;
 
     // planned add hardcodes for radix sorting
-    VtResult createRadixSort(std::shared_ptr<Device> device, VtDeviceAggregationInfo vtExtension, std::shared_ptr<RadixSort>& vtRadix) {
+    VtResult createRadixSort(const std::shared_ptr<Device>& device, const VtDeviceAggregationInfo& vtExtension, std::shared_ptr<RadixSort>& vtRadix) {
         //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 4ull : 8ull, WG_COUNT = 128ull, RADICE_AFFINE = 256ull; // 8-bit (NOT effective in RX Vega)
         //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 128ull, RADICE_AFFINE = 16ull; // QLC
         //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 16ull : 32ull, WG_COUNT = 128ull, RADICE_AFFINE = 4ull; // MLC

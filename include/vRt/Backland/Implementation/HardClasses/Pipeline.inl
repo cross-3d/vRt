@@ -8,18 +8,18 @@ namespace _vt {
 
     // ray tracing pipeline
     // planned to add support of entry points
-    VtResult createRayTracingPipeline(std::shared_ptr<Device> _vtDevice,  VtRayTracingPipelineCreateInfo info, std::shared_ptr<Pipeline>& vtPipeline) {
+    VtResult createRayTracingPipeline(const std::shared_ptr<Device>& vtDevice, const VtRayTracingPipelineCreateInfo& info, std::shared_ptr<Pipeline>& vtPipeline) {
         VtResult result = VK_SUCCESS;
 
-        auto vkDevice = _vtDevice->_device;
-        auto vkPipelineCache = _vtDevice->_pipelineCache;
+        auto vkDevice = vtDevice->_device;
+        auto vkPipelineCache = vtDevice->_pipelineCache;
 
         //auto vtPipeline = (_vtPipeline = std::make_shared<Pipeline>());
         vtPipeline = std::make_shared<Pipeline>();
-        vtPipeline->_device = _vtDevice;
+        vtPipeline->_device = vtDevice;
         vtPipeline->_tiling = info.tiling; // fixed 15.09.2018
         vtPipeline->_pipelineLayout = std::shared_ptr<PipelineLayout>(info.pipelineLayout);
-        const auto vendorName = _vtDevice->_vendorName;
+        const auto vendorName = vtDevice->_vendorName;
 
         // generation shaders
         if (info.pGenerationModule) {
@@ -59,12 +59,12 @@ namespace _vt {
     };
 
     // ray tracing set of state
-    VtResult createRayTracingSet(std::shared_ptr<Device> _vtDevice,  VtRayTracingSetCreateInfo info, std::shared_ptr<RayTracingSet>& _vtRTSet) {
+    VtResult createRayTracingSet(const std::shared_ptr<Device>& vtDevice, const VtRayTracingSetCreateInfo& info, std::shared_ptr<RayTracingSet>& _vtRTSet) {
         VtResult result = VK_SUCCESS;
 
-        auto vkDevice = _vtDevice->_device;
+        auto vkDevice = vtDevice->_device;
         auto vtRTSet = (_vtRTSet = std::make_shared<RayTracingSet>());
-        vtRTSet->_device = _vtDevice;
+        vtRTSet->_device = vtDevice;
 
         { // planned variable size
             const auto 
@@ -72,8 +72,8 @@ namespace _vt {
                 hitCount = size_t(info.maxHits ? tiled(size_t(info.maxHits), size_t(DUAL_COMPUTE)) : size_t(rayCount));
             vtRTSet->_cuniform.maxRayCount = int32_t(rayCount), vtRTSet->_cuniform.maxHitCount = int32_t(hitCount);
 
-            std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
-            std::shared_ptr<BufferManager> bStackManager = {}; createBufferManager(_vtDevice, bStackManager);
+            std::shared_ptr<BufferManager> bManager = {}; createBufferManager(vtDevice, bManager);
+            std::shared_ptr<BufferManager> bStackManager = {}; createBufferManager(vtDevice, bStackManager);
 
 
             VtDeviceBufferCreateInfo bfic = {};
@@ -163,8 +163,8 @@ namespace _vt {
 
 
             { // compute stack chunks 
-                const VkDeviceSize stackChunkSize = strided<uint32_t>(_vtDevice->_features->_subgroup.subgroupSize * (PAGE_COUNT * STATE_COUNT) * STACK_SIZE * DUAL_COMPUTE);
-                const VkDeviceSize stackChunkCount = RV_INTENSIVITY * tiled(VkDeviceSize(LOCAL_SIZE), VkDeviceSize(_vtDevice->_features->_subgroup.subgroupSize));
+                const VkDeviceSize stackChunkSize = strided<uint32_t>(vtDevice->_features->_subgroup.subgroupSize * (PAGE_COUNT * STATE_COUNT) * STACK_SIZE * DUAL_COMPUTE);
+                const VkDeviceSize stackChunkCount = RV_INTENSIVITY * tiled(VkDeviceSize(LOCAL_SIZE), VkDeviceSize(vtDevice->_features->_subgroup.subgroupSize));
                 for (uint32_t t = 0u; t < stackChunkCount; t++) {
                     chunks.push_back({ VkBuffer(*vtRTSet->_traverseCache), vtRTSet->_traverseCache->_offset() + t*stackChunkSize, stackChunkSize });
                 };
@@ -172,8 +172,8 @@ namespace _vt {
 
 
             {
-                std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]), };
-                const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["rayTracing"]), };
+                const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtRTSet->_descriptorSet = std::move(dsc[0]);
 
                 // write descriptors

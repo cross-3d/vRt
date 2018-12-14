@@ -13,13 +13,13 @@ namespace _vt {
     };
 
     // ray tracing set of state
-    VtResult createMaterialSet(std::shared_ptr<Device> _vtDevice,  VtMaterialSetCreateInfo info, std::shared_ptr<MaterialSet>& vtMaterialSet) {
+    VtResult createMaterialSet(const std::shared_ptr<Device>& vtDevice, const VtMaterialSetCreateInfo& info, std::shared_ptr<MaterialSet>& vtMaterialSet) {
         VtResult result = VK_SUCCESS;
 
         //auto vtMaterialSet = (_vtMaterialSet = std::make_shared<MaterialSet>());
-        auto vkDevice = _vtDevice->_device;
+        auto vkDevice = vtDevice->_device;
         vtMaterialSet = std::make_shared<MaterialSet>();
-        vtMaterialSet->_device = _vtDevice;
+        vtMaterialSet->_device = vtDevice;
 
         // planned variable size
         {
@@ -31,14 +31,14 @@ namespace _vt {
 
                 bfi.bufferSize = 8ull * sizeof(uint32_t);
                 bfi.format = VK_FORMAT_UNDEFINED;
-                createDeviceBuffer(_vtDevice, bfi, vtMaterialSet->_constBuffer);
+                createDeviceBuffer(vtDevice, bfi, vtMaterialSet->_constBuffer);
             };
 
             { // planned to add support of default element in not enough 
                 std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["materialSet"]),
+                    vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["materialSet"]),
                 };
-                const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+                const auto&& dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
                 vtMaterialSet->_descriptorSet = std::move(dsc[0]);
 
                 std::vector<vk::DescriptorImageInfo> _samplers = {}, _images = {};
@@ -52,7 +52,7 @@ namespace _vt {
                 for (auto i = samplerCount; i < VRT_MAX_SAMPLERS; i++) { _samplers.push_back(vk::DescriptorImageInfo().setSampler(info.pSamplers[samplerCount-1])); }
                 for (auto i = imageCount; i < VRT_MAX_IMAGES; i++) { _images.push_back(vk::DescriptorImageInfo(info.pImages[imageCount-1])); }
 
-                const auto bView = vk::Device(*_vtDevice).createBufferView(vk::BufferViewCreateInfo().setFormat(vk::Format::eR16G16Uint).setBuffer(info.bImageSamplerCombinations).setOffset(0).setRange(VK_WHOLE_SIZE));
+                const auto bView = vk::Device(*vtDevice).createBufferView(vk::BufferViewCreateInfo().setFormat(vk::Format::eR16G16Uint).setBuffer(info.bImageSamplerCombinations).setOffset(0).setRange(VK_WHOLE_SIZE));
                 const auto matDescBuf = bufferDescriptorInfo(info.bMaterialDescriptionsBuffer), imgCompBuf = bufferDescriptorInfo(info.bImageSamplerCombinations);
                 const auto writeTmpl = vk::WriteDescriptorSet(vtMaterialSet->_descriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
                 std::vector<vk::WriteDescriptorSet> writes = {

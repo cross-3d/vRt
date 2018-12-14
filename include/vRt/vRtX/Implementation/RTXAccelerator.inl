@@ -22,7 +22,7 @@ namespace _vt {
     const uint32_t _RTXgroupCount = 3u;
 
 
-    VtResult RTXAcceleratorExtension::_DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> accel, std::shared_ptr<RayTracingSet> rtset) {
+    VtResult RTXAcceleratorExtension::_DoIntersections(const std::shared_ptr<CommandBuffer>& cmdBuf, const std::shared_ptr<AcceleratorSet>& accel, const std::shared_ptr<RayTracingSet>& rtset) {
         const auto extendedSet = std::dynamic_pointer_cast<RTXAcceleratorSetExtension>(accel->_hExtension);
         const auto accelertExt = std::dynamic_pointer_cast<RTXAcceleratorExtension>(accel->_device->_hExtensionAccelerator[0]);
 
@@ -45,7 +45,7 @@ namespace _vt {
     };
 
 
-    VtResult RTXAcceleratorExtension::_BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> accelSet, VtAcceleratorBuildInfo buildInfo) {
+    VtResult RTXAcceleratorExtension::_BuildAccelerator(const std::shared_ptr<CommandBuffer>& cmdBuf, const std::shared_ptr<AcceleratorSet>& accelSet, const VtAcceleratorBuildInfo& buildInfo) {
         VtResult rtxResult = VK_ERROR_EXTENSION_NOT_PRESENT;
 
         // if has valid vertex assembly
@@ -86,7 +86,7 @@ namespace _vt {
         return cmdRaytracingBarrierNV(cmdBufVk);
     };
 
-    VtResult RTXAcceleratorExtension::_Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) {
+    VtResult RTXAcceleratorExtension::_Init(const std::shared_ptr<Device>& device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) {
         // identify as RTX extension
         _nativeAccelerationName = VT_ACCELERATION_NAME_RTX;
 

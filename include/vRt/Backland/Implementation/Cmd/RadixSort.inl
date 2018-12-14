@@ -7,7 +7,7 @@ namespace _vt {
     using namespace vrt;
 
     // radix sorting command (qRadix)
-    VtResult radixSort(std::shared_ptr<CommandBuffer> cmdBuf, VkDescriptorSet inputSet, uint32_t primCount = 2) {
+    VtResult radixSort(const std::shared_ptr<CommandBuffer>& cmdBuf, VkDescriptorSet inputSet, uint32_t primCount = 2) {
         //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 4ull : 8ull, WG_COUNT = 128ull, RADICE_AFFINE = 1ull; // 8-bit (NOT effective in RX Vega)
         //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 8ull : 16ull, WG_COUNT = 128ull, RADICE_AFFINE = 1ull; // QLC
         //constexpr const auto STEPS = VRT_USE_MORTON_32 ? 16ull : 32ull, WG_COUNT = 128ull, RADICE_AFFINE = 1ull; // MLC

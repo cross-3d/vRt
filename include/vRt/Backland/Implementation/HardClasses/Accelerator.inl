@@ -7,14 +7,14 @@ namespace _vt {
     using namespace vrt;
 
     // TODO: enable AABB shaders for real support of multi-leveling (i.e. top level)
-    VtResult createAcceleratorHLBVH2(std::shared_ptr<Device> _vtDevice, VtDeviceAggregationInfo info, std::shared_ptr<AcceleratorHLBVH2>& vtAccelerator) {
+    VtResult createAcceleratorHLBVH2(const std::shared_ptr<Device>& vtDevice, const VtDeviceAggregationInfo& info, std::shared_ptr<AcceleratorHLBVH2>& vtAccelerator) {
         VtResult result = VK_SUCCESS;
         //auto vtAccelerator = (_vtAccelerator = std::make_shared<AcceleratorHLBVH2>());
         vtAccelerator = std::make_shared<AcceleratorHLBVH2>();
-        vtAccelerator->_device = _vtDevice;
-        auto vkDevice = _vtDevice->_device;
-        auto vkPipelineCache = _vtDevice->_pipelineCache;
-        const auto vendorName = _vtDevice->_vendorName;
+        vtAccelerator->_device = vtDevice;
+        auto vkDevice = vtDevice->_device;
+        auto vkPipelineCache = vtDevice->_pipelineCache;
+        const auto vendorName = vtDevice->_vendorName;
 
         // build BVH builder program
         {
@@ -23,9 +23,9 @@ namespace _vt {
                     vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2))
                 };
                 std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2work"]),
-                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"]),
-                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"])
+                    vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["hlbvh2work"]),
+                    vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["hlbvh2"]),
+                    vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["vertexData"])
                 };
 
                 // create pipeline layout
@@ -37,9 +37,9 @@ namespace _vt {
                     //vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0u, strided<uint32_t>(2))
                 };
                 std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["rayTracing"]),
-                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2"]),
-                    vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["vertexData"]),
+                    vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["rayTracing"]),
+                    vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["hlbvh2"]),
+                    vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["vertexData"]),
                 };
 
                 // create pipeline layout
@@ -49,21 +49,21 @@ namespace _vt {
 
             // create pipelines (planned to unify between accelerator instances)
             {
-                vtAccelerator->_boxCalcPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::instance::boxCalc, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
-                vtAccelerator->_boxCalcPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::triangle::boxCalc, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
+                vtAccelerator->_boxCalcPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::instance::boxCalc, vendorName, vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
+                vtAccelerator->_boxCalcPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::triangle::boxCalc, vendorName, vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
 
-                vtAccelerator->_leafPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::instance::genLeaf, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
-                vtAccelerator->_leafPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::triangle::genLeaf, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
+                vtAccelerator->_leafPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::instance::genLeaf, vendorName, vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
+                vtAccelerator->_leafPipeline.push_back(createComputeHC(vkDevice, getCorrectPath(hlbvh2::triangle::genLeaf, vendorName, vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache));
 
-                vtAccelerator->_shorthandPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::shorthand, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_boundingPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::outerBox, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_buildPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::builder, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_buildPipelineFirst = createComputeHC(vkDevice, getCorrectPath(hlbvh2::builderFirst, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_fitPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::fitBox, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_shorthandPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::shorthand, vendorName, vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_boundingPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::outerBox, vendorName, vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_buildPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::builder, vendorName, vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_buildPipelineFirst = createComputeHC(vkDevice, getCorrectPath(hlbvh2::builderFirst, vendorName, vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_fitPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::fitBox, vendorName, vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
 
-                vtAccelerator->_leafLinkPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::linkLeafs, vendorName, _vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
-                vtAccelerator->_intersectionPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::traverse, vendorName, _vtDevice->_shadersPath), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
-                //vtAccelerator->_interpolatorPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::interpolator, vendorName, _vtDevice->_shadersPath), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
+                vtAccelerator->_leafLinkPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::linkLeafs, vendorName, vtDevice->_shadersPath), vtAccelerator->_buildPipelineLayout, vkPipelineCache);
+                vtAccelerator->_intersectionPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::traverse, vendorName, vtDevice->_shadersPath), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
+                //vtAccelerator->_interpolatorPipeline = createComputeHC(vkDevice, getCorrectPath(hlbvh2::interpolator, vendorName, vtDevice->_shadersPath), vtAccelerator->_traversePipelineLayout, vkPipelineCache);
             };
         };
 
@@ -73,7 +73,7 @@ namespace _vt {
         VtBufferRegionCreateInfo bfi = {};
         const auto maxPrimitives = info.maxPrimitives;
 
-        std::shared_ptr<BufferManager> bManager = {}; createBufferManager(_vtDevice, bManager);
+        std::shared_ptr<BufferManager> bManager = {}; createBufferManager(vtDevice, bManager);
         { // solve building BVH conflicts by creation in accelerator set
             bfi.bufferSize = std::max(VkDeviceSize(sizeof(uint32_t) * 64ull), VkDeviceSize(sizeof(VtBuildConst)));
             bfi.format = VK_FORMAT_UNDEFINED;
@@ -123,10 +123,10 @@ namespace _vt {
         };
 
         {
-            std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["hlbvh2work"]) };
+            std::vector<vk::DescriptorSetLayout> dsLayouts = { vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["hlbvh2work"]) };
 
             // create pipeline layout
-            auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+            auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
             vtAccelerator->_buildDescriptorSet = dsc[0];
 
             auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_buildDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
@@ -147,9 +147,9 @@ namespace _vt {
         
         { // write radix sort descriptor sets
             std::vector<vk::DescriptorSetLayout> dsLayouts = {
-                vk::DescriptorSetLayout(_vtDevice->_descriptorLayoutMap["radixSortBind"]),
+                vk::DescriptorSetLayout(vtDevice->_descriptorLayoutMap["radixSortBind"]),
             };
-            auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(_vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
+            auto dsc = vk::Device(vkDevice).allocateDescriptorSets(vk::DescriptorSetAllocateInfo().setDescriptorPool(vtDevice->_descriptorPool).setPSetLayouts(&dsLayouts[0]).setDescriptorSetCount(1));
             vtAccelerator->_sortDescriptorSet = dsc[0];
 
             auto writeTmpl = vk::WriteDescriptorSet(vtAccelerator->_sortDescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer);
@@ -173,7 +173,7 @@ namespace _vt {
 
 
     // planned advanced accelerator construction too
-    VtResult createAcceleratorSet(std::shared_ptr<Device> vtDevice, VtAcceleratorSetCreateInfo info, std::shared_ptr<AcceleratorSet>& vtAccelerator) {
+    VtResult createAcceleratorSet(const std::shared_ptr<Device>& vtDevice, const VtAcceleratorSetCreateInfo& info, std::shared_ptr<AcceleratorSet>& vtAccelerator) {
         VtResult result = VK_SUCCESS;
         auto vkDevice = vtDevice->_device;
         vtAccelerator = std::make_shared<AcceleratorSet>();

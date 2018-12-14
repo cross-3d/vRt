@@ -8,7 +8,7 @@ namespace _vt {
 
 
     // planned type validations, also, planned advanced descriptor sets support in vertex assemblies
-    VtResult bindDescriptorSets(std::shared_ptr<CommandBuffer> cmdBuf, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t firstSet = 0, const std::vector<VkDescriptorSet>& descriptorSets = {}, const std::vector<VkDescriptorSet>& dynamicOffsets = {}) {
+    VtResult bindDescriptorSets(const std::shared_ptr<CommandBuffer>& cmdBuf, VtPipelineBindPoint pipelineBindPoint, VtPipelineLayout layout, uint32_t firstSet = 0, const std::vector<VkDescriptorSet>& descriptorSets = {}, const std::vector<VkDescriptorSet>& dynamicOffsets = {}) {
         VtResult result = VK_SUCCESS;
         if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_RAYTRACING) {
             cmdBuf->_boundDescriptorSets = descriptorSets;
@@ -19,7 +19,7 @@ namespace _vt {
     };
 
     // planned type validations
-    VtResult bindPipeline(std::shared_ptr<CommandBuffer> cmdBuf, VtPipelineBindPoint pipelineBindPoint, std::shared_ptr<Pipeline> pipeline) {
+    VtResult bindPipeline(const std::shared_ptr<CommandBuffer>& cmdBuf, VtPipelineBindPoint pipelineBindPoint, std::shared_ptr<Pipeline> pipeline) {
         VtResult result = VK_SUCCESS;
         if (pipelineBindPoint == VT_PIPELINE_BIND_POINT_RAYTRACING) {
             cmdBuf->_rayTracingPipeline = pipeline;
@@ -28,7 +28,7 @@ namespace _vt {
     };
 
     // update material data in command
-    VtResult bindMaterialSet(std::shared_ptr<CommandBuffer> cmdBuf, VtEntryUsageFlags usageIn, std::shared_ptr<MaterialSet> matrl) {
+    VtResult bindMaterialSet(const std::shared_ptr<CommandBuffer>& cmdBuf, VtEntryUsageFlags usageIn, std::shared_ptr<MaterialSet> matrl) {
         VtResult result = VK_SUCCESS;
         cmdBuf->_materialSet = matrl;
         return result;
@@ -38,7 +38,7 @@ namespace _vt {
     using cntr_t = uint64_t;
 
     // ray-tracing pipeline 
-    VtResult dispatchRayTracing(std::shared_ptr<CommandBuffer> cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
+    VtResult dispatchRayTracing(const std::shared_ptr<CommandBuffer>& cmdBuf, uint32_t x = 1, uint32_t y = 1, uint32_t B = 1) {
 
         VtResult result = VK_SUCCESS;
         auto device = cmdBuf->_parent();
@@ -151,9 +151,9 @@ namespace _vt {
     };
 
     // create wrapped command buffer
-    VtResult queryCommandBuffer(std::shared_ptr<Device> _vtDevice, VkCommandBuffer cmdBuf, std::shared_ptr<CommandBuffer>& vtCmdBuf) {
+    VtResult queryCommandBuffer(const std::shared_ptr<Device>& vtDevice, VkCommandBuffer cmdBuf, std::shared_ptr<CommandBuffer>& vtCmdBuf) {
         vtCmdBuf = std::make_shared<CommandBuffer>();
-        vtCmdBuf->_device = _vtDevice;
+        vtCmdBuf->_device = vtDevice;
         vtCmdBuf->_commandBuffer = cmdBuf;
         return VK_SUCCESS;
     };

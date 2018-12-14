@@ -14,8 +14,8 @@ namespace _vt {
     };
 
 
-    VtResult convertDevice(VkDevice device, std::shared_ptr<PhysicalDevice> physicalDevice, VtDeviceAggregationInfo vtExtension, std::shared_ptr<Device>& vtDevice) {
-        //auto vtDevice = (_vtDevice = std::make_shared<Device>());
+    VtResult convertDevice(VkDevice device, const std::shared_ptr<PhysicalDevice>& physicalDevice, const VtDeviceAggregationInfo& vtExtension, std::shared_ptr<Device>& vtDevice) {
+        //auto vtDevice = (vtDevice = std::make_shared<Device>());
         vtDevice = std::make_shared<Device>();
         vtDevice->_physicalDevice = physicalDevice; // reference for aliasing
         vtDevice->_device = device;
@@ -314,7 +314,7 @@ namespace _vt {
     };
 
 
-    inline VtResult createDevice(std::shared_ptr<PhysicalDevice> physicalDevice, VkDeviceCreateInfo vdvi, std::shared_ptr<Device>& _vtDevice) {
+    inline VtResult createDevice(const std::shared_ptr<PhysicalDevice>& physicalDevice, const VkDeviceCreateInfo& vdvi, std::shared_ptr<Device>& vtDevice) {
         VtResult result = VK_ERROR_INITIALIZATION_FAILED;
 
         // default structure values
@@ -329,7 +329,7 @@ namespace _vt {
         if (vkCreateDevice(*physicalDevice, (const VkDeviceCreateInfo*)vtExplodeArtificals(vdvi), nullptr, &vkDevice) == VK_SUCCESS) { result = VK_SUCCESS; };
 
         // manually convert device
-        convertDevice(vkDevice, physicalDevice, vtExtension, _vtDevice);
+        convertDevice(vkDevice, physicalDevice, vtExtension, vtDevice);
         return result;
     };
 
@@ -340,24 +340,24 @@ namespace _vt {
 
 
     // 
-     VtResult AcceleratorExtensionBase::_DoIntersections(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, std::shared_ptr<RayTracingSet> rayTracingSet) {
+     VtResult AcceleratorExtensionBase::_DoIntersections(const std::shared_ptr<CommandBuffer>& cmdBuf, const std::shared_ptr<AcceleratorSet>& acceleratorSet, const std::shared_ptr<RayTracingSet>& rayTracingSet) {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
-     VtResult AcceleratorExtensionBase::_BuildAccelerator(std::shared_ptr<CommandBuffer> cmdBuf, std::shared_ptr<AcceleratorSet> acceleratorSet, VtAcceleratorBuildInfo buildInfo) {
+     VtResult AcceleratorExtensionBase::_BuildAccelerator(const std::shared_ptr<CommandBuffer>& cmdBuf, const std::shared_ptr<AcceleratorSet>& acceleratorSet, const VtAcceleratorBuildInfo& buildInfo) {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
-     VtResult AcceleratorExtensionBase::_Init(std::shared_ptr<Device> device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) {
+     VtResult AcceleratorExtensionBase::_Init(const std::shared_ptr<Device>& device, const VtDeviceAdvancedAccelerationExtension * extensionBasedInfo) {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
-     VtResult AcceleratorExtensionBase::_Criteria(std::shared_ptr<DeviceFeatures> supportedFeatures) {
+     VtResult AcceleratorExtensionBase::_Criteria(const std::shared_ptr<DeviceFeatures>& supportedFeatures) {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
 
     // connectors with extension classes
-     VtResult AcceleratorExtensionBase::_ConstructAcceleratorSet(std::shared_ptr<AcceleratorSet> accelSet) {
+     VtResult AcceleratorExtensionBase::_ConstructAcceleratorSet(const std::shared_ptr<AcceleratorSet>& accelSet) {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
-     VtResult AcceleratorExtensionBase::_ConstructVertexAssembly(std::shared_ptr<VertexAssemblySet> assemblySet) {
+     VtResult AcceleratorExtensionBase::_ConstructVertexAssembly(const std::shared_ptr<VertexAssemblySet>& assemblySet) {
         return VK_ERROR_EXTENSION_NOT_PRESENT;
     };
 
