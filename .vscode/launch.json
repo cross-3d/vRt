@@ -9,7 +9,7 @@
         "name": "Launch Program",
         "target": "${workspaceFolder}/build/gltfPBR",
         "cwd": "${workspaceFolder}/build/",
-        "arguments": "-m ./models/TwoSidedPlane/TwoSidedPlane.gltf -g 0 -s 50.0 -T 0 -R 1 -F "
+        "arguments": "-m ./models/TwoSidedPlane/TwoSidedPlane.gltf -g 1 -s 50.0 -T 0 -R 1 -F "
     },
     {
         "type": "lldb-mi",
@@ -17,7 +17,7 @@
         "name": "Launch Program",
         "target": "${workspaceFolder}/build/gltfPBR",
         "cwd": "${workspaceFolder}/build/",
-        "arguments": "-m ./models/TwoSidedPlane/TwoSidedPlane.gltf -g 0 -s 50.0 -T 0 -R 1 -F "
+        "arguments": "-m ./models/TwoSidedPlane/TwoSidedPlane.gltf -g 1 -s 50.0 -T 0 -R 1 -F "
     },{
         "name": "(gdb) Launch",
         "type": "cppdbg",
