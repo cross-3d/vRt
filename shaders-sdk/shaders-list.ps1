@@ -166,7 +166,7 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "copyhack.comp"   "$INDIR$RDXI" "$HRDDIR$RDXI"
 
     # optimize built shaders
-    #OptimizeMainline
+    OptimizeMainline
 
     [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
 }

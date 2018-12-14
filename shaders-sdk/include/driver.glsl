@@ -14,6 +14,8 @@
 
 // current features
 #define ENABLE_SCALAR_BLOCK_LAYOUT
+#define ENABLE_MULTI_BVH
+
 #define EXPERIMENTAL_UNORM16_DIRECTION // packing direction as unorm16x2 (may be inaccurate)
 //#define EXPERIMENTAL_UNORM16_BVH     // packing BVH boxes as unorm16x2 (may drop performance)
 #define USE_FAST_INTERSECTION          // disable water-tight intersection method (make faster)
@@ -74,7 +76,7 @@
 #define align_ssbo std430
 #endif
 
-#define ENABLE_MULTI_BVH
+// non uniform wrapper
 #extension GL_EXT_nonuniform_qualifier : enable
 #ifndef DISABLE_NON_UNIFORM
 #define NonUniform nonuniformEXT
@@ -101,27 +103,17 @@
     //#extension GL_NV_shader_atomic_int64 : enable // unknown status
 #endif
 
-#ifdef AMD_PLATFORM // only under AMD shaders
-// sampler f16 support
-#ifdef ENABLE_FP16_SAMPLER_HACK
-    #extension GL_AMD_gpu_shader_half_float_fetch : enable
-#endif
-
-// enable fp16 support
-#ifdef ENABLE_FP16_SUPPORT
-    #extension GL_AMD_gpu_shader_half_float : enable // better to still save
-#endif
-#endif
-
-// enable int16 support
-#ifdef ENABLE_INT16_SUPPORT
-    #extension GL_AMD_gpu_shader_int16 : enable // better to still save
-#endif
-
 // if int16 no supported, use plain int32
 #ifndef ENABLE_INT16_SUPPORT
     #undef USE_INT16_FOR_MORTON
     #undef USE_INT16_BOOL_PAIR // use RPM based booleans
+#endif
+
+// only under AMD shaders
+#ifdef AMD_PLATFORM
+    #extension GL_AMD_gpu_shader_half_float_fetch : enable
+    #extension GL_AMD_gpu_shader_half_float : enable
+    #extension GL_AMD_gpu_shader_int16 : enable
 #endif
 
 // platform-oriented compute
@@ -131,10 +123,10 @@
     #define WORK_SIZE 1024u
 #else
     #ifdef ENABLE_TURING_INSTRUCTION_SET
-          #define WORK_SIZE 512u
+        //#define WORK_SIZE 512u
         //#define WORK_SIZE 768u
         //#define WORK_SIZE 1536u
-        //#define WORK_SIZE 1024u
+          #define WORK_SIZE 1024u
     #else
         #ifdef AMD_PLATFORM
             #define WORK_SIZE 512u // best cover for Polaris
