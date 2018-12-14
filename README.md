@@ -13,9 +13,8 @@
 - Reduced overheads, single command buffer support, highly optimized
 - Support by common modern compilers (Visual Studio 2017, GCC 8.1)
 - Support by modern graphics/compute accelerators
-- Can reach 100Mrays/s in top GPU's (without native or specific hardware acceleration)
 - Unified library for desktop dedicated GPU's
-- Extensions for accelerations
+- Basic extensions support (WIP)
 
 ### Backends
 
@@ -29,7 +28,7 @@
 
 ### Requirements for testing application
 
-- Vulkan API 1.1.82 support 
+- Vulkan API 1.1.92 support 
 - [Vulkan Memory Allocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
 - C++17 capable compiler
 - GLSL to SPIR-V 1.3 compiler
@@ -37,20 +36,22 @@
 
 ### Compatibility Confirmed
 
-- RX Vega 64
-- RTX 2070 (but still have some dumbs)
+- RX Vega 64 (Windows only)
+- RTX 2070 (Windows, Ubuntu, RTX On/Off)
+- GTX 1070 (early has supported)
+
+### Currently Incompatible... 
+
+- AMDVLK in Linux 
+- Mesa/RADV drivers 
+
 
 ### Roadmaps
 
-#### November 2018
-
-- Advanced ray-tracing API (support of memory sharing, custom pipelines)
-- Better memory managments (use transfer buffers instead of cmdUpdateBuffer)
-- Reduce API bloating (disable useless VtDevice traffic buffers)
-- Public MVP and prototype stage (with powerful performance)
-
 #### Q1 of 2019
 
+- Major refactoring of code
+- Attemping to add Linux support (AMDVLK)
 - HLSL shaders for non-core functionality
 - Unit tests and documentations
 - Alpha stage
@@ -64,6 +65,9 @@
 
 ### Known Issues
 
-- Not enough performance on RX Vega 64 (where is promised millions, why we have only half?). We attemped to restore lost performances, but still need very deep work to full remedy of application architecture.
+- No support of Mesa drivers directly. 
+- In AMDVLK doesn't working, we doesn't know why.
+- Unable to run in NVIDIA GPU's, need use this version of driver (https://developer.nvidia.com/vulkan-driver)
 - Intel HD Graphics UHD 630 doesn't work. Intel integrated graphics still needs to workarounds.
 - Not working some meshes. We still do search the solutions for this problem.
+
