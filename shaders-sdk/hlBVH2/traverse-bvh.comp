@@ -38,7 +38,7 @@ void main() {
 
     // 
     //[[flatten]] if (subgroupElect()) 
-    { topLevelEntry = readFLane(bvhBlockTop.primitiveCount > 1 ? bvhBlockTop.entryID : -1), CACHE_ID = readFLane(gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx); }; // should be subgroup uniform
+    { topLevelEntry = readFLane(bvhBlockTop.elementsCount > 1 ? bvhBlockTop.entryID : -1), CACHE_ID = readFLane(gl_WorkGroupID.x*Wave_Count_RT+Wave_Idx); }; // should be subgroup uniform
     { traverseState.maxElements = 0x7FFFFFFF; };
 
     // planned task-based BVH traversing (for two-level BVH support)

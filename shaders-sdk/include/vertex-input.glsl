@@ -3,35 +3,32 @@
 
 
 #ifdef VERTEX_FILLING
-layout ( binding = 3, set = VTX_SET, align_ssbo ) coherent buffer VTX_BUFFER_IN { vec4 data[]; } lvtxIn[];
+layout ( binding = 3, set = VTX_SET, align_ssbo ) coherent buffer VTX_BUFFER_IN { f32vec4 data[]; } lvtxIn[];
 #endif
 
 
 // buffer region
 struct VtBufferRegion {
-    uint byteOffset, byteSize;
+    uint32_t byteOffset, byteSize;
 };
 
 // subdata structuring in buffer region
 struct VtBufferView {
-    int regionID;
-    int byteOffset; // in structure offset
-    int byteStride;
-    int byteLength;
+    uint32_t regionID, byteStride;
+    uint32_t byteOffset, byteLength;
 };
 
 // accessor
 struct VtAccessor {
-    int bufferView; // buffer-view structure
-    int byteOffset; // accessor byteOffset
-    uint bitfield; // VtFormat decodable
+    uint32_t bufferViewID; // buffer-view structure
+    uint32_t byteOffset; // accessor byteOffset
+    uint32_t bitfield; // VtFormat decodable
 };
 
 // attribute binding
 struct VtAttributeBinding {
-    int attributeID;
-    int accessorID;
-    //int indexOffset;
+    int32_t attributeID;
+    int32_t accessorID;
 };
 
 
@@ -80,9 +77,9 @@ u32x1_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return u8x
 
 
 struct VtVIUniform {
-    uint primitiveOffset, primitiveCount, attributeOffset, attributeCount;
-    int verticeAccessor, indiceAccessor, materialAccessor;
-    uint bitfield, materialID, readOffset;
+    uint32_t primitiveOffset, primitiveCount, attributeOffset, attributeCount;
+     int32_t verticeAccessor, indiceAccessor, materialAccessor;
+    uint32_t bitfield, materialID, readOffset;
 };
 
 
@@ -90,22 +87,22 @@ struct VtVIUniform {
 layout ( binding = 9, set = VTX_SET, align_ssbo ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
 layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
 #define vertexBlock _vertexBlock[gl_GlobalInvocationID.y + cblock.inputID]
-layout ( binding = 6, set = 1, align_ssbo ) readonly buffer VT_TRANSFORMS { mat3x4 vTransforms[]; };
+layout ( binding = 6, set = 1, align_ssbo ) readonly buffer VT_TRANSFORMS { f32mat3x4 vTransforms[]; };
 
 
 uint calculateByteOffset(in int accessorID, in const uint bytecorrect) { //bytecorrect -= 1;
-    const uint bufferView = uint(accessors[accessorID].bufferView);
+    const uint bufferView = uint(accessors[accessorID].bufferViewID);
     return ((bufferViews[bufferView].byteOffset+accessors[accessorID].byteOffset) >> bytecorrect);
 };
 
 uint iCR(in int accessorID, in uint index, in const uint cmpc, in const uint bytecorrect) {
-    const uint bufferView = uint(accessors[accessorID].bufferView), stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1)<<bytecorrect);
+    const uint bufferView = uint(accessors[accessorID].bufferViewID), stride = max(bufferViews[bufferView].byteStride, (aComponents(accessors[accessorID].bitfield)+1)<<bytecorrect);
     return (index*stride)+(cmpc<<bytecorrect);
 };
 
 void readByAccessorLL(in int accessor, in uint index, inout uvec4 outpx) {
     [[flatten]] if (accessor >= 0) {
-        const int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
+        const uint bufferID = bufferViews[accessors[accessor].bufferViewID].regionID;
         const uint T = calculateByteOffset(accessor, 0u), D = 0u, C = min(aComponents(accessors[accessor].bitfield)+1, 4u-D);
         [[unroll]] for (int i=0;i<4;i++) { [[flatten]] if (C > i) outpx[D+i] = M32(BFS,T,iCR(accessor,index,i,2u)); };
     };
@@ -148,7 +145,7 @@ void readByAccessor(in int accessor, in uint index, inout uint outp) {
 // planned read type directly from accessor
 void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
     [[flatten]] if (accessor >= 0) {
-        const int bufferID = bufferViews[accessors[accessor].bufferView].regionID;
+        const uint bufferID = bufferViews[accessors[accessor].bufferViewID].regionID;
         const bool U16 = aType(accessors[accessor].bitfield) == 2; // uint16
         const uint T = calculateByteOffset(accessor, 0u);
         [[flatten]] if (U16) { outp = M16(BFS,T,iCR(accessor,index,0,1u)); } else { outp = M32(BFS,T,iCR(accessor,index,0,2u)); };

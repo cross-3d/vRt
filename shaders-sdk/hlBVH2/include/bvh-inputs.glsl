@@ -2,9 +2,9 @@
 // Morton codes and geometry counters
 
 #ifdef USE_MORTON_32
-    #define morton_t uint
+    #define morton_t uint32_t
 #else
-    #define morton_t uvec2
+    #define morton_t u32vec2
 #endif
 
 
@@ -44,7 +44,7 @@ layout ( binding = 8, set = 0, align_ssbo ) subgroupcoherent buffer CountersB {
 
 
 // 
-struct VtBuildConst { int primitiveCount, primitiveOffset; };
+struct VtBuildConst { uint32_t primitiveOffset, primitiveCount; };
 layout ( binding = 2, set = 0, align_ssbo ) readonly devicecoherent buffer BuildConstB { VtBuildConst buildConst_[]; };
 #define buildBlock buildConst_[0]
 

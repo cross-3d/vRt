@@ -48,7 +48,7 @@ namespace vrt {
     };
 #pragma pack(pop)
 
-#pragma pack(push, 1)
+#pragma pack(push, 4)
     struct VtPrimitiveBitfield { uint32_t hitGroup : 2, frontFace : 1, backFace : 1, secondary: 1; };
 #pragma pack(pop)
 
@@ -76,8 +76,8 @@ namespace vrt {
     // reduced to 4x6(x4) or 96 bytes
 #pragma pack(push, 1)
     struct VtBvhBlock {
-        int32_t entryID = 0u, leafCount = 0u, primitiveCount = 0u, primitiveOffset = 0u;
         VtMat3x4 transform = IdentifyMat3x4;//, transformInv = IdentifyMat4;
+        int32_t elementsOffset = 0u, elementsCount = 0u, entryID = 0u, bitfield = 0u;
         VtVec4 sceneMin = {}, sceneMax = {};
     };
 #pragma pack(pop)
@@ -91,7 +91,7 @@ namespace vrt {
 
 #pragma pack(push, 1)
     struct VtBuildConst {
-        int32_t primitiveCount = 0u, primitiveOffset = 0u;
+        int32_t primitiveOffset = 0u, primitiveCount = 0u;
     };
 #pragma pack(pop)
 

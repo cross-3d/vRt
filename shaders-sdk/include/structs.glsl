@@ -36,7 +36,7 @@
 
 // default built-in ray structure
 //struct VtRay { vec4 origin; vec2 cdirect; uvec2 dcolor; };
-struct VtRay { vec4 fdata; uvec4 bitspace; };
+struct VtRay { f32vec4 fdata; u32vec4 bitspace; };
 #ifdef EXPERIMENTAL_UNORM16_DIRECTION
 #define cdirect fdata.w
 #else
@@ -63,8 +63,8 @@ const int ATTRIB_EXTENT = 4;
 
 struct VtHitData {
     //int next; uint bitfield; int r0, r1;
-    int attribID, rayID, payloadID, nextID; //materialID;
-    vec4 uvt, hitVD; ivec4 idat; // UV, distance, triangle (base data), normal
+    int32_t attribID, rayID, payloadID, nextID; //materialID;
+    f32vec4 uvt, hitVD; i32vec4 idat; // UV, distance, triangle (base data), normal
 };
 
 
@@ -107,7 +107,7 @@ void parameterb( in lowp ivec2 parameter, inout float bitfield, in bool  value) 
 void parameteri( in lowp ivec2 parameter, inout  uint bitfield, in  int  value) { parameteri(parameter, bitfield, uint(value)); };
 void parameteri( in lowp ivec2 parameter, inout float bitfield, in  int  value) { parameteri(parameter, bitfield, uint(value)); };
 
-struct bbox_t { vec4 mn, mx; };
-struct leaf_t { bbox_t lbox; ivec4 pdata; };
+struct bbox_t { f32vec4 mn, mx; };
+struct leaf_t { bbox_t lbox; i32vec4 pdata; };
 
 #endif

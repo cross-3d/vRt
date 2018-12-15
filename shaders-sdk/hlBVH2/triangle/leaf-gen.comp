@@ -21,7 +21,7 @@
 
 LOCAL_SIZE_LAYOUT;
 
-#define wsize bvhBlockTop.leafCount
+#define wsize bvhBlockTop.elementsCount
 //#define lbox Leafs[to].lbox
 
 #ifdef USE_MORTON_32

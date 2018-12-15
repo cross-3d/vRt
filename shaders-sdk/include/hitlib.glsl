@@ -16,7 +16,7 @@ layout ( binding = 3, set = SETS_DESC_SET_ID ) uniform usamplerBuffer vtextures;
 // material set (in main descriptor set)
 layout ( binding = 2, set = SETS_DESC_SET_ID, align_ssbo ) readonly   buffer VT_MATERIAL_BUFFER { VtAppMaterial submats[]; };
 //layout ( binding = 3, set = SETS_DESC_SET_ID, align_ssbo ) readonly   buffer VT_COMBINED { u16vec2 vtextures[]; }; // TODO: replace by native combinations
-layout ( binding = 4, set = SETS_DESC_SET_ID, align_ssbo ) readonly   buffer VT_MATERIAL_INFO { uint materialCount, materialOffset; };
+layout ( binding = 4, set = SETS_DESC_SET_ID, align_ssbo ) readonly   buffer VT_MATERIAL_INFO { uint32_t materialOffset, materialCount; };
 
 
 int matID = -1;
@@ -39,9 +39,9 @@ bool validateTexture(in uint tbinding) { return tbinding > 0u && tbinding != -1u
 #define fetchTexture(tbinding, tcoord) textureLod(sampler2Dv(texelFetch(vtextures,int(tbinding)-1)),tcoord,0)
 
 // new texture fetcher with corner sampling 
+
+/*
 vec4 fetchTexNG(in uint tbinding, in vec2 ntxc) {
-    
-    /*
 #ifdef AMD_PLATFORM
     ivec2 szi = (1).xx; bool found = false;
     // planned Turing hardware version support 
@@ -62,12 +62,10 @@ vec4 fetchTexNG(in uint tbinding, in vec2 ntxc) {
     const vec2 is = 1.f/sz, tc = fma(tx,sz,-0.5f.xx), tm = (floor(tc+SFN)+0.5f)*is;
     const vec4 il = vec4(fract(tc),1.f-fract(tc)), cf = vec4(il.z*il.y,il.x*il.y,il.x*il.w,il.z*il.w);
     return mult4(mat4(textureGather(sampler2Dv(tbinding-1),tm,0),textureGather(sampler2Dv(tbinding-1),tm,1),textureGather(sampler2Dv(tbinding-1),tm,2),textureGather(sampler2Dv(tbinding-1),tm,3)),cf);
-    */
-
-    return fetchTexture(tbinding,ntxc); // or just use TPU
 };
+*/
 
-#define fetchTex(tbinding, tcoord) fetchTexNG(tbinding,tcoord)
+#define fetchTex(tbinding, tcoord) fetchTexture(tbinding,tcoord)
 
 
 

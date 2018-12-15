@@ -14,7 +14,7 @@
 
 LOCAL_SIZE_LAYOUT;
 
-#define wsize bvhBlockTop.leafCount
+#define wsize bvhBlockTop.elementsCount
 
 void main() {
     IFANY (wsize <= 0) return; uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);

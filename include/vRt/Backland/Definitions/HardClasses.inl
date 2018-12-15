@@ -288,10 +288,12 @@ namespace _vt { // store in undercover namespace
 
         // planned to rework building system  
         VtAcceleratorSetLevel _level = VT_ACCELERATOR_SET_LEVEL_GEOMETRY;
-        VkDeviceSize _entryID = 0, _elementsCount = -1, _elementsOffset = 0;
-        VtMat4 _coverMatrice = IdentifyMat4;
+
+        uint32_t _elementsOffset = 0, _elementsCount = -1, _entryID = 0, _bitfield = 0u; 
         VtBvhBlock _bvhBlockData = {};
+        
         VkDeviceSize _capacity = 0ull;
+        VtMat4 _coverMatrice = IdentifyMat4;
 
         operator const VkDescriptorSet&() const { return _descriptorSet; };
         const auto& _parent() const { return _device; };
@@ -548,7 +550,7 @@ namespace _vt { // store in undercover namespace
 
         // material data buffers
         std::shared_ptr<DeviceBuffer> _constBuffer = {};
-        uint32_t _materialCount = 0, _materialOffset = 0;
+        uint32_t _materialOffset = 0, _materialCount = 0;
 
 
         const auto& _parent() const { return _device; };

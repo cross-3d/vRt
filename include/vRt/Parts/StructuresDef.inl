@@ -126,26 +126,22 @@ namespace vrt { // store in official namespace
     // any other vertex bindings can be used by attributes
 #pragma pack(push, 1)
     struct VtVertexRegionBinding {
-        uint32_t byteOffset = 0;
-        uint32_t byteSize = 0;
+        uint32_t byteOffset = 0, byteSize = 0;
     };
 #pragma pack(pop)
 
     // buffer view
 #pragma pack(push, 1)
     struct VtVertexBufferView {
-        uint32_t regionID = 0;
-        uint32_t byteOffset = 0;
-        uint32_t byteStride = 0;
-        uint32_t byteLength = 0;
+        uint32_t regionID = 0, byteStride = 0;
+        uint32_t byteOffset = 0, byteLength = 0;
     };
 #pragma pack(pop)
 
     // attribute binding
 #pragma pack(push, 1)
     struct VtVertexAttributeBinding {
-        uint32_t attributeBinding = 0;
-        uint32_t accessorID = 0;
+        uint32_t attributeID = 0, accessorID = 0;
     };
 #pragma pack(pop)
 

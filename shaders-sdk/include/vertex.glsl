@@ -45,16 +45,15 @@
 
 // task level traverse data 
 struct BvhBlockT {
-    int entryID, leafCount; // leafCount reserved for ESC versions
-    int primitiveCount, primitiveOffset; // first for default triangle limit, second for correct vertex data block ( because assembled set should have shared buffer )
-    mat3x4 transform;//, transformInv; // we resolved to save that row 
-    vec4 sceneMin, sceneMax;
+    f32mat3x4 transform;
+    int32_t elementsOffset, elementsCount, entryID; uint32_t bitfield;
+    f32vec4 sceneMin, sceneMax;
 };
 
 // 
 struct BvhInstanceT {
-    mat3x4 transformIn; // row of traversion correction, combined with transforming to instance space 
-    int bvhBlockID, bvhDataID, r1, r2;
+    f32mat3x4 transformIn;
+    int32_t bvhBlockID, bvhDataID, r1, r2;
 };
 
 #if (defined(USE_F32_BVH) || defined(USE_F16_BVH)) && !defined(EXPERIMENTAL_UNORM16_BVH)
@@ -68,9 +67,9 @@ struct BvhInstanceT {
 struct BTYPE_ {
     nbox_t cbox;
 #if (defined(USE_F16_BVH) || defined(EXPERIMENTAL_UNORM16_BVH) || !defined(USE_F32_BVH))
-    uvec2 spacing[3]; // when using 16-bit data, need have data space ()
+    u32vec2 spacing[3]; // when using 16-bit data, need have data space ()
 #endif
-    ivec4 meta;
+    i32vec4 meta;
 };
 
 

@@ -41,7 +41,7 @@ int aCounterInc() {return _aCounterInc(cBuffer*4);}
 
 
 // use faster version of BVH builder
-#define GSIZE bvhBlockTop.leafCount
+#define GSIZE bvhBlockTop.elementsCount
 const uint WGS = 16u;
 uint wID(in uint t) {return GSIZE * gl_WorkGroupID.x + t;};
 uint mrQ(in uint q) {return GSIZE * WGS * q;};

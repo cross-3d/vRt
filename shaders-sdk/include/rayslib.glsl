@@ -13,10 +13,7 @@
 
 struct VtHitPayload {
     // hit shaded data
-    vec4 normalHeight;
-    vec4 albedo;
-    vec4 emission;
-    vec4 specularGlossiness;
+    f32vec4 normalHeight, albedo, emission, specularGlossiness;
 };
 
 // basic ray tracing buffers

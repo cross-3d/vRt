@@ -7,32 +7,30 @@
 
 // NEXT standard consts in current
 // Ray tracing NEXT capable shader standard development planned begin in 2019 year
-const float PHI = 1.6180339887498948482f;
-const float INFINITY = 1e+5f;
-const float SFN = 0.00000011920928955078125f, SFO = 1.f+SFN;//1.00000011920928955078125f;
+const float32_t PHI = 1.6180339887498948482f;
+const float32_t SFN = 0.00000011920928955078125f, SFO = 1.f+SFN;//1.00000011920928955078125f;
+const float32_t INFINITY = 1e+5f, N_INFINITY = (INFINITY*(1.f-SFN));
 
-
-const float PI = 3.1415926535897932384626422832795028841971f;
-const float TWO_PI = 6.2831853071795864769252867665590057683943f;
-const float SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
-const float E = 2.7182818284590452353602874713526624977572f;
-const float N_INFINITY = (INFINITY*(1.f-SFN));
-const float INV_PI = 0.3183098861837907f; // TODO: search or calculate more precise version
-const float TWO_INV_PI = 0.6366197723675814f;
-const float INV_TWO_PI = 0.15915494309189535f;
+const float32_t PI = 3.1415926535897932384626422832795028841971f;
+const float32_t TWO_PI = 6.2831853071795864769252867665590057683943f;
+const float32_t SQRT_OF_ONE_THIRD = 0.5773502691896257645091487805019574556476f;
+const float32_t E = 2.7182818284590452353602874713526624977572f;
+const float32_t INV_PI = 0.3183098861837907f;
+const float32_t TWO_INV_PI = 0.6366197723675814f;
+const float32_t INV_TWO_PI = 0.15915494309189535f;
 
 
 //const float N1024 = 1024.f;
 #ifdef USE_F16_BVH
 const float16_t InZero = 0.0009765625hf, InOne = 1.0009765625hf;
 #else
-const float InZero = 0.00000011920928955078125f, InOne = 1.00000011920928955078125f;
+const float32_t InZero = 0.00000011920928955078125f, InOne = 1.00000011920928955078125f;
 #endif
 
 #ifdef USE_F16_BVH
 const float16_t One1024 = 0.0009765625hf;
 #else
-const float One1024 = 0.0009765625f;
+const float32_t One1024 = 0.0009765625f;
 #endif
 
 
@@ -275,7 +273,7 @@ int lsb(in uvec2 pair) {
     const ivec2 hl = findLSB(pair); 
     return mix(32 + hl.y, hl.x, hl.x >= 0);
 #endif
-}
+};
 
 int msb(in uvec2 pair) {
 #ifdef AMD_PLATFORM
@@ -284,7 +282,7 @@ int msb(in uvec2 pair) {
     const ivec2 hl = findMSB(pair); 
     return mix(hl.x, 32 + hl.y, hl.y >= 0);
 #endif
-}
+};
 
 
 

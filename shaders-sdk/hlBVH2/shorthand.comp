@@ -12,16 +12,14 @@
 #include "../include/morton.glsl"
 
 
-// bvh uniform unified
+// task level traverse data 
 struct BvhBlockT {
-    int entryID, leafCount; // leafCount reserved for ESC versions
-    int primitiveCount, primitiveOffset; // first for default triangle limit, second for correct vertex data block ( because assembled set should have shared buffer )
-    mat3x4 transform;//, transformInv; // we resolved to save that row 
-    vec4 sceneMin, sceneMax;
+    f32mat3x4 transform;
+    int32_t elementsOffset, elementsCount, entryID; uint32_t bitfield;
+    f32vec4 sceneMin, sceneMax;
 };
 
-
-layout ( binding = 9, set = 0, align_ssbo ) subgroupcoherent readonly buffer SceneBoxB { vec4 minmax[]; };
+layout ( binding = 9, set = 0, align_ssbo ) subgroupcoherent readonly buffer SceneBoxB { f32vec4 minmax[]; };
 layout ( binding = 0, set = 1, align_ssbo ) subgroupcoherent          buffer bvhBlockB { BvhBlockT data[]; } bvhBlockState_[];
 #define bvhBlock bvhBlockState_[0].data[0]
 

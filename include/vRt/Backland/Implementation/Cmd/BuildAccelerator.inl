@@ -178,9 +178,8 @@ namespace _vt {
             // create BVH instance meta (linking with geometry) 
             //VtBvhBlock _bvhBlockData = {};
             VtBvhBlock& _bvhBlockData = accel->_bvhBlockData;
-            _bvhBlockData.primitiveOffset = _buildConstData.primitiveOffset;
-            _bvhBlockData.primitiveCount = _buildConstData.primitiveCount;
-            _bvhBlockData.leafCount = _buildConstData.primitiveCount;
+            _bvhBlockData.elementsOffset = _buildConstData.primitiveOffset;
+            _bvhBlockData.elementsCount = _buildConstData.primitiveCount;
             _bvhBlockData.entryID = accel->_entryID;
 
             // planned to merge instance buffer of linked set
@@ -221,12 +220,12 @@ namespace _vt {
             cmdDispatch(*cmdBuf, acclb->_boundingPipeline, 256); // calculate general box of BVH
             cmdDispatch(*cmdBuf, acclb->_shorthandPipeline); // calculate in device boundary results
             cmdDispatch(*cmdBuf, acclb->_leafPipeline[accel->_level], INTENSIVITY); // calculate node boxes and morton codes
-            if (_bvhBlockData.leafCount > 2) { // don't use radix sort when only 1-2 elements 
-                radixSort(cmdBuf, acclb->_sortDescriptorSet, _bvhBlockData.leafCount);
+            if (_bvhBlockData.elementsCount > 2) { // don't use radix sort when only 1-2 elements 
+                radixSort(cmdBuf, acclb->_sortDescriptorSet, _bvhBlockData.elementsCount);
                 vkCmdBindDescriptorSets(*cmdBuf, VK_PIPELINE_BIND_POINT_COMPUTE, acclb->_buildPipelineLayout, 0, _sets.size(), _sets.data(), 0, nullptr);
             };
             cmdDispatch(*cmdBuf, acclb->_buildPipelineFirst, 1); // first few elements
-            if (_bvhBlockData.leafCount > workGroupSize) { // useless step for too fews 
+            if (_bvhBlockData.elementsCount > workGroupSize) { // useless step for too fews 
                 cmdDispatch(*cmdBuf, acclb->_buildPipeline, workGroupSize); // parallelize by another threads
             };
             cmdDispatch(*cmdBuf, acclb->_leafLinkPipeline, INTENSIVITY); // link leafs

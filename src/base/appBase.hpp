@@ -53,8 +53,6 @@ namespace NSM
 
             "VK_AMD_gpu_shader_int16",
             "VK_AMD_gpu_shader_half_float",
-            "VK_KHR_16bit_storage",
-            "VK_KHR_8bit_storage",
             "VK_AMD_gcn_shader",
             "VK_AMD_buffer_marker",
             "VK_AMD_shader_info",
@@ -62,6 +60,9 @@ namespace NSM
             "VK_AMD_shader_image_load_store_lod",
             "VK_AMD_shader_trinary_minmax",
             "VK_AMD_draw_indirect_count",
+
+            "VK_KHR_16bit_storage",
+            "VK_KHR_8bit_storage",
             "VK_KHR_incremental_present",
             "VK_KHR_push_descriptor",
             "VK_KHR_swapchain",
@@ -92,9 +93,7 @@ namespace NSM
             "VK_NV_shader_image_footprint",
             "VK_NV_shader_subgroup_partitioned",
 
-            "VK_NV_raytracing",
             "VK_NV_ray_tracing",
-            "VK_NVX_raytracing",
         };
 
         // instance layers

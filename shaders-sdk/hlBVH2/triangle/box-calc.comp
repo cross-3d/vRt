@@ -23,7 +23,7 @@ LOCAL_SIZE_LAYOUT;
 
 #define wsize buildBlock.primitiveCount
 
-layout ( binding = 3, set = VTX_SET, align_ssbo ) readonly buffer VTX_BUFFER_IN { vec4 data[]; } lvtxIn[];
+layout ( binding = 3, set = VTX_SET, align_ssbo ) readonly buffer VTX_BUFFER_IN { f32vec4 data[]; } lvtxIn[];
 
 void main() {
     IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);

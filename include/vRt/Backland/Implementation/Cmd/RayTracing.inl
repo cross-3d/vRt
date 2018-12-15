@@ -63,7 +63,7 @@ namespace _vt {
         std::vector<VkDescriptorSet> _rtSets = { rtset->_descriptorSet };
         if (matrl) {
             _rtSets.push_back(matrl->_descriptorSet); // make material set not necesssary
-            cmdUpdateBuffer(*cmdBuf, matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialCount);
+            cmdUpdateBuffer(*cmdBuf, matrl->_constBuffer, 0, sizeof(uint32_t) * 2, &matrl->_materialOffset);
         };
         for (auto s : cmdBuf->_boundDescriptorSets) { _rtSets.push_back(s); }
 
