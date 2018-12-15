@@ -9,8 +9,7 @@ layout ( binding = 3, set = VTX_SET, align_ssbo ) coherent buffer VTX_BUFFER_IN 
 
 // buffer region
 struct VtBufferRegion {
-    uint byteOffset;
-    uint byteSize;
+    uint byteOffset, byteSize;
 };
 
 // subdata structuring in buffer region
@@ -26,7 +25,6 @@ struct VtAccessor {
     int bufferView; // buffer-view structure
     int byteOffset; // accessor byteOffset
     uint bitfield; // VtFormat decodable
-    uint reserved;
 };
 
 // attribute binding
@@ -82,19 +80,9 @@ u32x1_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return u8x
 
 
 struct VtVIUniform {
-    uint primitiveCount;
-    int verticeAccessor;
-    int indiceAccessor;
-    int materialAccessor;
-
-    uint primitiveOffset;
-    uint attributeOffset;
-    uint attributeCount;
-    uint bitfield;
-
-    uint materialID;
-    uint readOffset;
-    uint reserved0, reserved1;
+    uint primitiveOffset, primitiveCount, attributeOffset, attributeCount;
+    int verticeAccessor, indiceAccessor, materialAccessor;
+    uint bitfield, materialID, readOffset;
 };
 
 

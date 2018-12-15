@@ -33,7 +33,7 @@ namespace vrt { // store in official namespace
     class VtDeviceAdvancedAccelerationExtension;
 
     // constexpr format compositor
-#pragma pack(push, 1)
+#pragma pack(push, 4)
     struct VtFormatDecomp {
         union { uint32_t _format = 0; struct { uint32_t _components : 2, _type : 4, _normalized : 1; } _formatDecomp; };
 
@@ -120,7 +120,6 @@ namespace vrt { // store in official namespace
         uint32_t bufferViewID = 0;
         uint32_t byteOffset = 0;
         VtFormatDecomp format;
-        uint32_t reserved = 0;
     };
 #pragma pack(pop)
 

@@ -49,6 +49,8 @@ namespace NSM
             "VK_EXT_queue_family_foreign",
             "VK_EXT_sampler_filter_minmax",
             "VK_EXT_descriptor_indexing",
+            "VK_EXT_scalar_block_layout",
+
             "VK_AMD_gpu_shader_int16",
             "VK_AMD_gpu_shader_half_float",
             "VK_KHR_16bit_storage",

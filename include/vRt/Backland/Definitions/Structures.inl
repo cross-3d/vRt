@@ -117,23 +117,15 @@ namespace vrt { // store in official namespace
         VtAttributePipeline attributeAssembly = {};
         VtTopologyType topology = VT_TOPOLOGY_TYPE_TRIANGLES_LIST;
 
-        // original block
-        uint32_t primitiveCount = 0;
-        uint32_t verticeAccessor = 0;
-        uint32_t indiceAccessor = 0xFFFFFFFF; // has no indice accessor
-        uint32_t materialID = 0; // material ID for identify in hit shader
+        uint32_t primitiveOffset = 0, primitiveCount = 0, attributeOffset = 0, attributeCount = 4;
+        uint32_t verticeAccessor = 0, indiceAccessor = 0xFFFFFFFFu, materialAccessor = 0xFFFFFFFFu;
 
-        // additional clause (16.06.2018)
-        uint32_t primitiveOffset = 0;
-        uint32_t attributeOffset = 0;
-        uint32_t attributeCount = 8;
-        uint32_t materialAccessor = 0xFFFFFFFF;
-
-        // default hit group
         union {
             uint32_t bitfield = 0u;
             VtPrimitiveBitfield bitfieldDetail;
         };
+
+        uint32_t materialID = 0, readOffset = 0;
 
         // vertex data sources
         //const VkBufferView * pSourceBuffers = nullptr;

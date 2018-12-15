@@ -75,7 +75,7 @@
 
 // aligment mode 
 #ifdef ENABLE_SCALAR_BLOCK_LAYOUT
-#extension GL_EXT_scalar_block_layout : enable
+#extension GL_EXT_scalar_block_layout : require
 #define align_ssbo scalar
 #else
 #define align_ssbo std430

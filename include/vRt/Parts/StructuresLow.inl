@@ -54,22 +54,15 @@ namespace vrt {
 
 #pragma pack(push, 1)
     struct VtUniformBlock {
-        uint32_t primitiveCount = 0;
-        uint32_t verticeAccessor = 0;
-        uint32_t indiceAccessor = 0xFFFFFFFFu;
-        uint32_t materialAccessor = 0xFFFFFFFFu;
+        uint32_t primitiveOffset = 0, primitiveCount = 0, attributeOffset = 0, attributeCount = 4;
+        uint32_t verticeAccessor = 0, indiceAccessor = 0xFFFFFFFFu, materialAccessor = 0xFFFFFFFFu;
 
-        uint32_t primitiveOffset = 0;
-        uint32_t attributeOffset = 0;
-        uint32_t attributeCount = 8;
         union {
             uint32_t bitfield = 0u;
             VtPrimitiveBitfield bitfieldDetail;
         };
 
-        uint32_t materialID = 0;
-        uint32_t readOffset = 0;
-        uint32_t reserved0 = 0, reserved1 = 0;
+        uint32_t materialID = 0, readOffset = 0;
     };
 #pragma pack(pop)
 
@@ -91,8 +84,7 @@ namespace vrt {
 
 #pragma pack(push, 1)
     struct VtBvhInstance {
-        VtMat3x4 //transform   = IdentifyMat3x4,
-            transformIn = IdentifyMat3x4; // combined transform 
+        VtMat3x4 transformIn = IdentifyMat3x4;
         int32_t bvhBlockID = 0u, bvhVariationID = -1, r0 = 0u, r1 = 0u;
     };
 #pragma pack(pop)
@@ -106,8 +98,7 @@ namespace vrt {
     // required for measuring required bytes and debugging 
 #pragma pack(push, 1)
     struct VtBvhNodeStruct {
-        VtUVec2 ch0 = {}, ch1 = {}, ch2 = {}, ch3 = {}, ch4 = {}, ch5 = {};
-        VtUVec4 data = {};
+        VtUVec4 bbox[3] = {}, data = {};
     };
 #pragma pack(pop)
 
