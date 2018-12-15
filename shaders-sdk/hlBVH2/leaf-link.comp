@@ -23,12 +23,12 @@ void main() {
         IFALL (globalID >= wsize) break;
         [[flatten]] if (globalID < wsize) {
             // get leaf data
-            int lidx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
+            int lidx = globalID < wsize ? int(LeafIndices[globalID])-1 : -1;
             ivec2 bvhmeta = (lidx >= 0 ? bvhNodes[lidx].meta.xy : (0).xx)-1;
             bbox_t rbox = {INFINITY.xxxx, -INFINITY.xxxx};
 
             // linking leafs
-            int leafID = bvhmeta.x >= 0 ? MortoncodesIndices[bvhmeta.x]-1 : -1;
+            int leafID = bvhmeta.x >= 0 ? int(MortoncodesIndices[bvhmeta.x])-1 : -1;
             if (leafID >= 0) {
                 rbox = Leafs[leafID].lbox;
                 bvhmeta.xy = Leafs[leafID].pdata.ww-1;

@@ -20,15 +20,15 @@ $VRTPROF="-S vert"
 $OPTFLAGS=" --inline-entry-points-exhaustive --workaround-1209 --replace-invalid-opcode --ccp --unify-const --simplify-instructions --remove-duplicates --combine-access-chains  --convert-local-access-chains --private-to-local --merge-return --merge-blocks --if-conversion --cfg-cleanup --flatten-decorations --freeze-spec-const "
 
 function Pause ($Message = "Press any key to continue . . . ") {
-    if ((Test-Path variable:psISE) -and $psISE) {
-        $Shell = New-Object -ComObject "WScript.Shell"
-        $Button = $Shell.Popup("Click OK to continue.", 0, "Script Paused", 0)
-    }
-    else {     
-        Write-Host -NoNewline $Message
-        [void][System.Console]::ReadKey($true)
-        Write-Host
-    }
+#    if ((Test-Path variable:psISE) -and $psISE) {
+#        $Shell = New-Object -ComObject "WScript.Shell"
+#        $Button = $Shell.Popup("Click OK to continue.", 0, "Script Paused", 0)
+#    }
+#    else {     
+#        Write-Host -NoNewline $Message
+#        [void][System.Console]::ReadKey($true)
+#        Write-Host
+#    }
 }
 
 function Optimize($Name, $Dir = "", $AddArg = "") {

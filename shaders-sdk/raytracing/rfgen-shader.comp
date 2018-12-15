@@ -51,7 +51,7 @@ void main() {
     [[flatten]] if (all(greaterThanEqual(xy,(0).xx)) && all(lessThan(xy,wh))) {
         ray.dcolor = uvec2(0u.xx), ray.origin = imageLoad(OriginPass, xy).xyz, ray.cdirect = getDirect(imageLoad(NormalPass, xy));
         vtWriteColor(ray.dcolor, imageLoad(SpecularPass, xy));
-        parameterb(RAY_ACTIVED, ray.dcolor.y, true);
+        vtParameterb(RAY_ACTIVED, ray.dcolor.y, true);
 
         //ISTORE(ColorOutput, xy, vec4(0.f.xxx, 1.f));
         ISTORE(NormalPass, xy, vec4(0.f.xxx, 0.f));

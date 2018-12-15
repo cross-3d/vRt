@@ -33,13 +33,11 @@ struct VtAttributeBinding {
 
 
 
-const ivec2 COMPONENTS = ivec2(0, 2);
-const ivec2 ATYPE = ivec2(2, 4);
-const ivec2 NORMALIZED = ivec2(6, 1);
+const lowp ivec2 COMPONENTS = {0, 2}, ATYPE = {2, 4}, NORMALIZED = {6, 1};
 
-int aComponents(in uint bitfield) { return int(parameteri(COMPONENTS, bitfield)); };
-int aNormalized(in uint bitfield) { return int(parameteri(NORMALIZED, bitfield)); };
-int aType(in uint bitfield) { return int(parameteri(ATYPE, bitfield)); };
+int aComponents(in uint bitfield) { return int(vtParameteri(COMPONENTS, bitfield)); };
+int aNormalized(in uint bitfield) { return int(vtParameteri(NORMALIZED, bitfield)); };
+int aType(in uint bitfield) { return int(vtParameteri(ATYPE, bitfield)); };
 
 
 #define BFS uint(bufferID)
@@ -100,7 +98,7 @@ uint iCR(in int accessorID, in uint index, in const uint cmpc, in const uint byt
     return (index*stride)+(cmpc<<bytecorrect);
 };
 
-void readByAccessorLL(in int accessor, in uint index, inout uvec4 outpx) {
+void readByAccessorLL(in int accessor, in uint index, inout u32vec4 outpx) {
     [[flatten]] if (accessor >= 0) {
         const uint bufferID = bufferViews[accessors[accessor].bufferViewID].regionID;
         const uint T = calculateByteOffset(accessor, 0u), D = 0u, C = min(aComponents(accessors[accessor].bitfield)+1, 4u-D);
@@ -109,7 +107,7 @@ void readByAccessorLL(in int accessor, in uint index, inout uvec4 outpx) {
 };
 
 // 
-uvec4 readByAccessorLLW(in int accessor, in uint index, in uvec4 outpx) { readByAccessorLL(accessor, index, outpx); return outpx; };
+u32vec4 readByAccessorLLW(in int accessor, in uint index, in u32vec4 outpx) { readByAccessorLL(accessor, index, outpx); return outpx; };
 
 // vec4 getter
 void readByAccessor(in int accessor, in uint index, inout vec4 outp) {

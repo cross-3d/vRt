@@ -42,15 +42,15 @@ void main() {
     };
     
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        const int GPT4 = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x), IPC = GPT4&3, globalID = (GPT4>>2);
+        const uint GPT4 = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x, IPC = GPT4&3, globalID = (GPT4>>2);
 
         const bool overflow = globalID >= wsize; IFALL(overflow) break;
         //const int hitID = overflow ? -1 : vtClosestId(stageUniform.closestHitOffset + globalID, -1);
-        const int hitID = overflow ? -1 : vtClosestId(globalID, -1);
+        const int hitID = overflow ? -1 : vtClosestId(int(globalID), -1);
         [[flatten]] if (!overflow && hitID >= 0) { // verify intersection
             const int triID = hit.idat.y; INSTANCE_ID = hit.idat.x;
             [[flatten]] if (triID >= 0 && INSTANCE_ID >= 0) {
-                interpolateMeshData(hitID, triID, IPC); // interplate hit for every invocation
+                interpolateMeshData(hitID, int(triID), int(IPC)); // interplate hit for every invocation
                 [[flatten]] if (!overflow && IPC == 0) { // handle hit in every available invocation
                     //hit.uvt.w = intBitsToFloat(vmaterials[triID]); // set material ID to UVT (for backward compatibility)
                     hit.hitVD = lnrm[0].data[triID]; // pick-up pre-computed physical normal

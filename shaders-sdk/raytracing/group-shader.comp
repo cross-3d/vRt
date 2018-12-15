@@ -38,8 +38,8 @@ void main() {
     const uint wsize = min(uint(rayTypedCounterRead[stageUniform.currentGroup][WID]), uint(MAX_RAYS)); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(wsize, gl_WorkGroupSize.x), 2097152u);
     for (uint w=0;w<wcount;w+=wgs) {
-        const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
-        const int rayID = (globalID < wsize ? rayGroupIndicesRead[RPG_OFF+globalID] : 0)-1;
+        const uint globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+        const int rayID = int(globalID < wsize ? rayGroupIndicesRead[RPG_OFF+globalID] : 0)-1;
         //const int rayID = (globalID < wsize ? (globalID+1) : 0)-1;
         const bool overflow = globalID >= wsize || globalID < 0; IFALL(overflow) break;
 

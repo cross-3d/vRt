@@ -88,9 +88,9 @@ void main() {
     const uint wsize = min(closestHitTypedCounter[stageUniform.currentGroup][WID], MAX_HITS); IFANY (wsize <= 0) return;
     const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
     for (uint w=0;w<wcount;w+=wgs) {
-        const int globalID = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x);
+        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
         const bool overflow = globalID >= wsize || globalID < 0; IFALL(overflow) break;
-        const int hitID = overflow ? -1 : vtClosestId(globalID, stageUniform.currentGroup);
+        const int hitID = overflow ? -1 : vtClosestId(int(globalID), stageUniform.currentGroup);
         
 #ifdef DMA_HIT
         #define hit hits[HPG_OFF+hitID]
@@ -108,10 +108,10 @@ void main() {
             const vec3 rdirect = dcts(cray.cdirect);
 
             // AMD not supported per-lane texture data loading, if texture index is not constant
-            const vec2 texcoord = imageLoad(attributes, makeAttribID(hit.attribID, TEXCOORD_TID)).xy;
-            const vec3 normal = (imageLoad(attributes, makeAttribID(hit.attribID, NORMAL_TID)).xyz);
-            const vec3 bitang = (imageLoad(attributes, makeAttribID(hit.attribID, BITANGENT_TID)).xyz);
-            const vec3 tangent = (imageLoad(attributes, makeAttribID(hit.attribID, TANGENT_TID)).xyz);
+            const vec2 texcoord = imageLoad(attributes, vtMakeAttribID(hit.attribID, TEXCOORD_TID)).xy;
+            const vec3 normal = (imageLoad(attributes, vtMakeAttribID(hit.attribID, NORMAL_TID)).xyz);
+            const vec3 bitang = (imageLoad(attributes, vtMakeAttribID(hit.attribID, BITANGENT_TID)).xyz);
+            const vec3 tangent = (imageLoad(attributes, vtMakeAttribID(hit.attribID, TANGENT_TID)).xyz);
             const mat3 tbn = mat3( (tangent.xyz), (bitang.xyz), (normal.xyz) );
 
             // get textured data

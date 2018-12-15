@@ -46,7 +46,7 @@ void main() {
 
         ray.dcolor = uvec2(0u.xx), ray.origin = co.xyz, ray.cdirect = lcts(normalize((cd - co).xyz));
         vtWriteColor(ray.dcolor, 1.f.xxxx);
-        parameterb(RAY_ACTIVED, ray.dcolor.y, true);
+        vtParameterb(RAY_ACTIVED, ray.dcolor.y, true);
         
         ISTORE(ColorOutput, xy, vec4(0.f.xxx, 1.f));
         //ISTORE(ColorOutput, xy, vec4(vec3(0.8f, 0.4f, 0.4f)*0.5f, 1.f));

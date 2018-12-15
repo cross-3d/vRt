@@ -43,11 +43,11 @@ void main() {
 
     // planned task-based BVH traversing (for two-level BVH support)
     for (uint w=0;w<wcount;w+=wgs) {
-        const int it = int((w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x); const bool overflow = it >= wsize; IFALL(overflow) break;
-        { RAY_ID = vtRayIdx(it), primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO); };
+        const uint it = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; const bool overflow = it >= wsize; IFALL(overflow) break;
+        { RAY_ID = vtRayIdx(int(it)), primitiveState.lastIntersection = vec4(0.f.xx, INFINITY, FINT_ZERO); };
 
         [[flatten]] if (!overflow && RAY_ID >= 0) {
-            const int hid = it, ftrID = traverseBVH2(true)-1;
+            const int hid = int(it), ftrID = traverseBVH2(true)-1;
             {
                 hit.rayID = RAY_ID+1, hit.attribID = 0, hit.payloadID = 0, hit.hitVD = 0.f.xxxx;
                 hit.idat = ivec4(LAST_INSTANCE, ftrID, (-1).xx), hit.uvt = primitiveState.lastIntersection;

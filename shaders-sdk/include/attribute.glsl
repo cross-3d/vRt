@@ -86,7 +86,7 @@ void interpolateMeshData(in int hitID, in int tri, in int IPC) {
 #endif
 
             // 
-            ISTORE(attributes, makeAttribID(hit.attribID, i), attrib);
+            ISTORE(attributes, vtMakeAttribID(hit.attribID, i), attrib);
         };
     };
 };

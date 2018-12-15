@@ -13,7 +13,7 @@ layout ( binding = 0, set = 0, align_ssbo )   buffer MortoncodesB {
 };
 
 layout ( binding = 1, set = 0, align_ssbo )   buffer MortoncodesIndicesB {
-    int MortoncodesIndices[];
+    uint MortoncodesIndices[];
 };
 
 layout ( binding = 3, set = 0, align_ssbo )   buffer LeafsB {
@@ -25,21 +25,20 @@ layout ( binding = 4, set = 0, align_ssbo )   buffer bvhBoxesWorkB {
 };
 
 layout ( binding = 5, set = 0, align_ssbo ) subgroupcoherent buffer FlagsB {
-    int Flags[];
+    uint Flags[];
 };
 
 layout ( binding = 6, set = 0, align_ssbo ) subgroupcoherent buffer ActivesB {
-    //int Actives[][2];
-    int Actives[];
+    //uint Actives[][2];
+    uint Actives[];
 };
 
 layout ( binding = 7, set = 0, align_ssbo ) subgroupcoherent buffer LeafIndicesB {
-    int LeafIndices[];
+    uint LeafIndices[];
 };
 
 layout ( binding = 8, set = 0, align_ssbo ) subgroupcoherent buffer CountersB {
-    int aCounter[2];
-    int vtCounters[6];
+    int aCounter[2], vtCounters[6];
 };
 
 

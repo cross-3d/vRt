@@ -32,10 +32,10 @@ int traverseBVH2( in bool validTop ) {
                 childIntersect = and(childIntersect, lessThanEqual(nfe.xy, primitiveState.lastIntersection.zz));
 
                 //
-                pbool_ fmask = pbool_(childIntersect.x)|(pbool_(childIntersect.y)<<true_);
+                lowp int fmask = int(childIntersect.x)|(int(childIntersect.y)<<1);
                 [[flatten]] if (fmask > 0 && fmask != -1) {
                     int secondary = -1;
-                    [[flatten]] if (fmask == 3) { fmask &= true_<<pbool_(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
+                    [[flatten]] if (fmask == 3) { fmask &= 1<<int(nfe.x>nfe.y); secondary = cnode.x^int(fmask>>1u); }; // if both has intersection
                     stackState.idx = traverseState.entryIDBase + (cnode.x^int(fmask&1u));
 
                     // pre-intersection that triangle, because any in-stack op can't check box intersection doubly or reuse

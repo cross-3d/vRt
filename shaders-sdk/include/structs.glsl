@@ -48,9 +48,9 @@ struct VtRay { f32vec4 fdata; u32vec4 bitspace; };
 
 
 // write color, but don't write (save) last element
-uvec2 vtWriteColor(inout uvec2 rwby, in vec4 color) {
-    const uvec2 clr = f32_f16(color);
-    rwby = uvec2(clr.x, BFI_HW(clr.y, BFE_HW(rwby.y, 16, 16), 16, 16));
+u32vec2 vtWriteColor(inout u32vec2 rwby, in vec4 color) {
+    const u32vec2 clr = f32_f16(color);
+    rwby = u32vec2(clr.x, BFI_HW(clr.y, BFE_HW(rwby.y, 16, 16), 16, 16));
     return rwby;
 };
 
@@ -74,38 +74,40 @@ struct VtHitData {
 const lowp int B16FT = 16;
 
 // ray bitfield
-const lowp ivec2 RAY_ACTIVED = ivec2(B16FT+0, 1);
-const lowp ivec2 RAY_TYPE = ivec2(B16FT+1, 2);
-const lowp ivec2 RAY_TARGET_LIGHT = ivec2(B16FT+3, 5);
-const lowp ivec2 RAY_BOUNCE = ivec2(B16FT+8, 3);
-const lowp ivec2 RAY_DBOUNCE = ivec2(B16FT+11, 3);
-const lowp ivec2 RAY_RAY_DL = ivec2(B16FT+14, 1);
+const lowp ivec2 
+    RAY_ACTIVED = {B16FT+0, 1},
+    RAY_TYPE = {B16FT+1, 2},
+    RAY_TARGET_LIGHT = {B16FT+3, 5},
+    RAY_BOUNCE = {B16FT+8, 3},
+    RAY_DBOUNCE = {B16FT+11, 3},
+    RAY_RAY_DL = {B16FT+14, 1};
 
 // vertex bitfield
-const lowp ivec2 VTX_TYPE = ivec2(0, 2);
-const lowp ivec2 VTX_FRONT_FACE = ivec2(2, 1); // 0 is enabled, 1 is disabled
-const lowp ivec2 VTX_BACK_FACE = ivec2(3, 1); // 0 is enabled, 1 is disabled
+const lowp ivec2 
+    VTX_TYPE = {0, 2},
+    VTX_FRONT_FACE = {2, 1}, // 0 is enabled, 1 is disabled
+    VTX_BACK_FACE = {3, 1}; // 0 is enabled, 1 is disabled
 
 
 
 
 // getters 
-bool  parameterb( in lowp ivec2 parameter, in  uint bitfield) { return bool(BFE_HW(bitfield, parameter.x, 1)); };
-bool  parameterb( in lowp ivec2 parameter, in float bitfield) { return parameterb(parameter, floatBitsToUint(bitfield)); };
-uint  parameteri( in lowp ivec2 parameter, in  uint bitfield) { return BFE_HW(bitfield, parameter.x, parameter.y); };
-uint  parameteri( in lowp ivec2 parameter, in float bitfield) { return parameteri(parameter, floatBitsToUint(bitfield)); };
+bool vtParameterb( in const lowp ivec2 parameter, in  uint bitfield) { return bool(BFE_HW(bitfield, parameter.x, 1)); };
+bool vtParameterb( in const lowp ivec2 parameter, in float bitfield) { return vtParameterb(parameter, floatBitsToUint(bitfield)); };
+uint vtParameteri( in const lowp ivec2 parameter, in  uint bitfield) { return BFE_HW(bitfield, parameter.x, parameter.y); };
+uint vtParameteri( in const lowp ivec2 parameter, in float bitfield) { return vtParameteri(parameter, floatBitsToUint(bitfield)); };
 
 // setters
-void parameteri( in lowp ivec2 parameter, inout  uint bitfield, in uint  value) { bitfield = BFI_HW(bitfield, value, parameter.x, parameter.y); };
-void parameteri( in lowp ivec2 parameter, inout float bitfield, in uint  value) { bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), value, parameter.x, parameter.y)); };
+void vtParameteri( in const lowp ivec2 parameter, inout  uint bitfield, in uint  value) { bitfield = BFI_HW(bitfield, value, parameter.x, parameter.y); };
+void vtParameteri( in const lowp ivec2 parameter, inout float bitfield, in uint  value) { bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), value, parameter.x, parameter.y)); };
 
 // boolean based
-void parameterb( in lowp ivec2 parameter, inout  uint bitfield, in bool  value) { bitfield = BFI_HW(bitfield, uint(value), parameter.x, 1); };
-void parameterb( in lowp ivec2 parameter, inout float bitfield, in bool  value) { bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), uint(value), parameter.x, 1));};
+void vtParameterb( in const lowp ivec2 parameter, inout  uint bitfield, in bool  value) { bitfield = BFI_HW(bitfield, uint(value), parameter.x, 1); };
+void vtParameterb( in const lowp ivec2 parameter, inout float bitfield, in bool  value) { bitfield = uintBitsToFloat(BFI_HW(floatBitsToUint(bitfield), uint(value), parameter.x, 1));};
 
 // integer based
-void parameteri( in lowp ivec2 parameter, inout  uint bitfield, in  int  value) { parameteri(parameter, bitfield, uint(value)); };
-void parameteri( in lowp ivec2 parameter, inout float bitfield, in  int  value) { parameteri(parameter, bitfield, uint(value)); };
+void vtParameteri( in const lowp ivec2 parameter, inout  uint bitfield, in  int  value) { vtParameteri(parameter, bitfield, uint(value)); };
+void vtParameteri( in const lowp ivec2 parameter, inout float bitfield, in  int  value) { vtParameteri(parameter, bitfield, uint(value)); };
 
 struct bbox_t { f32vec4 mn, mx; };
 struct leaf_t { bbox_t lbox; i32vec4 pdata; };

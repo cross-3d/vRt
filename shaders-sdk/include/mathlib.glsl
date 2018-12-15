@@ -85,7 +85,7 @@ const int _IZERO = 0;
 float mid3_wrap(in float a, in float b, in float c) {
     const float m = max3_wrap(a, b, c);
     [[flatten]] if (m == a) { return max(b, c); } else 
-    [[flatten]] if (m == b) { return max(a, c); } else { return max(a, b); }
+    [[flatten]] if (m == b) { return max(a, c); } else { return max(a, b); };
 };
 
 vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
@@ -93,14 +93,14 @@ vec4 mid3_wrap(in vec4 a, in vec4 b, in vec4 c) {
 };
 #endif
 
-
+/*
 // experimental new paired logic system
 #ifdef USE_INT16_BOOL_PAIR
 #define pbvec2_ u16vec2
 #define pbool_ uint16_t
 #else
-#define pbvec2_ uint
-#define pbool_ uint
+#define pbvec2_ uint32_t
+#define pbool_ uint32_t
 #endif
 
 
@@ -159,6 +159,12 @@ pbool_ pl_y(in pbvec2_ tbl){
 #endif
 };
 
+ bool  SSC(in pbool_ b) {return b==true_;};
+pbool_ any(in pbvec2_ b) {return pl_x(b)|pl_y(b);};
+pbool_ all(in pbvec2_ b) {return pl_x(b)&pl_y(b);};
+#define IF(b)if(SSC(b))
+
+*/
 
 // null of indexing in float representation
 const uint UINT_ZERO = 0x0u, UINT_NULL = 0xFFFFFFFFu;
@@ -177,8 +183,8 @@ int modi(in int a, in int b) { return (a % b + b) % b; };
 //vec4 divW(in vec4 aw) { return aw / precIssue(aw.w); };
 vec4 divW(in vec4 aw) { return aw / (aw.w); };
 vec4 divW(in vec3 aw) { return vec4(aw,1.f); };
-vec3 rotate_vector( in vec4 quat, in vec3 vec ) { return vec + 2.0 * cross( cross( vec, quat.xyz ) + quat.w * vec, quat.xyz ); }
-vec4 rotation_quat( in vec3 axis, in float half_angle ) { return vec4(axis * sin(half_angle), cos(half_angle)); }
+vec3 rotate_vector( in vec4 quat, in vec3 vect ) { return vect + 2.0 * cross( cross( vect, quat.xyz ) + quat.w * vect, quat.xyz ); };
+vec4 rotation_quat( in vec3 axis, in float angl ) { return vec4(axis * sin(angl), cos(angl)); };
 
 // memory managment
 void swap(inout  int a, inout  int b) { const  int t = a; a = b; b = t; }
@@ -244,18 +250,19 @@ vec4 crossp4(in vec4 a, in vec4 b) { return crossp4(a.xyz,b.xyz); };
 #define P2U pack64
 
 // 128-bit packing (2x64bit)
-uvec4 U4P(in u64vec2 pckg) { return uvec4(U2P(pckg.x), U2P(pckg.y)); };
-u64vec2 P4U(in uvec4 pckg) { return u64vec2(P2U(pckg.xy), P2U(pckg.zw)); };
+u32vec4 U4P(in u64vec2 pckg) { return u32vec4(U2P(pckg.x ), U2P(pckg.y )); };
+u64vec2 P4U(in u32vec4 pckg) { return u64vec2(P2U(pckg.xy), P2U(pckg.zw)); };
 
 // float packing
-uvec2 packHalf4x16(in vec4 floats) { return uvec2(packHalf2x16(floats.xy), packHalf2x16(floats.zw)); }
-vec4 unpackHalf4x16(in uvec2 hilo) { return vec4(unpackHalf2x16(hilo.x), unpackHalf2x16(hilo.y)); }
+u32vec2 packHalf4x16(in highp vec4 floats) { return u32vec2(packHalf2x16(floats.xy), packHalf2x16(floats.zw)); };
+highp vec4 unpackHalf4x16(in u32vec2 hilo) { return vec4(unpackHalf2x16(hilo.x), unpackHalf2x16(hilo.y)); };
 
-uvec2 packSnorm4x16(in vec4 floats) { return uvec2(packSnorm2x16(floats.xy), packSnorm2x16(floats.zw)); }
-vec4 unpackSnorm4x16(in uvec2 hilo) { return vec4(unpackSnorm2x16(hilo.x), unpackSnorm2x16(hilo.y)); }
+u32vec2 packSnorm4x16(in  vec4 floats) { return u32vec2(packSnorm2x16(floats.xy), packSnorm2x16(floats.zw)); };
+   vec4 unpackSnorm4x16(in u32vec2 hilo) { return vec4(unpackSnorm2x16(hilo.x), unpackSnorm2x16(hilo.y)); };
 
-uvec2 packUnorm4x16(in vec4 floats) { return uvec2(packUnorm2x16(floats.xy), packUnorm2x16(floats.zw)); }
-vec4 unpackUnorm4x16(in uvec2 hilo) { return vec4(unpackUnorm2x16(hilo.x), unpackUnorm2x16(hilo.y)); }
+u32vec2 packUnorm4x16(in  vec4 floats) { return u32vec2(packUnorm2x16(floats.xy), packUnorm2x16(floats.zw)); };
+   vec4 unpackUnorm4x16(in u32vec2 hilo) { return vec4(unpackUnorm2x16(hilo.x), unpackUnorm2x16(hilo.y)); };
+
 
 // bit utils
 int lsb(in uint vlc) { return findLSB(vlc); }
@@ -303,16 +310,11 @@ vec3 toLinear(in vec3 sRGB) { return mix(pow((sRGB + vec3(0.055))/vec3(1.055), v
 vec4 fromLinear(in vec4 linearRGB) { return vec4(fromLinear(linearRGB.xyz), linearRGB.w); }
 vec4 toLinear(in vec4 sRGB) { return vec4(toLinear(sRGB.xyz), sRGB.w); }
 
- bool  SSC(in pbool_ b) {return b==true_;};
-pbool_ any(in pbvec2_ b) {return pl_x(b)|pl_y(b);};
-pbool_ all(in pbvec2_ b) {return pl_x(b)&pl_y(b);};
-
-#define IF(b)if(SSC(b))
 
 
 
 // BVH utility
-uvec2 bitfieldReverse64(in uvec2 p) {return bitfieldReverse(p).yx;}
+u32vec2 bitfieldReverse64(in u32vec2 p){return bitfieldReverse(p).yx;}
 
 
 int nlz(in uvec2 x) { return 63 - msb(x); }
@@ -380,7 +382,7 @@ vec4 textureHQ(in sampler2D SMP, in vec2 TXL, in int LOD) {
 #define u16x4_t uvec4
 #define u16x2_t uvec2
 #define m8pq lowp
-u32x1_t u16x2pack (in highp u16x2_t a) { return (a.y<<16u)|a.x; };
+u32x1_t u16x2pack  (in highp u16x2_t a) { return (a.y<<16u)|a.x; };
 highp u16x2_t u16x2unpack(in u32x1_t a) { return u16x2_t(a&0xFFFFu,a>>16u); };
 #endif
 
@@ -395,9 +397,9 @@ highp u16x2_t u16x2unpack(in u32x1_t a) { return u16x2_t(a&0xFFFFu,a>>16u); };
 #define u8x4_t u16x4_t
 #define u8x2_t u16x2_t
 #define u8x1_t u16x1_t
-const m8pq u8x2_t bshift16 = {0u,8u}; const m8pq u8x4_t bshift32 = bshift16.xyxy;
-u32x1_t u8x4pack(in m8pq u8x4_t v4) { v4 <<= bshift32; return p32x1_t(v4.xz|v4.yw); };
+              const m8pq u8x2_t bshift16 = {0u,8u}; const m8pq u8x4_t bshift32 = bshift16.xyxy;
 u16x1_t u8x2pack(in m8pq u8x2_t v2) { v2 <<= bshift16; return u16x1_t(v2[0]|v2[1]); };
+u32x1_t u8x4pack(in m8pq u8x4_t v4) { v4 <<= bshift32; return p32x1_t(v4.xz|v4.yw); };
 #endif
 
 // coding library (16-bit)
@@ -412,7 +414,7 @@ u32x1_t p2x_16(in highp uvec2 a) { return bitfieldInsert(a.x,a.y,16,16); };
 // coding library (8-bit)
 const lowp uvec4 u8x4shf = {0u,8u,16u,24u};
 u32x1_t p4x_8(in lowp uvec4 a) { a<<=u8x4shf; return (a[0]|a[1]|a[2]|a[3]); };
-m8pq u8x4_t up4x_8(in u32x1_t a) { return u8x4_t((a.xxxx>>u8x4shf)&0xFFu); };
+m8pq u8x4_t up4x_8(in u32x1_t a)  { return u8x4_t((a.xxxx>>u8x4shf)&0xFFu); };
 
 
 #endif

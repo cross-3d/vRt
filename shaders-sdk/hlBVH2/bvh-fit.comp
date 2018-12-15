@@ -52,12 +52,12 @@ void main() {
     IFANY (wsize <= 0) return; const uint rng = gS*gl_NumWorkGroups.x;
     for (uint w=gS*gl_WorkGroupID.x;w<wsize;w+=rng) {
         const uint globalID = (w + lID); IFALL (globalID >= wsize) break; // add to queue list parent node
-               int idx = globalID < wsize ? LeafIndices[globalID]-1 : -1;
+               int idx = globalID < wsize ? int(LeafIndices[globalID])-1 : -1;
         [[dependency_infinite]] for (uint l=0u;l<131072u;l++) {
             [[flatten]] if ( idx < 0 || idx == _NULL ) { break; };
-            const int pid = (idx >= 0 ? bvhNodes[idx].meta.z : 0)-1; idx = _NULL;
-            [[flatten]] if ( pid >= 0 ) { int ecp = 0; ecp = atomicCompSwap(Flags[pid], 0, 1); idx = (ecp == 1 && ecp != 0) ? pid : _NULL; } else { idx = _NULL; };
-            [[flatten]] if ( idx >= 0 ) { unifyNodeBox(idx); atomicCompSwap(Flags[idx], 1, 0); };
-        }
-    }
-}
+            const int pid = int(idx >= 0 ? bvhNodes[idx].meta.z : 0)-1; idx = _NULL;
+            [[flatten]] if ( pid >= 0 ) { uint ecp = 0; ecp = atomicCompSwap(Flags[pid], 0u, 1u); idx = (ecp == 1 && ecp != 0) ? pid : _NULL; } else { idx = _NULL; };
+            [[flatten]] if ( idx >= 0 ) {  unifyNodeBox(idx); atomicCompSwap(Flags[idx], 1u, 0u); };
+        };
+    };
+};

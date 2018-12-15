@@ -6,7 +6,7 @@ uint randomClocks = 1, globalInvocationSMP = 1, subHash = 1;
 float floatConstruct( in uint m ) { return fract(1.f + uintBitsToFloat((m & 0x007FFFFFu) | 0x3F800000u)); };
  vec2 floatConstruct( in uvec2 m ) { return vec2(floatConstruct(m.x), floatConstruct(m.y)); };
 
-mediump vec2 halfConstruct ( in uint m ) { return fract(1.f.xx + unpackHalf2x16((m & 0x03FF03FFu) | (0x3C003C00u))); };
+highp vec2 halfConstruct ( in uint m ) { return fract(1.f.xx + unpackHalf2x16((m & 0x03FF03FFu) | (0x3C003C00u))); };
 highp vec2 unorm16x2Construct( in uint m ) {return clamp01(unpackUnorm2x16(m)); };
 
 

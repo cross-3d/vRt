@@ -62,14 +62,14 @@
 
 
 #ifdef USE_MORTON_32
-#define KEYTYPE uint
-uint BFE(in uint ua, in int o, in int n) { return BFE_HW(ua, o, n); }
+#define KEYTYPE uint32_t
+lowp uint BFE(in uint32_t ua, in int o, in int n) { return BFE_HW(ua, o, n); }
 #else
-#define KEYTYPE uvec2
-uint BFE(in uvec2 ua, in int o, in int n) { return uint(o >= 32 ? BFE_HW(ua.y, o-32, n) : BFE_HW(ua.x, o, n)); }
+#define KEYTYPE u32vec2
+lowp uint BFE(in u32vec2 ua, in int o, in int n) { return uint(o >= 32 ? BFE_HW(ua.y, o-32, n) : BFE_HW(ua.x, o, n)); }
 #endif
 
-struct RadicePropStruct { uint Descending; uint IsSigned; };
+struct RadicePropStruct { uint Descending, IsSigned; };
 
 #ifdef COPY_HACK_IDENTIFY
 #define INDIR 0
@@ -98,13 +98,13 @@ layout ( binding = 4, set = 0, align_ssbo )  subgroupcoherent buffer PrefixSumB 
 layout ( push_constant ) uniform PushBlock { uint NumKeys; int Shift; } push_block;
 
 // division of radix sort
-struct blocks_info { uint count; uint offset; uint limit; uint r0; };
+struct blocks_info { uint count, offset, limit; };
 blocks_info get_blocks_info(in uint n) {
     const uint block_tile = Wave_Size_RT << 2u;
     const uint block_size = tiled(n, gl_NumWorkGroups.x);
     const uint block_count = tiled(n, block_tile * gl_NumWorkGroups.x);
     const uint block_offset = gl_WorkGroupID.x * block_tile * block_count;
-    return blocks_info(block_count, block_offset, min(block_offset + tiled(block_size, block_tile)*block_tile, n), 0);
+    return blocks_info(block_count, block_offset, min(block_offset + tiled(block_size, block_tile)*block_tile, n));
 };
 
 #ifdef PREFER_UNPACKED

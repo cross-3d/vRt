@@ -32,7 +32,7 @@ void precalculateNormals(in int rofft, in int trip, in mat3x4 transformNrm) {
     // calculate geometrical normal
     mat3x3 dlps = mat3x3(vertice[0].xyz, vertice[1].xyz, vertice[2].xyz); dlps[1] -= dlps[0], dlps[2] -= dlps[0];
     const vec4 gnormal = vec4(cross(dlps[1], dlps[2]), 0.f);
-    lnrm[0].data[trip] = vec4(normalize(mult4(transformNrm, gnormal).xyz), uintBitsToFloat(parameteri(VTX_TYPE, uint(vbitfields[trip]))));
+    lnrm[0].data[trip] = vec4(normalize(mult4(transformNrm, gnormal).xyz), uintBitsToFloat(vtParameteri(VTX_TYPE, uint(vbitfields[trip]))));
 }
 
 //struct Transforms { mat3x4 transform, transformNrm; };

@@ -18,26 +18,26 @@
     #endif
 
     #ifdef VERTEX_FILLING
-    layout ( binding = 2, set = VTX_SET, align_ssbo ) coherent buffer bitfieldsB { uint vbitfields[]; };
+    layout ( binding = 2, set = VTX_SET, align_ssbo ) coherent buffer bitfieldsB { uint32_t vbitfields[]; };
     #else
-    layout ( binding = 2, set = VTX_SET, align_ssbo ) readonly buffer bitfieldsB { uint vbitfields[]; };
+    layout ( binding = 2, set = VTX_SET, align_ssbo ) readonly buffer bitfieldsB { uint32_t vbitfields[]; };
     #endif
 
     #if (defined(LEAF_GEN) || defined(VERTEX_FILLING))
-    layout ( binding = 5, set = VTX_SET, align_ssbo ) coherent buffer VTX_BUFFER { vec4 data[]; } lvtx[];
-    layout ( binding = 7, set = VTX_SET, align_ssbo ) coherent buffer NRM_BUFFER { vec4 data[]; } lnrm[];
+    layout ( binding = 5, set = VTX_SET, align_ssbo ) coherent buffer VTX_BUFFER { f32vec4 data[]; } lvtx[];
+    layout ( binding = 7, set = VTX_SET, align_ssbo ) coherent buffer NRM_BUFFER { f32vec4 data[]; } lnrm[];
 
     #else
-    //layout ( binding = 5, set = VTX_SET, align_ssbo ) readonly buffer VTX_BUFFER { vec4 data[]; } lvtx[];
-    layout ( binding = 7, set = VTX_SET, align_ssbo ) readonly buffer NRM_BUFFER { vec4 data[]; } lnrm[];
+    //layout ( binding = 5, set = VTX_SET, align_ssbo ) readonly buffer VTX_BUFFER { f32vec4 data[]; } lvtx[];
+    layout ( binding = 7, set = VTX_SET, align_ssbo ) readonly buffer NRM_BUFFER { f32vec4 data[]; } lnrm[];
     layout ( binding = 8, set = VTX_SET ) uniform samplerBuffer lvtxT[];
 
     // fetchers 
     const int vtd = 4; // vertex input striding 
-    //vec3 v3fetch(in samplerBuffer lvtxT, in int t) { return vec3(texelFetch(lvtxT,t*vtd+0).x,texelFetch(lvtxT,t*vtd+1).x,texelFetch(lvtxT,t*vtd+2).x); };
-    //vec4 v4fetch(in samplerBuffer lvtxT, in int t) { return vec4(texelFetch(lvtxT,t*vtd+0).x,texelFetch(lvtxT,t*vtd+1).x,texelFetch(lvtxT,t*vtd+2).x,texelFetch(lvtxT,t*vtd+3).x); };
-    vec3 v3fetch(in samplerBuffer lvtxT, in int t) { return texelFetch(lvtxT,t).xyz; };
-    vec4 v4fetch(in samplerBuffer lvtxT, in int t) { return texelFetch(lvtxT,t); };
+    //f32vec3 v3fetch(in samplerBuffer lvtxT, in int t) { return vec3(texelFetch(lvtxT,t*vtd+0).x,texelFetch(lvtxT,t*vtd+1).x,texelFetch(lvtxT,t*vtd+2).x); };
+    //f32vec4 v4fetch(in samplerBuffer lvtxT, in int t) { return vec4(texelFetch(lvtxT,t*vtd+0).x,texelFetch(lvtxT,t*vtd+1).x,texelFetch(lvtxT,t*vtd+2).x,texelFetch(lvtxT,t*vtd+3).x); };
+    f32vec3 v3fetch(in samplerBuffer lvtxT, in int t) { return texelFetch(lvtxT,t).xyz; };
+    f32vec4 v4fetch(in samplerBuffer lvtxT, in int t) { return texelFetch(lvtxT,t); };
     #endif
 
 #endif
