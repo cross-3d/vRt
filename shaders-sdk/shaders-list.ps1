@@ -105,7 +105,8 @@ function OptimizeMainline($Pfx = "") {
 }
 
 function BuildAllShaders($Pfx = "") {
-    [System.Threading.Thread]::CurrentThread.Priority = 'BelowNormal'
+    #[System.Threading.Thread]::CurrentThread.Priority = 'BelowNormal'
+    [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
 
     new-item -Name $OUTDIR -itemtype directory       -Force | Out-Null
     new-item -Name $OUTDIR$VRTX -itemtype directory  -Force | Out-Null
@@ -166,21 +167,15 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "copyhack.comp"   "$INDIR$RDXI" "$HRDDIR$RDXI"
 
     # optimize built shaders
-    OptimizeMainline
-
-    [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
+    #OptimizeMainline
 }
 
 
 function BuildRTXShaders($Pfx = "") {
-    [System.Threading.Thread]::CurrentThread.Priority = 'BelowNormal'
-
     new-item -Name $HRDDIR$RTXI -itemtype directory              -Force | Out-Null
 
     BuildEXT "traverse.rgen" "$INDIR$RTXI" "$HRDDIR$RTXI" ""
     BuildEXT "traverse.rahit" "$INDIR$RTXI" "$HRDDIR$RTXI" ""
     BuildEXT "traverse.rchit" "$INDIR$RTXI" "$HRDDIR$RTXI" ""
     BuildEXT "traverse.rmiss" "$INDIR$RTXI" "$HRDDIR$RTXI" ""
-    
-    [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
 }
