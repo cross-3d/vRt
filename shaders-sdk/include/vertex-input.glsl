@@ -50,7 +50,7 @@ int aType(in uint bitfield) { return int(vtParameteri(ATYPE, bitfield)); };
 
 //layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint8_t data[]; } bufferSpace[];
 //#ifdef ENABLE_INT16_SUPPORT
-  layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint8_t data[]; } bufferSpace[];
+  layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint16_t data[]; } bufferSpace[];
 //#else
 //layout ( binding = 0, set = 1, align_ssbo ) readonly buffer VT_VINPUT { uint     data[]; } bufferSpace[]; // legacy GPU's
 //#endif
@@ -60,9 +60,12 @@ layout ( binding = 3, set = 1, align_ssbo ) readonly buffer VT_ACCESSOR { VtAcce
 layout ( binding = 4, set = 1, align_ssbo ) readonly buffer VT_ATTRIB { VtAttributeBinding attributes[]; };
 
 // First in world ByteAddressBuffer in Vulkan API by Ispanec (tested in RTX 2070 only)
-u16x1_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return u8x2pack(u8x2_t(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
-u32x1_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return u8x4pack(u8x4_t(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u],bufferSpace[BSC].data[Ot+2u],bufferSpace[BSC].data[Ot+3u])); };
 
+//u16x1_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return u8x2pack(u8x2_t(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
+//u32x1_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI; return u8x4pack(u8x4_t(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u],bufferSpace[BSC].data[Ot+2u],bufferSpace[BSC].data[Ot+3u])); };
+
+u16x1_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return u16x1_t(bufferSpace[BSC].data[Ot+0u]); };
+u32x1_t M32(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return u16x2pack(u16x2_t(bufferSpace[BSC].data[Ot+0u],bufferSpace[BSC].data[Ot+1u])); };
 
 //#ifdef ENABLE_INT16_SUPPORT // 16-bit wide version, optimized (with RX Vega support) 
 //uint16_t M16(in NonUniform uint BSC, in uint Ot, in uint uI) { Ot+=uI,Ot>>=1; return uint16_t(bufferSpace[BSC].data[Ot+0u]); };

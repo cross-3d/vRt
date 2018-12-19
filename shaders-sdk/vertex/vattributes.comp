@@ -13,7 +13,7 @@
 
 #include "../include/attribute.glsl"
 #include "../include/vertex-input.glsl"
-
+#define wsize vertexBlock.primitiveCount
 
 
 
@@ -24,6 +24,9 @@ bool nvlda(in vec2 a) { return dot(a,a)<=SFN; };
 float  sgn(in float a) { return sign(sign(a)+SFN); };
 float nsgn(in float a) { return sign(sign(a)-SFN); };
 
+const vec4 nullvert = vec4(0.f.xxx,1.f);
+const uint VCOUNT = 3u;
+
 void calculateAttributes(in uint rofft, in uint wofft, in mat3x4 transformNrm) {
     // read material accessor
     uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
@@ -33,12 +36,12 @@ void calculateAttributes(in uint rofft, in uint wofft, in mat3x4 transformNrm) {
     vec4 normals[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
     vec4 tangent[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
     vec4 texcoord[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
-    vec4 vertice[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
+    vec4 vertice[3] = {nullvert,nullvert,nullvert};
 
     // load attrib data
     for (uint a=vertexBlock.attributeOffset;a<min(min(ATTRIB_EXTENT, attributes.length()), vertexBlock.attributeCount)+vertexBlock.attributeOffset;a++) {
         const int ai = attributes[a].attributeID;
-        [[unroll]] for (int i=0;i<3;i++) {
+        [[unroll]] for (uint i=0;i<VCOUNT;i++) {
             vec4 attribValue = vec4(0.f); uint indiceID = rofft * VCOUNT + i;
             readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
             readByAccessor(attributes[a].accessorID, indiceID, attribValue);
@@ -51,7 +54,7 @@ void calculateAttributes(in uint rofft, in uint wofft, in mat3x4 transformNrm) {
     };
 
     // get vertices
-    [[unroll]] for (int i=0;i<3;i++) {
+    [[unroll]] for (uint i=0;i<VCOUNT;i++) {
         uint indiceID = rofft * VCOUNT + i;
         readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
         readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice[i]);
@@ -63,8 +66,8 @@ void calculateAttributes(in uint rofft, in uint wofft, in mat3x4 transformNrm) {
     const vec4 gnormal = vec4(cross(dlps[1], dlps[2]), 0.f);
 
     // calculate geometrical normal
-    [[unroll]] for (int i=0;i<3;i++) { if (nvlda(normals[i].xyz)) normals[i] = gnormal; };
-    [[unroll]] for (int i=0;i<3;i++) {
+    [[unroll]] for (uint i=0;i<3;i++) { if (nvlda(normals[i].xyz)) normals[i] = gnormal; };
+    [[unroll]] for (uint i=0;i<3;i++) {
         // calc raw TBN
         float idet = 1.f/precIssue(determinant(mat2(dlts[1],dlts[2]))); // inv determinant
         vec3 T = fma(dlts[2].yyy, dlps[1], -dlts[1].y * dlps[2])*idet, 
@@ -88,7 +91,7 @@ void calculateAttributes(in uint rofft, in uint wofft, in mat3x4 transformNrm) {
 //struct Transforms { mat3x4 transform, transformNrm; };
 //layout ( binding = 0, set = 2, align_ssbo ) readonly buffer VTE_TRANSFORMS { mat3x4 vTransforms[]; };
 
-#define wsize vertexBlock.primitiveCount
+
 
 
 LOCAL_SIZE_LAYOUT;

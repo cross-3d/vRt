@@ -11,19 +11,20 @@
 #include "../include/ballotlib.glsl"
 #include "../include/structs.glsl"
 
-
 #include "../include/vertex.glsl"
 #include "../include/vertex-input.glsl"
+#define wsize vertexBlock.primitiveCount
+
+
 
 const vec4 nullvert = vec4(0.f.xxx,1.f);
-
-const int VCOUNT = 3;
+const uint VCOUNT = 3u;
 
 void precalculateNormals(in uint rofft, in uint trip, in mat3x4 transformNrm) {
     vec4 vertice[3] = {nullvert,nullvert,nullvert};
     
     // get vertices by accessor
-    [[unroll]] for (int i=0;i<3;i++) {
+    [[unroll]] for (uint i=0;i<VCOUNT;i++) {
         uint indiceID = rofft * VCOUNT + i; vec4 vert = vec4(0.f);
         readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
         readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice[i]);
@@ -40,7 +41,7 @@ void precalculateNormals(in uint rofft, in uint trip, in mat3x4 transformNrm) {
 //struct Transforms { mat3x4 transform, transformNrm; };
 //layout ( binding = 0, set = 2, align_ssbo ) readonly buffer VTE_TRANSFORMS { mat3x4 vTransforms[]; };
 
-#define wsize vertexBlock.primitiveCount
+
 
 
 LOCAL_SIZE_LAYOUT;

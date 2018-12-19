@@ -16,7 +16,6 @@ const int TEXCOORD_TID = 1;
 const int TANGENT_TID = 2;
 const int BITANGENT_TID = 3;
 const int VCOLOR_TID = 4;
-const int VCOUNT = 3;
 
 
 // Geometry Zone
