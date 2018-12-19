@@ -25,10 +25,8 @@ const int VCOLOR_TID = 4;
     #endif
 
     #ifdef VERTEX_FILLING
-    layout ( binding = 1, set = VTX_SET, align_ssbo   ) buffer materialsB { uint vmaterials[]; };
     layout ( binding = 4, set = VTX_SET, rgba32f  ) uniform highp image2D attrib_texture_out;
     #else
-    layout ( binding = 1, set = VTX_SET, align_ssbo   ) readonly buffer materialsB { uint vmaterials[]; };
     layout ( binding = 6, set = VTX_SET           ) uniform highp sampler2D attrib_texture;
     #endif
 #endif

@@ -18,8 +18,10 @@
     #endif
 
     #ifdef VERTEX_FILLING
+    layout ( binding = 1, set = VTX_SET, align_ssbo ) coherent buffer materialsB { uint32_t vmaterials[]; };
     layout ( binding = 2, set = VTX_SET, align_ssbo ) coherent buffer bitfieldsB { uint32_t vbitfields[]; };
     #else
+    layout ( binding = 1, set = VTX_SET, align_ssbo ) readonly buffer materialsB { uint32_t vmaterials[]; };
     layout ( binding = 2, set = VTX_SET, align_ssbo ) readonly buffer bitfieldsB { uint32_t vbitfields[]; };
     #endif
 

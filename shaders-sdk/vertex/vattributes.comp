@@ -28,10 +28,6 @@ const vec4 nullvert = vec4(0.f.xxx,1.f);
 const uint VCOUNT = 3u;
 
 void calculateAttributes(in uint rofft, in uint wofft, in mat3x4 transformNrm) {
-    // read material accessor
-    uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
-    vmaterials[wofft] = matID;
-
     // alloc arrays
     vec4 normals[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
     vec4 tangent[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
@@ -93,18 +89,18 @@ void calculateAttributes(in uint rofft, in uint wofft, in mat3x4 transformNrm) {
 
 
 
-
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
-    const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
-    const mat3x4 transformNrm = mat3x4(transpose(inverse(mat4(vTransforms[inputID]))));
-    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (globalID >= wsize) break;
-        [[flatten]] if (globalID < wsize && globalID >= 0) {
-            const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
-            calculateAttributes(rofft, wofft, transformNrm); // attributes calculation 
+    for (uint iT=0;iT<cblock.inputCount;iT++) { vInputID = cblock.inputID + iT;
+        const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
+        const mat3x4 transformNrm = mat3x4(transpose(inverse(mat4(vTransforms[vInputID]))));
+        for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
+            const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (globalID >= wsize) break;
+            [[flatten]] if (globalID < wsize && globalID >= 0) {
+                const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
+                calculateAttributes(rofft, wofft, transformNrm);
+            };
         };
     };
 };

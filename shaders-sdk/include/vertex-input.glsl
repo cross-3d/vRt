@@ -85,9 +85,10 @@ struct VtVIUniform {
 
 
 // uniform input of vertex loader
+uint vInputID = 0u;
 layout ( binding = 9, set = VTX_SET, align_ssbo ) readonly buffer VT_UNIFORM { VtVIUniform _vertexBlock[]; };
-layout ( push_constant ) uniform VT_CONSTS { uint inputID; } cblock;
-#define vertexBlock _vertexBlock[gl_GlobalInvocationID.y + cblock.inputID]
+layout ( push_constant ) uniform VT_CONSTS { uint inputID, inputCount; } cblock;
+#define vertexBlock _vertexBlock[vInputID]
 layout ( binding = 6, set = 1, align_ssbo ) readonly buffer VT_TRANSFORMS { f32mat3x4 vTransforms[]; };
 
 
@@ -155,8 +156,7 @@ void readByAccessorIndice(in int accessor, in uint index, inout uint outp) {
 
 // 
 void storePosition(in ivec2 cdata, in vec4 fval) {
-    const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
-    fval.xyz = mult4(vTransforms[inputID], fval);
+    fval.xyz = mult4(vTransforms[vInputID], fval);
     lvtxIn[0].data[cdata.x*3+cdata.y] = fval;
 };
 

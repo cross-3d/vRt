@@ -74,36 +74,6 @@ function BuildEXT($Name, $InDir = "", $OutDir = "", $AddArg = "", $AltName = $Na
 }
 
 
-
-function OptimizeMainline($Pfx = "") {
-    # optimize accelerator structure (hlBVH2)
-    Optimize "interpolator.comp" "$HRDDIR$HLBV"
-    Optimize "traverse-bvh.comp" "$HRDDIR$HLBV" 
-    
-    Optimize "bvh-build-first.comp" "$HRDDIR$HLBV" 
-    Optimize "bvh-build.comp" "$HRDDIR$HLBV" 
-    Optimize "bvh-fit.comp" "$HRDDIR$HLBV" 
-    Optimize "shorthand.comp" "$HRDDIR$HLBV" 
-    Optimize "leaf-link.comp" "$HRDDIR$HLBV" 
-    Optimize "bound-calc.comp" "$HRDDIR$HLBV"  # merged to mainline of BVH
-    
-    Optimize "/triangle/leaf-gen.comp" "$HRDDIR$HLBV" 
-    Optimize "/triangle/box-calc.comp" "$HRDDIR$HLBV" 
-    
-    Optimize "/AABB/leaf-gen.comp" "$HRDDIR$HLBV" 
-    Optimize "/AABB/box-calc.comp" "$HRDDIR$HLBV" 
-    
-    # optimize vertex assemblers
-    Optimize "vinput.comp"       "$HRDDIR$NTVE" # native
-    Optimize "vattributes.comp"  "$OUTDIR$VRTX"
-    
-    # optimize radix sort
-    Optimize "permute.comp"   "$HRDDIR$RDXI"
-    Optimize "histogram.comp" "$HRDDIR$RDXI"
-    Optimize "pfx-work.comp"  "$HRDDIR$RDXI"
-    Optimize "copyhack.comp"  "$HRDDIR$RDXI"
-}
-
 function BuildAllShaders($Pfx = "") {
     #[System.Threading.Thread]::CurrentThread.Priority = 'BelowNormal'
     [System.Threading.Thread]::CurrentThread.Priority = 'Highest'
@@ -131,8 +101,8 @@ function BuildAllShaders($Pfx = "") {
     BuildCompute "group-shader.comp"        "$INDIR$RNDR" "$OUTDIR$RNDR"
 
     # vertex assemblers
-    #BuildCompute "vattributes.comp"         "$INDIR$VRTX" "$OUTDIR$VRTX"
-    #BuildCompute "vinput.comp"              "$INDIR$NTVE" "$HRDDIR$NTVE"
+    BuildCompute "vattributes.comp"         "$INDIR$VRTX" "$OUTDIR$VRTX"
+    BuildCompute "vinput.comp"              "$INDIR$NTVE" "$HRDDIR$NTVE"
 
     #BuildCompute "dull.comp"                "$INDIR$NTVE" "$HRDDIR$NTVE"
     #BuildCompute "triplet.comp"             "$INDIR$NTVE" "$HRDDIR$NTVE"
@@ -179,3 +149,35 @@ function BuildRTXShaders($Pfx = "") {
     BuildEXT "traverse.rchit" "$INDIR$RTXI" "$HRDDIR$RTXI" ""
     BuildEXT "traverse.rmiss" "$INDIR$RTXI" "$HRDDIR$RTXI" ""
 }
+
+
+function OptimizeMainline($Pfx = "") {
+    # optimize accelerator structure (hlBVH2)
+    Optimize "interpolator.comp" "$HRDDIR$HLBV"
+    Optimize "traverse-bvh.comp" "$HRDDIR$HLBV" 
+    
+    Optimize "bvh-build-first.comp" "$HRDDIR$HLBV" 
+    Optimize "bvh-build.comp" "$HRDDIR$HLBV" 
+    Optimize "bvh-fit.comp" "$HRDDIR$HLBV" 
+    Optimize "shorthand.comp" "$HRDDIR$HLBV" 
+    Optimize "leaf-link.comp" "$HRDDIR$HLBV" 
+    Optimize "bound-calc.comp" "$HRDDIR$HLBV"  # merged to mainline of BVH
+    
+    Optimize "/triangle/leaf-gen.comp" "$HRDDIR$HLBV" 
+    Optimize "/triangle/box-calc.comp" "$HRDDIR$HLBV" 
+    
+    Optimize "/AABB/leaf-gen.comp" "$HRDDIR$HLBV" 
+    Optimize "/AABB/box-calc.comp" "$HRDDIR$HLBV" 
+    
+    # optimize vertex assemblers
+    #Optimize "vinput.comp"       "$HRDDIR$NTVE" # native
+    #Optimize "vattributes.comp"  "$OUTDIR$VRTX"
+    
+    # optimize radix sort
+    Optimize "permute.comp"   "$HRDDIR$RDXI"
+    Optimize "histogram.comp" "$HRDDIR$RDXI"
+    Optimize "pfx-work.comp"  "$HRDDIR$RDXI"
+    Optimize "copyhack.comp"  "$HRDDIR$RDXI"
+}
+
+

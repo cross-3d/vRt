@@ -32,7 +32,7 @@ namespace _vt {
         vkPipelineLayout.setLayoutCount = dsLayouts.size();
         vkPipelineLayout.pSetLayouts = dsLayouts.data();
 
-        const auto rng = vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0, strided<uint32_t>(1));
+        const auto rng = vk::PushConstantRange(vk::ShaderStageFlagBits::eCompute, 0, strided<uint32_t>(2));
         if (type != VT_PIPELINE_LAYOUT_TYPE_RAYTRACING) {
             vkPipelineLayout.pPushConstantRanges = &rng;
             vkPipelineLayout.pushConstantRangeCount = 1;

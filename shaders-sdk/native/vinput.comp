@@ -20,7 +20,7 @@
 const vec4 nullvert = vec4(0.f.xxx,1.f);
 const uint VCOUNT = 3u;
 
-void precalculateNormals(in uint rofft, in uint trip, in mat3x4 transformNrm) {
+void precalculateNormals(in uint rofft, in uint wofft, in mat3x4 transformNrm) {
     vec4 vertice[3] = {nullvert,nullvert,nullvert};
     
     // get vertices by accessor
@@ -28,14 +28,16 @@ void precalculateNormals(in uint rofft, in uint trip, in mat3x4 transformNrm) {
         uint indiceID = rofft * VCOUNT + i; vec4 vert = vec4(0.f);
         readByAccessorIndice(vertexBlock.indiceAccessor, indiceID, indiceID);
         readByAccessor(vertexBlock.verticeAccessor, indiceID, vertice[i]);
-        storePosition(ivec2(trip, i), vertice[i]);
+        storePosition(ivec2(wofft, i), vertice[i]);
     };
 
     // get bitfield value 
-    vbitfields[trip] = vertexBlock.bitfield;
-
+    uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
+    vbitfields[wofft] = vertexBlock.bitfield;
+    vmaterials[wofft] = matID;
+    
     // calculate geometrical normal
-    lnrm[0].data[trip] = vec4(normalize(mult4(transformNrm, crossp4(vertice[1]-vertice[0], vertice[2]-vertice[0]))), uintBitsToFloat(vtParameteri(VTX_TYPE, vertexBlock.bitfield)));
+    lnrm[0].data[wofft] = vec4(normalize(mult4(transformNrm, crossp4(vertice[1]-vertice[0], vertice[2]-vertice[0]))), uintBitsToFloat(vtParameteri(VTX_TYPE, vertexBlock.bitfield)));
 };
 
 //struct Transforms { mat3x4 transform, transformNrm; };
@@ -43,18 +45,18 @@ void precalculateNormals(in uint rofft, in uint trip, in mat3x4 transformNrm) {
 
 
 
-
 LOCAL_SIZE_LAYOUT;
 
 void main() {
-    IFANY (wsize <= 0) return; const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
-    const uint inputID = gl_GlobalInvocationID.y + uint(cblock.inputID);
-    const mat3x4 transformNrm = mat3x4(transpose(inverse(mat4(vTransforms[inputID]))));
-    for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
-        const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (globalID >= wsize) break;
-        [[flatten]] if (globalID < wsize && globalID >= 0) {
-            const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
-            precalculateNormals(rofft, wofft, transformNrm);
+    for (uint iT=0;iT<cblock.inputCount;iT++) { vInputID = cblock.inputID + iT;
+        const uint wcount = min(tiled(uint(wsize), gl_WorkGroupSize.x), 2097152u);
+        const mat3x4 transformNrm = mat3x4(transpose(inverse(mat4(vTransforms[vInputID]))));
+        for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
+            const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (globalID >= wsize) break;
+            [[flatten]] if (globalID < wsize && globalID >= 0) {
+                const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
+                precalculateNormals(rofft, wofft, transformNrm);
+            };
         };
     };
 };
