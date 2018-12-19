@@ -57,7 +57,7 @@ void main() {
 #ifdef EXPERIMENTAL_INSTANCING_SUPPORT
                     hit.hitVD.xyz = mult4(bvhInstance.transformIn, vec4(hit.hitVD.xyz, 0.f)).xyz; // get correct transformation from instance 
 #endif
-                    hit.idat.z = vmaterials[triID];
+                    hit.idat.z = int(vmaterials[triID]);
                     // additional hit data (18.10.2018)
                     //hit.idat.xyzw = ivec4(INSTANCE_ID, triID, (-1).xx);
 

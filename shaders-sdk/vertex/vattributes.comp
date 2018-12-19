@@ -24,7 +24,10 @@ bool nvlda(in vec2 a) { return dot(a,a)<=SFN; };
 float  sgn(in float a) { return sign(sign(a)+SFN); };
 float nsgn(in float a) { return sign(sign(a)-SFN); };
 
-void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
+void calculateAttributes(in uint rofft, in uint wofft, in mat3x4 transformNrm) {
+    // read material accessor
+    uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
+    vmaterials[wofft] = matID;
 
     // alloc arrays
     vec4 normals[3] = {0.f.xxxx,0.f.xxxx,0.f.xxxx};
@@ -76,9 +79,9 @@ void calculateAttributes(in int rofft, in int wofft, in mat3x4 transformNrm) {
 
         // transform and store TBN
         const vec3 fT = T, fB = B, fN = N;
-        ISTORE(attrib_texture_out, mosaicIdc(gatherMosaic(getUniformCoord(wofft*ATTRIB_EXTENT+   NORMAL_TID)), i), vec4( normalize(mult4(transformNrm, vec4(fN,0.f)).xyz), 0.f));
-        ISTORE(attrib_texture_out, mosaicIdc(gatherMosaic(getUniformCoord(wofft*ATTRIB_EXTENT+  TANGENT_TID)), i), vec4( normalize(mult4(transformNrm, vec4(fT,0.f)).xyz), 0.f));
-        ISTORE(attrib_texture_out, mosaicIdc(gatherMosaic(getUniformCoord(wofft*ATTRIB_EXTENT+BITANGENT_TID)), i), vec4( normalize(mult4(transformNrm, vec4(fB,0.f)).xyz), 0.f));
+        ISTORE(attrib_texture_out, mosaicIdc(gatherMosaic(getUniformCoord(int(wofft)*ATTRIB_EXTENT+   NORMAL_TID)), i), vec4( normalize(mult4(transformNrm, vec4(fN,0.f)).xyz), 0.f));
+        ISTORE(attrib_texture_out, mosaicIdc(gatherMosaic(getUniformCoord(int(wofft)*ATTRIB_EXTENT+  TANGENT_TID)), i), vec4( normalize(mult4(transformNrm, vec4(fT,0.f)).xyz), 0.f));
+        ISTORE(attrib_texture_out, mosaicIdc(gatherMosaic(getUniformCoord(int(wofft)*ATTRIB_EXTENT+BITANGENT_TID)), i), vec4( normalize(mult4(transformNrm, vec4(fB,0.f)).xyz), 0.f));
     };
 };
 
@@ -97,16 +100,8 @@ void main() {
     for (uint w=0;w<wcount;w+=gl_NumWorkGroups.x) {
         const uint globalID = (w + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x; IFALL (globalID >= wsize) break;
         [[flatten]] if (globalID < wsize && globalID >= 0) {
-
-            // read pointer to required 
             const uint rofft = uint(vertexBlock.readOffset) + globalID, wofft = uint(vertexBlock.primitiveOffset) + globalID;
-
-            // read material accessor
-            uint matID = 0u; readByAccessorIndice(vertexBlock.materialAccessor, rofft, matID); matID += uint(vertexBlock.materialID);
-            vmaterials[wofft] = int(matID);
-
-            // make correct attributes for interpolation phases 
-            calculateAttributes(int(rofft), int(wofft), transformNrm); // attributes calculation 
-        }
-    }
-}
+            calculateAttributes(rofft, wofft, transformNrm); // attributes calculation 
+        };
+    };
+};
