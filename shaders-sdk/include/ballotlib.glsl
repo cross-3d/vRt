@@ -38,7 +38,8 @@
 #define electedInvoc subgroupElect
 
 // subgroup barriers
-#define LGROUP_BARRIER subgroupBarrier();//memoryBarrier(),subgroupBarrier();
+//#define LGROUP_BARRIER subgroupBarrier();//memoryBarrier(),subgroupBarrier();
+#define LGROUP_BARRIER subgroupBarrier();
 #define IFALL(b) [[flatten]]if(subgroupAll(b))
 #define IFANY(b)            if(subgroupAny(b))
 

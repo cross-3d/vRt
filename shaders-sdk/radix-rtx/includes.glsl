@@ -35,8 +35,19 @@
 //#define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)
 
 
+
+#define VEC_SIZE 4u
+#define VEC_MULT VEC_SIZE
+#define VEC_SHIF 2u
+#define VEC_SEQU uvec4(0u,1u,2u,3u)
+
+
 #ifdef ENABLE_TURING_INSTRUCTION_SET
+#ifdef HISTOGRAM_STAGE
+#define Wave_Count VEC_SIZE
+#else
 #define Wave_Count 1u
+#endif
 #else
 #define Wave_Count 16u
 #endif
@@ -53,7 +64,8 @@
 #define uint_rdc_wave_lcm uint
 
 // pointer of...
-#define WPTR4 uvec4
+#define WPTRX uvec4
+#define BOOLX bvec4
 #define PREFER_UNPACKED
 
 
@@ -100,7 +112,7 @@ layout ( push_constant ) uniform PushBlock { uint NumKeys; int Shift; } push_blo
 // division of radix sort
 struct blocks_info { uint count, offset, limit; };
 blocks_info get_blocks_info(in uint n) {
-    const uint block_tile = Wave_Size_RT << 2u;
+    const uint block_tile = Wave_Size_RT << VEC_SHIF;
     const uint block_size = tiled(n, gl_NumWorkGroups.x);
     const uint block_count = tiled(n, block_tile * gl_NumWorkGroups.x);
     const uint block_offset = gl_WorkGroupID.x * block_tile * block_count;

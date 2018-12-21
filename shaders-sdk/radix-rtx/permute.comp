@@ -34,15 +34,15 @@ void main() {
     [[flatten]] IFANY (bcount <= 0) return;
 
     // calculate blocks
-    WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR4(blocks.offset.xxxx) + WPTR4(Lane_Idx.xxxx);
+    WPTRX addr = VEC_SEQU*Wave_Size_RT.xxxx + WPTRX(blocks.offset.xxxx) + WPTRX(Lane_Idx.xxxx);
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
-        const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
+        const BOOLX validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
 
 #ifdef ENABLE_TURING_INSTRUCTION_SET
-        [[unroll]] for (lowp uint w=0u;w<4u;w++) {
+        [[unroll]] for (lowp uint w=0u;w<VEC_SIZE;w++) {
 #else
-        [[flatten]] if (Wave_Idx < 4u) { const lowp uint w = Wave_Idx;
+        [[flatten]] if (Wave_Idx < VEC_SIZE) { const lowp uint w = Wave_Idx;
 #endif
 #ifdef READ_U8
             { key[w] = validAddress[w] ? Key8n[addr[w]][push_block.Shift] : utype_t(0xFFu); };
@@ -55,8 +55,8 @@ void main() {
 #ifdef ENABLE_TURING_INSTRUCTION_SET
         [[flatten]] if (Wave_Idx == 0u) 
 #endif
-        //[[flatten]] if (w < 4u) 
-        [[unroll]] for (lowp uint w=0;w<4;w++) 
+        //[[flatten]] if (w < VEC_SIZE) 
+        [[unroll]] for (lowp uint w=0;w<VEC_SIZE;w++) 
         {
 #ifdef ENABLE_TURING_INSTRUCTION_SET
             const highp uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddress[w]);
@@ -84,6 +84,6 @@ void main() {
 #endif
 #endif
         };
-        addr += ( Wave_Size_RT << 2u );
+        addr += ( Wave_Size_RT << VEC_SHIF );
     };
 };

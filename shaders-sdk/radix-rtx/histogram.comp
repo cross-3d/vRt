@@ -1,6 +1,7 @@
 #version 460 core
 #extension GL_GOOGLE_include_directive : enable
 
+#define HISTOGRAM_STAGE
 #include "./includes.glsl"
 
 layout (local_size_x = BLOCK_SIZE) in;
@@ -30,16 +31,13 @@ void main() {
     [[flatten]] IFANY (bcount <= 0) return;
 
     // use SIMD lanes for calculate histograms
-    WPTR4 addr = WPTR4(0,1,2,3)*Wave_Size_RT.xxxx + WPTR4(blocks.offset.xxxx) + WPTR4(Lane_Idx.xxxx);
+    WPTRX addr = VEC_SEQU*Wave_Size_RT.xxxx + WPTRX(blocks.offset.xxxx) + WPTRX(Lane_Idx.xxxx);
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
-        const bvec4 validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
+        const BOOLX validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
 
-#ifdef ENABLE_TURING_INSTRUCTION_SET
-        [[unroll]] for (lowp uint w=0u;w<4u;w++) {
-#else
-        [[flatten]] if (Wave_Idx < 4u) { const lowp uint w = Wave_Idx;
-#endif
+        [[flatten]] if (Wave_Idx < VEC_SIZE) 
+        { const lowp uint w = Wave_Idx;
 #ifdef READ_U8
             { key[w] = validAddress[w] ? Key8n[addr[w]][push_block.Shift] : utype_t(0xFFu); };
 #else
@@ -49,20 +47,21 @@ void main() {
         LGROUP_BARRIER
 
 #ifdef ENABLE_TURING_INSTRUCTION_SET
-        [[flatten]] if (Wave_Idx == 0u) 
+        [[flatten]] if (Wave_Idx < VEC_SIZE) 
+        { const lowp uint w = Wave_Idx;
+#else
+        [[unroll]] for (lowp uint w=0u;w<VEC_SIZE;w++) {
 #endif
-        //[[flatten]] if (w < 4u) 
-        [[unroll]] for (lowp uint w=0u;w<4u;w++) 
-        {
 #ifdef ENABLE_TURING_INSTRUCTION_SET // subgroup partition supported now 
             const highp uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddress[w]);
             const uint btc = subgroupPartitionedAddNV(1u,blt), fLn = subgroupBallotFindMSB(blt);
-            [[flatten]] if (fLn == Lane_Idx && validAddress[w]) { localHistogram[uint(key[w])] += btc; };
+            [[flatten]] if (fLn == Lane_Idx && validAddress[w]) { atomicAdd(localHistogram[uint(key[w])], btc, gl_ScopeWorkgroup, gl_StorageSemanticsShared, gl_SemanticsRelaxed); };
+            //[[flatten]] if (fLn == Lane_Idx && validAddress[w]) { localHistogram[uint(key[w])] += btc; };
 #else
 #ifdef SIMPLER_SORT
             [[flatten]] if (key[w] == Wr && validAddress[w]) {
                 const lowp uint btc = subgroupAdd(1u);
-                [[flatten]] if (subgroupElect()) { localHistogram[uint(key[w])] += btc; };
+                [[flatten]] if (subgroupElect()) { atomicAdd(localHistogram[uint(key[w])], btc); };
             };
 #else
             bool found = !validAddress[w] || key[w]<Wr || key[w]>=(Wr+Wc);
@@ -76,8 +75,7 @@ void main() {
 #endif
 #endif
         };
-
-        addr += ( Wave_Size_RT << 2u );
+        addr += ( Wave_Size_RT << VEC_SHIF );
     };
 
     // resolve histograms (planned distribute threads) 
