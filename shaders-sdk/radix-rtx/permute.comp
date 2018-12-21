@@ -79,7 +79,7 @@ void main() {
 #ifdef ENABLE_TURING_INSTRUCTION_SET
             const highp uvec4 blt = subgroupPartitionNV(key[w])&validAddressL[w];
             const uint btc = subgroupPartitionedAddNV(1u,blt), btl = subgroupPartitionedExclusiveAddNV(1u,blt), fLn = subgroupBallotFindMSB(blt);
-            uint cntl = 0u; [[flatten]] if (fLn == Lane_Idx && validAddressW) { cntl = atomicAdd(localHistogram[uint(key[w])], btc); };
+            uint cntl = 0u; [[flatten]] if (fLn == Lane_Idx && validAddressW) { cntl = add(localHistogram[uint(key[w])], btc); };
             {
                 const uint offset = subgroupShuffle(cntl,fLn) + btl;
                 [[flatten]] if (validAddressW) { ValueTmp[offset] = ValueIn[addrW], KeyTmp[offset] = KeyIn[addrW]; };
