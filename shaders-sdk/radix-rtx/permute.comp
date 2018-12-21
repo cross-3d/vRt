@@ -8,6 +8,8 @@ shared uint localHistogram[RADICES];
 
 // planned 64-wide for Turing
 shared m8pq utype_v _data[Wave_Size];
+shared uvec4 addrL[Wave_Size];
+shared highp uvec4[VEC_SIZE] validAddressL;
 shared blocks_info blocks;
 #define key _data[Lane_Idx]
 #define bcount blocks.count
@@ -18,6 +20,19 @@ initSubgroupIncFunctionTarget(localHistogram[WHERE], countOffset, 1, uint)
 
 const uint Wc = RADICES/Wave_Count;
 const uint BSIZE = min(Wc,Wave_Size);
+
+
+#define addr addrL[Lane_Idx]
+#define addrW addr[w]
+
+#define validAddressW subgroupInverseBallot(validAddressL[w])
+//#define validAddress bvec4(subgroupInverseBallot(validAddressL[0]),subgroupInverseBallot(validAddressL[1]),subgroupInverseBallot(validAddressL[2]),subgroupInverseBallot(validAddressL[3]))
+
+#ifdef ENABLE_TURING_INSTRUCTION_SET
+#define validAddress validAddressW
+#else
+#define validAddress lessThan(addr,uvec4(blocks.limit))
+#endif
 
 void main() {
     //const m8pq utype_t Radice_Idx = utype_t(gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx);
@@ -34,20 +49,24 @@ void main() {
     [[flatten]] IFANY (bcount <= 0) return;
 
     // calculate blocks
-    WPTRX addr = VEC_SEQU*Wave_Size_RT + WPTRX(blocks.offset) + WPTRX(Lane_Idx);
+    const uint w = Wave_Idx;
+    [[flatten]] if (w < VEC_SIZE) addrW = w*Wave_Size_RT + blocks.offset + Lane_Idx;
+    
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
-        const BOOLX validAddress = lessThan(addr, WPTRX(blocks.limit)); IFALL(all(not(validAddress))) break;
+        [[flatten]] if (w < VEC_SIZE) 
+        //[[flatten]] if (Wave_Idx == 0u) [[unroll]] for (lowp uint w=0;w<VEC_SIZE;w++)
+            validAddressL[w] = subgroupBallot(lessThan(addrW, blocks.limit));
 
-#ifdef ENABLE_TURING_INSTRUCTION_SET
-        [[unroll]] for (lowp uint w=0u;w<VEC_SIZE;w++) {
-#else
-        [[flatten]] if (Wave_Idx < VEC_SIZE) { const lowp uint w = Wave_Idx;
-#endif
+        IFALL(all(not(validAddress))) break;
+        LGROUP_BARRIER
+
+        [[flatten]] if (Wave_Idx < VEC_SIZE) 
+        { const lowp uint w = Wave_Idx;
 #ifdef READ_U8
-            { key[w] = validAddress[w] ? Key8n[addr[w]][push_block.Shift] : utype_t(0xFFu); };
+            { key[Wave_Idx] = validAddressW ? Key8n[addrW][push_block.Shift] : utype_t(0xFFu); };
 #else
-            { key[w] = utype_t(BFE(validAddress[w] ? Key8n[addr[w]][push_block.Shift>>1u] : OutOfRange, (push_block.Shift&1)*BITS_PER_PASS, BITS_PER_PASS)); };
+            { key[Wave_Idx] = utype_t(BFE(validAddressW ? Key8n[addrW][push_block.Shift>>1u] : OutOfRange, (push_block.Shift&1)*BITS_PER_PASS, BITS_PER_PASS)); };
 #endif
         };
         LGROUP_BARRIER
@@ -59,31 +78,32 @@ void main() {
         [[unroll]] for (lowp uint w=0;w<VEC_SIZE;w++) 
         {
 #ifdef ENABLE_TURING_INSTRUCTION_SET
-            const highp uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddress[w]);
+            const highp uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddressW);
             const uint btc = subgroupPartitionedAddNV(1u,blt), btl = subgroupPartitionedExclusiveAddNV(1u,blt), fLn = subgroupBallotFindMSB(blt);
-            uint cntl = 0u; [[flatten]] if (fLn == Lane_Idx && validAddress[w]) { cntl = add(localHistogram[uint(key[w])], btc); };
+            uint cntl = 0u; [[flatten]] if (fLn == Lane_Idx && validAddressW) { cntl = add(localHistogram[uint(key[w])], btc); };
             {
                 const uint offset = subgroupShuffle(cntl,fLn) + btl;
-                [[flatten]] if (validAddress[w]) { ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]]; };
+                [[flatten]] if (validAddressW) { ValueTmp[offset] = ValueIn[addrW], KeyTmp[offset] = KeyIn[addrW]; };
             };
 #else
 #ifdef SIMPLER_SORT
-            [[flatten]] if (key[w] == Wr && validAddress[w]) {
+            [[flatten]] if (key[w] == Wr && validAddressW) {
                 const uint offset = countOffset(key[w]);
-                ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]];
+                ValueTmp[offset] = ValueIn[addrW], KeyTmp[offset] = KeyIn[addrW];
             };
 #else
-            bool found = !validAddress[w] || key[w]<Wr || key[w]>=(Wr+Wc);
+            bool found = !validAddressW || keyW<Wr || keyW>=(Wr+Wc);
              for (lowp uint t=0;t<BSIZE;t+=1u) {
                 [[flatten]] if (!found && (found = subgroupMin(key[w])==key[w])) {
-                    const uint offset = countOffset(key[w]);
-                    ValueTmp[offset] = ValueIn[addr[w]], KeyTmp[offset] = KeyIn[addr[w]];
+                    const uint offset = countOffset(keyW);
+                    ValueTmp[offset] = ValueIn[addrW], KeyTmp[offset] = KeyIn[addrW];
                 };
                 [[flatten]] if ( subgroupAll(found) ) { break; };
             };
 #endif
 #endif
         };
-        addr += ( Wave_Size_RT << VEC_SHIF );
+        LGROUP_BARRIER
+            addrW += ( Wave_Size_RT << VEC_SHIF );
     };
 };

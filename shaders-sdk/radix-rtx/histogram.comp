@@ -24,6 +24,7 @@ const uint BSIZE = min(Wc,Wave_Size);
 #define validAddressW validAddress[w]
 #endif
 
+
 void main() {
     //const m8pq utype_t Radice_Idx = utype_t(gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx);
     const lowp uint Wr = Wc * Wave_Idx;
@@ -39,12 +40,13 @@ void main() {
     [[flatten]] IFANY (bcount <= 0) return;
 
     // use SIMD lanes for calculate histograms
-    WPTRX addr = VEC_SEQU*Wave_Size_RT + WPTRX(blocks.offset) + WPTRX(Lane_Idx);
+    WPTRX addr = VEC_SEQU*Wave_Size_RT + blocks.offset + Lane_Idx;
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
         const BOOLX validAddress = lessThan(addr, WPTRX(blocks.limit)); IFALL(all(not(validAddress))) break;
 
-        [[flatten]] if (Wave_Idx < VEC_SIZE) { const lowp uint w = Wave_Idx;
+        [[flatten]] if (Wave_Idx < VEC_SIZE) 
+        { const lowp uint w = Wave_Idx;
 #ifdef READ_U8
             { key[Wave_Idx] = validAddressW ? Key8n[addrW][push_block.Shift] : utype_t(0xFFu); };
 #else

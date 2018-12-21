@@ -35,26 +35,30 @@
 //#define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)
 
 
-#if defined(ENABLE_TURING_INSTRUCTION_SET) && defined(HISTOGRAM_STAGE)
-#define VEC_SIZE 4u
-#define VEC_MULT VEC_SIZE
-#define VEC_SHIF 2u
-#define VEC_SEQU WPTRX(Wave_Idx) // yes, yes!
-#define KTYPE utype_v//utype_t[VEC_SIZE]
+//#if defined(ENABLE_TURING_INSTRUCTION_SET)
+#if defined(ENABLE_TURING_INSTRUCTION_SET) 
+    #define VEC_SIZE 4u
+    #define VEC_MULT VEC_SIZE
+    #define VEC_SHIF 2u
+    #define VEC_SEQU WPTRX(Wave_Idx) // yes, yes!
+    #define KTYPE utype_v//utype_t[VEC_SIZE]
+
+    #define WPTRX uint
+    #define BOOLX bool
 #else
-#define VEC_SIZE 4u
-#define VEC_MULT VEC_SIZE
-#define VEC_SHIF 2u
-#define VEC_SEQU uvec4(0u,1u,2u,3u)
-#define KTYPE utype_v
+    #define VEC_SIZE 4u
+    #define VEC_MULT VEC_SIZE
+    #define VEC_SHIF 2u
+    #define VEC_SEQU uvec4(0u,1u,2u,3u)
+    #define KTYPE utype_v
+
+    #define WPTRX uvec4
+    #define BOOLX bvec4
 #endif
 
+// 
 #ifdef ENABLE_TURING_INSTRUCTION_SET
-#ifdef HISTOGRAM_STAGE
 #define Wave_Count VEC_SIZE
-#else
-#define Wave_Count 1u
-#endif
 #else
 #define Wave_Count 16u
 #endif
@@ -68,14 +72,6 @@
 #define BLOCK_SIZE_RT (gl_WorkGroupSize.x)
 #define WRK_SIZE_RT (gl_NumWorkGroups.y * Wave_Count_RX)
 
-// pointer of...
-#if defined(ENABLE_TURING_INSTRUCTION_SET) && defined(HISTOGRAM_STAGE)
-#define WPTRX uint
-#define BOOLX bool
-#else
-#define WPTRX uvec4
-#define BOOLX bvec4
-#endif
 
 #define PREFER_UNPACKED
 #define utype_t u8x1_t
@@ -120,7 +116,8 @@ layout ( push_constant ) uniform PushBlock { uint NumKeys; int Shift; } push_blo
 // division of radix sort
 struct blocks_info { uint count, offset, limit; };
 blocks_info get_blocks_info(in uint n) {
-    const uint block_tile = Wave_Size_RT << VEC_SHIF;
+    // tiling should be strictly same
+    const uint block_tile = Wave_Size_RT << 2u;//VEC_SHIF;
     const uint block_size = tiled(n, gl_NumWorkGroups.x);
     const uint block_count = tiled(n, block_tile * gl_NumWorkGroups.x);
     const uint block_offset = gl_WorkGroupID.x * block_tile * block_count;
