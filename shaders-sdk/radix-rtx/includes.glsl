@@ -36,7 +36,6 @@
 
 
 //#if defined(ENABLE_TURING_INSTRUCTION_SET)
-#if defined(ENABLE_TURING_INSTRUCTION_SET) 
     #define VEC_SIZE 4u
     #define VEC_MULT VEC_SIZE
     #define VEC_SHIF 2u
@@ -45,16 +44,6 @@
 
     #define WPTRX uint
     #define BOOLX bool
-#else
-    #define VEC_SIZE 4u
-    #define VEC_MULT VEC_SIZE
-    #define VEC_SHIF 2u
-    #define VEC_SEQU uvec4(0u,1u,2u,3u)
-    #define KTYPE utype_v
-
-    #define WPTRX uvec4
-    #define BOOLX bvec4
-#endif
 
 // 
 #ifdef ENABLE_TURING_INSTRUCTION_SET

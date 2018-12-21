@@ -9,6 +9,8 @@ shared uint localHistogram[RADICES];
 
 // planned 64-wide for Turing
 shared m8pq KTYPE _data[Wave_Size];
+shared uvec4 addrL[Wave_Size];
+shared highp uvec4[VEC_SIZE] validAddressL;
 shared blocks_info blocks;
 #define key _data[Lane_Idx]
 #define bcount blocks.count
@@ -16,12 +18,17 @@ shared blocks_info blocks;
 const uint Wc = RADICES/Wave_Count;
 const uint BSIZE = min(Wc,Wave_Size);
 
-#ifdef ENABLE_TURING_INSTRUCTION_SET
-#define addrW addr
-#define validAddressW validAddress
-#else
+
+#define addr addrL[Lane_Idx]
 #define addrW addr[w]
-#define validAddressW validAddress[w]
+
+#define validAddressW subgroupInverseBallot(validAddressL[w])
+//#define validAddress bvec4(subgroupInverseBallot(validAddressL[0]),subgroupInverseBallot(validAddressL[1]),subgroupInverseBallot(validAddressL[2]),subgroupInverseBallot(validAddressL[3]))
+
+#ifdef ENABLE_TURING_INSTRUCTION_SET
+#define validAddress validAddressW
+#else
+#define validAddress lessThan(addr,uvec4(blocks.limit))
 #endif
 
 
@@ -40,13 +47,20 @@ void main() {
     [[flatten]] IFANY (bcount <= 0) return;
 
     // use SIMD lanes for calculate histograms
-    WPTRX addr = VEC_SEQU*Wave_Size_RT + blocks.offset + Lane_Idx;
+    // calculate blocks
+    const lowp uint w = Wave_Idx;
+    [[flatten]] if (Wave_Idx < VEC_SIZE) addrW = w*Wave_Size_RT + blocks.offset + Lane_Idx;
+
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
-        const BOOLX validAddress = lessThan(addr, WPTRX(blocks.limit)); IFALL(all(not(validAddress))) break;
+        [[flatten]] if (Wave_Idx < VEC_SIZE) 
+            validAddressL[w] = subgroupBallot(lessThan(addrW, blocks.limit));
+        
+        IFALL(all(not(validAddress))) break;
+        LGROUP_BARRIER
 
         [[flatten]] if (Wave_Idx < VEC_SIZE) 
-        { const lowp uint w = Wave_Idx;
+        {
 #ifdef READ_U8
             { key[Wave_Idx] = validAddressW ? Key8n[addrW][push_block.Shift] : utype_t(0xFFu); };
 #else
@@ -57,12 +71,12 @@ void main() {
 
 #ifdef ENABLE_TURING_INSTRUCTION_SET
         [[flatten]] if (Wave_Idx < VEC_SIZE) 
-        { const lowp uint w = Wave_Idx;
 #else
-        [[unroll]] for (lowp uint w=0u;w<VEC_SIZE;w++) {
+        [[unroll]] for (lowp uint w=0u;w<VEC_SIZE;w++) 
 #endif
+        {
 #ifdef ENABLE_TURING_INSTRUCTION_SET // subgroup partition supported now 
-            const highp uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddressW);
+            const highp uvec4 blt = subgroupPartitionNV(key[w])&validAddressL[w];
             const uint btc = subgroupPartitionedAddNV(1u,blt), fLn = subgroupBallotFindMSB(blt);
             [[flatten]] if (fLn == Lane_Idx && validAddressW) { atomicAdd(localHistogram[uint(key[w])], btc, gl_ScopeWorkgroup, gl_StorageSemanticsShared, gl_SemanticsRelaxed); };
 #else
@@ -83,7 +97,8 @@ void main() {
 #endif
 #endif
         };
-        addr += ( Wave_Size_RT << VEC_SHIF );
+        LGROUP_BARRIER
+            [[flatten]] if (Wave_Idx < VEC_SIZE) addrW += ( Wave_Size_RT << VEC_SHIF );
     };
 
     // resolve histograms (planned distribute threads) 
