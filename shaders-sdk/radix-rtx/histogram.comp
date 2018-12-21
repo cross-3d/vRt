@@ -31,10 +31,10 @@ void main() {
     [[flatten]] IFANY (bcount <= 0) return;
 
     // use SIMD lanes for calculate histograms
-    WPTRX addr = VEC_SEQU*Wave_Size_RT.xxxx + WPTRX(blocks.offset.xxxx) + WPTRX(Lane_Idx.xxxx);
+    WPTRX addr = VEC_SEQU*Wave_Size_RT + WPTRX(blocks.offset) + WPTRX(Lane_Idx);
     [[dependency_infinite]] for ( uint wk = 0; wk < bcount; wk++ ) {
         LGROUP_BARRIER
-        const BOOLX validAddress = lessThan(addr, blocks.limit.xxxx); IFALL(all(not(validAddress))) break;
+        const BOOLX validAddress = lessThan(addr, WPTRX(blocks.limit)); IFALL(all(not(validAddress))) break;
 
         [[flatten]] if (Wave_Idx < VEC_SIZE) 
         { const lowp uint w = Wave_Idx;
