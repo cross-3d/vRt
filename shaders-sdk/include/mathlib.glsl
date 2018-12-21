@@ -197,15 +197,23 @@ uint add(inout uint mem, in uint ops) { const uint tmp = mem; mem += ops; return
  int add(inout  int mem, in  int ops) { const  int tmp = mem; mem += ops; return tmp; }
 
 
+bool lessThan(in uint a, in uint b){ return a < b; };
+bool all(in bool a){ return a; };
+bool any(in bool a){ return a; };
+
+bool not(in bool a) { return !a.x; };
+bool and(in bool a, in bool b) { return a.x && b.x; };
+bool or(in bool a, in bool b) { return a.x || b.x; };
+
 // logical functions (bvec2)
-bvec2 not(in bvec2 a) { return bvec2(!a.x, !a.y); }
-bvec2 and(in bvec2 a, in bvec2 b) { return bvec2(a.x && b.x, a.y && b.y); }
-bvec2 or(in bvec2 a, in bvec2 b) { return bvec2(a.x || b.x, a.y || b.y); }
+bvec2 not(in bvec2 a) { return bvec2(!a.x, !a.y); };
+bvec2 and(in bvec2 a, in bvec2 b) { return bvec2(a.x && b.x, a.y && b.y); };
+bvec2 or(in bvec2 a, in bvec2 b) { return bvec2(a.x || b.x, a.y || b.y); };
 
 // logical functions (bvec4)
-bvec4 or(in bvec4 a, in bvec4 b) { return bvec4(a.x || b.x, a.y || b.y, a.z || b.z, a.w || b.w); }
-bvec4 and(in bvec4 a, in bvec4 b) { return bvec4(a.x && b.x, a.y && b.y, a.z && b.z, a.w && b.w); }
-bvec4 not(in bvec4 a) { return bvec4(!a.x, !a.y, !a.z, !a.w); }
+bvec4 or(in bvec4 a, in bvec4 b) { return bvec4(a.x || b.x, a.y || b.y, a.z || b.z, a.w || b.w); };
+bvec4 and(in bvec4 a, in bvec4 b) { return bvec4(a.x && b.x, a.y && b.y, a.z && b.z, a.w && b.w); };
+bvec4 not(in bvec4 a) { return bvec4(!a.x, !a.y, !a.z, !a.w); };
 
 // mixing functions
 void mixed(inout float src, inout float dst, in float coef) { dst *= coef; src *= 1.0f - coef; }

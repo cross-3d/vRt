@@ -35,12 +35,19 @@
 //#define BLOCK_SIZE (Wave_Size * RADICES / AFFINITION) // how bigger block size, then more priority going to radices (i.e. BLOCK_SIZE / Wave_Size)
 
 
-
+#if defined(ENABLE_TURING_INSTRUCTION_SET) && defined(HISTOGRAM_STAGE)
+#define VEC_SIZE 4u
+#define VEC_MULT VEC_SIZE
+#define VEC_SHIF 2u
+#define VEC_SEQU WPTRX(Wave_Idx) // yes, yes!
+#define KTYPE utype_v//utype_t[VEC_SIZE]
+#else
 #define VEC_SIZE 4u
 #define VEC_MULT VEC_SIZE
 #define VEC_SHIF 2u
 #define VEC_SEQU uvec4(0u,1u,2u,3u)
-
+#define KTYPE utype_v
+#endif
 
 #ifdef ENABLE_TURING_INSTRUCTION_SET
 #ifdef HISTOGRAM_STAGE
@@ -61,17 +68,18 @@
 #define BLOCK_SIZE_RT (gl_WorkGroupSize.x)
 #define WRK_SIZE_RT (gl_NumWorkGroups.y * Wave_Count_RX)
 
-#define uint_rdc_wave_lcm uint
-
 // pointer of...
+#if defined(ENABLE_TURING_INSTRUCTION_SET) && defined(HISTOGRAM_STAGE)
+#define WPTRX uint
+#define BOOLX bool
+#else
 #define WPTRX uvec4
 #define BOOLX bvec4
+#endif
+
 #define PREFER_UNPACKED
-
-
 #define utype_t u8x1_t
 #define utype_v u8x4_t
-
 
 #ifdef USE_MORTON_32
 #define KEYTYPE uint32_t

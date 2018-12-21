@@ -8,13 +8,21 @@ layout (local_size_x = BLOCK_SIZE) in;
 shared uint localHistogram[RADICES];
 
 // planned 64-wide for Turing
-shared m8pq utype_v _data[Wave_Size];
+shared m8pq KTYPE _data[Wave_Size];
 shared blocks_info blocks;
 #define key _data[Lane_Idx]
 #define bcount blocks.count
 
 const uint Wc = RADICES/Wave_Count;
 const uint BSIZE = min(Wc,Wave_Size);
+
+#ifdef ENABLE_TURING_INSTRUCTION_SET
+#define addrW addr
+#define validAddressW validAddress
+#else
+#define addrW addr[w]
+#define validAddressW validAddress[w]
+#endif
 
 void main() {
     //const m8pq utype_t Radice_Idx = utype_t(gl_WorkGroupID.y * Wave_Count_RX + Wave_Idx);
@@ -36,12 +44,11 @@ void main() {
         LGROUP_BARRIER
         const BOOLX validAddress = lessThan(addr, WPTRX(blocks.limit)); IFALL(all(not(validAddress))) break;
 
-        [[flatten]] if (Wave_Idx < VEC_SIZE) 
-        { const lowp uint w = Wave_Idx;
+        [[flatten]] if (Wave_Idx < VEC_SIZE) { const lowp uint w = Wave_Idx;
 #ifdef READ_U8
-            { key[w] = validAddress[w] ? Key8n[addr[w]][push_block.Shift] : utype_t(0xFFu); };
+            { key[Wave_Idx] = validAddressW ? Key8n[addrW][push_block.Shift] : utype_t(0xFFu); };
 #else
-            { key[w] = utype_t(BFE(validAddress[w] ? Key8n[addr[w]][push_block.Shift>>1u] : OutOfRange, (push_block.Shift&1)*BITS_PER_PASS, BITS_PER_PASS)); };
+            { key[Wave_Idx] = utype_t(BFE(validAddressW ? Key8n[addrW][push_block.Shift>>1u] : OutOfRange, (push_block.Shift&1)*BITS_PER_PASS, BITS_PER_PASS)); };
 #endif
         };
         LGROUP_BARRIER
@@ -53,10 +60,9 @@ void main() {
         [[unroll]] for (lowp uint w=0u;w<VEC_SIZE;w++) {
 #endif
 #ifdef ENABLE_TURING_INSTRUCTION_SET // subgroup partition supported now 
-            const highp uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddress[w]);
+            const highp uvec4 blt = subgroupPartitionNV(key[w])&subgroupBallot(validAddressW);
             const uint btc = subgroupPartitionedAddNV(1u,blt), fLn = subgroupBallotFindMSB(blt);
-            [[flatten]] if (fLn == Lane_Idx && validAddress[w]) { atomicAdd(localHistogram[uint(key[w])], btc, gl_ScopeWorkgroup, gl_StorageSemanticsShared, gl_SemanticsRelaxed); };
-            //[[flatten]] if (fLn == Lane_Idx && validAddress[w]) { localHistogram[uint(key[w])] += btc; };
+            [[flatten]] if (fLn == Lane_Idx && validAddressW) { atomicAdd(localHistogram[uint(key[w])], btc, gl_ScopeWorkgroup, gl_StorageSemanticsShared, gl_SemanticsRelaxed); };
 #else
 #ifdef SIMPLER_SORT
             [[flatten]] if (key[w] == Wr && validAddress[w]) {
