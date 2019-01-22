@@ -34,8 +34,8 @@ namespace _vt { // store in undercover namespace
     template<VtMemoryUsage U = VT_MEMORY_USAGE_GPU_ONLY> class RoledBuffer;
 
     using DeviceBuffer = RoledBuffer<VT_MEMORY_USAGE_GPU_ONLY>;
-    using DeviceToHostBuffer = RoledBuffer<VT_MEMORY_USAGE_GPU_TO_CPU>;
-    using HostToDeviceBuffer = RoledBuffer<VT_MEMORY_USAGE_CPU_TO_GPU>;
+    using DeviceToHostBuffer = RoledBuffer<VT_MEMORY_USAGE_CPU_TO_GPU>;
+    using HostToDeviceBuffer = RoledBuffer<VT_MEMORY_USAGE_GPU_TO_CPU>;
 
     // have no roles at now
     class DeviceImage;

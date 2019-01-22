@@ -28,6 +28,6 @@ namespace vrt {
 
     // aliases
     using VtDeviceBuffer = VtRoledBuffer<VT_MEMORY_USAGE_GPU_ONLY>;
-    using VtHostToDeviceBuffer = VtRoledBuffer<VT_MEMORY_USAGE_CPU_TO_GPU>;
-    using VtDeviceToHostBuffer = VtRoledBuffer<VT_MEMORY_USAGE_GPU_TO_CPU>;
+    using VtHostToDeviceBuffer = VtRoledBuffer<VT_MEMORY_USAGE_GPU_TO_CPU>;
+    using VtDeviceToHostBuffer = VtRoledBuffer<VT_MEMORY_USAGE_CPU_TO_GPU>;
 };

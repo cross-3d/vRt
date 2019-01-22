@@ -22,8 +22,8 @@ namespace _vt { // store in undercover namespace
 
     // aliased calls
     constexpr const static inline _createBuffer_T<VT_MEMORY_USAGE_GPU_ONLY> createDeviceBuffer = &createBuffer<VT_MEMORY_USAGE_GPU_ONLY>;
-    constexpr const static inline _createBuffer_T<VT_MEMORY_USAGE_CPU_TO_GPU> createHostToDeviceBuffer = &createBuffer<VT_MEMORY_USAGE_CPU_TO_GPU>;
-    constexpr const static inline _createBuffer_T<VT_MEMORY_USAGE_GPU_TO_CPU> createDeviceToHostBuffer = &createBuffer<VT_MEMORY_USAGE_GPU_TO_CPU>;
+    constexpr const static inline _createBuffer_T<VT_MEMORY_USAGE_GPU_TO_CPU> createHostToDeviceBuffer = &createBuffer<VT_MEMORY_USAGE_GPU_TO_CPU>;
+    constexpr const static inline _createBuffer_T<VT_MEMORY_USAGE_CPU_TO_GPU> createDeviceToHostBuffer = &createBuffer<VT_MEMORY_USAGE_CPU_TO_GPU>;
     extern VtResult createDeviceImage(const std::shared_ptr<Device>& device, const VtDeviceImageCreateInfo& cinfo, std::shared_ptr<DeviceImage>& _vtImage);
     extern VtResult createSharedBuffer(const std::shared_ptr<BufferManager>& bManager, const VtDeviceBufferCreateInfo& cinfo, std::shared_ptr<DeviceBuffer>& gBuffer);
     extern VtResult createSharedBuffer(const std::shared_ptr<BufferManager>& bManager, const VtDeviceBufferCreateInfo& cinfo);

@@ -341,16 +341,16 @@ namespace _vt { // store in undercover namespace
 namespace vrt {
     template <class T>
     inline VtResult vtSetBufferSubData(const std::vector<T> &hostdata, VtHostToDeviceBuffer buffer, VkDeviceSize offset) {
-        _vt::setBufferSubData<T, VT_MEMORY_USAGE_CPU_TO_GPU>(hostdata, buffer, offset); return VK_SUCCESS;
+        _vt::setBufferSubData<T, VT_MEMORY_USAGE_GPU_TO_CPU>(hostdata, buffer, offset); return VK_SUCCESS;
     };
 
     template <class T>
     inline VtResult vtGetBufferSubData(VtDeviceToHostBuffer buffer, std::vector<T> &hostdata, VkDeviceSize offset) {
-        _vt::getBufferSubData<T, VT_MEMORY_USAGE_GPU_TO_CPU>(buffer, hostdata, offset); return VK_SUCCESS;
+        _vt::getBufferSubData<T, VT_MEMORY_USAGE_CPU_TO_GPU>(buffer, hostdata, offset); return VK_SUCCESS;
     };
 
     template <class T>
     inline std::vector<T> vtGetBufferSubData(VtDeviceToHostBuffer buffer, VkDeviceSize count, VkDeviceSize offset) {
-        return _vt::getBufferSubData<T, VT_MEMORY_USAGE_GPU_TO_CPU>(buffer, count, offset);
+        return _vt::getBufferSubData<T, VT_MEMORY_USAGE_CPU_TO_GPU>(buffer, count, offset);
     };
 };
