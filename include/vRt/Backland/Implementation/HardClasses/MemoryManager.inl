@@ -80,16 +80,18 @@ namespace _vt {
 
             VmaAllocationCreateInfo allocCreateInfo = {};
             allocCreateInfo.usage = VmaMemoryUsage(U); // TODO: stable conversion
+			if (U == VT_MEMORY_USAGE_CPU_TO_GPU) {
+				allocCreateInfo.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
+			};
 
             // make memory usages 
             auto usageFlagCstr = 0u;
             if constexpr (U != VT_MEMORY_USAGE_GPU_ONLY) { allocCreateInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT; }
-            if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; }
+            if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT; }
             else {
-                if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) { usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; }
-                else {
-                    usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-                };
+                if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) 
+				{ usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT; } else 
+				{ usageFlagCstr |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT; };
             };
 
             auto usageFlag = cinfo.usageFlag | usageFlagCstr;
@@ -99,7 +101,7 @@ namespace _vt {
 #ifdef VRT_ENABLE_VEZ_INTEROP
             VezMemoryFlags mem = VEZ_MEMORY_GPU_ONLY;
             if constexpr (U == VT_MEMORY_USAGE_GPU_TO_CPU) mem = VEZ_MEMORY_GPU_TO_CPU;
-            if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) mem = VEZ_MEMORY_CPU_TO_GPU;
+            if constexpr (U == VT_MEMORY_USAGE_CPU_TO_GPU) mem = VEZ_MEMORY_GPU_TO_CPU;
             if constexpr (U == VT_MEMORY_USAGE_CPU_ONLY) mem = VEZ_MEMORY_CPU_ONLY;
 
             auto binfo = VezBufferCreateInfo{};

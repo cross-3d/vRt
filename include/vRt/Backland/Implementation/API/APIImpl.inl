@@ -160,10 +160,10 @@ namespace vrt {
 
     // between host and images
     VtResult vtCmdCopyHostToDeviceImage(VkCommandBuffer commandBuffer, VtHostToDeviceBuffer srcBuffer, VtDeviceImage dstImage, uint32_t regionCount, const VkBufferImageCopy* pRegions) {
-        _vt::cmdCopyBufferToImage<VT_MEMORY_USAGE_GPU_TO_CPU>(commandBuffer, srcBuffer, dstImage, _vt::makeVector<vk::BufferImageCopy>((const vk::BufferImageCopy *)pRegions, regionCount)); return VK_SUCCESS;
+        _vt::cmdCopyBufferToImage<VT_MEMORY_USAGE_CPU_TO_GPU>(commandBuffer, srcBuffer, dstImage, _vt::makeVector<vk::BufferImageCopy>((const vk::BufferImageCopy *)pRegions, regionCount)); return VK_SUCCESS;
     };
     VtResult vtCmdCopyDeviceImageToHost(VkCommandBuffer commandBuffer, VtDeviceImage srcImage, VtDeviceToHostBuffer dstBuffer, uint32_t regionCount, const VkBufferImageCopy* pRegions) {
-        _vt::cmdCopyImageToBuffer<VT_MEMORY_USAGE_CPU_TO_GPU>(commandBuffer, srcImage, dstBuffer, _vt::makeVector<vk::BufferImageCopy>((const vk::BufferImageCopy *)pRegions, regionCount)); return VK_SUCCESS;
+        _vt::cmdCopyImageToBuffer<VT_MEMORY_USAGE_GPU_TO_CPU>(commandBuffer, srcImage, dstBuffer, _vt::makeVector<vk::BufferImageCopy>((const vk::BufferImageCopy *)pRegions, regionCount)); return VK_SUCCESS;
     };
 
     // between buffers and images
