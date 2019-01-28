@@ -7,6 +7,15 @@
 
 ## Tuning for interactivity
 
+### We are so bored! PLEASE, STOP MY SUFFER!
+
+We no longer want to do this bullshit and support this project. It’s easier for us to maintain separate components like radix sorting. For us, the greater pleasure comes more from the way it works, whether it works stably and works in principle. And such a project is difficult to maintain, as it delivers a lot of pain, including when debugging. We realized how important microcontrol is, but we realized that we no longer have time ... It became clear that Hercules’s efforts were achieved by a low code quality, a huge amount of water, and for quick hands with fortunes.
+
+- Too many old or dirty code, needs have so much need hack's and so much time.
+- Critical performance drops despite of efforts.
+- Enthusiasm drops sharply with awareness and relaxation.
+- Error's in different operation systems (such as Linux). 
+
 ### Features and advantages
 
 - Low-level library for ray tracing, based on Vulkan API (compute workflow)
