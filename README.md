@@ -1,7 +1,6 @@
 # vRt (VK-1.1.95)
 
 <a href="https://gitter.im/world8th/vRt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank" title="Gitter"><img src="https://badges.gitter.im/world8th/vRt.svg" alt="Gitter.RT" height="20px"/></a>
-<a href="https://etherdonation.com/d?to=0xd9b022cDf82eE7eAB9B17C7d85c3ba005E288383" target="_blank" title="Donate ETH"><img src="https://etherdonation.com/i/btn/donate-btn.png" alt="Donate.ETH" height="20px"/></a>
 
 > Vulkan API raytracing cross-platform library.
 
