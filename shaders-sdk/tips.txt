@@ -1,3 +1,0 @@
-Recommended to use source code version of glslang
-
-obj2gltf -i sponza.obj -s  --metallicRoughness --packOcclusion

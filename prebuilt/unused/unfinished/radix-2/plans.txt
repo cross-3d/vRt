@@ -1,4 +1,0 @@
-Planned (17.09.2018): 
-- SoA instead of AoS radices
-- Tensor optimization
-- NVidia Turing support
